@@ -79,6 +79,7 @@ export default function RootLayout({
         <link rel="preload" as="image" href="/hero-bg.jpg" />
       </Head> */}
             <head>
+              <meta name="robots" content="index,follow"/>
               <meta name="google-site-verification" content="zHUQms0K0yncnzbqCtw9XTpot7mSQqw2npsCYfi8S84" />
         <link rel="preconnect" href="https://api.edusmart.vn" />
         <link rel="dns-prefetch" href="https://api.edusmart.vn" />
@@ -87,6 +88,7 @@ export default function RootLayout({
         {/* <link rel="preload" as="style" href="/_next/static/css/xxx.css" /> */}
         <link rel="preload" as="image" href="/emo.png" />
         <link rel="preload" as="image" href="/hero-bg.jpg" />
+        
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
