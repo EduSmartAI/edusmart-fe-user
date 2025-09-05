@@ -21,6 +21,8 @@ import { FiArrowLeft } from "react-icons/fi";
 const xmlColumns = {
   email: { id: "email", name: "Email", rules: "required" },
   password: { id: "password", name: "Mật khẩu", rules: "required" },
+  firstName: { id: "firstName", name: "Họ", rules: "required" },
+  lastName: { id: "lastName", name: "Tên", rules: "required" },
   confirmPassword: {
     id: "confirmPassword",
     name: "Mật khẩu xác nhận",
@@ -28,7 +30,7 @@ const xmlColumns = {
   },
 } as const;
 
-type LoginFormValues = { email: string; password: string };
+type LoginFormValues = { email: string; password: string; firstName:string, lastName:string };
 
 const lobster = Lobster({
   weight: "400",
@@ -45,7 +47,7 @@ const lobster = Lobster({
 export default function RegisterPage() {
   const messageApi = useNotification();
   const [form] = Form.useForm<LoginFormValues>();
-  const login = useAuthStore((state) => state.login);
+  const insertStudent = useAuthStore((state) => state.insertStudent);
   const router = useRouter();
   const [showForm, setShowForm] = useState<boolean>(false);
   const [activeKey, setActiveKey] = useState<"login" | "register">("register");
@@ -107,8 +109,8 @@ export default function RegisterPage() {
   const onFinish = async (values: LoginFormValues) => {
     try {
       useLoadingStore.getState().showLoading();
-      await login(values.email, values.password);
-      await router.push("/Admin");
+      await insertStudent(values.email, values.password, values.firstName, values.lastName);
+      await router.push("/Register/has-sent");
       await messageApi.success("Đăng nhập thành công!");
       useLoadingStore.getState().hideLoading();
     } catch (error: unknown) {
@@ -134,7 +136,7 @@ export default function RegisterPage() {
   });
 
   // 2) Trail cho các input field
-  const fieldKeys = ["email", "password", "confirmPassword"] as const;
+  const fieldKeys = ["email", "firstName", "lastName", "password", "confirmPassword"] as const;
   const trail = useTrail(showForm ? fieldKeys.length : 0, {
     from: { opacity: 0, transform: "translate3d(0,20px,0)" },
     to: { opacity: 1, transform: "translate3d(0,0,0)" },

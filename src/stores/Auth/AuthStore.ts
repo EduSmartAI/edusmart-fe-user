@@ -3,7 +3,8 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import Cookies from "js-cookie";
 import apiClient from "EduSmart/hooks/apiClient";
-import { loginAction, refreshAction } from "EduSmart/app/(auth)/action";
+import { insertStudentAction, loginAction, refreshAction } from "EduSmart/app/(auth)/action";
+import { StudentInsertResponse } from "EduSmart/api/api-auth-service";
 
 export interface AuthState {
   token: string | null;
@@ -11,6 +12,12 @@ export interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   refreshToken: () => Promise<void>;
   logout: () => void;
+  insertStudent: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<StudentInsertResponse>;
 }
 
 type PersistedAuth = {
@@ -33,6 +40,17 @@ export const useAuthStore = create<AuthState>()(
       reset: () => {
         set({ token: null, refreshTokenValue: null });
         Cookies.remove("auth-storage");
+      },
+
+      insertStudent: async (email, password, firstName, lastName) => {
+        const res = await insertStudentAction({
+          email,
+          password,
+          firstName,
+          lastName,
+        });
+        if (!res.ok) throw new Error(res.error || "InsertStudent failed");
+        return res.data;
       },
 
       login: async (email, password) => {

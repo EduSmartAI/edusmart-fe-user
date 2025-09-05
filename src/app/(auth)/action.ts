@@ -1,7 +1,8 @@
 "use server";
 
+import { DetailError, StudentInsertCommand, StudentInsertResponse } from "EduSmart/api/api-auth-service";
 import { destroySession, exchangePassword, getAccessTokenFromCookie, getSidFromCookie, refreshTokens } from "EduSmart/lib/authServer";
-
+const BACKEND = process.env.API_URL!;
 export async function loginAction({
   email,
   password,
@@ -46,4 +47,60 @@ export async function logoutAction() {
     await destroySession(sid);  // xóa session + cookie sid
   }
   return { ok: true };
+}
+
+async function postJsonPublic(path: string, body: unknown): Promise<Response> {
+  const url = `${BACKEND}${path}`;
+  return fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+    credentials: "omit",
+  });
+}
+
+function parseJson<T>(text: string): T | null {
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+}
+
+type ApiError = {
+  message?: string | null;
+  title?: string | null;
+  error?: string | null;
+  detailErrors?: DetailError[] | null;
+};
+
+/** Server action: Insert Student (public, no bearer, no any) */
+export async function insertStudentAction(
+  payload: StudentInsertCommand
+): Promise<
+  | { ok: true; data: StudentInsertResponse }
+  | { ok: false; status?: number; error: string; detailErrors?: DetailError[] | null }
+> {
+  const resp = await postJsonPublic("/api/v1/InsertStudent", payload);
+  const raw = await resp.text();
+
+  if (resp.ok) {
+    const data = parseJson<StudentInsertResponse>(raw);
+    if (data) return { ok: true, data };
+    return {
+      ok: false,
+      status: resp.status,
+      error: "Invalid response from server",
+      detailErrors: null,
+    };
+  }
+
+  const err = parseJson<ApiError>(raw) ?? {};
+  return {
+    ok: false,
+    status: resp.status,
+    error: err.message ?? err.title ?? err.error ?? "InsertStudent failed",
+    detailErrors: err.detailErrors ?? null,
+  };
 }

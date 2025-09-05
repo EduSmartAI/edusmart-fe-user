@@ -15,7 +15,7 @@ import { useValidateStore } from "EduSmart/stores/Validate/ValidateStore";
 
 // 1) Tạo axios instance chung
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL, // ví dụ: "https://api.EduSmart.vn"
+  baseURL: process.env.NEXT_PUBLIC_API_URL, // ví dụ: "https://api.emoease.vn"
 });
 
 interface RetryConfig extends AxiosRequestConfig {
@@ -23,12 +23,17 @@ interface RetryConfig extends AxiosRequestConfig {
 }
 
 axiosInstance.interceptors.request.use((cfg) => {
-  const { token } = useAuthStore.getState();
-  console.log("token", token)
-  if (token) {
-    console.log("vào")
-    cfg.headers.Authorization = `Bearer ${token}`;
+  const h = axios.AxiosHeaders.from(cfg.headers);
+  const base = cfg.baseURL ?? process.env.NEXT_PUBLIC_API_URL ?? '';
+  const url = cfg.url ?? '';
+  if (base.includes('ngrok') || url.includes('ngrok')) {
+    h.set('ngrok-skip-browser-warning', 'true');
   }
+  const { token } = useAuthStore.getState();
+  if (token) {
+    h.set('Authorization', `Bearer ${token}`);
+  }
+  cfg.headers = h;
   return cfg;
 });
 
@@ -45,6 +50,7 @@ axiosInstance.interceptors.response.use(
         if (newToken) {
           originalRequest.headers = axios.AxiosHeaders.from(originalRequest.headers);
           (originalRequest.headers).set('Authorization', `Bearer ${newToken}`);
+          (originalRequest.headers).set('ngrok-skip-browser-warning', "true");
         }
         return axiosInstance(originalRequest);
       } catch {
