@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["antd", "@ant-design/icons"],
   },
+  async redirects() {
+    return [
+      { source: "/", destination: "/home", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;
