@@ -55,7 +55,7 @@ export const authService = new AuthApi({
 });
 
 export const rootService = new AuthApi({
-  baseUrl: BACKEND,
+  baseUrl: `${BACKEND}/auth`,
   customFetch: with401Retry,
   baseApiParams: { credentials: "include" },
   securityWorker: async () => {

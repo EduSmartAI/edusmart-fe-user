@@ -1,22 +1,39 @@
-"use client";
+// app/(auth)/verify/page.tsx
 import React from "react";
+import { verifyAccountAction } from "../(auth)/verifyAction";
 import ResultScreen from "./Client";
 
-export default function SuccessScreen() {
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+function normalizeKey(input: string) {
+  let s = (input ?? "").trim();
+  if (s.includes(" ")) s = s.replace(/ /g, "+");
+  s = s.replace(/\r?\n/g, "");
+  try { s = decodeURIComponent(s); } catch {}
+  s = s.replace(/\s*\/\s*/g, "/");
+  return s;
+}
+
+export default async function VerifyPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const raw = Array.isArray(params?.key) ? params!.key![0] : (params?.key ?? "");
+  const key = normalizeKey(raw);
+  console.log("key", key.trim());
+  const result = await verifyAccountAction(key);
+  const isSuccess = result.ok;
+  const title = isSuccess ? "XÁC MINH THÀNH CÔNG" : "XÁC MINH THẤT BẠI";
+  const description = isSuccess
+    ? "Cảm ơn bạn! Tài khoản đã được xác minh. Bạn có thể đăng nhập và sử dụng hệ thống."
+    : result.error ||
+      "Có lỗi xảy ra trong quá trình xác minh. Vui lòng thử lại hoặc liên hệ hỗ trợ.";
+
   return (
-    <>
-      <ResultScreen
-        type="success"
-        title="SUCCESS"
-        description="Thank you for your request. We are working hard to find the best services and deals for you. Shortly you will find a confirmation in your email."
-        onContinue={() => console.log("Go next page")}
-      />
-      <ResultScreen
-        type="error"
-        title="ERROR"
-        description="Something went wrong while processing your request. Please try again later."
-        onContinue={() => console.log("Retry")}
-      />
-    </>
+    <ResultScreen
+      type={isSuccess ? "success" : "error"}
+      title={title}
+      description={description}
+    />
   );
 }

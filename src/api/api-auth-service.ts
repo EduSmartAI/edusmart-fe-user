@@ -10,6 +10,19 @@
  * ---------------------------------------------------------------
  */
 
+export interface AccountVerifyCommand {
+  /** @minLength 1 */
+  key: string;
+}
+
+export interface AccountVerifyResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: string | null;
+}
+
 export interface DetailError {
   field?: string | null;
   messageId?: string | null;
@@ -334,19 +347,11 @@ export class Api<
      * @request POST:/connect/token
      * @secure
      */
-    tokenCreate: (
-      data: {
-        UserName?: string;
-        Password?: string;
-      },
-      params: RequestParams = {},
-    ) =>
+    tokenCreate: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/connect/token`,
         method: "POST",
-        body: data,
         secure: true,
-        type: ContentType.UrlEncoded,
         ...params,
       }),
 
@@ -399,6 +404,28 @@ export class Api<
     ) =>
       this.request<StudentInsertResponse, any>({
         path: `/api/v1/InsertStudent`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags VerifyAccount
+     * @name V1VerifyAccountCreate
+     * @request POST:/api/v1/VerifyAccount
+     * @secure
+     */
+    v1VerifyAccountCreate: (
+      data: AccountVerifyCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<AccountVerifyResponse, any>({
+        path: `/api/v1/VerifyAccount`,
         method: "POST",
         body: data,
         secure: true,

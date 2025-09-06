@@ -2,7 +2,7 @@
 
 import { DetailError, StudentInsertCommand, StudentInsertResponse } from "EduSmart/api/api-auth-service";
 import { destroySession, exchangePassword, getAccessTokenFromCookie, getSidFromCookie, refreshTokens } from "EduSmart/lib/authServer";
-const BACKEND = process.env.API_URL!;
+const BACKEND = process.env.NEXT_PUBLIC_API_URL;
 export async function loginAction({
   email,
   password,
@@ -82,16 +82,18 @@ export async function insertStudentAction(
   | { ok: true; data: StudentInsertResponse }
   | { ok: false; status?: number; error: string; detailErrors?: DetailError[] | null }
 > {
-  const resp = await postJsonPublic("/api/v1/InsertStudent", payload);
+  const resp = await postJsonPublic("/auth/api/v1/InsertStudent", payload);
+  console.log("response", resp)
   const raw = await resp.text();
+  const data = parseJson<StudentInsertResponse>(raw);
 
   if (resp.ok) {
-    const data = parseJson<StudentInsertResponse>(raw);
-    if (data) return { ok: true, data };
+    console.log("data response", data)
+    if (data?.success) return { ok: true, data };
     return {
       ok: false,
       status: resp.status,
-      error: "Invalid response from server",
+      error: data?.message ?? "Lỗi",
       detailErrors: null,
     };
   }

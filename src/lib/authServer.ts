@@ -74,6 +74,7 @@ export async function exchangePassword(email: string, password: string) {
       body: body.toString(),
       cache: "no-store",
     });
+    console.log("response Login", resp)
   } catch (err) {
     console.error("[exchangePassword] fetch error:", err);
     throw new Error("Không gọi được /auth/connect/token");
