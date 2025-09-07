@@ -4,23 +4,21 @@ import type { MenuProps } from "antd";
 import {
   GoogleOutlined,
   LogoutOutlined,
-  YoutubeOutlined,
-  CrownOutlined,
-  DollarOutlined,
-  DatabaseOutlined,
   BgColorsOutlined,
-  GlobalOutlined,
-  SafetyOutlined,
-  EnvironmentOutlined,
   SettingOutlined,
   QuestionCircleOutlined,
   CommentOutlined,
   SwapOutlined,
+  KeyOutlined,
 } from "@ant-design/icons";
 import { ThemeSwitch } from "../Themes/Theme";
+import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
+import { useRouter } from "next/navigation";
 
 const UserMenu = () => {
   const [open, setOpen] = useState(false);
+  const { logout } = useAuthStore();
+  const router = useRouter();
   const scrollYRef = useRef(0);
   const prevRef = useRef({
     bodyOverflow: "",
@@ -127,22 +125,10 @@ const UserMenu = () => {
     { key: "switch", icon: <SwapOutlined />, label: "Chuyển đổi tài khoản" },
     { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
     { type: "divider" },
-    { key: "studio", icon: <YoutubeOutlined />, label: "YouTube Studio" },
-    {
-      key: "premium",
-      icon: <CrownOutlined />,
-      label: "Lợi ích của gói Premium",
-    },
-    {
-      key: "billing",
-      icon: <DollarOutlined />,
-      label: "Giao dịch mua và gói thành viên",
-    },
-    { type: "divider" },
     {
       key: "data",
-      icon: <DatabaseOutlined />,
-      label: "Dữ liệu của bạn trong YouTube",
+      icon: <KeyOutlined />,
+      label: "Quên mật khẩu",
     },
     {
       key: "theme",
@@ -161,18 +147,6 @@ const UserMenu = () => {
         </div>
       ),
     },
-    { key: "lang", icon: <GlobalOutlined />, label: "Ngôn ngữ: Tiếng Việt" },
-    {
-      key: "restrict",
-      icon: <SafetyOutlined />,
-      label: "Chế độ hạn chế: Đã tắt",
-    },
-    {
-      key: "location",
-      icon: <EnvironmentOutlined />,
-      label: "Địa điểm: Việt Nam",
-    },
-    { key: "shortcuts", icon: <EnvironmentOutlined />, label: "Phím tắt" },
     { type: "divider" },
     { key: "settings", icon: <SettingOutlined />, label: "Cài đặt" },
     { key: "help", icon: <QuestionCircleOutlined />, label: "Trợ giúp" },
@@ -194,7 +168,16 @@ const UserMenu = () => {
     <Dropdown
       menu={{
         items,
-        onClick: () => setOpen(false), // chọn item thì đóng
+        onClick: async ({ key }) => {
+          setOpen(false); // đóng menu trước
+      if (key === "logout") {
+        try {
+          await logout();           // gọi store logout
+        } finally {
+          router.push("/Login"); // điều hướng
+        }
+      }
+        },
         className: "user-menu", // tuỳ style thêm nếu cần
       }}
       open={open}
@@ -203,7 +186,7 @@ const UserMenu = () => {
       placement="bottomRight"
       getPopupContainer={() => document.documentElement}
       popupRender={(
-        menu, // bo góc + overflow ẩn
+        menu,
       ) => <div style={{ borderRadius: 8, overflow: "hidden" }}>{menu}</div>}
     >
       <Avatar

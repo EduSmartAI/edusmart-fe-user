@@ -110,7 +110,7 @@ export default function RegisterPage() {
     try {
       useLoadingStore.getState().showLoading();
       await insertStudent(values.email, values.password, values.firstName, values.lastName);
-      // await router.push("/Register/has-sent");
+      await router.push("/Register/has-sent");
       await messageApi.success("Đăng nhập thành công!");
       useLoadingStore.getState().hideLoading();
     } catch (error: unknown) {

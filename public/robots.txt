@@ -1,7 +1,14 @@
-# Cho tất cả bots
+# *
+User-agent: *
+Allow: /
+
+# *
 User-agent: *
 Disallow: /admin
 Disallow: /auth
+
+# Host
+Host: https://www.edusmart.pro.vn
 
 # Sitemaps
 Sitemap: https://www.edusmart.pro.vn/sitemap.xml

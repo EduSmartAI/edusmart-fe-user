@@ -5,10 +5,6 @@ import axios, {
   AxiosRequestConfig,
   AxiosError,
 } from "axios";
-import { Api as PaymentApi } from "EduSmart/api/api-payment-service";
-import { Api as ProfileApi } from "EduSmart/api/api-profile-service";
-import { Api as AuthApi } from "EduSmart/api/api";
-import { Api as SubscriptionApi } from "EduSmart/api/api-subscription-service";
 import { Api as AuthEduClientApi } from "EduSmart/api/api-auth-service";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useValidateStore } from "EduSmart/stores/Validate/ValidateStore";
@@ -110,39 +106,12 @@ const axiosFetch: typeof fetch = async (input, init = {}) => {
   });
 };
 
-// 3) Khởi tạo các client từ swagger-gen
-export const paymentClient = new PaymentApi<null>({
-  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/payment-service`,
-  customFetch: axiosFetch,
-});
-
-export const AuthClient = new AuthApi({
-  baseUrl: process.env.NEXT_PUBLIC_PAYMENT_URL || "/auth-service",
-  customFetch: axiosFetch,
-});
-
-export const profileClient = new ProfileApi({
-  baseUrl: process.env.NEXT_PUBLIC_PROFILE_URL || "/profile-service",
-  customFetch: axiosFetch,
-});
-
-export const subscriptionClient = new SubscriptionApi({
-  baseUrl:
-    process.env.NEXT_PUBLIC_SUBSCRIPTION_API_URL || "/subscription-service",
-  customFetch: axiosFetch,
-});
-
 export const AuthEduClient = new AuthEduClientApi({
-  baseUrl:
-    process.env.NEXT_PUBLIC_API_URL || "",
+  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/auth`,
   customFetch: axiosFetch,
 });
 
 const apiClient = {
-  paymentService: paymentClient,
-  authService: AuthClient,
-  profileService: profileClient,
-  subscriptionService: subscriptionClient,
   authEduService: AuthEduClient
 };
 

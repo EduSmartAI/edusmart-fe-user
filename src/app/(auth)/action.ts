@@ -1,7 +1,8 @@
+// (auth)/action.ts
 "use server";
 
 import { DetailError, StudentInsertCommand, StudentInsertResponse } from "EduSmart/api/api-auth-service";
-import { destroySession, exchangePassword, getAccessTokenFromCookie, getSidFromCookie, refreshTokens } from "EduSmart/lib/authServer";
+import { destroySession, exchangePassword, getAccessTokenFromCookie, getSidFromCookie, hasRefreshToken, refreshTokens, revokeRefreshLocal } from "EduSmart/lib/authServer";
 const BACKEND = process.env.NEXT_PUBLIC_API_URL;
 export async function loginAction({
   email,
@@ -12,11 +13,15 @@ export async function loginAction({
 }) {
   if (!email || !password) return { ok: false, error: "Thiếu email/password" };
   try {
+    console.log("start")
     await exchangePassword(email, password);
+    console.log("end")
     const accessToken = await getAccessTokenFromCookie();
-    console.log("Bearer Access", accessToken)
-    return { ok: true, accessToken: accessToken};
+    if(accessToken) return { ok: true, accessToken: accessToken};
+    // console.log("Bearer Access", accessToken)
+    return { ok: false, accessToken: null};
   } catch (e: unknown) {
+    console.log("lỗi")
     const errorMessage = typeof e === "object" && e !== null && "message" in e ? (e as { message?: string }).message : undefined;
     return { ok: false, error: errorMessage ?? "Đăng nhập thất bại" };
   }
@@ -105,4 +110,12 @@ export async function insertStudentAction(
     error: err.message ?? err.title ?? err.error ?? "InsertStudent failed",
     detailErrors: err.detailErrors ?? null,
   };
+}
+
+export async function getAuthen(): Promise<boolean> {
+  return hasRefreshToken();
+}
+
+export async function logout() {
+  return await revokeRefreshLocal();
 }

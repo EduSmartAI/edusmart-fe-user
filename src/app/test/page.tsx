@@ -1,9 +1,9 @@
 "use client"
-import { useSessionStore } from "EduSmart/stores/Test/sessionTestStore";
+import { useSessionAuthStore } from "EduSmart/stores/Auth/SessionAuthStore";
 import { useEffect } from "react";
 
 export default function SessionComponent() {
-  const { session, isLoading, error, fetchSession } = useSessionStore();
+  const { session, isLoading, error, fetchSession } = useSessionAuthStore();
 
   useEffect(() => {
     fetchSession();
