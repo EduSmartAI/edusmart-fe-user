@@ -5,7 +5,6 @@ import {
   saveTokens,
   updateTokens,
   deleteSession,
-  dumpSessionKeys,
 } from "./sessionStore";
 import { Agent, setGlobalDispatcher } from "undici";
 
@@ -33,10 +32,6 @@ async function setSidCookie(sid: string) {
     maxAge: 60 * 60 * 24 * 30, // 30 ngày
     priority: "high",
   });
-}
-export async function clearSidCookie() {
-  const jar = await cookies();
-  jar.delete(SID_NAME);
 }
 
 type TokenResponse = {
@@ -74,7 +69,7 @@ export async function exchangePassword(email: string, password: string) {
       body: body.toString(),
       cache: "no-store",
     });
-    console.log("response Login", resp)
+    // console.log("response Login", resp)
   } catch (err) {
     console.error("[exchangePassword] fetch error:", err);
     throw new Error("Không gọi được /auth/connect/token");
@@ -114,7 +109,7 @@ function safeJson(t: string) {
 
 export async function refreshTokens(sid: string) {
   const bundle = await loadTokens(sid);
-  console.log("load sid", sid, "bundle:", bundle, "keys:", dumpSessionKeys());
+  console.log("load sid", sid, "bundle:", bundle);
   if (!bundle) throw new Error("Session not found");
 
   const body = new URLSearchParams({
@@ -123,18 +118,18 @@ export async function refreshTokens(sid: string) {
     client_id: CID,
     client_secret: CSECRET,
   });
-  console.log("body", body);
   const resp = await fetch(`${BACKEND}/auth/connect/token`, {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: body.toString(),
     cache: "no-store",
   });
-  console.log("res", resp);
+  
   const data = await resp.json().catch(() => ({}));
   if (!resp.ok) throw new Error(data?.error || "Refresh failed");
 
   const { access, refresh, expSec } = pickTokens(data);
+  console.log("refresh-token", refresh)
   if (!access || !refresh) throw new Error("Refresh response invalid");
 
   await updateTokens(sid, {
@@ -162,6 +157,11 @@ export async function getBearerForSid(sid: string) {
   return `Bearer ${b.access}`;
 }
 
+export async function clearSidCookie() {
+  const jar = await cookies();
+  jar.delete(SID_NAME);
+}
+
 export async function destroySession(sid: string) {
   await deleteSession(sid);
   clearSidCookie();
@@ -187,3 +187,37 @@ export async function getSidFromCookie(): Promise<string | null> {
   const jar = await cookies();
   return jar.get(SID_NAME)?.value ?? null;
 }
+
+/** Trả về true nếu refresh-token tồn tại trong session store */
+export async function hasRefreshToken(sid?: string): Promise<boolean> {
+  try {
+    const jar = await cookies();
+    const realSid = sid ?? jar.get(SID_NAME)?.value ?? null;
+    if (!realSid) return false;
+
+    const bundle = await loadTokens(realSid);
+    return typeof bundle?.refresh === "string" && bundle.refresh.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+
+// Thu hồi token
+export async function revokeRefreshLocal(sid?: string): Promise<boolean> {
+  const jar = await cookies();
+  const realSid = sid ?? jar.get(SID_NAME)?.value ?? null;
+  if (!realSid) return false;
+
+  const bundle = await loadTokens(realSid);
+  if (!bundle) return false;
+
+  await updateTokens(realSid, {
+    access: bundle.access,      // giữ access để người dùng đang dùng tiếp được
+    refresh: "",
+    // ép access sẽ hết hạn sớm để lần sau buộc đăng nhập lại (5s)
+    expAt: Math.min(bundle.expAt ?? Date.now(), Date.now() + 5_000),
+  });
+
+  return true;
+}
+

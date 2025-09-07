@@ -17,27 +17,14 @@ const kaushan = Kaushan_Script({
   display: "swap",
 });
 
-export default function Navigationbar() {
+type Props = { isAuthed: boolean };
+
+export default function NavigationbarClient({ isAuthed }: Props) {
   const [isOpen, setIsOpen] = useState(false);
-  const isAuthed = useAuthStore((s) => s.isAuthen);
-  const getAuthen = useAuthStore((s) => s.getAuthen);
-
-  const [authReady, setAuthReady] = useState(false);
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        await getAuthen();
-      } finally {
-        if (mounted) setAuthReady(true);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [getAuthen]);
-
   const { logout } = useAuthStore();
+  // const isAuthed = Boolean(token);
+
+  // Temp
 
   const [showNav, setShowNav] = useState(true);
   const lastScrollY = useRef(0);
@@ -45,10 +32,9 @@ export default function Navigationbar() {
 
   const pathname = usePathname();
   const router = useRouter();
-  const [elevated, setElevated] = useState(false);
 
   const menuItems = [
-    { key: "home", label: "Trang chủ", href: "/home" },
+    { key: "home", label: "Trang chủ", href: "/test/Navbar/home" },
     { key: "jobs", label: "Khóa học", href: "/course" },
     { key: "contact", label: "Liên hệ chúng tôi", href: "/contact" },
     { key: "match", label: "Công việc phù hợp cho bạn", href: "/my-job" },
@@ -84,13 +70,6 @@ export default function Navigationbar() {
       },
     });
   }, [currentKey, showNav, api]);
-
-  useEffect(() => {
-    const onScroll = () => setElevated(window.scrollY > 10); // >2px coi như đã cuộn
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const handleNavClick =
     (href: string, key: string) => (e: React.MouseEvent) => {
@@ -196,35 +175,17 @@ export default function Navigationbar() {
     return () => window.removeEventListener("mousemove", onMouseMove);
   }, []);
 
-  const DesktopAuthSkeleton = () => (
-    <div className="hidden xl:block">
-      <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />
-    </div>
-  );
-
   return (
     <nav
       suppressHydrationWarning
       onMouseEnter={() => setShowNav(true)}
       ref={navRef}
-      className={[
-        "fixed top-0 left-0 w-full z-50 transition-transform duration-300",
-        showNav ? "translate-y-0" : "-translate-y-full",
-        // nền
-        "bg-zinc-50/95 dark:bg-[#0b1220]/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md",
-        "border-b border-zinc-200/80 dark:border-zinc-800/70",
-
-        // viền hairline đồng bộ card/filter
-        "border-b border-zinc-200/80 dark:border-zinc-800/70",
-
-        // bóng dịu khi ở top, đậm hơn khi scroll
-        elevated
-          ? "shadow-[0_8px_20px_-12px_rgba(17,24,39,0.25)] ring-1 ring-black/5"
-          : "shadow-[0_1px_0_0_rgba(17,24,39,0.06)]",
-      ].join(" ")}
+      className={`fixed top-0 left-0 w-full z-50 bg-[#49BBBD] dark:bg-[#1a4a4c] text-white p-4 transform transition-transform duration-300 ${
+        showNav ? "translate-y-0" : "-translate-y-full"
+      }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
             <Image
               src="https://rubicmarketing.com/wp-content/uploads/2022/07/y-nghia-logo-fpt-lan-3.jpg"
@@ -233,9 +194,7 @@ export default function Navigationbar() {
               height={28}
               className="!w-auto !h-auto"
             />
-            <span
-              className={`${kaushan.className} text-3xl cursor-pointer dark:text-white`}
-            >
+            <span className={`${kaushan.className} text-3xl cursor-pointer`}>
               EduSmart
             </span>
           </div>
@@ -254,8 +213,8 @@ export default function Navigationbar() {
                   onClick={handleNavClick(item.href!, item.key)}
                   className={`inline-block mx-4 pb-2 text-base tracking-wide transition-all duration-500 whitespace-nowrap ${
                     isActive
-                      ? "text-black dark:text-white font-semibold"
-                      : "text-black dark:text-white hover:font-bold"
+                      ? "text-white font-semibold"
+                      : "text-white hover:font-bold"
                   }`}
                 >
                   {item.label}
@@ -267,12 +226,9 @@ export default function Navigationbar() {
               style={{ left: underline.x, width: underline.width }}
             />
           </div>
-          {!authReady ? ( // (tuỳ chọn) skeleton trong lúc chờ xác thực
-            <DesktopAuthSkeleton />
-          ) : isAuthed ? (
+          {isAuthed ? (
             <div className="hidden xl:block">
-              {" "}
-              <UserMenu />{" "}
+              <UserMenu />
             </div>
           ) : (
             <div className="hidden md:flex items-center space-x-3 ml-8">
@@ -476,8 +432,8 @@ export default function Navigationbar() {
                     Cài đặt
                   </button>
                   <button
-                    onClick={async () => {
-                      await logout();
+                    onClick={async() => {
+                      await logout(); 
                       closeMenu();
                       // TODO: gọi logout() khi nối lại store
                     }}

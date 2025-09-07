@@ -3,20 +3,28 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import Cookies from "js-cookie";
 import apiClient from "EduSmart/hooks/apiClient";
-import { insertStudentAction, loginAction, refreshAction } from "EduSmart/app/(auth)/action";
+import {
+  getAuthen,
+  insertStudentAction,
+  loginAction,
+  logoutAction,
+  refreshAction,
+} from "EduSmart/app/(auth)/action";
 import { StudentInsertResponse } from "EduSmart/api/api-auth-service";
 
 export interface AuthState {
   token: string | null;
+  isAuthen: boolean;
   refreshTokenValue: string | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   refreshToken: () => Promise<void>;
   logout: () => void;
+  getAuthen: () => Promise<boolean>;
   insertStudent: (
     email: string,
     password: string,
     firstName: string,
-    lastName: string
+    lastName: string,
   ) => Promise<StudentInsertResponse>;
 }
 
@@ -35,11 +43,18 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       token: null,
+      isAuthen: false,
       refreshTokenValue: null,
 
       reset: () => {
         set({ token: null, refreshTokenValue: null });
         Cookies.remove("auth-storage");
+      },
+
+      getAuthen: async () => {
+        const ok = await getAuthen(); // Server Action
+        set({ isAuthen: ok }); // ← cập nhật store để UI theo dõi
+        return ok;
       },
 
       insertStudent: async (email, password, firstName, lastName) => {
@@ -56,30 +71,40 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         try {
           const resp = await loginAction({ email, password });
-          const token = resp.accessToken;
-          set({ token });
-          apiClient.authService.setSecurityData({ token });
+          if (resp.ok) {
+            await getAuthen();
+            const token = resp.accessToken;
+            set({ token });
+            apiClient.authEduService.setSecurityData({ token });
+            return true
+          }
+          return false
         } catch {
-          throw new Error(
-            "Đăng nhập thất bại, vui lòng kiểm tra email/mật khẩu.",
-          );
+          return false
         }
       },
 
       // 2) Refresh token và revoke khi cần
       refreshToken: async () => {
-        console.log("vao")
+        console.log("vao");
         const res = await refreshAction();
         if (!res.ok || !res.accessToken) {
           set({ token: null });
-          apiClient.authService.setSecurityData({ token: undefined });
+          apiClient.authEduService.setSecurityData({ token: undefined });
           throw new Error(res.error || "Refresh failed");
         }
         set({ token: res.accessToken });
-        apiClient.authService.setSecurityData({ token: res.accessToken });
+        apiClient.authEduService.setSecurityData({ token: res.accessToken });
       },
 
-      logout: async () => {},
+      logout: async () => {
+        await logoutAction();
+        set({ token: null, refreshTokenValue: null });
+        apiClient.authEduService.setSecurityData({
+          token: null,
+          refreshToken: null,
+        });
+      },
     }),
     {
       name: "auth-storage",
@@ -90,7 +115,7 @@ export const useAuthStore = create<AuthState>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          apiClient.authService.setSecurityData({
+          apiClient.authEduService.setSecurityData({
             token: (state as PersistedAuth).token,
           });
         }

@@ -9,7 +9,7 @@ interface SessionState {
   fetchSession: () => Promise<void>;
 }
 
-export const useSessionStore = create<SessionState>((set) => ({
+export const useSessionAuthStore = create<SessionState>((set) => ({
   session: null,
   isLoading: false,
   error: null,

@@ -106,9 +106,14 @@ export default function LoginPage() {
   const onFinish = async (values: LoginFormValues) => {
     try {
       useLoadingStore.getState().showLoading();
-      await login(values.email, values.password);
-      messageApi.success("Đăng nhập thành công!");
-      router.push("/Admin");
+      const isOK = await login(values.email, values.password);
+      if (isOK) {
+        messageApi.success("Đăng nhập thành công!");
+        router.push("/");
+        useLoadingStore.getState().hideLoading();
+        return;
+      }
+      messageApi.error("Đăng nhập thất bại, vui lòng kiểm tra lại email/mật khẩu");
       useLoadingStore.getState().hideLoading();
     } catch (error: unknown) {
       useLoadingStore.getState().hideLoading();
