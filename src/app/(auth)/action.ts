@@ -14,14 +14,15 @@ export async function loginAction({
   if (!email || !password) return { ok: false, error: "Thiếu email/password" };
   try {
     console.log("start")
-    await exchangePassword(email, password);
+    const result = await exchangePassword(email, password);
     console.log("end")
     const accessToken = await getAccessTokenFromCookie();
+    console.warn("result", result)
     if(accessToken) return { ok: true, accessToken: accessToken};
     // console.log("Bearer Access", accessToken)
     return { ok: false, accessToken: null};
   } catch (e: unknown) {
-    console.log("lỗi")
+    console.error("lỗi")
     const errorMessage = typeof e === "object" && e !== null && "message" in e ? (e as { message?: string }).message : undefined;
     return { ok: false, error: errorMessage ?? "Đăng nhập thất bại" };
   }
