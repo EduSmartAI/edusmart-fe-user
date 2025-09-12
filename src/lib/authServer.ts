@@ -162,9 +162,29 @@ export async function clearSidCookie() {
   jar.delete(SID_NAME);
 }
 
+export async function clearAppCookies() {
+  const jar = await cookies();
+  const deletable = jar.getAll().filter(c =>
+    c.name === "__Host-idt" ||
+    c.name === (process.env.NODE_ENV === "production" ? "__Host-sid" : "sid")
+  );
+
+  for (const c of deletable) {
+    jar.set({
+      name: c.name,
+      value: "",
+      httpOnly: true,     // có hay không không ảnh hưởng xoá, nhưng giữ consistent
+      secure: c.name.startsWith("__Host-") ? true : (process.env.NODE_ENV === "production"),
+      sameSite: "strict",
+      path: "/",
+      maxAge: 0,
+    });
+  }
+}
+
 export async function destroySession(sid: string) {
   await deleteSession(sid);
-  clearSidCookie();
+  clearAppCookies();
 }
 
 export async function getAccessTokenFromCookie(): Promise<string | null> {

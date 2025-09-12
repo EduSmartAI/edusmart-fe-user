@@ -78,6 +78,7 @@ export const useAuthStore = create<AuthState>()(
             apiClient.authEduService.setSecurityData({ token });
             return true
           }
+          console.log("resp", resp.error);
           return false
         } catch {
           return false
