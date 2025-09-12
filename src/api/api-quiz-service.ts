@@ -10,17 +10,16 @@
  * ---------------------------------------------------------------
  */
 
-export interface AccountVerifyCommand {
-  /** @minLength 1 */
-  key: string;
+export interface AnswerDetailResponse {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
 }
 
-export interface AccountVerifyResponse {
-  success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: string;
+export interface Answers {
+  /** @minLength 1 */
+  answerText: string;
+  isCorrect: boolean;
 }
 
 export interface DetailError {
@@ -29,37 +28,12 @@ export interface DetailError {
   errorMessage?: string;
 }
 
-export interface StudentInsertCommand {
-  /**
-   * @format email
-   * @minLength 0
-   * @maxLength 255
-   * @default "edusmartAI@gmail.com"
-   */
-  email: string;
-  /**
-   * @minLength 6
-   * @maxLength 100
-   * @default "Edusmart@123"
-   */
-  password: string;
-  /**
-   * @minLength 2
-   * @maxLength 50
-   * @default "Edu"
-   * @pattern ^[\p{L}\s]+$
-   */
-  firstName: string;
-  /**
-   * @minLength 2
-   * @maxLength 50
-   * @default "Smárt"
-   * @pattern ^[\p{L}\s]+$
-   */
-  lastName: string;
+export interface InsertAnswers {
+  answerText?: string;
+  isCorrect?: boolean;
 }
 
-export interface StudentInsertResponse {
+export interface QuestionDeleteResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
@@ -67,20 +41,164 @@ export interface StudentInsertResponse {
   response?: string;
 }
 
-export interface TokenVerifyResponse {
+export interface QuestionDetailResponse {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  answers?: AnswerDetailResponse[];
+}
+
+export interface QuestionInsertCommand {
+  /** @format uuid */
+  quizId?: string;
+  questionText?: string;
+  explanation?: string;
+  answers?: InsertAnswers[];
+}
+
+export interface QuestionInsertResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
   detailErrors?: DetailError[];
-  response?: TokenVerifyResponseEntity;
+  response?: string;
 }
 
-export interface TokenVerifyResponseEntity {
+export interface QuestionUpdateCommand {
   /** @format uuid */
-  userId?: string;
-  name?: string;
-  email?: string;
-  role?: string;
+  questionId?: string;
+  questionText?: string;
+  explanation?: string;
+  answers?: UpdateAnswers[];
+}
+
+export interface QuestionUpdateResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface Questions {
+  /** @minLength 1 */
+  questionText: string;
+  explanation?: string;
+  answers: Answers[];
+}
+
+export interface QuizzDetailResponse {
+  /** @format uuid */
+  quizId?: string;
+  title?: string;
+  description?: string;
+  /** @format uuid */
+  subjectCode?: string;
+  questions?: QuestionDetailResponse[];
+}
+
+export interface Quizzes {
+  /** @minLength 1 */
+  title: string;
+  /** @minLength 1 */
+  description: string;
+  /** @format uuid */
+  subjectCode: string;
+  questions: Questions[];
+}
+
+export interface StudentAnswerRequest {
+  /** @format uuid */
+  questionId: string;
+  /** @format uuid */
+  answerId: string;
+}
+
+export interface StudentAnswerSelectResponseEntity {
+  /** @format uuid */
+  questionId?: string;
+  /** @format uuid */
+  answerId?: string;
+  isCorrect?: boolean;
+  explanation?: string;
+}
+
+export interface StudentTestInsertCommand {
+  /** @format uuid */
+  testId: string;
+  /** @format date-time */
+  startedAt: string;
+  answers: StudentAnswerRequest[];
+}
+
+export interface StudentTestInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  /** @format uuid */
+  response?: string;
+}
+
+export interface StudentTestSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentTestSelectResponseEntity;
+}
+
+export interface StudentTestSelectResponseEntity {
+  /** @format uuid */
+  studentTestId?: string;
+  /** @format uuid */
+  testId?: string;
+  /** @format date-time */
+  startedAt?: string;
+  /** @format date-time */
+  finishedAt?: string;
+  answers?: StudentAnswerSelectResponseEntity[];
+}
+
+export interface TestInsertCommand {
+  /** @minLength 1 */
+  testName: string;
+  /** @minLength 1 */
+  description: string;
+  quizzes: Quizzes[];
+}
+
+export interface TestInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export type TestSelectQuery = object;
+
+export interface TestSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: TestSelectResponseEntity;
+}
+
+export interface TestSelectResponseEntity {
+  /** @format uuid */
+  testId?: string;
+  testName?: string;
+  description?: string;
+  quizzes?: QuizzDetailResponse[];
+}
+
+export interface UpdateAnswers {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
+  isCorrect?: boolean;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -136,7 +254,7 @@ export enum ContentType {
 }
 
 export class HttpClient<SecurityDataType = unknown> {
-  public baseUrl: string = "/auth";
+  public baseUrl: string = "/quiz";
   private securityData: SecurityDataType | null = null;
   private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
   private abortControllers = new Map<CancelToken, AbortController>();
@@ -338,28 +456,145 @@ export class HttpClient<SecurityDataType = unknown> {
 }
 
 /**
- * @title Auth Service
+ * @title Quiz Service Swagger
  * @version v1
- * @baseUrl /auth
+ * @baseUrl /quiz
  */
 export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
   api = {
     /**
-     * No description
+     * @description Cần cấp quyền Admin cho API. Update question và tất cả answers của nó
      *
-     * @tags Account
-     * @name V1AccountInsertStudentCreate
-     * @request POST:/api/v1/Account/insert-student
+     * @tags Question
+     * @name V1QuestionUpdate
+     * @summary Cập nhật câu hỏi và câu trả lời
+     * @request PUT:/api/v1/Question
      * @secure
      */
-    v1AccountInsertStudentCreate: (
-      body: StudentInsertCommand,
+    v1QuestionUpdate: (
+      body: QuestionUpdateCommand,
       params: RequestParams = {},
     ) =>
-      this.request<StudentInsertResponse, any>({
-        path: `/api/v1/Account/insert-student`,
+      this.request<QuestionUpdateResponse, any>({
+        path: `/api/v1/Question`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin cho API. Delete question và tất cả answers của nó
+     *
+     * @tags Question
+     * @name V1QuestionDelete
+     * @summary Xóa câu hỏi và tất cả câu trả lời
+     * @request DELETE:/api/v1/Question
+     * @secure
+     */
+    v1QuestionDelete: (
+      query?: {
+        /** @format uuid */
+        questionId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<QuestionDeleteResponse, any>({
+        path: `/api/v1/Question`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz
+     *
+     * @tags Question
+     * @name V1QuestionCreate
+     * @summary Thêm câu hỏi và câu trả lời vào quiz
+     * @request POST:/api/v1/Question
+     * @secure
+     */
+    v1QuestionCreate: (
+      body: QuestionInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuestionInsertResponse, any>({
+        path: `/api/v1/Question`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags StudentTest
+     * @name V1StudentTestCreate
+     * @summary Lưu câu trả lời của học sinh
+     * @request POST:/api/v1/StudentTest
+     * @secure
+     */
+    v1StudentTestCreate: (
+      body: StudentTestInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentTestInsertResponse, any>({
+        path: `/api/v1/StudentTest`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags StudentTest
+     * @name V1StudentTestList
+     * @summary Lấy câu trả lời của học sinh trong bài test
+     * @request GET:/api/v1/StudentTest
+     * @secure
+     */
+    v1StudentTestList: (
+      query?: {
+        /** @format uuid */
+        studentTestId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentTestSelectResponse, any>({
+        path: `/api/v1/StudentTest`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin cho API
+     *
+     * @tags Test
+     * @name V1TestCreate
+     * @summary Tạo bài kiểm tra mới
+     * @request POST:/api/v1/Test
+     * @secure
+     */
+    v1TestCreate: (body: TestInsertCommand, params: RequestParams = {}) =>
+      this.request<TestInsertResponse, any>({
+        path: `/api/v1/Test`,
         method: "POST",
         body: body,
         secure: true,
@@ -371,71 +606,21 @@ export class Api<
     /**
      * No description
      *
-     * @tags Account
-     * @name V1AccountVerifyAccountCreate
-     * @request POST:/api/v1/Account/verify-account
+     * @tags Test
+     * @name V1TestList
+     * @request GET:/api/v1/Test
      * @secure
      */
-    v1AccountVerifyAccountCreate: (
-      body: AccountVerifyCommand,
+    v1TestList: (
+      query?: {
+        request?: any;
+      },
       params: RequestParams = {},
     ) =>
-      this.request<AccountVerifyResponse, any>({
-        path: `/api/v1/Account/verify-account`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  connect = {
-    /**
-     * No description
-     *
-     * @tags Auth
-     * @name TokenCreate
-     * @request POST:/connect/token
-     * @secure
-     */
-    tokenCreate: (params: RequestParams = {}) =>
-      this.request<void, any>({
-        path: `/connect/token`,
-        method: "POST",
-        secure: true,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Auth
-     * @name LogoutCreate
-     * @request POST:/connect/logout
-     * @secure
-     */
-    logoutCreate: (params: RequestParams = {}) =>
-      this.request<void, any>({
-        path: `/connect/logout`,
-        method: "POST",
-        secure: true,
-        ...params,
-      }),
-  };
-  verifyToken = {
-    /**
-     * No description
-     *
-     * @tags Auth
-     * @name VerifyTokenCreate
-     * @request POST:/verify-token
-     * @secure
-     */
-    verifyTokenCreate: (params: RequestParams = {}) =>
-      this.request<TokenVerifyResponse, any>({
-        path: `/verify-token`,
-        method: "POST",
+      this.request<TestSelectResponse, any>({
+        path: `/api/v1/Test`,
+        method: "GET",
+        query: query,
         secure: true,
         format: "json",
         ...params,

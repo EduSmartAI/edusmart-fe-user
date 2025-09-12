@@ -9,6 +9,10 @@
   },
   {
     "key": "auth-service",
-    "url": "https://5cef6e931849.ngrok-free.app/auth/swagger/index.html"
+    "url": "https://api.edusmart.pro.vn/auth/swagger/v1/swagger.json"
+  },
+  {
+    "key": "quiz-service",
+    "url": "https://api.edusmart.pro.vn/quiz/swagger/v1/swagger.json"
   }
 ]

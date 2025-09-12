@@ -3,22 +3,20 @@ import React from "react";
 import { Button } from "antd";
 import { CheckCircleFilled, CloseCircleFilled } from "@ant-design/icons";
 import { useSpring, useTrail, animated } from "@react-spring/web";
-
+import { useRouter } from "next/navigation";
 interface ResultScreenProps {
   type: "success" | "error";
   title: string;
   description: string;
-  onContinue?: () => void;
 }
 
 export default function ResultScreen({
   type,
   title,
   description,
-  onContinue,
 }: ResultScreenProps) {
   const isSuccess = type === "success";
-
+  const router = useRouter();
   // Stagger cho text + button
   const trail = useTrail(2, {
     from: { opacity: 0, y: 20 },
@@ -33,6 +31,13 @@ export default function ResultScreen({
     to: { opacity: 1, scale: 1, rotateZ: 0 },
     config: { tension: 200, friction: 12 },
   });
+
+  const onContinue = () => {
+    if (isSuccess){
+      router.push("/Login");
+    }
+    router.push("/Register");
+  }
 
   return (
     <div
@@ -84,7 +89,7 @@ export default function ResultScreen({
                    : "!bg-gradient-to-r !from-red-500 !to-rose-600"
                }`}
         >
-          {isSuccess ? "Continue" : "Try Again"}
+          {isSuccess ? "Tiếp tục" : "Quay lại đăng ký"}
         </Button>
       </animated.div>
     </div>

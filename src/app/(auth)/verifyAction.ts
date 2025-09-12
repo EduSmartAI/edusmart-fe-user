@@ -1,6 +1,6 @@
 "use server";
 
-import { rootService } from "EduSmart/lib/apiServer";
+import { authService } from "EduSmart/lib/apiServer";
 import {
   AccountVerifyCommand,
   AccountVerifyResponse,
@@ -21,7 +21,11 @@ export async function verifyAccountAction(
 ): Promise<VerifyAccountResult> {
   const payload: AccountVerifyCommand = { key: key.trim() };
   try {
-    const resp = await rootService.api.v1VerifyAccountCreate(payload);
+    console.log("payload", payload);
+    const resp = await authService.api.v1AccountVerifyAccountCreate({
+      key: payload.key
+    });
+    console.log("response", resp);
     const api = resp.data;
     console.log("api response",api)
     if (api?.success === true) {

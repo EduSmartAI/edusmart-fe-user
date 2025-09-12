@@ -1,9 +1,9 @@
 // src/stores/useSessionStore.ts
-import { UserSessionResponse } from "EduSmart/api/api-auth-service";
+import { TokenVerifyResponse } from "EduSmart/api/api-auth-service";
 import apiClient from "EduSmart/hooks/apiClient";
 import { create } from "zustand";
 interface SessionState {
-  session: UserSessionResponse | null;
+  session: TokenVerifyResponse | null;
   isLoading: boolean;
   error: string | null;
   fetchSession: () => Promise<void>;
@@ -16,7 +16,7 @@ export const useSessionAuthStore = create<SessionState>((set) => ({
   fetchSession: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await apiClient.authEduService.session.sessionList();
+      const res = await apiClient.authEduService.verifyToken.verifyTokenCreate();
       set({ session: res.data, isLoading: false });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";

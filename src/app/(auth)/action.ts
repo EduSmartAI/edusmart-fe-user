@@ -1,7 +1,7 @@
 // (auth)/action.ts
 "use server";
 
-import { DetailError, StudentInsertCommand, StudentInsertResponse } from "EduSmart/api/api-auth-service";
+import { DetailError, StudentInsertCommand, TokenVerifyResponse } from "EduSmart/api/api-auth-service";
 import { destroySession, exchangePassword, getAccessTokenFromCookie, getSidFromCookie, hasRefreshToken, refreshTokens, revokeRefreshLocal } from "EduSmart/lib/authServer";
 const BACKEND = process.env.NEXT_PUBLIC_API_URL;
 export async function loginAction({
@@ -85,13 +85,13 @@ type ApiError = {
 export async function insertStudentAction(
   payload: StudentInsertCommand
 ): Promise<
-  | { ok: true; data: StudentInsertResponse }
+  | { ok: true; data: TokenVerifyResponse }
   | { ok: false; status?: number; error: string; detailErrors?: DetailError[] | null }
 > {
-  const resp = await postJsonPublic("/auth/api/v1/InsertStudent", payload);
+  const resp = await postJsonPublic("/auth/api/v1/Account/insert-student", payload);
   console.log("response", resp)
   const raw = await resp.text();
-  const data = parseJson<StudentInsertResponse>(raw);
+  const data = parseJson<TokenVerifyResponse>(raw);
 
   if (resp.ok) {
     console.log("data response", data)

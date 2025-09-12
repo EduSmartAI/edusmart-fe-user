@@ -7,19 +7,9 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function normalizeKey(input: string) {
-  let s = (input ?? "").trim();
-  if (s.includes(" ")) s = s.replace(/ /g, "+");
-  s = s.replace(/\r?\n/g, "");
-  try { s = decodeURIComponent(s); } catch {}
-  s = s.replace(/\s*\/\s*/g, "/");
-  return s;
-}
-
 export default async function VerifyPage({ searchParams }: Props) {
   const params = await searchParams;
-  const raw = Array.isArray(params?.key) ? params!.key![0] : (params?.key ?? "");
-  const key = normalizeKey(raw);
+  const key = Array.isArray(params?.key) ? params!.key![0] : (params?.key ?? "");
   console.log("key", key.trim());
   const result = await verifyAccountAction(key);
   const isSuccess = result.ok;

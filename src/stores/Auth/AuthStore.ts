@@ -10,7 +10,7 @@ import {
   logoutAction,
   refreshAction,
 } from "EduSmart/app/(auth)/action";
-import { StudentInsertResponse } from "EduSmart/api/api-auth-service";
+import { TokenVerifyResponse } from "EduSmart/api/api-auth-service";
 
 export interface AuthState {
   token: string | null;
@@ -25,7 +25,8 @@ export interface AuthState {
     password: string,
     firstName: string,
     lastName: string,
-  ) => Promise<StudentInsertResponse>;
+  ) => Promise<TokenVerifyResponse>;
+  verifyyEmail?: (key: string) => Promise<boolean>;
 }
 
 type PersistedAuth = {

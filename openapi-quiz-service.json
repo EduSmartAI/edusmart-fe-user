@@ -1,0 +1,773 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Quiz Service Swagger",
+    "version": "v1"
+  },
+  "basePath": "/quiz",
+  "paths": {
+    "/api/v1/Question": {
+      "put": {
+        "tags": [
+          "Question"
+        ],
+        "summary": "Cập nhật câu hỏi và câu trả lời",
+        "description": "Cần cấp quyền Admin cho API. Update question và tất cả answers của nó",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuestionUpdateCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuestionUpdateResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Question"
+        ],
+        "summary": "Xóa câu hỏi và tất cả câu trả lời",
+        "description": "Cần cấp quyền Admin cho API. Delete question và tất cả answers của nó",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "questionId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuestionDeleteResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Question"
+        ],
+        "summary": "Thêm câu hỏi và câu trả lời vào quiz",
+        "description": "Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuestionInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuestionInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/StudentTest": {
+      "post": {
+        "tags": [
+          "StudentTest"
+        ],
+        "summary": "Lưu câu trả lời của học sinh",
+        "description": "Cần cấp quyền Student cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/StudentTestInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentTestInsertResponse"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "StudentTest"
+        ],
+        "summary": "Lấy câu trả lời của học sinh trong bài test",
+        "description": "Cần cấp quyền Student cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "studentTestId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentTestSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Test": {
+      "post": {
+        "tags": [
+          "Test"
+        ],
+        "summary": "Tạo bài kiểm tra mới",
+        "description": "Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/TestInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TestInsertResponse"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TestSelectResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AnswerDetailResponse": {
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerText": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Answers": {
+      "required": [
+        "answerText",
+        "isCorrect"
+      ],
+      "type": "object",
+      "properties": {
+        "answerText": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DetailError": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "InsertAnswers": {
+      "type": "object",
+      "properties": {
+        "answerText": {
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionDeleteResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionDetailResponse": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AnswerDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionInsertCommand": {
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InsertAnswers"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionUpdateCommand": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UpdateAnswers"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Questions": {
+      "required": [
+        "answers",
+        "questionText"
+      ],
+      "type": "object",
+      "properties": {
+        "questionText": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Answers"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizzDetailResponse": {
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "subjectCode": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Quizzes": {
+      "required": [
+        "description",
+        "questions",
+        "subjectCode",
+        "title"
+      ],
+      "type": "object",
+      "properties": {
+        "title": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "subjectCode": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Questions"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentAnswerRequest": {
+      "required": [
+        "answerId",
+        "questionId"
+      ],
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentAnswerSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        },
+        "explanation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentTestInsertCommand": {
+      "required": [
+        "answers",
+        "startedAt",
+        "testId"
+      ],
+      "type": "object",
+      "properties": {
+        "testId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "startedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentAnswerRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentTestInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentTestSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/StudentTestSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentTestSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "studentTestId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "testId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "startedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "finishedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentAnswerSelectResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestInsertCommand": {
+      "required": [
+        "description",
+        "quizzes",
+        "testName"
+      ],
+      "type": "object",
+      "properties": {
+        "testName": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "quizzes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Quizzes"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestSelectQuery": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "TestSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/TestSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "testId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "testName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "quizzes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuizzDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateAnswers": {
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerText": {
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "securityDefinitions": {
+    "JWT_Token": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Copy this into the value field: Bearer {token}"
+    }
+  },
+  "security": [
+    {
+      "JWT_Token": [ ]
+    }
+  ]
+}
