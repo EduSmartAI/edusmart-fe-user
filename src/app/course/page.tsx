@@ -1,7 +1,8 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 import { Metadata } from "next";
 import CourseListPage from "./Client";
+import { fetchCourseByQuery, GetAllCourses } from "../apiServer/courseAction";
 export const metadata: Metadata = {
   title: "EduSmart – Khóa học",
   description:
@@ -35,6 +36,31 @@ export const metadata: Metadata = {
     ],
   },
 };
-export default function Page() {
-  return <CourseListPage />;
+
+type SP = Record<string, string | string[] | undefined>;
+const PAGE_SIZE = 9 as const;
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: Promise<SP>;
+}) {
+  const sp: SP = (searchParams ? await searchParams : {}) as SP;
+
+  const pick = (v: string | string[] | undefined) =>
+    Array.isArray(v) ? v[0] : v;
+  const page = Number(pick(sp.page) ?? 1) || 1;
+  const search = pick(sp.search) ?? "";
+
+  const { data, totalCount } = await fetchCourseByQuery(search, page, PAGE_SIZE);
+  const searchCoursedata = await GetAllCourses();
+
+  return (
+    <CourseListPage
+      courses={data}
+      totalCount={totalCount}
+      page={page}
+      size={PAGE_SIZE}
+      searchCoursedata={searchCoursedata}
+    />
+  );
 }
