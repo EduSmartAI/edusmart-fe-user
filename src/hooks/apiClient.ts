@@ -6,6 +6,8 @@ import axios, {
   AxiosError,
 } from "axios";
 import { Api as AuthEduClientApi } from "EduSmart/api/api-auth-service";
+import { Api as CourseClientApi } from "EduSmart/api/api-course-service";
+import { Api as QuizClientApi } from "EduSmart/api/api-quiz-service";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useValidateStore } from "EduSmart/stores/Validate/ValidateStore";
 
@@ -111,8 +113,20 @@ export const AuthEduClient = new AuthEduClientApi({
   customFetch: axiosFetch,
 });
 
+export const CourseClient = new CourseClientApi({
+  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/course`,
+  customFetch: axiosFetch,
+});
+
+export const QuizClient = new QuizClientApi({
+  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/quiz`,
+  customFetch: axiosFetch,
+});
+
 const apiClient = {
-  authEduService: AuthEduClient
+  authEduService: AuthEduClient,
+  courseService: CourseClient,
+  quizService: QuizClient,
 };
 
 export default apiClient;

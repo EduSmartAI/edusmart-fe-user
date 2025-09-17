@@ -1,4 +1,3 @@
-// BaseControlSearchInput.tsx
 "use client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -27,6 +26,8 @@ type Props = {
   onSelect?: (item: SearchItem) => void;
   initialResults?: SearchItem[];
   className?: string; // style cho ô trigger nhỏ
+  /** Giá trị query hiện tại (ví dụ sync với URL) để hiển thị trên trigger & prefill khi mở modal */
+  currentQuery?: string;
 };
 
 const isMac = () =>
@@ -40,6 +41,7 @@ export default function BaseControlSearchInput({
   onSelect,
   initialResults = [],
   className = "",
+  currentQuery,
 }: Props) {
   const { token } = theme.useToken();
   const [open, setOpen] = useState(false);
@@ -81,6 +83,21 @@ export default function BaseControlSearchInput({
     return () => clearTimeout(t);
   }, [open]);
 
+  // Khi mở modal, prefill input từ currentQuery (nếu có)
+  useEffect(() => {
+    if (open) {
+      setQuery((currentQuery ?? "").trim());
+    }
+  }, [open, currentQuery]);
+
+  // Đồng bộ initialResults khi mở modal và chưa có query
+  useEffect(() => {
+    if (open && query.trim() === "") {
+      setResults(initialResults);
+      setActiveIndex(0);
+    }
+  }, [open, initialResults, query]);
+
   // Debounce search
   useEffect(() => {
     if (!open) return;
@@ -89,6 +106,7 @@ export default function BaseControlSearchInput({
       const q = query.trim();
       if (!q) {
         setResults(initialResults);
+        setActiveIndex(0);
         setLoading(false);
         return;
       }
@@ -96,7 +114,7 @@ export default function BaseControlSearchInput({
       try {
         const r = await onSearch(q);
         setResults(r);
-        setActiveIndex(0);
+        setActiveIndex(0); // luôn đưa active về dòng đầu
       } finally {
         setLoading(false);
       }
@@ -125,24 +143,47 @@ export default function BaseControlSearchInput({
     setOpen(false);
   };
 
+  // MẢNG HIỂN THỊ: prepend 1 “dòng tìm theo chuỗi đang gõ”
+  const displayResults = useMemo(() => {
+    const q = query.trim();
+    if (!q) return results;
+
+    const queryRow: SearchItem = {
+      id: "__query__",
+      title: q,
+      subtitle: "Nhấn Enter để tìm theo từ khóa này",
+    };
+
+    const hasExact = results.some(
+      (x) => x.title.toLowerCase() === q.toLowerCase(),
+    );
+    return hasExact ? results : [queryRow, ...results];
+  }, [results, query]);
+
   const onInputKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setActiveIndex((i) => Math.min(i + 1, Math.max(results.length - 1, 0)));
+      setActiveIndex((i) =>
+        Math.min(i + 1, Math.max(displayResults.length - 1, 0)),
+      );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActiveIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
-      const item = results[activeIndex];
-      if (item) handleSelect(item);
+      const item = displayResults[activeIndex];
+      if (item) handleSelect(item); // Enter sẽ chọn dòng đầu tiên là chính chuỗi đang gõ
     } else if (e.key === "PageDown") {
       e.preventDefault();
-      setActiveIndex((i) => Math.min(i + 5, Math.max(results.length - 1, 0)));
+      setActiveIndex((i) =>
+        Math.min(i + 5, Math.max(displayResults.length - 1, 0)),
+      );
     } else if (e.key === "PageUp") {
       e.preventDefault();
       setActiveIndex((i) => Math.max(i - 5, 0));
     }
   };
+
+  const triggerText = (currentQuery ?? "").trim() || placeholder;
 
   return (
     <>
@@ -164,6 +205,7 @@ export default function BaseControlSearchInput({
           cursor: "text",
         }}
         aria-label="Open search"
+        title={triggerText}
       >
         <div
           style={{
@@ -174,8 +216,20 @@ export default function BaseControlSearchInput({
           }}
         >
           <SearchOutlined style={{ color: token.colorTextQuaternary }} />
-          <span style={{ color: token.colorTextQuaternary, fontSize: 12 }}>
-            {placeholder}
+          <span
+            style={{
+              color: (currentQuery ?? "").trim()
+                ? token.colorTextTertiary
+                : token.colorTextQuaternary,
+              fontSize: 12,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              maxWidth: "100%",
+              display: "inline-block",
+            }}
+          >
+            {triggerText}
           </span>
           <div style={{ marginLeft: "auto" }}>
             <Typography.Text keyboard>{kbdLabel}</Typography.Text>
@@ -240,7 +294,7 @@ export default function BaseControlSearchInput({
               </div>
             )}
 
-            {!loading && results.length === 0 && query.trim() !== "" && (
+            {!loading && displayResults.length === 0 && query.trim() !== "" && (
               <div
                 style={{ padding: "16px 12px", color: token.colorTextTertiary }}
               >
@@ -248,14 +302,14 @@ export default function BaseControlSearchInput({
               </div>
             )}
 
-            {!loading && results.length > 0 && (
+            {!loading && displayResults.length > 0 && (
               <List
-                dataSource={results}
+                dataSource={displayResults}
                 renderItem={(it, idx) => {
                   const active = idx === activeIndex;
                   return (
                     <List.Item
-                      key={it.id}
+                      key={`${it.id}-${idx}`}
                       data-idx={idx}
                       onMouseEnter={() => setActiveIndex(idx)}
                       onClick={() => handleSelect(it)}

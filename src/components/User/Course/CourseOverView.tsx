@@ -36,11 +36,7 @@ export default function CourseOverview({
     "Quy ước BEM, tổ chức stylesheet",
     "Triển khai mini project cuối khóa",
   ],
-  requirements = [
-    "Máy tính + trình duyệt",
-    "Biết sử dụng VS Code",
-    "Không cần kiến thức nền tảng",
-  ],
+  requirements = ["Máy tính + trình duyệt", "Biết sử dụng VS Code"],
   facts = {
     level: "Beginner",
     duration: "12 giờ video",
@@ -51,16 +47,8 @@ export default function CourseOverview({
 }: Props) {
   const factItems = [
     { icon: <CrownOutlined />, label: "Trình độ", value: facts.level },
-    {
-      icon: <ClockCircleOutlined />,
-      label: "Thời lượng",
-      value: facts.duration,
-    },
-    {
-      icon: <AppstoreOutlined />,
-      label: "Modules",
-      value: String(facts.modules),
-    },
+    { icon: <ClockCircleOutlined />, label: "Thời lượng", value: facts.duration },
+    { icon: <AppstoreOutlined />, label: "Modules", value: String(facts.modules ?? "—") },
     { icon: <TabletOutlined />, label: "Truy cập", value: facts.access },
   ];
 

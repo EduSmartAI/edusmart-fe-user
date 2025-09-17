@@ -1,20 +1,55 @@
 "use client";
 import React from "react";
-import { Input } from "antd";
+import BaseControlSearchInput, {
+  SearchItem,
+} from "../BaseControl/BaseControlSearchInput";
+import { Course } from "EduSmart/app/apiServer/courseAction";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface CourseSearchSectionProps {
   title?: string;
   subtitle?: string;
   placeholder?: string;
   onSearch?: (value: string) => void;
+  searchCoursedata?: Course[];
 }
 
 const CourseSearchSection: React.FC<CourseSearchSectionProps> = ({
   title = "Tìm khóa học phù hợp cho bạn",
   subtitle = "Lọc theo chủ đề, ngôn ngữ, cấp độ — hoặc nhập từ khóa để bắt đầu.",
-  placeholder = "VD: Python cơ bản, Web development, Data Science...",
-  onSearch,
+  searchCoursedata = [],
 }) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentQuery = (searchParams?.get("search") ?? "").trim();
+
+  const pushSearchParam = (value: string) => {
+    const next = new URLSearchParams(searchParams?.toString());
+    const v = value.trim();
+    if (v) next.set("search", v);
+    else next.delete("search");
+    next.set("page", "0");
+    router.push(`${pathname}?${next.toString()}`, { scroll: false });
+  };
+
+  const onSearch = async (q: string): Promise<SearchItem[]> => {
+    const items: SearchItem[] = (searchCoursedata ?? []).map((course) => ({
+      id: String(Math.random()),
+      title: course.title,
+      subtitle: course.descriptionLines?.length
+        ? course.descriptionLines.join(" · ")
+        : undefined,
+    }));
+
+    const s = q.toLowerCase();
+    return items.filter(
+      (x) =>
+        x.title.toLowerCase().includes(s) ||
+        (x.subtitle?.toLowerCase().includes(s) ?? false),
+    );
+  };
+
   return (
     <section className="relative isolate overflow-hidden px-4 sm:px-6">
       <div className="mx-auto max-w-screen-2xl">
@@ -57,18 +92,13 @@ const CourseSearchSection: React.FC<CourseSearchSectionProps> = ({
             {/* Search */}
             <div className="mt-6 sm:mt-8">
               <div className="mx-auto max-w-2xl">
-                <Input.Search
-                  allowClear
-                  size="large"
-                  enterButton="Tìm kiếm"
-                  placeholder={placeholder}
-                  aria-label="Tìm kiếm khóa học"
+                <BaseControlSearchInput
+                  currentQuery={currentQuery} // <<—— HIỂN THỊ GIÁ TRỊ TỪ URL
                   onSearch={onSearch}
-                  className="
-                    !rounded-full !px-3 
-                    [&_.ant-input-affix-wrapper]:!rounded-full 
-                    [&_.ant-input-search-button]:!rounded-full
-                  "
+                  onSelect={(item) => {
+                    const q = item.title ?? "";
+                    pushSearchParam(q);
+                  }}
                 />
               </div>
             </div>
