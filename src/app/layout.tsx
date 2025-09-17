@@ -54,13 +54,13 @@ export const metadata: Metadata = {
     icon: [
       {
         media: "(prefers-color-scheme: light)",
-        url: "/emo.png",
-        href: "/emo.png",
+        url: "/Logo.webp",
+        href: "/Logo.webp",
       },
       {
         media: "(prefers-color-scheme: dark)",
-        url: "/emo.png",
-        href: "/emo.png",
+        url: "/Logo.webp",
+        href: "/Logo.webp",
       },
     ],
   },

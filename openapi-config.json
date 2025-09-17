@@ -1,15 +1,11 @@
 [
   {
-    "key": "payment-service",
-    "url": "https://api.EduSmart.vn/payment-service/swagger/v1/swagger.json"
-  },
-  {
-    "key": "profile-service",
-    "url": "https://api.EduSmart.vn/profile-service/swagger/v1/swagger.json"
-  },
-  {
     "key": "auth-service",
     "url": "https://api.edusmart.pro.vn/auth/swagger/v1/swagger.json"
+  },
+  {
+    "key": "course-service",
+    "url": "https://api.edusmart.pro.vn/course/swagger/v1/swagger.json"
   },
   {
     "key": "quiz-service",

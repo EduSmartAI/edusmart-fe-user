@@ -14,6 +14,14 @@ export interface AnswerDetailResponse {
   /** @format uuid */
   answerId?: string;
   answerText?: string;
+  isCorrect?: boolean;
+}
+
+export interface AnswerSurveySelects {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
+  isCorrect?: boolean;
 }
 
 export interface Answers {
@@ -64,6 +72,15 @@ export interface QuestionInsertResponse {
   response?: string;
 }
 
+export interface QuestionSurveySelects {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  /** @format int32 */
+  questionType?: number;
+  answers?: AnswerSurveySelects[];
+}
+
 export interface QuestionUpdateCommand {
   /** @format uuid */
   questionId?: string;
@@ -85,6 +102,23 @@ export interface Questions {
   questionText: string;
   explanation?: string;
   answers: Answers[];
+}
+
+export interface QuizSelectsResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: QuizSelectsResponseEntity[];
+}
+
+export interface QuizSelectsResponseEntity {
+  /** @format uuid */
+  quizId?: string;
+  title?: string;
+  description?: string;
+  /** @format uuid */
+  subjectCode?: string;
 }
 
 export interface QuizzDetailResponse {
@@ -160,6 +194,81 @@ export interface StudentTestSelectResponseEntity {
   answers?: StudentAnswerSelectResponseEntity[];
 }
 
+export interface SurveyAnswerRequest {
+  /** @minLength 1 */
+  answerText: string;
+  isCorrect?: boolean;
+}
+
+export interface SurveyDetailSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: SurveyDetailSelectResponseEntityPagedResult;
+}
+
+export interface SurveyDetailSelectResponseEntity {
+  /** @format uuid */
+  surveyId?: string;
+  title?: string;
+  description?: string;
+  questions?: QuestionSurveySelects[];
+}
+
+export interface SurveyDetailSelectResponseEntityPagedResult {
+  items?: SurveyDetailSelectResponseEntity[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
+}
+
+export interface SurveyInsertCommand {
+  /** @minLength 1 */
+  title: string;
+  /** @minLength 1 */
+  description: string;
+  questions: SurveyQuestionRequest[];
+}
+
+export interface SurveyInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface SurveyQuestionRequest {
+  /** @minLength 1 */
+  questionText: string;
+  /** @format int32 */
+  questionType: number;
+  answers: SurveyAnswerRequest[];
+}
+
+export interface SurveySelectsResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: SurveySelectsResponseEntity[];
+}
+
+export interface SurveySelectsResponseEntity {
+  /** @format uuid */
+  surveyId?: string;
+  title?: string;
+  description?: string;
+}
+
 export interface TestInsertCommand {
   /** @minLength 1 */
   testName: string;
@@ -175,8 +284,6 @@ export interface TestInsertResponse {
   detailErrors?: DetailError[];
   response?: string;
 }
-
-export type TestSelectQuery = object;
 
 export interface TestSelectResponse {
   success?: boolean;
@@ -536,6 +643,24 @@ export class Api<
       }),
 
     /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags Quiz
+     * @name V1QuizList
+     * @summary Lấy danh sách quiz của một bài kiểm tra
+     * @request GET:/api/v1/Quiz
+     * @secure
+     */
+    v1QuizList: (params: RequestParams = {}) =>
+      this.request<QuizSelectsResponse, any>({
+        path: `/api/v1/Quiz`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cần cấp quyền Student cho API
      *
      * @tags StudentTest
@@ -584,6 +709,73 @@ export class Api<
       }),
 
     /**
+     * @description Tạo khảo sát mới với các câu hỏi và câu trả lời tương ứng
+     *
+     * @tags Survey
+     * @name V1SurveyCreate
+     * @summary Tạo khảo sát mới
+     * @request POST:/api/v1/Survey
+     * @secure
+     */
+    v1SurveyCreate: (body: SurveyInsertCommand, params: RequestParams = {}) =>
+      this.request<SurveyInsertResponse, any>({
+        path: `/api/v1/Survey`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy danh sách các khảo sát
+     *
+     * @tags Survey
+     * @name V1SurveyList
+     * @summary Lấy danh sách các khảo sát
+     * @request GET:/api/v1/Survey
+     * @secure
+     */
+    v1SurveyList: (params: RequestParams = {}) =>
+      this.request<SurveySelectsResponse, any>({
+        path: `/api/v1/Survey`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy chi tiết khảo sát với phân trang
+     *
+     * @tags Survey
+     * @name V1SurveyDetailsList
+     * @summary Lấy danh sách các khảo sát
+     * @request GET:/api/v1/Survey/details
+     * @secure
+     */
+    v1SurveyDetailsList: (
+      query: {
+        /** @format uuid */
+        SurveyId: string;
+        /** @format int32 */
+        PageIndex?: number;
+        /** @format int32 */
+        PageSize?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<SurveyDetailSelectResponse, any>({
+        path: `/api/v1/Survey/details`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cần cấp quyền Admin cho API
      *
      * @tags Test
@@ -604,16 +796,17 @@ export class Api<
       }),
 
     /**
-     * No description
+     * @description Cần cấp quyền Student cho API
      *
      * @tags Test
      * @name V1TestList
+     * @summary Lấy bài kiểm tra gồm các quiz mà student chọn
      * @request GET:/api/v1/Test
      * @secure
      */
     v1TestList: (
       query?: {
-        request?: any;
+        QuizId?: string[];
       },
       params: RequestParams = {},
     ) =>

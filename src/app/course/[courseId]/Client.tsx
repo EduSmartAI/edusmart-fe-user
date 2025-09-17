@@ -5,7 +5,7 @@ import {
   Button,
   Card,
   Divider,
-  Image,
+  Image as AntImage,
   Layout,
   Rate,
   Space,
@@ -14,6 +14,7 @@ import {
   Tooltip,
   Typography,
   message,
+  Collapse,
 } from "antd";
 import {
   CheckCircleTwoTone,
@@ -37,16 +38,56 @@ import Link from "next/link";
 import CourseReviews, {
   ReviewItem,
 } from "EduSmart/components/User/Course/CourseReviews";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import CourseInstructor from "EduSmart/components/User/Course/CourseInstructor";
 import CourseOverview from "EduSmart/components/User/Course/CourseOverView";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
+import { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 
 const { Title, Text } = Typography;
 
-const IMG =
+const IMG_FALLBACK =
   "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531";
 
+type Props = {
+  data?: CourseDetailForGuestDto;
+  modulesCount?: number;
+  lessonsCount?: number;
+};
+
+/* =======================
+   Helpers hiển thị
+======================= */
+const levelLabel = (lv?: number | null) => {
+  if (lv === 1) return "Beginner";
+  if (lv === 2) return "Intermediate";
+  if (lv === 3) return "Advanced";
+  return "All levels";
+};
+
+const formatDuration = (hours?: number | null, minutes?: number | null) => {
+  if (typeof hours === "number" && hours > 0) {
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    return m ? `${h} giờ ${m} phút` : `${h} giờ`;
+  }
+  if (typeof minutes === "number" && minutes > 0) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h ? `${h} giờ ${m} phút` : `${m} phút`;
+  }
+  return "—";
+};
+
+const formatCurrencySmart = (n?: number | null) => {
+  if (typeof n !== "number") return "";
+  if (n >= 1000) return `${n.toLocaleString("vi-VN")}₫`;
+  return `$${n.toLocaleString("en-US")}`;
+};
+
+/* =======================
+   Dummy reviews giữ nguyên UI
+======================= */
 const defaultReviews: ReviewItem[] = [
   {
     id: 1,
@@ -96,8 +137,64 @@ const defaultReviews: ReviewItem[] = [
   },
 ];
 
-export default function CourseDetailUI() {
+/* =======================
+   Component chính
+======================= */
+export default function CourseDetailUI({
+  data,
+  modulesCount = 0,
+  lessonsCount = 0,
+}: Props) {
   const [activeTab, setActiveTab] = useState<string>("reviews");
+
+  const courseTitle = data?.title ?? "—";
+  const coverUrl = data?.courseImageUrl || IMG_FALLBACK;
+  const subjectTag = data?.subjectCode ? [data.subjectCode] : [];
+  const levelTag = levelLabel(data?.level ?? 0);
+
+  const durationText = useMemo(
+    () => formatDuration(data?.durationHours ?? 0, data?.durationMinutes ?? 0),
+    [data?.durationHours, data?.durationMinutes],
+  );
+
+  const priceText = useMemo(
+    () => formatCurrencySmart(data?.price),
+    [data?.price],
+  );
+  const dealText = useMemo(
+    () => formatCurrencySmart(data?.dealPrice ?? 0),
+    [data?.dealPrice],
+  );
+
+  const hasDeal =
+    typeof data?.dealPrice === "number" &&
+    typeof data?.price === "number" &&
+    (data?.dealPrice as number) < (data?.price as number);
+
+  const learnings =
+    data?.objectives
+      ?.filter((o) => !!o.isActive)
+      .sort((a, b) => (a.positionIndex ?? 0) - (b.positionIndex ?? 0))
+      .map((o) => o.content || "")
+      .filter(Boolean) ?? [];
+
+  console.log("CourseDetailUI - data:", data?.objectives);
+  console.log("CourseDetailUI - learnings:", learnings);
+
+  const requirements =
+    data?.requirements
+      ?.filter((r) => !!r.isActive)
+      .sort((a, b) => (a.positionIndex ?? 0) - (b.positionIndex ?? 0))
+      .map((r) => r.content || "")
+      .filter(Boolean) ?? [];
+
+  const facts = {
+    level: levelTag,
+    duration: durationText,
+    modules: modulesCount,
+    access: "Trọn đời",
+    language: "Tiếng Việt",
+  };
 
   const handleShare = async () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -108,8 +205,6 @@ export default function CourseDetailUI() {
       message.info(url ? "Sao chép thủ công: " + url : "Không có URL");
     }
   };
-
-  const courseTitle = "HTML & CSS Foundation";
 
   return (
     <BaseScreenWhiteNav>
@@ -129,7 +224,7 @@ export default function CourseDetailUI() {
                   {
                     title: (
                       <Link
-                        href="/test/Navbar/home"
+                        href="/home"
                         className="inline-flex items-center gap-1 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
                       >
                         <HomeOutlined className="text-[14px]" />
@@ -174,12 +269,12 @@ export default function CourseDetailUI() {
               hoverable
               className="lg:col-span-2 h-[400px] w-full !rounded-2xl shadow-sm ring-1 ring-zinc-200/60 dark:ring-zinc-800/60 bg-white dark:bg-zinc-900"
               cover={
-                <Image
-                  src={IMG}
+                <AntImage
+                  src={coverUrl}
                   alt="Ảnh bìa khóa học"
                   className="!h-[400px] !rounded-2xl !w-full !object-cover !object-center"
                   preview={true}
-                  fallback={IMG}
+                  fallback={IMG_FALLBACK}
                   placeholder={
                     <div className="h-full w-full animate-pulse bg-zinc-200/60 dark:bg-zinc-800/60" />
                   }
@@ -196,27 +291,27 @@ export default function CourseDetailUI() {
             aria-label="Course summary & sidebar"
             className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
           >
-            {/* SIDEBAR (order-1 mobile, order-2 desktop) */}
+            {/* SIDEBAR */}
             <aside className="order-1 lg:order-2 lg:col-span-1 lg:-mt-36 lg:mr-10">
               <Card className="rounded-2xl shadow-xl ring-1 ring-zinc-200/60 dark:ring-zinc-800/60 bg-white/95 dark:bg-zinc-900/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur lg:sticky lg:top-6 h-fit">
                 <div className="overflow-hidden rounded-xl border border-zinc-200/70 dark:border-zinc-800/70">
-                  <Image
-                    src={IMG}
+                  <AntImage
+                    src={coverUrl}
                     alt="Thumbnail"
                     preview={false}
                     rootClassName="!block aspect-[16/9]"
-                    // style trực tiếp cho <img>
                     style={{
                       display: "block",
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
                     }}
+                    fallback={IMG_FALLBACK}
                   />
                 </div>
 
                 <Title level={4} className="!mt-4 !mb-2 leading-tight">
-                  HTML &amp; CSS Foundation
+                  {courseTitle}
                 </Title>
 
                 <div className="flex items-center gap-2">
@@ -227,15 +322,20 @@ export default function CourseDetailUI() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Tag color="blue">HTML</Tag>
-                  <Tag color="geekblue">CSS</Tag>
-                  <Tag color="cyan">Responsive</Tag>
+                  {subjectTag.map((s) => (
+                    <Tag key={s} color="blue">
+                      {s}
+                    </Tag>
+                  ))}
+                  <Tag color="geekblue">{levelTag}</Tag>
                 </div>
 
                 <Divider className="!my-4 sm:!my-5" />
+
                 <Title level={5} className="!mb-3">
                   Khóa học bao gồm
                 </Title>
+
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <CheckCircleTwoTone twoToneColor="#52c41a" />
@@ -252,20 +352,33 @@ export default function CourseDetailUI() {
                   <div className="flex items-center gap-3">
                     <AppstoreOutlined className="opacity-80" />
                     <Tag color="blue" className="align-middle">
-                      32 Modules
+                      {modulesCount} Modules · {lessonsCount} Lessons
                     </Tag>
                   </div>
                 </div>
 
                 <Divider className="!my-4 sm:!my-5" />
-                {/* CTA: full-width trên mobile */}
+
+                {/* CTA */}
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                   <div className="sm:order-1">
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       Giá
                     </div>
-                    <div className="text-2xl font-semibold">499.000₫</div>
+                    <div className="text-2xl font-semibold">
+                      {hasDeal ? (
+                        <>
+                          <span className="line-through mr-2 opacity-60">
+                            {priceText}
+                          </span>
+                          <span>{dealText}</span>
+                        </>
+                      ) : (
+                        <span>{priceText || "—"}</span>
+                      )}
+                    </div>
                   </div>
+
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:order-2">
                     <Button
                       icon={<ShoppingCartOutlined />}
@@ -286,57 +399,33 @@ export default function CourseDetailUI() {
                 </div>
 
                 <Divider className="!my-4 sm:!my-5" />
+
                 <Title level={5} className="!mb-3">
                   Chia sẻ khóa học
                 </Title>
                 <Space size={8} wrap>
-                  <Button
-                    type="text"
-                    shape="circle"
-                    aria-label="Facebook"
-                    icon={<FacebookFilled />}
-                    onClick={handleShare}
-                  />
-                  <Button
-                    type="text"
-                    shape="circle"
-                    aria-label="YouTube"
-                    icon={<YoutubeFilled />}
-                    onClick={handleShare}
-                  />
-                  <Button
-                    type="text"
-                    shape="circle"
-                    aria-label="Instagram"
-                    icon={<InstagramOutlined />}
-                    onClick={handleShare}
-                  />
-                  <Button
-                    type="text"
-                    shape="circle"
-                    aria-label="LinkedIn"
-                    icon={<LinkedinFilled />}
-                    onClick={handleShare}
-                  />
-                  <Button
-                    type="text"
-                    shape="circle"
-                    aria-label="WhatsApp"
-                    icon={<WhatsAppOutlined />}
-                    onClick={handleShare}
-                  />
-                  <Button
-                    type="text"
-                    shape="circle"
-                    aria-label="Twitter/X"
-                    icon={<TwitterOutlined />}
-                    onClick={handleShare}
-                  />
+                  {[
+                    FacebookFilled,
+                    YoutubeFilled,
+                    InstagramOutlined,
+                    LinkedinFilled,
+                    WhatsAppOutlined,
+                    TwitterOutlined,
+                  ].map((Icon, i) => (
+                    <Button
+                      key={i}
+                      type="text"
+                      shape="circle"
+                      aria-label="share"
+                      icon={<Icon />}
+                      onClick={handleShare}
+                    />
+                  ))}
                 </Space>
               </Card>
             </aside>
 
-            {/* MAIN CONTENT (order-2 mobile, order-1 desktop) */}
+            {/* MAIN CONTENT */}
             <div className="order-2 lg:order-1 lg:col-span-2 space-y-4">
               {/* Stars + Tabs */}
               <div className="rounded-2xl p-3 sm:p-4 bg-white/95 dark:bg-zinc-900/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur ring-1 ring-zinc-200/60 dark:ring-zinc-800/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -366,7 +455,10 @@ export default function CourseDetailUI() {
               {activeTab === "overview" && (
                 <CourseOverview
                   title={courseTitle}
-                  // tuỳ truyền thêm props nếu muốn
+                  summary={data?.description || data?.shortDescription || "—"}
+                  learnings={learnings}
+                  requirements={requirements}
+                  facts={facts}
                 />
               )}
 
@@ -396,6 +488,111 @@ export default function CourseDetailUI() {
                   <Typography.Paragraph className="text-gray-600">
                     (Bạn có thể thay thế bằng component Curriculum thật sau.)
                   </Typography.Paragraph>
+
+                  <Collapse
+                    accordion
+                    bordered={false}
+                    expandIconPosition="end"
+                    className="bg-transparent"
+                    items={(data?.modules ?? [])
+                      .filter((m) => !!m.isActive)
+                      .sort(
+                        (a, b) =>
+                          (a.positionIndex ?? 0) - (b.positionIndex ?? 0),
+                      )
+                      .map((m, idx) => {
+                        const activeLessons = (m.lessons ?? [])
+                          .filter((l) => !!l.isActive)
+                          .sort(
+                            (a, b) =>
+                              (a.positionIndex ?? 0) - (b.positionIndex ?? 0),
+                          );
+
+                        // label (thay cho header cũ)
+                        const label = (
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">
+                              {m.moduleName}
+                            </span>
+                            {m.isCore && <Tag color="cyan">Core</Tag>}
+                            {(typeof m.durationHours === "number" &&
+                              m.durationHours > 0) ||
+                            (typeof m.durationMinutes === "number" &&
+                              m.durationMinutes > 0) ? (
+                              <Tag>
+                                {formatDuration(
+                                  m.durationHours ?? null,
+                                  m.durationMinutes ?? null,
+                                )}
+                              </Tag>
+                            ) : null}
+                          </div>
+                        );
+
+                        // children: giữ nguyên nội dung body như Card trước đây
+                        const children = (
+                          <div className="rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 !mb-3 overflow-hidden p-3 sm:p-4">
+                            {m.description ? (
+                              <Typography.Paragraph
+                                type="secondary"
+                                className="!mb-3"
+                              >
+                                {m.description}
+                              </Typography.Paragraph>
+                            ) : null}
+
+                            {(m.objectives ?? []).some((o) => o.isActive) && (
+                              <>
+                                <Typography.Text type="secondary">
+                                  Mục tiêu
+                                </Typography.Text>
+                                <ul className="mt-2 mb-3 list-disc pl-5 space-y-1">
+                                  {(m.objectives ?? [])
+                                    .filter((o) => !!o.isActive)
+                                    .sort(
+                                      (a, b) =>
+                                        (a.positionIndex ?? 0) -
+                                        (b.positionIndex ?? 0),
+                                    )
+                                    .map((o) => (
+                                      <li key={o.objectiveId}>{o.content}</li>
+                                    ))}
+                                </ul>
+                              </>
+                            )}
+
+                            <Typography.Text type="secondary">
+                              Bài học
+                            </Typography.Text>
+                            <ul className="mt-2 space-y-1">
+                              {activeLessons.length ? (
+                                activeLessons.map((l) => (
+                                  <li
+                                    key={l.lessonId}
+                                    className="flex items-center gap-2"
+                                  >
+                                    <span className="inline-flex h-2 w-2 rounded-full bg-cyan-500/70" />
+                                    <span>
+                                      {(l.positionIndex ?? 0) + ". "} {l.title}
+                                    </span>
+                                  </li>
+                                ))
+                              ) : (
+                                <li className="text-gray-500">
+                                  (Chưa có bài học hoạt động)
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+                        );
+
+                        return {
+                          key: (m.moduleId ?? String(idx)) as string,
+                          label,
+                          children,
+                        };
+                      })}
+                  />
                 </Card>
               )}
             </div>

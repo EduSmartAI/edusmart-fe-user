@@ -1,6 +1,16 @@
 "use client";
 import React, { useMemo, useState } from "react";
-import { Button, Col, Divider, Drawer, Layout, Row, Select, Tag } from "antd";
+import {
+  Button,
+  Col,
+  Divider,
+  Drawer,
+  Layout,
+  Pagination,
+  Row,
+  Select,
+  Tag,
+} from "antd";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { FiFilter } from "react-icons/fi";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -13,8 +23,23 @@ import { Content } from "antd/es/layout/layout";
 import CourseSearchSection from "EduSmart/components/Course/HeroBannerCourse";
 import { ZoomIn } from "EduSmart/components/Animation/ZoomIn";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
+import { Course } from "../apiServer/courseAction";
 
-export default function CourseListPage() {
+interface CourseListPageProps {
+  courses: Course[];
+  totalCount?: number;
+  page?: number;
+  size?: number;
+  searchCoursedata?: Course[];
+}
+
+export default function CourseListPage({
+  courses = [],
+  totalCount,
+  page = 1,
+  size = 10,
+  searchCoursedata = [],
+}: CourseListPageProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -57,133 +82,27 @@ export default function CourseListPage() {
     ],
     [],
   );
-  const courses = [
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Code Yourself! An Introduction to Programming",
-      descriptionLines: [
-        "Software Engineering",
-        "Video Game Development",
-        "Programming Principles",
-      ],
-      instructor: "University of Edinburgh",
-      price: "Free",
-      routerPush: "/course/code-yourself",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Crash Course on Python",
-      descriptionLines: [
-        "Programming Principles",
-        "Python Programming",
-        "Computational Thinking",
-      ],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/python-crash",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Vibe Coding Essentials - Build Apps with AI",
-      descriptionLines: [
-        "Web Development",
-        "Prompt Engineering",
-        "App Development",
-      ],
-      instructor: "Scrimba",
-      price: "Free",
-      routerPush: "/course/vibe-coding",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Lập trình với JavaScript",
-      descriptionLines: [
-        "Front-End Development",
-        "Web Fundamentals",
-        "Javascript Basics",
-      ],
-      instructor: "Meta",
-      price: "Free",
-      routerPush: "/course/js-meta",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Google IT Automation with Python",
-      descriptionLines: ["Version Control", "Cloud Services", "Debugging"],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/google-it-python",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Google IT Automation with Python",
-      descriptionLines: ["Version Control", "Cloud Services", "Debugging"],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/google-it-python",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Google IT Automation with Python",
-      descriptionLines: ["Version Control", "Cloud Services", "Debugging"],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/google-it-python",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Google IT Automation with Python",
-      descriptionLines: ["Version Control", "Cloud Services", "Debugging"],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/google-it-python",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Google IT Automation with Python",
-      descriptionLines: ["Version Control", "Cloud Services", "Debugging"],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/google-it-python",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Google IT Automation with Python",
-      descriptionLines: ["Version Control", "Cloud Services", "Debugging"],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/google-it-python",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Google IT Automation with Python",
-      descriptionLines: ["Version Control", "Cloud Services", "Debugging"],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/google-it-python",
-    },
-    {
-      imageUrl:
-        "https://cdn.shopaccino.com/igmguru/products/java-training-igmguru_188702274_l.jpg?v=531",
-      title: "Google IT Automation with Python",
-      descriptionLines: ["Version Control", "Cloud Services", "Debugging"],
-      instructor: "Google",
-      price: "Free",
-      routerPush: "/course/google-it-python",
-    },
-  ];
   const sortValue = searchParams.get("sortBy") ?? "BEST_MATCH";
+
+  const setQueryParams = (updater: (sp: URLSearchParams) => void) => {
+    const next = new URLSearchParams(searchParams.toString());
+    updater(next);
+    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+  };
+
+  const setPage = (nextPage: number) => {
+    setQueryParams((next) => {
+      next.set("page", String(nextPage));
+    });
+  };
+
+  const setPageSize = (nextSize: number) => {
+    setQueryParams((next) => {
+      next.set("size", String(nextSize));
+      next.set("page", "1"); // đổi size thì về trang 1
+    });
+  };
+
   const setSort = (val: string) => {
     const next = new URLSearchParams(searchParams.toString());
     next.set("sortBy", val);
@@ -227,7 +146,7 @@ export default function CourseListPage() {
   return (
     <BaseScreenWhiteNav>
       <ZoomIn>
-        <CourseSearchSection onSearch={handleSearch} />
+        <CourseSearchSection onSearch={handleSearch} searchCoursedata={searchCoursedata}/>
         {/* Khung ngoài, canh giữa theo max width */}
         <div className="mx-auto max-w-screen-2xl px-4 lg:px-6 py-8">
           <Layout hasSider className="!bg-transparent gap-4 lg:gap-10">
@@ -359,6 +278,15 @@ export default function CourseListPage() {
                     </Col>
                   ))}
                 </Row>
+              </div>
+              <div className="mt-8 flex justify-center">
+                <Pagination
+                  current={page}
+                  total={totalCount}
+                  pageSize={size}
+                  onChange={(p) => setPage(p)}
+                  onShowSizeChange={(_, s) => setPageSize(s)}
+                />
               </div>
             </Content>
           </Layout>
