@@ -72,7 +72,7 @@ export async function fetchCourseByQuery(
         price: courseDto.dealPrice
           ? `$${courseDto.dealPrice} (was $${courseDto.price})`
           : `$${courseDto.price}`,
-        routerPush: `/courses/${courseDto.slug || courseDto.courseId}`,
+        routerPush: `/course/${courseDto.courseId}`,
       }));
       return {
         data: courses,

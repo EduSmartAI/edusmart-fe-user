@@ -1,13 +1,12 @@
 "use client";
 import React from "react";
-import { Card, Button, Typography, Progress, Popover } from "antd";
-import Image, { StaticImageData } from "next/image";
+import { Card, Button, Typography, Progress, Popover, Image, ImageProps } from "antd";
 import { useRouter } from "next/navigation";
 import "EduSmart/components/CourseCard/styles/component.card.css";
 const { Title, Paragraph, Text } = Typography;
 
 interface CourseCardProps {
-  imageUrl: string | StaticImageData;
+  imageUrl: ImageProps["src"];
   title: string;
   descriptionLines?: string[];
   instructor: string;
@@ -16,7 +15,7 @@ interface CourseCardProps {
   progress?: number;
   currentLesson?: number;
   totalLessons?: number;
-  instructorAvatar?: string | StaticImageData;
+  instructorAvatar?: ImageProps["src"];
   routerPush?: string;
 }
 
@@ -92,13 +91,19 @@ const CourseCard: React.FC<CourseCardProps> = ({
       >
         <div className="flex flex-col h-full">
           {/* Image */}
-          <div style={{ position: "relative", width: "100%", height: 180 }}>
+          <div className="relative w-full h-[180px] overflow-hidden flex items-center justify-center">
             <Image
               src={imageUrl}
+              className="w-full h-full object-cover"
+              preview={false}
               alt={title}
-              fill
               loading="lazy"
-              style={{ objectFit: "cover" }}
+              style={{ 
+                objectFit: "cover",
+                objectPosition: "center center",
+                width: "100%",
+                height: "100%"
+              }}
             />
           </div>
 
