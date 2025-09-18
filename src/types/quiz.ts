@@ -6,6 +6,106 @@ export enum QuestionType {
     MULTIPLE_CHOICE = "multiple_choice",
 }
 
+// ======================== API RESPONSE TYPES ========================
+// Exact types matching backend API format
+
+export interface QuizListItem {
+    quizId: string;
+    title: string;
+    description: string;
+    subjectCode: string;
+    subjectCodeName: string;
+    totalQuestions: number;
+    difficultyLevel: string;
+}
+
+export interface QuizListResponse {
+    response: QuizListItem[];
+    success: boolean;
+    messageId: string;
+    message: string;
+    detailErrors: null;
+}
+
+export interface QuizAnswer {
+    answerId: string;
+    answerText: string;
+    isCorrectAnswer?: boolean;
+    selectedByStudent?: boolean;
+}
+
+export interface QuizQuestion {
+    questionId: string;
+    questionText: string;
+    questionType: string;
+    answers: QuizAnswer[];
+    answerExplanation?: string;
+}
+
+export interface QuizDetail {
+    quizId: string;
+    title: string;
+    description: string;
+    subjectCode: string;
+    subjectCodeName: string;
+    totalQuestions: number;
+    difficultyLevel: string;
+    questions: QuizQuestion[];
+    correctedQuestions?: number;
+    questionsResult?: QuizQuestion[];
+}
+
+export interface TestDetail {
+    testId: string;
+    testName: string;
+    description: string;
+    quizzes: QuizDetail[];
+}
+
+export interface TestDetailResponse {
+    response: TestDetail;
+    success: boolean;
+    messageId: string;
+    message: string;
+    detailErrors: null;
+}
+
+export interface StudentTestResult {
+    studentTestId: string;
+    testId: string;
+    testName: string;
+    description: string;
+    startedAt: string;
+    finishedAt: string;
+    quizzesResults: QuizDetail[];
+}
+
+export interface StudentTestResultResponse {
+    response: StudentTestResult;
+    success: boolean;
+    messageId: string;
+    message: string;
+    detailErrors: null;
+}
+
+export interface SubmitTestRequest {
+    testId: string;
+    answers: Array<{
+        questionId: string;
+        selectedAnswers: string[];
+    }>;
+}
+
+export interface SubmitTestResponse {
+    response: {
+        studentTestId: string;
+    };
+    success: boolean;
+    messageId: string;
+    message: string;
+    detailErrors: null;
+}
+
 // Quiz-level status
 export enum QuizStatus {
     NOT_STARTED = "not_started", // Khi vừa mới get series về và render lên UI

@@ -1,3 +1,20 @@
+/*
+ * Quiz Store - Hybrid Pattern
+ *
+ * STRUCTURE:
+ * 1. API Data & Methods (Following Auth Pattern) - NEW
+ * 2. UI Flow & State Management (Original Quiz Logic) - EXISTING
+ *
+ * API USAGE (3-layer pattern):
+ * - loadAvailableQuizzes() → getQuizListAction()
+ * - createTest() → createTestAction()
+ * - submitTest() → submitStudentTestAction()
+ * - loadTestResult() → getStudentTestResultAction()
+ *
+ * UI USAGE (existing pattern):
+ * - initializeSeries(), toggleQuizSelection(), updateAnswer(), etc.
+ */
+
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import {
@@ -10,7 +27,7 @@ import {
     SeriesProgress,
     NavigationInfo,
     QuizProgress,
-    SubmissionValidation
+    SubmissionValidation,
 } from "EduSmart/types";
 import {
     createUserAnswer,
@@ -20,11 +37,24 @@ import {
     calculateSeriesProgress,
     calculateNavigationInfo,
 } from "EduSmart/utils/quiz";
+import {
+    getQuizListAction,
+    createTestAction,
+    submitStudentTestAction,
+    getStudentTestResultAction,
+    type QuizListItem,
+    type TestDetail,
+    type StudentTestResult,
+} from "EduSmart/app/(quiz)/quizAction";
 
 // Helper types for better type safety
 
-
 interface QuizStoreState {
+    // ===== API DATA (Following Auth Pattern) =====
+    availableQuizzes: QuizListItem[]; // Danh sách quiz có thể chọn
+    currentTest: TestDetail | null; // Test hiện tại đã tạo
+    testResult: StudentTestResult | null; // Kết quả test
+
     // ===== SERIES DATA =====
     currentSeries: QuizSeries | null;
 
@@ -60,6 +90,18 @@ interface QuizStoreState {
 }
 
 interface QuizStoreActions {
+    // ===== API METHODS (Following Auth Pattern) =====
+    loadAvailableQuizzes: () => Promise<boolean>; // Load danh sách quiz có thể chọn
+    createTest: (
+        quizIds: string[],
+    ) => Promise<{ ok: boolean; testId?: string; error?: string }>; // Tạo test từ quiz được chọn
+    submitTest: (testData: {
+        testId: string;
+        startedAt: string;
+        answers: Array<{ questionId: string; answerId: string }>;
+    }) => Promise<{ ok: boolean; studentTestId?: string; error?: string }>; // Submit test
+    loadTestResult: (studentTestId: string) => Promise<boolean>; // Load kết quả test
+
     // ===== SERIES MANAGEMENT =====
     initializeSeries: (series: QuizSeries) => void;
     resetSeries: () => void;
@@ -123,6 +165,11 @@ interface QuizStoreActions {
 
 // Default state values
 const defaultState: QuizStoreState = {
+    // API data
+    availableQuizzes: [],
+    currentTest: null,
+    testResult: null,
+
     // Series data
     currentSeries: null,
 
@@ -186,6 +233,126 @@ export const useQuizStore = create<QuizStore>()(
 
                 resetSeries: () => {
                     set(defaultState);
+                },
+
+                // ===== API METHODS =====
+                loadAvailableQuizzes: async () => {
+                    try {
+                        set({ isLoading: true, error: null });
+                        const result = await getQuizListAction();
+
+                        if (result.ok) {
+                            set({
+                                availableQuizzes: result.data.response || [],
+                                isLoading: false,
+                            });
+                            return true;
+                        }
+
+                        set({
+                            error: result.error || "Failed to load quizzes",
+                            isLoading: false,
+                        });
+                        return false;
+                    } catch (error) {
+                        set({
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : "Failed to load quizzes",
+                            isLoading: false,
+                        });
+                        return false;
+                    }
+                },
+
+                createTest: async (quizIds: string[]) => {
+                    try {
+                        set({ isLoading: true, error: null });
+                        const result = await createTestAction(quizIds);
+
+                        if (result.ok) {
+                            set({
+                                currentTest: result.data.response,
+                                isLoading: false,
+                            });
+                            return {
+                                ok: true,
+                                testId: result.data.response?.testId,
+                            };
+                        }
+
+                        const errorMsg =
+                            result.error || "Failed to create test";
+                        set({ error: errorMsg, isLoading: false });
+                        return { ok: false, error: errorMsg };
+                    } catch (error) {
+                        const errorMsg =
+                            error instanceof Error
+                                ? error.message
+                                : "Failed to create test";
+                        set({ error: errorMsg, isLoading: false });
+                        return { ok: false, error: errorMsg };
+                    }
+                },
+
+                submitTest: async (testData) => {
+                    try {
+                        set({ isSubmitting: true, error: null });
+                        const result = await submitStudentTestAction(testData);
+
+                        if (result.ok) {
+                            set({ isSubmitting: false });
+                            return {
+                                ok: true,
+                                studentTestId:
+                                    result.data.response?.studentTestId,
+                            };
+                        }
+
+                        const errorMsg =
+                            result.error || "Failed to submit test";
+                        set({ error: errorMsg, isSubmitting: false });
+                        return { ok: false, error: errorMsg };
+                    } catch (error) {
+                        const errorMsg =
+                            error instanceof Error
+                                ? error.message
+                                : "Failed to submit test";
+                        set({ error: errorMsg, isSubmitting: false });
+                        return { ok: false, error: errorMsg };
+                    }
+                },
+
+                loadTestResult: async (studentTestId: string) => {
+                    try {
+                        set({ isLoading: true, error: null });
+                        const result =
+                            await getStudentTestResultAction(studentTestId);
+
+                        if (result.ok) {
+                            set({
+                                testResult: result.data.response,
+                                isLoading: false,
+                            });
+                            return true;
+                        }
+
+                        set({
+                            error: result.error || "Failed to load test result",
+                            isLoading: false,
+                        });
+                        return false;
+                    } catch (error) {
+                        set({
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : "Failed to load test result",
+                            isLoading: false,
+                        });
+                        return false;
+                    }
                 },
 
                 skipSeries: () => {
