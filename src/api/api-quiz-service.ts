@@ -14,7 +14,6 @@ export interface AnswerDetailResponse {
   /** @format uuid */
   answerId?: string;
   answerText?: string;
-  isCorrect?: boolean;
 }
 
 export interface AnswerSurveySelects {
@@ -155,6 +154,68 @@ export interface StudentAnswerSelectResponseEntity {
   answerId?: string;
   isCorrect?: boolean;
   explanation?: string;
+}
+
+export interface StudentQuizAnswerInsertRequest {
+  /** @format uuid */
+  questionId: string;
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
+}
+
+export interface StudentSurveyInsertCommand {
+  studentSurveys?: StudentSurveyInsertRequest[];
+}
+
+export interface StudentSurveyInsertRequest {
+  /** @format uuid */
+  surveyId: string;
+  answers: StudentQuizAnswerInsertRequest[];
+}
+
+export interface StudentSurveyInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface StudentSurveySelectAnswerResponseEntity {
+  /** @format uuid */
+  answerId?: string;
+  isCorrect?: boolean;
+  answerText?: string;
+}
+
+export type StudentSurveySelectQuery = object;
+
+export interface StudentSurveySelectQuestionResponseEntity {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  answers?: StudentSurveySelectAnswerResponseEntity[];
+}
+
+export interface StudentSurveySelectQuizResponseEntity {
+  title?: string;
+  description?: string;
+  questions?: StudentSurveySelectQuestionResponseEntity[];
+}
+
+export interface StudentSurveySelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentSurveySelectResponseEntity[];
+}
+
+export interface StudentSurveySelectResponseEntity {
+  /** @format uuid */
+  studentSurveyId?: string;
+  survey?: StudentSurveySelectQuizResponseEntity;
 }
 
 export interface StudentTestInsertCommand {
@@ -663,6 +724,53 @@ export class Api<
     /**
      * @description Cần cấp quyền Student cho API
      *
+     * @tags StudentSurvey
+     * @name V1StudentSurveyCreate
+     * @summary Lưu câu trả lời phần khảo sát của học sinh
+     * @request POST:/api/v1/StudentSurvey
+     * @secure
+     */
+    v1StudentSurveyCreate: (
+      body: StudentSurveyInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentSurveyInsertResponse, any>({
+        path: `/api/v1/StudentSurvey`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags StudentSurvey
+     * @name V1StudentSurveyList
+     * @summary Hiển câu trả lời phần khảo sát của học sinh
+     * @request GET:/api/v1/StudentSurvey
+     * @secure
+     */
+    v1StudentSurveyList: (
+      query?: {
+        request?: any;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentSurveySelectResponse, any>({
+        path: `/api/v1/StudentSurvey`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
      * @tags StudentTest
      * @name V1StudentTestCreate
      * @summary Lưu câu trả lời của học sinh
@@ -750,12 +858,12 @@ export class Api<
      * @description Lấy chi tiết khảo sát với phân trang
      *
      * @tags Survey
-     * @name V1SurveyDetailsList
+     * @name V1SurveyDetailList
      * @summary Lấy danh sách các khảo sát
-     * @request GET:/api/v1/Survey/details
+     * @request GET:/api/v1/Survey/Detail
      * @secure
      */
-    v1SurveyDetailsList: (
+    v1SurveyDetailList: (
       query: {
         /** @format uuid */
         SurveyId: string;
@@ -767,7 +875,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<SurveyDetailSelectResponse, any>({
-        path: `/api/v1/Survey/details`,
+        path: `/api/v1/Survey/Detail`,
         method: "GET",
         query: query,
         secure: true,
