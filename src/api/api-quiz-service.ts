@@ -84,6 +84,8 @@ export interface QuestionDetailResponse {
   questionText?: string;
   /** @format int32 */
   questionType?: number;
+  /** @format int32 */
+  difficultyLevel?: number;
   answers?: AnswerDetailResponse[];
 }
 
@@ -131,6 +133,10 @@ export interface QuestionUpdateResponse {
 export interface Questions {
   /** @minLength 1 */
   questionText: string;
+  /** @format int32 */
+  difficultyLevel: number;
+  /** @format int32 */
+  questionType?: number;
   explanation?: string;
   answers: Answers[];
 }
@@ -141,6 +147,9 @@ export interface QuestionsResultSelectResponseEntity {
   questionText?: string;
   /** @format int32 */
   questionType?: number;
+  /** @format int32 */
+  difficultyLevel?: number;
+  explanation?: string;
   answers?: StudentAnswerDetailResponse[];
 }
 
@@ -155,7 +164,7 @@ export interface QuizResultSelectResponseEntity {
   /** @format int32 */
   totalQuestions?: number;
   /** @format int32 */
-  difficultyLevel?: number;
+  totalCorrectAnswers?: number;
   questionResults?: QuestionsResultSelectResponseEntity[];
 }
 
@@ -177,8 +186,6 @@ export interface QuizSelectsResponseEntity {
   subjectCodeName?: string;
   /** @format int32 */
   totalQuestions?: number;
-  /** @format int32 */
-  difficultyLevel?: number;
 }
 
 export interface QuizzDetailResponse {
@@ -191,8 +198,6 @@ export interface QuizzDetailResponse {
   subjectCodeName?: string;
   /** @format int32 */
   totalQuestions?: number;
-  /** @format int32 */
-  difficultyLevel?: number;
   questions?: QuestionDetailResponse[];
 }
 
@@ -227,7 +232,7 @@ export interface StudentAnswerDetailResponse {
   answerId?: string;
   isCorrectAnswer?: boolean;
   selectedByStudent?: boolean;
-  explanation?: string;
+  answerText?: string;
 }
 
 export interface StudentAnswerRequest {
@@ -1088,7 +1093,7 @@ export class Api<
       }),
 
     /**
-     * @description Cần cấp quyền Student cho API
+     * @description Cần cấp quyền cho API
      *
      * @tags Test
      * @name V1TestSelectTestList

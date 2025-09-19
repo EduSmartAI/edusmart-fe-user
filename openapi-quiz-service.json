@@ -8,16 +8,10 @@
   "paths": {
     "/api/v1/ExternalQuiz/SelectSemesters": {
       "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
+        "tags": ["ExternalQuiz"],
         "summary": "Lấy danh sách tất cả các học kỳ",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -30,16 +24,10 @@
     },
     "/api/v1/ExternalQuiz/SelectMajors": {
       "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
+        "tags": ["ExternalQuiz"],
         "summary": "Lấy danh sách tất cả các chuyên ngành trong trường",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -52,16 +40,10 @@
     },
     "/api/v1/ExternalQuiz/SelectTechnologies": {
       "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
+        "tags": ["ExternalQuiz"],
         "summary": "Lấy danh sách tất cả các ngôn ngữ lập trình/ framework",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -74,16 +56,10 @@
     },
     "/api/v1/ExternalQuiz/SelectLearningGoals": {
       "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
+        "tags": ["ExternalQuiz"],
         "summary": "Lấy danh sách tất cả các mục tiêu học tập đang có",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -96,21 +72,11 @@
     },
     "/api/v1/Question": {
       "put": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Cập nhật câu hỏi và câu trả lời",
         "description": "Cần cấp quyền Admin cho API. Update question và tất cả answers của nó",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -130,16 +96,10 @@
         }
       },
       "delete": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Xóa câu hỏi và tất cả câu trả lời",
         "description": "Cần cấp quyền Admin cho API. Delete question và tất cả answers của nó",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -158,21 +118,11 @@
         }
       },
       "post": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Thêm câu hỏi và câu trả lời vào quiz",
         "description": "Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -194,16 +144,10 @@
     },
     "/api/v1/Quiz/SelectQuizzes": {
       "get": {
-        "tags": [
-          "Quiz"
-        ],
+        "tags": ["Quiz"],
         "summary": "Lấy danh sách quiz của một bài kiểm tra",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -216,21 +160,11 @@
     },
     "/api/v1/StudentSurvey": {
       "post": {
-        "tags": [
-          "StudentSurvey"
-        ],
+        "tags": ["StudentSurvey"],
         "summary": "Lưu câu trả lời phần khảo sát của học sinh",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -250,16 +184,10 @@
         }
       },
       "get": {
-        "tags": [
-          "StudentSurvey"
-        ],
+        "tags": ["StudentSurvey"],
         "summary": "Hiển câu trả lời phần khảo sát của học sinh",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -278,21 +206,11 @@
     },
     "/api/v1/StudentTest/InsertStudentTest": {
       "post": {
-        "tags": [
-          "StudentTest"
-        ],
+        "tags": ["StudentTest"],
         "summary": "Lưu câu trả lời của học sinh",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -314,16 +232,10 @@
     },
     "/api/v1/StudentTest/SelectStudentTest": {
       "get": {
-        "tags": [
-          "StudentTest"
-        ],
+        "tags": ["StudentTest"],
         "summary": "Lấy câu trả lời của học sinh trong bài test",
         "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -344,21 +256,11 @@
     },
     "/api/v1/Survey": {
       "post": {
-        "tags": [
-          "Survey"
-        ],
+        "tags": ["Survey"],
         "summary": "Tạo khảo sát mới",
         "description": "Tạo khảo sát mới với các câu hỏi và câu trả lời tương ứng",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -378,16 +280,10 @@
         }
       },
       "get": {
-        "tags": [
-          "Survey"
-        ],
+        "tags": ["Survey"],
         "summary": "Lấy danh sách các khảo sát",
         "description": "Lấy danh sách các khảo sát",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -400,16 +296,10 @@
     },
     "/api/v1/Survey/Detail": {
       "get": {
-        "tags": [
-          "Survey"
-        ],
+        "tags": ["Survey"],
         "summary": "Lấy danh sách các khảo sát",
         "description": "Lấy chi tiết khảo sát với phân trang",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -443,21 +333,11 @@
     },
     "/api/v1/Test/InsertTest": {
       "post": {
-        "tags": [
-          "Test"
-        ],
+        "tags": ["Test"],
         "summary": "Tạo bài kiểm tra mới",
         "description": "Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -479,16 +359,10 @@
     },
     "/api/v1/Test/SelectTest": {
       "get": {
-        "tags": [
-          "Test"
-        ],
+        "tags": ["Test"],
         "summary": "Lấy bài kiểm tra gồm các quiz mà student chọn",
-        "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "description": "Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -543,10 +417,7 @@
       "additionalProperties": false
     },
     "Answers": {
-      "required": [
-        "answerText",
-        "isCorrect"
-      ],
+      "required": ["answerText", "isCorrect"],
       "type": "object",
       "properties": {
         "answerText": {
@@ -708,6 +579,10 @@
           "format": "int32",
           "type": "integer"
         },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        },
         "answers": {
           "type": "array",
           "items": {
@@ -833,15 +708,20 @@
       "additionalProperties": false
     },
     "Questions": {
-      "required": [
-        "answers",
-        "questionText"
-      ],
+      "required": ["answers", "difficultyLevel", "questionText"],
       "type": "object",
       "properties": {
         "questionText": {
           "minLength": 1,
           "type": "string"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
         },
         "explanation": {
           "type": "string"
@@ -868,6 +748,13 @@
         "questionType": {
           "format": "int32",
           "type": "integer"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
         },
         "answers": {
           "type": "array",
@@ -902,7 +789,7 @@
           "format": "int32",
           "type": "integer"
         },
-        "difficultyLevel": {
+        "totalCorrectAnswers": {
           "format": "int32",
           "type": "integer"
         },
@@ -965,10 +852,6 @@
         "totalQuestions": {
           "format": "int32",
           "type": "integer"
-        },
-        "difficultyLevel": {
-          "format": "int32",
-          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -997,10 +880,6 @@
           "format": "int32",
           "type": "integer"
         },
-        "difficultyLevel": {
-          "format": "int32",
-          "type": "integer"
-        },
         "questions": {
           "type": "array",
           "items": {
@@ -1011,12 +890,7 @@
       "additionalProperties": false
     },
     "Quizzes": {
-      "required": [
-        "description",
-        "questions",
-        "subjectCode",
-        "title"
-      ],
+      "required": ["description", "questions", "subjectCode", "title"],
       "type": "object",
       "properties": {
         "title": {
@@ -1097,17 +971,14 @@
         "selectedByStudent": {
           "type": "boolean"
         },
-        "explanation": {
+        "answerText": {
           "type": "string"
         }
       },
       "additionalProperties": false
     },
     "StudentAnswerRequest": {
-      "required": [
-        "answerId",
-        "questionId"
-      ],
+      "required": ["answerId", "questionId"],
       "type": "object",
       "properties": {
         "questionId": {
@@ -1122,12 +993,7 @@
       "additionalProperties": false
     },
     "StudentInformation": {
-      "required": [
-        "learningGoalIds",
-        "majorId",
-        "semesterId",
-        "technologyIds"
-      ],
+      "required": ["learningGoalIds", "majorId", "semesterId", "technologyIds"],
       "type": "object",
       "properties": {
         "majorId": {
@@ -1156,9 +1022,7 @@
       "additionalProperties": false
     },
     "StudentQuizAnswerInsertRequest": {
-      "required": [
-        "questionId"
-      ],
+      "required": ["questionId"],
       "type": "object",
       "properties": {
         "questionId": {
@@ -1176,9 +1040,7 @@
       "additionalProperties": false
     },
     "StudentSurveyInsertCommand": {
-      "required": [
-        "studentInformation"
-      ],
+      "required": ["studentInformation"],
       "type": "object",
       "properties": {
         "studentInformation": {
@@ -1194,10 +1056,7 @@
       "additionalProperties": false
     },
     "StudentSurveyInsertRequest": {
-      "required": [
-        "answers",
-        "surveyId"
-      ],
+      "required": ["answers", "surveyId"],
       "type": "object",
       "properties": {
         "surveyId": {
@@ -1335,11 +1194,7 @@
       "additionalProperties": false
     },
     "StudentTestInsertCommand": {
-      "required": [
-        "answers",
-        "startedAt",
-        "testId"
-      ],
+      "required": ["answers", "startedAt", "testId"],
       "type": "object",
       "properties": {
         "testId": {
@@ -1443,9 +1298,7 @@
       "additionalProperties": false
     },
     "SurveyAnswerRequest": {
-      "required": [
-        "answerText"
-      ],
+      "required": ["answerText"],
       "type": "object",
       "properties": {
         "answerText": {
@@ -1542,11 +1395,7 @@
       "additionalProperties": false
     },
     "SurveyInsertCommand": {
-      "required": [
-        "description",
-        "questions",
-        "title"
-      ],
+      "required": ["description", "questions", "title"],
       "type": "object",
       "properties": {
         "title": {
@@ -1591,11 +1440,7 @@
       "additionalProperties": false
     },
     "SurveyQuestionRequest": {
-      "required": [
-        "answers",
-        "questionText",
-        "questionType"
-      ],
+      "required": ["answers", "questionText", "questionType"],
       "type": "object",
       "properties": {
         "questionText": {
@@ -1703,11 +1548,7 @@
       "additionalProperties": false
     },
     "TestInsertCommand": {
-      "required": [
-        "description",
-        "quizzes",
-        "testName"
-      ],
+      "required": ["description", "quizzes", "testName"],
       "type": "object",
       "properties": {
         "testName": {
@@ -1824,7 +1665,7 @@
   },
   "security": [
     {
-      "JWT_Token": [ ]
+      "JWT_Token": []
     }
   ]
 }
