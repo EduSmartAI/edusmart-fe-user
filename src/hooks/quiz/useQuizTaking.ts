@@ -180,24 +180,37 @@ export function useQuizTaking(): UseQuizTakingReturn {
     setState((prev) => ({ ...prev, isLoading: true }));
 
     try {
-      // Flatten all answers to individual questionId-answerId pairs
-      const answers: Array<{ questionId: string; answerId: string }> = [];
+      // Chỉ lấy quizIds của các quiz có ít nhất một câu đã trả lời
+      const quizIds = state.testDetail.quizzes
+        .filter((quiz) =>
+          quiz.questions.some(
+            (q) =>
+              state.answers[q.questionId] &&
+              state.answers[q.questionId].length > 0,
+          ),
+        )
+        .map((q) => q.quizId);
 
+      // Đảm bảo answers là mảng các object {questionId, answerId} đúng format
+      const answers: Array<{ questionId: string; answerId: string }> = [];
       Object.entries(state.answers).forEach(([questionId, answerIds]) => {
         answerIds.forEach((answerId) => {
           answers.push({ questionId, answerId });
         });
       });
 
+      // Đảm bảo testId và startedAt đúng format
+      const testId = state.testDetail.testId;
+      const startedAt = new Date(
+        Date.now() - (30 * 60 - state.timeRemaining) * 1000,
+      ).toISOString();
+
       const testData = {
-        testId: state.testDetail.testId,
-        startedAt: new Date(
-          Date.now() - (30 * 60 - state.timeRemaining) * 1000,
-        ).toISOString(),
+        testId,
+        startedAt,
+        quizIds,
         answers,
       };
-
-      console.log("📤 Submitting test data:", testData);
 
       const result = await quizStore.submitTest(testData);
 

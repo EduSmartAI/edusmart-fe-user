@@ -14,7 +14,11 @@ export default function QuizResultPage() {
   const studentTestId = searchParams.get("studentTestId");
 
   const handleBackToQuiz = () => {
-    router.push("/quiz-simple");
+    router.push("/quiz");
+  };
+
+  const handleRetakeQuiz = () => {
+    router.push("/quiz");
   };
 
   if (!studentTestId) {
@@ -53,7 +57,7 @@ export default function QuizResultPage() {
         <QuizResultWrapper
           studentTestId={studentTestId}
           onBackToHome={handleBackToQuiz}
-          onRetakeQuiz={handleBackToQuiz}
+          onRetakeQuiz={handleRetakeQuiz}
         />
       </Content>
     </Layout>

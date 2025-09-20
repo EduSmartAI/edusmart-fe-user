@@ -319,6 +319,7 @@ export interface StudentTestInsertCommand {
   testId: string;
   /** @format date-time */
   startedAt: string;
+  quizIds: string[];
   answers: StudentAnswerRequest[];
 }
 

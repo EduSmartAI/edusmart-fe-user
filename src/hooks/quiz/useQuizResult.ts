@@ -106,7 +106,7 @@ export function useQuizResult(): UseQuizResultResult {
             ? Math.round((correctAnswers / totalQuestions) * 100)
             : 0;
 
-        // Calculate time spent (mock for now - could be calculated from startedAt/finishedAt)
+        // Calculate time spent (could be calculated from startedAt/finishedAt)
         const startTime = new Date(testResult.startedAt);
         const endTime = new Date(testResult.finishedAt);
         const timeSpent = Math.round(

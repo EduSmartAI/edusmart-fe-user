@@ -3,9 +3,6 @@
 
 import apiServer from "EduSmart/lib/apiServer";
 
-// Mock data imports (for development)
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_QUIZ_MOCK === "true";
-
 export interface QuizListItem {
   quizId: string;
   title: string;
@@ -88,18 +85,7 @@ export async function getQuizListAction(): Promise<
   | { ok: false; error: string; status?: number }
 > {
   try {
-    // Handle mock environment
-    if (USE_MOCK) {
-      console.log("🎭 Using mock quiz list in Server Action");
-      const mockModule = await import("EduSmart/lib/quizMockAPI");
-      const mockResult = await mockModule.mockQuizAPI.getQuizList();
-      return {
-        ok: true,
-        data: mockResult as ApiResponse<QuizListItem[]>,
-      };
-    }
     const res = await apiServer.quiz.api.v1QuizSelectQuizzesList();
-    console.log("resData", res);
 
     if (!res.data.success) {
       return {
@@ -149,19 +135,9 @@ export async function createTestAction(
   | { ok: false; error: string; status?: number }
 > {
   try {
-    // Handle mock environment
-    if (USE_MOCK) {
-      console.log("🎭 Using mock create test in Server Action");
-      const mockModule = await import("EduSmart/lib/quizMockAPI");
-      const mockResult = await mockModule.mockQuizAPI.createTest(quizIds);
-      return { ok: true, data: mockResult as ApiResponse<TestDetail> };
-    }
-
     const res = await apiServer.quiz.api.v1TestSelectTestList({
       QuizId: quizIds,
     });
-
-    console.log("resp in v1TestSelectTestList: ", res);
 
     if (!res.data.success) {
       return {
@@ -228,43 +204,18 @@ export async function createTestAction(
 export async function submitStudentTestAction(testData: {
   testId: string;
   startedAt: string;
+  quizIds: string[];
   answers: Array<{ questionId: string; answerId: string }>;
 }): Promise<
   | { ok: true; data: ApiResponse<{ studentTestId: string }> }
   | { ok: false; error: string; status?: number }
 > {
   try {
-    // Handle mock environment
-    if (USE_MOCK) {
-      console.log("🎭 Using mock submit test in Server Action");
-      const mockModule = await import("EduSmart/lib/quizMockAPI");
-
-      console.log("📤 Submitting test with payload:", testData);
-
-      // Transform to backend format for mock
-      const payload = {
-        testId: testData.testId,
-        answers: testData.answers.map((answer) => ({
-          questionId: answer.questionId,
-          selectedAnswers: [answer.answerId],
-        })),
-      };
-
-      const mockResult =
-        await mockModule.mockQuizAPI.submitStudentTest(payload);
-      return {
-        ok: true,
-        data: mockResult as ApiResponse<{ studentTestId: string }>,
-      };
-    }
-
-    console.log("🌐 Using real submit test API");
-    console.log("📤 Submitting test with payload:", testData);
-
     // Use exact payload structure as specified
     const payload = {
       testId: testData.testId,
       startedAt: testData.startedAt,
+      quizIds: testData.quizIds,
       answers: testData.answers.map((answer) => ({
         questionId: answer.questionId,
         answerId: answer.answerId,
@@ -316,18 +267,6 @@ export async function getStudentTestResultAction(
   | { ok: false; error: string; status?: number }
 > {
   try {
-    // Handle mock environment
-    if (USE_MOCK) {
-      console.log("🎭 Using mock student test result in Server Action");
-      const mockModule = await import("EduSmart/lib/quizMockAPI");
-      const mockResult =
-        await mockModule.mockQuizAPI.getStudentTestResult(studentTestId);
-      return {
-        ok: true,
-        data: mockResult as ApiResponse<StudentTestResult>,
-      };
-    }
-
     const res = await apiServer.quiz.api.v1StudentTestSelectStudentTestList({
       studentTestId,
     });

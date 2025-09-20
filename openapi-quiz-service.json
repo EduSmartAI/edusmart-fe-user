@@ -1194,7 +1194,7 @@
       "additionalProperties": false
     },
     "StudentTestInsertCommand": {
-      "required": ["answers", "startedAt", "testId"],
+      "required": ["answers", "quizIds", "startedAt", "testId"],
       "type": "object",
       "properties": {
         "testId": {
@@ -1204,6 +1204,13 @@
         "startedAt": {
           "format": "date-time",
           "type": "string"
+        },
+        "quizIds": {
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
         },
         "answers": {
           "type": "array",

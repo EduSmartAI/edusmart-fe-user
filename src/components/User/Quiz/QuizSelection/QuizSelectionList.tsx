@@ -9,6 +9,7 @@ const { Text } = Typography;
 interface QuizSelectionListProps {
   quizzes: Quiz[];
   selectedQuizIds: string[];
+  isLoading?: boolean;
   onQuizSelect: (quizId: string) => void;
   onQuizStart: (quizId: string) => void;
 }
@@ -16,10 +17,12 @@ interface QuizSelectionListProps {
 const QuizSelectionList: React.FC<QuizSelectionListProps> = ({
   quizzes,
   selectedQuizIds,
+  isLoading = false,
   onQuizSelect,
   onQuizStart,
 }) => {
-  if (quizzes.length === 0) {
+  // Chỉ hiển thị "không có quiz" khi đã load xong và thực sự không có dữ liệu
+  if (!isLoading && quizzes.length === 0) {
     return (
       <div className="text-center py-12">
         <Text className="text-lg text-gray-500">
@@ -28,8 +31,6 @@ const QuizSelectionList: React.FC<QuizSelectionListProps> = ({
       </div>
     );
   }
-
-  console.log("quizzes", quizzes);
 
   return (
     <div className="space-y-4 p-4">

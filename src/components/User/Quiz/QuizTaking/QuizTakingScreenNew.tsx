@@ -1,6 +1,7 @@
 // components/User/Quiz/QuizTaking/QuizTakingScreenNew.tsx
 "use client";
 import React, { useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Layout,
   Card,
@@ -39,18 +40,18 @@ interface QuizTakingScreenNewProps {
 
 const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   testId,
-  onComplete,
   onExit,
 }) => {
+  const router = useRouter();
   const { state, actions } = useQuizTaking();
-  console.log("QuizTakingScreenNew state:", state);
 
   const handleSubmitTest = useCallback(async () => {
     const studentTestId = await actions.submitTest();
     if (studentTestId) {
-      onComplete(studentTestId);
+      // Redirect to quiz result page with studentTestId
+      router.push(`/quiz-result?studentTestId=${studentTestId}`);
     }
-  }, [actions, onComplete]);
+  }, [actions, router]);
 
   // Load test when component mounts
   useEffect(() => {
@@ -58,8 +59,6 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
       actions.loadTest(testId);
     }
   }, [testId, actions]);
-
-  console.log("state in quiz store:", state);
 
   // Loading state
   if (state.isLoading) {
@@ -151,32 +150,6 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
       }
     }
     return true;
-  };
-
-  // Get total answered questions count across all quizzes
-  const getTotalAnsweredQuestions = () => {
-    if (!state.testDetail?.quizzes) return 0;
-
-    let count = 0;
-    for (const quiz of state.testDetail.quizzes) {
-      for (const question of quiz.questions) {
-        const answers = state.answers[question.questionId];
-        if (answers && answers.length > 0) {
-          count++;
-        }
-      }
-    }
-    return count;
-  };
-
-  // Get total questions count across all quizzes
-  const getTotalQuestionsCount = () => {
-    if (!state.testDetail?.quizzes) return 0;
-
-    return state.testDetail.quizzes.reduce(
-      (total, quiz) => total + quiz.questions.length,
-      0,
-    );
   };
 
   const isLastQuestion = () => {

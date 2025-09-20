@@ -1,11 +1,7 @@
 "use client";
 import React from "react";
-import { Button, Card, Tag, Progress, Typography } from "antd";
-import {
-  PlayCircleOutlined,
-  CheckCircleOutlined,
-  TrophyOutlined,
-} from "@ant-design/icons";
+import { Button, Card, Tag, Typography } from "antd";
+import { PlayCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { ZoomIn } from "EduSmart/components/Animation/ZoomIn";
 
 const { Title, Paragraph } = Typography;
@@ -28,29 +24,12 @@ const QuizSelectionLine: React.FC<QuizSelectionLineProps> = ({
   title,
   description,
   subjectCodeName,
-  subjectCode,
-  difficulty,
-  timeLimit,
   totalQuestions,
   isCompleted,
-  score,
   isSelected,
   onSelect,
   onStart,
 }) => {
-  const getDifficultyColor = (level: string) => {
-    switch (level) {
-      case "Easy":
-        return "green";
-      case "Medium":
-        return "orange";
-      case "Hard":
-        return "red";
-      default:
-        return "blue";
-    }
-  };
-
   return (
     <ZoomIn delay={100}>
       <Card

@@ -98,6 +98,7 @@ interface QuizStoreActions {
   submitTest: (testData: {
     testId: string;
     startedAt: string;
+    quizIds: string[];
     answers: Array<{ questionId: string; answerId: string }>;
   }) => Promise<{ ok: boolean; studentTestId?: string; error?: string }>; // Submit test
   loadTestResult: (studentTestId: string) => Promise<boolean>; // Load kết quả test
@@ -273,10 +274,6 @@ export const useQuizStore = create<QuizStore>()(
             const result = await createTestAction(quizIds);
 
             if (result.ok) {
-              console.log(
-                "result from createTestAction: ",
-                result.data.response,
-              );
               set({
                 currentTest: result.data.response,
                 isLoading: false,
@@ -393,8 +390,6 @@ export const useQuizStore = create<QuizStore>()(
               currentQuizId: newCurrentQuizId,
               lastUpdatedAt: new Date(),
             });
-
-            console.log(`Quiz ${quizId} deselected`);
           } else {
             // Thêm vào selection
             newSelectedIds = [...state.selectedQuizIds, quizId];
