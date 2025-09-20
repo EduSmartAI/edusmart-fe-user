@@ -18,6 +18,25 @@ export enum CourseSortBy {
   Value4 = 4,
 }
 
+export interface CheckEnrollmentDto {
+  /** @format uuid */
+  courseId?: string;
+  isEnrolled?: boolean;
+  /** @format date-time */
+  enrolledAt?: string | null;
+  /** @format date-time */
+  expiresAt?: string | null;
+  isActive?: boolean;
+}
+
+export interface CheckEnrollmentResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CheckEnrollmentDto;
+}
+
 export interface CourseCommentDto {
   /** @format uuid */
   commentId?: string;
@@ -193,6 +212,12 @@ export interface CourseRequirementDto {
   isActive?: boolean;
 }
 
+export interface CourseTagDetailsDto {
+  /** @format int64 */
+  courseTagId?: number;
+  tagName?: string | null;
+}
+
 export interface CourseTagDto {
   /** @format int64 */
   tagId?: number;
@@ -224,6 +249,7 @@ export interface CreateCourseDto {
   isActive?: boolean;
   objectives?: CreateCourseObjectiveDto[] | null;
   requirements?: CreateCourseRequirementDto[] | null;
+  courseTags?: CreateCourseTagDto[] | null;
   modules?: CreateModuleDto[] | null;
 }
 
@@ -247,6 +273,11 @@ export interface CreateCourseResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: string | null;
+}
+
+export interface CreateCourseTagDto {
+  /** @format int64 */
+  tagId?: number;
 }
 
 export interface CreateLessonDto {
@@ -309,6 +340,22 @@ export interface GetCourseByIdForLectureResponse {
   modulesCount?: number;
   /** @format int32 */
   lessonsCount?: number;
+}
+
+export interface GetCourseTagsResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseTagDetailsDto[] | null;
+}
+
+export interface GetCoursesByTeacherIdResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseDtoPaginatedResult;
 }
 
 export interface GetCoursesResponse {
@@ -831,6 +878,8 @@ export class Api<
         "Filter.Search"?: string;
         "Filter.SubjectCode"?: string;
         "Filter.IsActive"?: boolean;
+        /** @format uuid */
+        "Filter.LectureId"?: string;
         "Filter.SortBy"?: CourseSortBy;
       },
       params: RequestParams = {},
@@ -845,7 +894,7 @@ export class Api<
       }),
 
     /**
-     * @description Create a new course with its modules and lessons
+     * @description Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.
      *
      * @tags Courses
      * @name V1CoursesCreate
@@ -860,6 +909,39 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve a paginated list of courses created by a specific teacher with optional filtering.
+     *
+     * @tags Courses
+     * @name V1CoursesLectureList
+     * @summary Get list of courses by teacher ID
+     * @request GET:/api/v1/Courses/lecture
+     * @secure
+     */
+    v1CoursesLectureList: (
+      query?: {
+        /** @format int32 */
+        "Pagination.PageIndex"?: number;
+        /** @format int32 */
+        "Pagination.PageSize"?: number;
+        "Filter.Search"?: string;
+        "Filter.SubjectCode"?: string;
+        "Filter.IsActive"?: boolean;
+        /** @format uuid */
+        "Filter.LectureId"?: string;
+        "Filter.SortBy"?: CourseSortBy;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetCoursesByTeacherIdResponse, any>({
+        path: `/api/v1/Courses/lecture`,
+        method: "GET",
+        query: query,
+        secure: true,
         format: "json",
         ...params,
       }),
@@ -925,30 +1007,6 @@ export class Api<
       }),
 
     /**
-     * @description Update a module within a course, including its objectives and lessons
-     *
-     * @tags Courses
-     * @name V1CoursesModuleUpdate
-     * @summary Update a module within a course
-     * @request PUT:/api/v1/Courses/Module/{id}
-     * @secure
-     */
-    v1CoursesModuleUpdate: (
-      id: string,
-      data: UpdateModuleCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<UpdateModuleResponse, any>({
-        path: `/api/v1/Courses/Module/${id}`,
-        method: "PUT",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Update multiple modules in a course with its Objectives and Lessons
      *
      * @tags Courses
@@ -964,6 +1022,66 @@ export class Api<
     ) =>
       this.request<UpdateCourseModulesResponse, any>({
         path: `/api/v1/Courses/${courseId}/modules`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Check if the authenticated user is enrolled in the specified course
+     *
+     * @tags Courses
+     * @name V1CoursesEnrollmentList
+     * @summary Check if current user is enrolled in a course
+     * @request GET:/api/v1/Courses/{courseId}/enrollment
+     * @secure
+     */
+    v1CoursesEnrollmentList: (courseId: string, params: RequestParams = {}) =>
+      this.request<CheckEnrollmentResponse, any>({
+        path: `/api/v1/Courses/${courseId}/enrollment`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve all available course tags
+     *
+     * @tags Courses
+     * @name V1CoursesTagsList
+     * @summary Get all course tags
+     * @request GET:/api/v1/Courses/tags
+     * @secure
+     */
+    v1CoursesTagsList: (params: RequestParams = {}) =>
+      this.request<GetCourseTagsResponse, any>({
+        path: `/api/v1/Courses/tags`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update a module within a course, including its objectives and lessons
+     *
+     * @tags Modules
+     * @name ModulesUpdate
+     * @summary Update a module within a course
+     * @request PUT:/api/Modules/{id}
+     * @secure
+     */
+    modulesUpdate: (
+      id: string,
+      data: UpdateModuleCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateModuleResponse, any>({
+        path: `/api/Modules/${id}`,
         method: "PUT",
         body: data,
         secure: true,

@@ -56,6 +56,14 @@
             }
           },
           {
+            "name": "Filter.LectureId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "name": "Filter.SortBy",
             "in": "query",
             "schema": {
@@ -91,7 +99,7 @@
           "Courses"
         ],
         "summary": "Create a new course",
-        "description": "Create a new course with its modules and lessons",
+        "description": "Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -128,6 +136,91 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CreateCourseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Courses/lecture": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "Get list of courses by teacher ID",
+        "description": "Retrieve a paginated list of courses created by a specific teacher with optional filtering.",
+        "parameters": [
+          {
+            "name": "Pagination.PageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Pagination.PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Filter.Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Filter.SubjectCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Filter.IsActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Filter.LectureId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Filter.SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CourseSortBy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCoursesByTeacherIdResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCoursesByTeacherIdResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCoursesByTeacherIdResponse"
                 }
               }
             }
@@ -278,67 +371,6 @@
         }
       }
     },
-    "/api/v1/Courses/Module/{id}": {
-      "put": {
-        "tags": [
-          "Courses"
-        ],
-        "summary": "Update a module within a course",
-        "description": "Update a module within a course, including its objectives and lessons",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/Courses/{courseId}/modules": {
       "put": {
         "tags": [
@@ -399,10 +431,197 @@
           }
         }
       }
+    },
+    "/api/v1/Courses/{courseId}/enrollment": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "Check if current user is enrolled in a course",
+        "description": "Check if the authenticated user is enrolled in the specified course",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEnrollmentResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEnrollmentResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEnrollmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Courses/tags": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "Get all course tags",
+        "description": "Retrieve all available course tags",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseTagsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseTagsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseTagsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Modules/{id}": {
+      "put": {
+        "tags": [
+          "Modules"
+        ],
+        "summary": "Update a module within a course",
+        "description": "Update a module within a course, including its objectives and lessons",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModuleCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModuleCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModuleCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "CheckEnrollmentDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "isEnrolled": {
+            "type": "boolean"
+          },
+          "enrolledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CheckEnrollmentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CheckEnrollmentDto"
+          }
+        },
+        "additionalProperties": false
+      },
       "CourseCommentDto": {
         "type": "object",
         "properties": {
@@ -898,6 +1117,20 @@
         "type": "integer",
         "format": "int32"
       },
+      "CourseTagDetailsDto": {
+        "type": "object",
+        "properties": {
+          "courseTagId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tagName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CourseTagDto": {
         "type": "object",
         "properties": {
@@ -988,6 +1221,13 @@
             },
             "nullable": true
           },
+          "courseTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateCourseTagDto"
+            },
+            "nullable": true
+          },
           "modules": {
             "type": "array",
             "items": {
@@ -1056,6 +1296,16 @@
           "response": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateCourseTagDto": {
+        "type": "object",
+        "properties": {
+          "tagId": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
@@ -1235,6 +1485,64 @@
           "lessonsCount": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetCourseTagsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseTagDetailsDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetCoursesByTeacherIdResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CourseDtoPaginatedResult"
           }
         },
         "additionalProperties": false

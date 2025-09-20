@@ -23,11 +23,11 @@ export async function verifyAccountAction(
   try {
     console.log("payload", payload);
     const resp = await authService.api.v1AccountVerifyAccountCreate({
-      key: payload.key
+      key: payload.key,
     });
     console.log("response", resp);
     const api = resp.data;
-    console.log("api response",api)
+    console.log("api response", api);
     if (api?.success === true) {
       return { ok: true, data: api };
     }
@@ -40,21 +40,27 @@ export async function verifyAccountAction(
       error: msg,
       detailErrors: api?.detailErrors ?? null,
     };
-
   } catch (err: unknown) {
-    const errorObj = err as { status?: number; error?: unknown; data?: unknown };
+    const errorObj = err as {
+      status?: number;
+      error?: unknown;
+      data?: unknown;
+    };
     const body = errorObj.error ?? errorObj.data;
 
     const message =
       (typeof body === "string" && body) ||
-      (typeof (body as { message?: string })?.message === "string" && (body as { message?: string }).message) ||
+      (typeof (body as { message?: string })?.message === "string" &&
+        (body as { message?: string }).message) ||
       (body as { title?: string })?.title ||
       "Xác minh tài khoản thất bại";
     return {
       ok: false,
       status: errorObj.status,
       error: message,
-      detailErrors: Array.isArray((body as { detailErrors?: DetailError[] })?.detailErrors)
+      detailErrors: Array.isArray(
+        (body as { detailErrors?: DetailError[] })?.detailErrors,
+      )
         ? (body as { detailErrors: DetailError[] }).detailErrors
         : null,
     };

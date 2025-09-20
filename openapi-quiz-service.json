@@ -6,23 +6,77 @@
   },
   "basePath": "/quiz",
   "paths": {
+    "/api/v1/ExternalQuiz/SelectSemesters": {
+      "get": {
+        "tags": ["ExternalQuiz"],
+        "summary": "Lấy danh sách tất cả các học kỳ",
+        "description": "Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SemesterSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectMajors": {
+      "get": {
+        "tags": ["ExternalQuiz"],
+        "summary": "Lấy danh sách tất cả các chuyên ngành trong trường",
+        "description": "Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/MajorSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectTechnologies": {
+      "get": {
+        "tags": ["ExternalQuiz"],
+        "summary": "Lấy danh sách tất cả các ngôn ngữ lập trình/ framework",
+        "description": "Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TechnologySelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectLearningGoals": {
+      "get": {
+        "tags": ["ExternalQuiz"],
+        "summary": "Lấy danh sách tất cả các mục tiêu học tập đang có",
+        "description": "Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LearningGoalSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Question": {
       "put": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Cập nhật câu hỏi và câu trả lời",
         "description": "Cần cấp quyền Admin cho API. Update question và tất cả answers của nó",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -42,16 +96,10 @@
         }
       },
       "delete": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Xóa câu hỏi và tất cả câu trả lời",
         "description": "Cần cấp quyền Admin cho API. Delete question và tất cả answers của nó",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -70,21 +118,11 @@
         }
       },
       "post": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Thêm câu hỏi và câu trả lời vào quiz",
         "description": "Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -104,18 +142,12 @@
         }
       }
     },
-    "/api/v1/Quiz": {
+    "/api/v1/Quiz/SelectQuizzes": {
       "get": {
-        "tags": [
-          "Quiz"
-        ],
+        "tags": ["Quiz"],
         "summary": "Lấy danh sách quiz của một bài kiểm tra",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -126,23 +158,59 @@
         }
       }
     },
-    "/api/v1/StudentTest": {
+    "/api/v1/StudentSurvey": {
       "post": {
-        "tags": [
-          "StudentTest"
+        "tags": ["StudentSurvey"],
+        "summary": "Lưu câu trả lời phần khảo sát của học sinh",
+        "description": "Cần cấp quyền Student cho API",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/StudentSurveyInsertCommand"
+            }
+          }
         ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSurveyInsertResponse"
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["StudentSurvey"],
+        "summary": "Hiển câu trả lời phần khảo sát của học sinh",
+        "description": "Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSurveySelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/StudentTest/InsertStudentTest": {
+      "post": {
+        "tags": ["StudentTest"],
         "summary": "Lưu câu trả lời của học sinh",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -160,18 +228,14 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v1/StudentTest/SelectStudentTest": {
       "get": {
-        "tags": [
-          "StudentTest"
-        ],
+        "tags": ["StudentTest"],
         "summary": "Lấy câu trả lời của học sinh trong bài test",
         "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -192,21 +256,11 @@
     },
     "/api/v1/Survey": {
       "post": {
-        "tags": [
-          "Survey"
-        ],
+        "tags": ["Survey"],
         "summary": "Tạo khảo sát mới",
         "description": "Tạo khảo sát mới với các câu hỏi và câu trả lời tương ứng",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -226,16 +280,10 @@
         }
       },
       "get": {
-        "tags": [
-          "Survey"
-        ],
+        "tags": ["Survey"],
         "summary": "Lấy danh sách các khảo sát",
         "description": "Lấy danh sách các khảo sát",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -246,18 +294,12 @@
         }
       }
     },
-    "/api/v1/Survey/details": {
+    "/api/v1/Survey/Detail": {
       "get": {
-        "tags": [
-          "Survey"
-        ],
+        "tags": ["Survey"],
         "summary": "Lấy danh sách các khảo sát",
         "description": "Lấy chi tiết khảo sát với phân trang",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -289,23 +331,13 @@
         }
       }
     },
-    "/api/v1/Test": {
+    "/api/v1/Test/InsertTest": {
       "post": {
-        "tags": [
-          "Test"
-        ],
+        "tags": ["Test"],
         "summary": "Tạo bài kiểm tra mới",
         "description": "Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -323,18 +355,14 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v1/Test/SelectTest": {
       "get": {
-        "tags": [
-          "Test"
-        ],
+        "tags": ["Test"],
         "summary": "Lấy bài kiểm tra gồm các quiz mà student chọn",
-        "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "description": "Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -368,9 +396,6 @@
         },
         "answerText": {
           "type": "string"
-        },
-        "isCorrect": {
-          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -392,10 +417,7 @@
       "additionalProperties": false
     },
     "Answers": {
-      "required": [
-        "answerText",
-        "isCorrect"
-      ],
+      "required": ["answerText", "isCorrect"],
       "type": "object",
       "properties": {
         "answerText": {
@@ -435,6 +457,90 @@
       },
       "additionalProperties": false
     },
+    "LearningGoalSelectsEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LearningGoalSelectsEventResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningGoalSelectsEventResponseEntity": {
+      "type": "object",
+      "properties": {
+        "learningGoalId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "learningGoalName": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MajorSelectsEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MajorSelectsEventResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MajorSelectsEventResponseEntity": {
+      "type": "object",
+      "properties": {
+        "majorId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "majorName": {
+          "type": "string"
+        },
+        "parentMajorId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "QuestionDeleteResponse": {
       "type": "object",
       "properties": {
@@ -468,6 +574,14 @@
         },
         "questionText": {
           "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
         },
         "answers": {
           "type": "array",
@@ -594,15 +708,20 @@
       "additionalProperties": false
     },
     "Questions": {
-      "required": [
-        "answers",
-        "questionText"
-      ],
+      "required": ["answers", "difficultyLevel", "questionText"],
       "type": "object",
       "properties": {
         "questionText": {
           "minLength": 1,
           "type": "string"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
         },
         "explanation": {
           "type": "string"
@@ -611,6 +730,73 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/Answers"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionsResultSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentAnswerDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizResultSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "subjectCode": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "subjectCodeName": {
+          "type": "string"
+        },
+        "totalQuestions": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalCorrectAnswers": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "questionResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionsResultSelectResponseEntity"
           }
         }
       },
@@ -659,6 +845,13 @@
         "subjectCode": {
           "format": "uuid",
           "type": "string"
+        },
+        "subjectCodeName": {
+          "type": "string"
+        },
+        "totalQuestions": {
+          "format": "int32",
+          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -680,6 +873,13 @@
           "format": "uuid",
           "type": "string"
         },
+        "subjectCodeName": {
+          "type": "string"
+        },
+        "totalQuestions": {
+          "format": "int32",
+          "type": "integer"
+        },
         "questions": {
           "type": "array",
           "items": {
@@ -690,12 +890,7 @@
       "additionalProperties": false
     },
     "Quizzes": {
-      "required": [
-        "description",
-        "questions",
-        "subjectCode",
-        "title"
-      ],
+      "required": ["description", "questions", "subjectCode", "title"],
       "type": "object",
       "properties": {
         "title": {
@@ -719,11 +914,71 @@
       },
       "additionalProperties": false
     },
+    "SemesterSelectsEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SemesterSelectsEventResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SemesterSelectsEventResponseEntity": {
+      "type": "object",
+      "properties": {
+        "semesterId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "semesterName": {
+          "type": "string"
+        },
+        "semesterNumber": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentAnswerDetailResponse": {
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isCorrectAnswer": {
+          "type": "boolean"
+        },
+        "selectedByStudent": {
+          "type": "boolean"
+        },
+        "answerText": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentAnswerRequest": {
-      "required": [
-        "answerId",
-        "questionId"
-      ],
+      "required": ["answerId", "questionId"],
       "type": "object",
       "properties": {
         "questionId": {
@@ -737,13 +992,113 @@
       },
       "additionalProperties": false
     },
-    "StudentAnswerSelectResponseEntity": {
+    "StudentInformation": {
+      "required": ["learningGoalIds", "majorId", "semesterId", "technologyIds"],
+      "type": "object",
+      "properties": {
+        "majorId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "semesterId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "technologyIds": {
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "learningGoalIds": {
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentQuizAnswerInsertRequest": {
+      "required": ["questionId"],
       "type": "object",
       "properties": {
         "questionId": {
           "format": "uuid",
           "type": "string"
         },
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerText": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveyInsertCommand": {
+      "required": ["studentInformation"],
+      "type": "object",
+      "properties": {
+        "studentInformation": {
+          "$ref": "#/definitions/StudentInformation"
+        },
+        "studentSurveys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveyInsertRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveyInsertRequest": {
+      "required": ["answers", "surveyId"],
+      "type": "object",
+      "properties": {
+        "surveyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentQuizAnswerInsertRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveyInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectAnswerResponseEntity": {
+      "type": "object",
+      "properties": {
         "answerId": {
           "format": "uuid",
           "type": "string"
@@ -751,18 +1106,95 @@
         "isCorrect": {
           "type": "boolean"
         },
-        "explanation": {
+        "answerText": {
           "type": "string"
         }
       },
       "additionalProperties": false
     },
+    "StudentSurveySelectQuery": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "StudentSurveySelectQuestionResponseEntity": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySelectAnswerResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectQuizResponseEntity": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySelectQuestionResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySelectResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "studentSurveyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "survey": {
+          "$ref": "#/definitions/StudentSurveySelectQuizResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentTestInsertCommand": {
-      "required": [
-        "answers",
-        "startedAt",
-        "testId"
-      ],
+      "required": ["answers", "quizIds", "startedAt", "testId"],
       "type": "object",
       "properties": {
         "testId": {
@@ -772,6 +1204,13 @@
         "startedAt": {
           "format": "date-time",
           "type": "string"
+        },
+        "quizIds": {
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
         },
         "answers": {
           "type": "array",
@@ -842,6 +1281,12 @@
           "format": "uuid",
           "type": "string"
         },
+        "testName": {
+          "type": "string"
+        },
+        "testDescription": {
+          "type": "string"
+        },
         "startedAt": {
           "format": "date-time",
           "type": "string"
@@ -850,19 +1295,17 @@
           "format": "date-time",
           "type": "string"
         },
-        "answers": {
+        "quizResults": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/StudentAnswerSelectResponseEntity"
+            "$ref": "#/definitions/QuizResultSelectResponseEntity"
           }
         }
       },
       "additionalProperties": false
     },
     "SurveyAnswerRequest": {
-      "required": [
-        "answerText"
-      ],
+      "required": ["answerText"],
       "type": "object",
       "properties": {
         "answerText": {
@@ -959,11 +1402,7 @@
       "additionalProperties": false
     },
     "SurveyInsertCommand": {
-      "required": [
-        "description",
-        "questions",
-        "title"
-      ],
+      "required": ["description", "questions", "title"],
       "type": "object",
       "properties": {
         "title": {
@@ -1008,11 +1447,7 @@
       "additionalProperties": false
     },
     "SurveyQuestionRequest": {
-      "required": [
-        "answers",
-        "questionText",
-        "questionType"
-      ],
+      "required": ["answers", "questionText", "questionType"],
       "type": "object",
       "properties": {
         "questionText": {
@@ -1075,12 +1510,52 @@
       },
       "additionalProperties": false
     },
+    "TechnologySelectsEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TechnologySelectsEventResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TechnologySelectsEventResponseEntity": {
+      "type": "object",
+      "properties": {
+        "technologyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "technologyName": {
+          "type": "string"
+        },
+        "technologyType": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
     "TestInsertCommand": {
-      "required": [
-        "description",
-        "quizzes",
-        "testName"
-      ],
+      "required": ["description", "quizzes", "testName"],
       "type": "object",
       "properties": {
         "testName": {
@@ -1197,7 +1672,7 @@
   },
   "security": [
     {
-      "JWT_Token": [ ]
+      "JWT_Token": []
     }
   ]
 }
