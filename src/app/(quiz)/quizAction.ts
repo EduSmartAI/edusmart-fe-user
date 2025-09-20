@@ -80,6 +80,65 @@ export interface ApiResponse<T> {
 /**
  * Server Action: Get Quiz List
  */
+
+export type NormalizedHttpError = {
+  message: string;
+  details?: string;
+  status?: number;
+};
+
+export async function normalizeFetchError(err: unknown): Promise<NormalizedHttpError> {
+  // Lỗi do fetch ném ra Response
+  if (err instanceof Response) {
+    let details = "";
+    try {
+      const clone = err.clone();
+      const ct = clone.headers.get("content-type") ?? "";
+      details = ct.includes("application/json")
+        ? JSON.stringify(await clone.json())
+        : await clone.text();
+    } catch {
+      // ignore
+    }
+    return {
+      message: `HTTP ${err.status} ${err.statusText}`,
+      details,
+      status: err.status,
+    };
+  }
+
+  // Một số lib bọc lỗi có err.cause là Response
+  const unknownErr = err as unknown;
+  if (
+    typeof unknownErr === "object" &&
+    unknownErr !== null &&
+    "cause" in unknownErr &&
+    (unknownErr as { cause?: unknown }).cause instanceof Response
+  ) {
+    const cause = (unknownErr as { cause: Response }).cause;
+    let details = "";
+    try {
+      const clone = cause.clone();
+      const ct = clone.headers.get("content-type") ?? "";
+      details = ct.includes("application/json")
+        ? JSON.stringify(await clone.json())
+        : await clone.text();
+    } catch {}
+    return {
+      message: `HTTP ${cause.status} ${cause.statusText}`,
+      details,
+      status: cause.status,
+    };
+  }
+
+  // Fallback
+  return {
+    message: unknownErr && typeof unknownErr === "object" && "message" in unknownErr
+      ? String((unknownErr as { message?: unknown }).message)
+      : String(err),
+  };
+}
+
 export async function getQuizListAction(): Promise<
   | { ok: true; data: ApiResponse<QuizListItem[]> }
   | { ok: false; error: string; status?: number }
@@ -87,15 +146,15 @@ export async function getQuizListAction(): Promise<
   try {
     const res = await apiServer.quiz.api.v1QuizSelectQuizzesList();
 
-    if (!res.data.success) {
+    if (!res.data?.success) {
       return {
         ok: false,
-        error: "Failed to fetch quiz list",
+        error: res.data?.message || "Failed to fetch quiz list",
+        status: 400,
       };
     }
 
-    const payload = res.data;
-    const backendItems = payload?.response ?? [];
+    const backendItems = res.data.response ?? [];
     const items: QuizListItem[] = backendItems.map((q) => ({
       quizId: q.quizId ?? "",
       title: q.title ?? "",
@@ -108,19 +167,20 @@ export async function getQuizListAction(): Promise<
     return {
       ok: true,
       data: {
-        success: payload?.success ?? true,
-        message: payload?.message ?? "OK",
+        success: true,
+        message: res.data.message ?? "OK",
         response: items,
-        messageId: payload?.messageId,
-        detailErrors: payload?.detailErrors ?? null,
+        messageId: res.data.messageId,
+        detailErrors: res.data.detailErrors ?? null,
       },
     };
   } catch (error) {
-    console.error("❌ Error in getQuizListAction:", error);
+    const n = await normalizeFetchError(error);
+    console.error("❌ getQuizListAction failed:", n);
     return {
       ok: false,
-      error:
-        error instanceof Error ? error.message : "Failed to fetch quiz list",
+      error: n.details ? `${n.message} — ${n.details}` : n.message,
+      status: n.status,
     };
   }
 }

@@ -1,4 +1,6 @@
 // app/quiz-result/page.tsx
+export const dynamic = "force-dynamic"; // luôn SSR động
+export const revalidate = 0;
 import { Suspense } from "react";
 import QuizResultClient from "./QuizResultClient";
 
