@@ -160,14 +160,14 @@ export default function CourseListPage() {
 
   return (
     <BaseScreenStudyLayout>
-      <div className="">
+      <div className="mx-8 mb-8">
         <div className="grid grid-cols-12 gap-4 lg:gap-6">
           {/* ===== Left: Video + Tabs (giống khu vực chính trong ảnh) ===== */}
           <div className="col-span-12 lg:col-span-9">
             {/* Video box */}
             <div className="rounded-xl overflow-hidden bg-black shadow-sm ring-1 ring-neutral-200/60 dark:ring-neutral-800">
               {/* aspect-video giữ tỷ lệ 16:9, không vỡ UI */}
-              <div className="aspect-video">
+              <div className="relative aspect-video w-full">
                 <VideoPlayer
                   src={hlsUrl}
                   urlVtt={vttUrl}

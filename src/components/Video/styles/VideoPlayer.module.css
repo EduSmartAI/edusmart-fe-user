@@ -1,3 +1,7 @@
 .player {
   --plyr-color-main: #ff0000;
 }
+.player :global(.plyr) { height: 100%; }
+.player :global(.plyr__video-wrapper) { height: 100%; aspect-ratio: unset; }
+.player :global(video) { width: 100%; height: 100%; object-fit: cover; }
+.player :global(.plyr--video .plyr__poster) { background-size: cover; }
