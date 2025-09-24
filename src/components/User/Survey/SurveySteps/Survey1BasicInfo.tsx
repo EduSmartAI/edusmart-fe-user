@@ -12,6 +12,7 @@ import {
   Row,
   Col,
   Divider,
+  Spin,
 } from "antd";
 import { ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import {
@@ -21,7 +22,7 @@ import {
   LearningGoalOption,
   InterestSurveyQuestion,
   InterestSurveyAnswer,
-} from "EduSmart/types/survey";
+} from "EduSmart/types";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -30,12 +31,50 @@ interface Survey1BasicInfoProps {
   initialData?: Survey1FormValues | null;
   onComplete: (data: Survey1FormValues) => void;
   onBack?: () => void;
+  semesters?: Array<{
+    semesterId: string;
+    semesterName: string;
+    semesterNumber: number;
+  }>;
+  majors?: Array<{
+    majorId: string;
+    majorName: string;
+    majorCode: string;
+    parentMajorId?: string;
+  }>;
+  learningGoals?: Array<{
+    learningGoalId: string;
+    learningGoalName: string;
+    learningGoalType: number;
+  }>;
+  interestSurveyDetail?: {
+    surveyId: string;
+    title?: string;
+    description: string;
+    surveyCode: string;
+    questions?: Array<{
+      questionId: string;
+      questionText: string;
+      questionType: number;
+      answers: Array<{
+        answerId: string;
+        answerText: string;
+        isCorrect: boolean;
+      }>;
+    }>;
+  } | null;
+  isLoading?: boolean;
 }
 
 const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
   initialData,
   onComplete,
   onBack,
+  semesters = [],
+  majors = [],
+  learningGoals = [],
+  interestSurveyDetail = null,
+  isLoading = false,
 }) => {
   const [form] = Form.useForm<Survey1FormValues>();
   const [hasFutureOrientation, setHasFutureOrientation] = useState<
@@ -46,175 +85,163 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
     InterestSurveyAnswer[]
   >([]);
 
-  // Mock data cho câu hỏi khảo sát sở thích
-  const interestSurveyQuestions: InterestSurveyQuestion[] = [
-    {
-      questionId: "e54e26de-45a5-42c6-8052-3db027fb74be",
-      questionText: "Bạn có thể dành bao nhiêu giờ học mỗi ngày?",
-      questionType: 4,
-      answers: [
-        {
-          answerId: "308fa63c-7395-4357-820e-3a5c699d2d0c",
-          answerText: "1-2 giờ/ngày",
-          isCorrect: false,
-        },
-        {
-          answerId: "55051f4c-0a2c-4fe4-93d1-358b1420b898",
-          answerText: "3-4 giờ/ngày",
-          isCorrect: false,
-        },
-        {
-          answerId: "d98244d8-235a-4b76-bed1-bdcbda2e3831",
-          answerText: "5-6 giờ/ngày",
-          isCorrect: false,
-        },
-        {
-          answerId: "6cc61bcd-29ef-4380-8677-460504d1bb6c",
-          answerText: "Trên 6 giờ/ngày",
-          isCorrect: false,
-        },
-      ],
-    },
-    {
-      questionId: "a12b34cd-56ef-78gh-90ij-1234567890kl",
-      questionText: "Bạn thích học theo phương pháp nào nhất?",
-      questionType: 4,
-      answers: [
-        {
-          answerId: "answer1-study-method",
-          answerText: "Học lý thuyết trước, thực hành sau",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer2-study-method",
-          answerText: "Học qua dự án thực tế",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer3-study-method",
-          answerText: "Học theo nhóm, thảo luận",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer4-study-method",
-          answerText: "Tự học, nghiên cứu độc lập",
-          isCorrect: false,
-        },
-      ],
-    },
-    {
-      questionId: "b23c45de-67fg-89hi-01jk-2345678901mn",
-      questionText: "Lĩnh vực công nghệ nào bạn quan tâm nhất?",
-      questionType: 4,
-      answers: [
-        {
-          answerId: "answer1-tech-field",
-          answerText: "Phát triển Web (Frontend/Backend)",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer2-tech-field",
-          answerText: "Phát triển Mobile App",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer3-tech-field",
-          answerText: "Trí tuệ nhân tạo & Machine Learning",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer4-tech-field",
-          answerText: "Khoa học dữ liệu & Analytics",
-          isCorrect: false,
-        },
-      ],
-    },
-    {
-      questionId: "c34d56ef-78gh-90ij-12kl-3456789012no",
-      questionText: "Môi trường làm việc nào bạn thích nhất?",
-      questionType: 4,
-      answers: [
-        {
-          answerId: "answer1-work-env",
-          answerText: "Công ty lớn, ổn định",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer2-work-env",
-          answerText: "Startup, năng động",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer3-work-env",
-          answerText: "Freelance, tự do",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer4-work-env",
-          answerText: "Remote, làm việc từ xa",
-          isCorrect: false,
-        },
-      ],
-    },
-    {
-      questionId: "d45e67fg-89hi-01jk-23lm-4567890123op",
-      questionText: "Yếu tố nào quan trọng nhất với bạn khi chọn ngành nghề?",
-      questionType: 4,
-      answers: [
-        {
-          answerId: "answer1-career-factor",
-          answerText: "Mức lương cao",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer2-career-factor",
-          answerText: "Sự phát triển và học hỏi",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer3-career-factor",
-          answerText: "Work-life balance",
-          isCorrect: false,
-        },
-        {
-          answerId: "answer4-career-factor",
-          answerText: "Tác động xã hội tích cực",
-          isCorrect: false,
-        },
-      ],
-    },
-  ];
+  // Sử dụng questions từ API hoặc fallback to mock data
+  const interestSurveyQuestions: InterestSurveyQuestion[] =
+    interestSurveyDetail?.questions || [
+      {
+        questionId: "e54e26de-45a5-42c6-8052-3db027fb74be",
+        questionText: "Bạn có thể dành bao nhiêu giờ học mỗi ngày?",
+        questionType: 4,
+        answers: [
+          {
+            answerId: "308fa63c-7395-4357-820e-3a5c699d2d0c",
+            answerText: "1-2 giờ/ngày",
+            isCorrect: false,
+          },
+          {
+            answerId: "55051f4c-0a2c-4fe4-93d1-358b1420b898",
+            answerText: "3-4 giờ/ngày",
+            isCorrect: false,
+          },
+          {
+            answerId: "d98244d8-235a-4b76-bed1-bdcbda2e3831",
+            answerText: "5-6 giờ/ngày",
+            isCorrect: false,
+          },
+          {
+            answerId: "6cc61bcd-29ef-4380-8677-460504d1bb6c",
+            answerText: "Trên 6 giờ/ngày",
+            isCorrect: false,
+          },
+        ],
+      },
+      {
+        questionId: "a12b34cd-56ef-78gh-90ij-1234567890kl",
+        questionText: "Bạn thích học theo phương pháp nào nhất?",
+        questionType: 4,
+        answers: [
+          {
+            answerId: "answer1-study-method",
+            answerText: "Học lý thuyết trước, thực hành sau",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer2-study-method",
+            answerText: "Học qua dự án thực tế",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer3-study-method",
+            answerText: "Học theo nhóm, thảo luận",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer4-study-method",
+            answerText: "Tự học, nghiên cứu độc lập",
+            isCorrect: false,
+          },
+        ],
+      },
+      {
+        questionId: "b23c45de-67fg-89hi-01jk-2345678901mn",
+        questionText: "Lĩnh vực công nghệ nào bạn quan tâm nhất?",
+        questionType: 4,
+        answers: [
+          {
+            answerId: "answer1-tech-field",
+            answerText: "Phát triển Web (Frontend/Backend)",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer2-tech-field",
+            answerText: "Phát triển Mobile App",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer3-tech-field",
+            answerText: "Trí tuệ nhân tạo & Machine Learning",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer4-tech-field",
+            answerText: "Khoa học dữ liệu & Analytics",
+            isCorrect: false,
+          },
+        ],
+      },
+      {
+        questionId: "c34d56ef-78gh-90ij-12kl-3456789012no",
+        questionText: "Môi trường làm việc nào bạn thích nhất?",
+        questionType: 4,
+        answers: [
+          {
+            answerId: "answer1-work-env",
+            answerText: "Công ty lớn, ổn định",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer2-work-env",
+            answerText: "Startup, năng động",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer3-work-env",
+            answerText: "Freelance, tự do",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer4-work-env",
+            answerText: "Remote, làm việc từ xa",
+            isCorrect: false,
+          },
+        ],
+      },
+      {
+        questionId: "d45e67fg-89hi-01jk-23lm-4567890123op",
+        questionText: "Yếu tố nào quan trọng nhất với bạn khi chọn ngành nghề?",
+        questionType: 4,
+        answers: [
+          {
+            answerId: "answer1-career-factor",
+            answerText: "Mức lương cao",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer2-career-factor",
+            answerText: "Sự phát triển và học hỏi",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer3-career-factor",
+            answerText: "Work-life balance",
+            isCorrect: false,
+          },
+          {
+            answerId: "answer4-career-factor",
+            answerText: "Tác động xã hội tích cực",
+            isCorrect: false,
+          },
+        ],
+      },
+    ];
 
-  // Mock data - sẽ thay thế bằng API calls sau
-  const semesters: SemesterOption[] = [
-    { label: "Kỳ 1", value: "semester_1" },
-    { label: "Kỳ 2", value: "semester_2" },
-    { label: "Kỳ 3", value: "semester_3" },
-    { label: "Kỳ 4", value: "semester_4" },
-    { label: "Kỳ 5", value: "semester_5" },
-    { label: "Kỳ 6", value: "semester_6" },
-    { label: "Kỳ 7", value: "semester_7" },
-    { label: "Kỳ 8", value: "semester_8" },
-  ];
+  // Transform API data to component format
+  const semesterOptions: SemesterOption[] = semesters.map((semester) => ({
+    label: semester.semesterName,
+    value: semester.semesterId,
+  }));
 
-  const specializations: SpecializationOption[] = [
-    { label: "Phát triển Web", value: "web_development" },
-    { label: "Phát triển Mobile", value: "mobile_development" },
-    { label: "Trí tuệ nhân tạo", value: "artificial_intelligence" },
-    { label: "Khoa học dữ liệu", value: "data_science" },
-    { label: "Bảo mật thông tin", value: "cybersecurity" },
-    { label: "DevOps", value: "devops" },
-    { label: "Game Development", value: "game_development" },
-  ];
+  const specializations: SpecializationOption[] = majors.map((major) => ({
+    label: major.majorName,
+    value: major.majorId,
+  }));
 
-  const learningGoals: LearningGoalOption[] = [
-    { label: "Cải thiện kỹ năng lập trình", value: "improve_programming" },
-    { label: "Chuẩn bị cho thực tập", value: "prepare_internship" },
-    { label: "Chuẩn bị cho việc làm", value: "prepare_job" },
-    { label: "Phát triển dự án cá nhân", value: "personal_project" },
-    { label: "Học công nghệ mới", value: "learn_new_tech" },
-    { label: "Đạt chứng chỉ", value: "get_certification" },
-  ];
+  const learningGoalOptions: LearningGoalOption[] = learningGoals.map(
+    (goal) => ({
+      label: goal.learningGoalName,
+      value: goal.learningGoalId,
+    }),
+  );
 
   useEffect(() => {
     if (initialData) {
@@ -242,9 +269,9 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
 
   const handleSemesterChange = (value: string) => {
     setCurrentSemester(value);
-    // Reset specialization if moving to earlier semester
-    const semesterNumber = parseInt(value.split("_")[1]);
-    if (semesterNumber <= 4) {
+    // Find semester number from API data
+    const selectedSemester = semesters.find((s) => s.semesterId === value);
+    if (selectedSemester && selectedSemester.semesterNumber <= 4) {
       form.setFieldValue("specialization", undefined);
     }
   };
@@ -261,21 +288,33 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
         );
         return;
       }
+      window.scrollTo({ top: 0, behavior: "smooth" });
       // Gửi data với interestSurveyAnswers
       onComplete({
         ...values,
         interestSurveyAnswers,
       });
     } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
       // Gửi data bình thường với futureOrientation
       onComplete(values);
     }
   };
 
+  const handleBack = () => {
+    // Scroll to top before going back
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (onBack) {
+      onBack();
+    }
+  };
+
   const shouldShowSpecialization = () => {
     if (!currentSemester) return false;
-    const semesterNumber = parseInt(currentSemester.split("_")[1]);
-    return semesterNumber > 4;
+    const selectedSemester = semesters.find(
+      (s) => s.semesterId === currentSemester,
+    );
+    return selectedSemester ? selectedSemester.semesterNumber > 4 : false;
   };
 
   const handleInterestSurveyAnswer = (questionId: string, answerId: string) => {
@@ -336,7 +375,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
             className="w-full"
           >
             <div className="grid gap-3">
-              {question.answers.map((answer, answerIndex) => (
+              {question.answers.map((answer) => (
                 <Radio
                   key={answer.answerId}
                   value={answer.answerId}
@@ -369,6 +408,14 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
       </Card>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6 flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -413,7 +460,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                   >
                     <Select
                       placeholder="Chọn kỳ học"
-                      options={semesters}
+                      options={semesterOptions}
                       onChange={handleSemesterChange}
                       size="large"
                       className="rounded-lg"
@@ -461,7 +508,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
               >
                 <Select
                   placeholder="Chọn mục tiêu học tập"
-                  options={learningGoals}
+                  options={learningGoalOptions}
                   size="large"
                   className="rounded-lg"
                 />
@@ -622,7 +669,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                 <Button
                   type="default"
                   icon={<ArrowLeftOutlined />}
-                  onClick={onBack}
+                  onClick={handleBack}
                   disabled={!onBack}
                   size="large"
                   className="px-6 py-3 h-auto rounded-xl border-gray-200 hover:border-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200"

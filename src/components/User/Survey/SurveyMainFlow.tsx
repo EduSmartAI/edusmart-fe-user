@@ -1,16 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { Layout, Steps, Card } from "antd";
 import {
-  SurveyFlowState,
   SurveyStep,
   Survey1FormValues,
   Survey2FormValues,
   Survey3FormValues,
-} from "EduSmart/types/survey";
+} from "EduSmart/types";
 import Survey1BasicInfo from "EduSmart/components/User/Survey/SurveySteps/Survey1BasicInfo";
 import Survey2TechKnowledge from "EduSmart/components/User/Survey/SurveySteps/Survey2TechKnowledge";
 import Survey3StudyHabits from "EduSmart/components/User/Survey/SurveySteps/Survey3StudyHabits";
+import { useSurvey } from "EduSmart/hooks/survey";
 
 const { Content } = Layout;
 
@@ -19,50 +19,62 @@ interface SurveyMainFlowProps {
   onBack?: () => void;
 }
 
-const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
-  onComplete,
-  onBack,
-}) => {
-  const [surveyState, setSurveyState] = useState<SurveyFlowState>({
-    currentStep: 1,
-    completedSteps: [],
-    survey1Data: null,
-    survey2Data: null,
-    survey3Data: null,
-    isLoading: false,
-    error: null,
-  });
+const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
+  // Sử dụng hook thay vì local state
+  const survey = useSurvey();
+
+  // Khởi tạo dữ liệu API khi component mount
+  useEffect(() => {
+    // Load tất cả data cần thiết cho survey
+    const shouldLoadData =
+      survey.semesters.length === 0 ||
+      survey.majors.length === 0 ||
+      survey.learningGoals.length === 0 ||
+      survey.technologies.length === 0 ||
+      !survey.interestSurveyDetail ||
+      !survey.habitSurveyDetail;
+
+    if (shouldLoadData) {
+      console.log("🔄 Loading survey form data...");
+      survey.initializeFormData().then((result) => {
+        if (result.success) {
+          console.log("✅ Survey form data loaded successfully");
+        } else {
+          console.error("❌ Failed to load survey form data:", result.error);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleStepComplete = (
     step: SurveyStep,
     data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
   ) => {
-    setSurveyState((prev) => ({
-      ...prev,
-      [`survey${step}Data`]: data,
-      completedSteps: prev.completedSteps.includes(step)
-        ? prev.completedSteps
-        : [...prev.completedSteps, step],
-    }));
+    // Update data trong store
+    survey.updateSurveyData(step, data);
+    survey.markStepCompleted(step);
+
+    // Auto save draft after completing each step
+    survey.saveDraft().then((result) => {
+      if (result.success) {
+        console.log(`✅ Step ${step} data saved successfully`);
+      } else {
+        console.warn(`⚠️ Failed to save step ${step} draft:`, result.error);
+      }
+    });
 
     // Chuyển sang bước tiếp theo nếu không phải bước cuối
     if (step < 3) {
-      setSurveyState((prev) => ({
-        ...prev,
-        currentStep: (step + 1) as SurveyStep,
-      }));
-    } else {
-      // Hoàn thành tất cả survey
-      onComplete?.();
+      survey.goToNextStep();
+    } else if (onComplete) {
+      onComplete();
     }
   };
 
   const handlePrevStep = () => {
-    if (surveyState.currentStep > 1) {
-      setSurveyState((prev) => ({
-        ...prev,
-        currentStep: (prev.currentStep - 1) as SurveyStep,
-      }));
+    if (survey.currentStep > 1) {
+      survey.goToPreviousStep();
     }
   };
 
@@ -78,30 +90,45 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
     },
   ];
 
+  console.log("Survey state:", { survey });
+
   const renderCurrentStep = () => {
-    switch (surveyState.currentStep) {
+    switch (survey.currentStep) {
       case 1:
         return (
           <Survey1BasicInfo
-            initialData={surveyState.survey1Data}
+            initialData={survey.survey1Data}
             onComplete={(data) => handleStepComplete(1, data)}
-            onBack={onBack}
+            onBack={handlePrevStep}
+            semesters={survey.semesters}
+            majors={survey.majors}
+            learningGoals={survey.learningGoals}
+            interestSurveyDetail={survey.interestSurveyDetail}
+            isLoading={
+              survey.isLoadingSemesters ||
+              survey.isLoadingMajors ||
+              survey.isLoadingLearningGoals ||
+              survey.isLoadingInterestSurvey
+            }
           />
         );
       case 2:
         return (
           <Survey2TechKnowledge
-            initialData={surveyState.survey2Data}
+            initialData={survey.survey2Data}
             onComplete={(data) => handleStepComplete(2, data)}
             onBack={handlePrevStep}
+            technologies={survey.technologies}
+            isLoading={survey.isLoadingTechnologies}
           />
         );
       case 3:
         return (
           <Survey3StudyHabits
-            initialData={surveyState.survey3Data}
+            initialData={survey.survey3Data}
             onComplete={(data) => handleStepComplete(3, data)}
             onBack={handlePrevStep}
+            habitSurveyDetail={survey.habitSurveyDetail}
           />
         );
       default:
@@ -126,7 +153,7 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
           {/* Steps */}
           <Card className="mb-6 shadow-sm">
             <Steps
-              current={surveyState.currentStep - 1}
+              current={survey.currentStep - 1}
               items={stepItems}
               size="small"
               className="mb-0"
@@ -141,9 +168,9 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
           {/* Progress Info */}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Bước {surveyState.currentStep}/3 -
-              {surveyState.completedSteps.length > 0 &&
-                ` Đã hoàn thành ${surveyState.completedSteps.length} bước`}
+              Bước {survey.currentStep}/3 -
+              {survey.completedSteps.length > 0 &&
+                ` Đã hoàn thành ${survey.completedSteps.length} bước`}
             </p>
           </div>
         </div>

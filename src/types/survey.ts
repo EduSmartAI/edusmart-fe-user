@@ -101,7 +101,7 @@ export interface StudyHabitAnswer {
 export interface StudyHabitQuestion {
   id: string;
   questionText: string;
-  questionType: QuestionType;
+  questionType: SurveyQuestionType;
   answers: StudyHabitAnswerOption[];
   isRequired: boolean;
   allowMultiple: boolean; // Cho phép chọn nhiều đáp án
@@ -113,7 +113,7 @@ export interface StudyHabitAnswerOption {
   value: string;
 }
 
-export type QuestionType =
+export type SurveyQuestionType =
   | "single_choice"
   | "multiple_choice"
   | "text"

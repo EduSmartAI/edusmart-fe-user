@@ -1,15 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Form, Button, Card, Typography, Select, Tag, Divider } from "antd";
+import { Form, Button, Card, Typography, Select, Divider } from "antd";
 import { ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
-import {
-  Survey2FormValues,
-  TechnologyOption,
-  TechnologyLevel,
-  TechnologyType,
-  TechLevel,
-  TECH_LEVELS,
-} from "EduSmart/types/survey";
+import { Survey2FormValues, TechnologyLevel } from "EduSmart/types";
+import { TechnologyType } from "EduSmart/enum/enum";
 
 const { Title, Paragraph } = Typography;
 
@@ -17,62 +11,31 @@ interface Survey2TechKnowledgeProps {
   initialData?: Survey2FormValues | null;
   onComplete: (data: Survey2FormValues) => void;
   onBack?: () => void;
+  technologies?: Array<{
+    technologyId: string;
+    technologyName: string;
+    technologyType: number;
+  }>;
+  isLoading?: boolean;
 }
 
 const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
   initialData,
   onComplete,
   onBack,
+  technologies: apiTechnologies = [],
 }) => {
   const [form] = Form.useForm();
   const [selectedTechnologies, setSelectedTechnologies] = useState<
     TechnologyLevel[]
   >([]);
 
-  // Mock data - sẽ thay thế bằng API calls sau
-  const technologies: TechnologyOption[] = [
-    // Programming Languages
-    { id: "javascript", name: "JavaScript", type: "programming_language" },
-    { id: "python", name: "Python", type: "programming_language" },
-    { id: "java", name: "Java", type: "programming_language" },
-    { id: "csharp", name: "C#", type: "programming_language" },
-    { id: "typescript", name: "TypeScript", type: "programming_language" },
-    { id: "php", name: "PHP", type: "programming_language" },
-    { id: "cpp", name: "C++", type: "programming_language" },
-    { id: "go", name: "Go", type: "programming_language" },
-
-    // Frameworks
-    { id: "react", name: "React", type: "framework" },
-    { id: "angular", name: "Angular", type: "framework" },
-    { id: "vue", name: "Vue.js", type: "framework" },
-    { id: "nextjs", name: "Next.js", type: "framework" },
-    { id: "express", name: "Express.js", type: "framework" },
-    { id: "spring", name: "Spring Boot", type: "framework" },
-    { id: "django", name: "Django", type: "framework" },
-    { id: "laravel", name: "Laravel", type: "framework" },
-
-    // Tools
-    { id: "git", name: "Git", type: "tool" },
-    { id: "docker", name: "Docker", type: "tool" },
-    { id: "vscode", name: "VS Code", type: "tool" },
-    { id: "postman", name: "Postman", type: "tool" },
-    { id: "figma", name: "Figma", type: "tool" },
-    { id: "jira", name: "Jira", type: "tool" },
-
-    // Platforms
-    { id: "aws", name: "AWS", type: "platform" },
-    { id: "azure", name: "Azure", type: "platform" },
-    { id: "gcp", name: "Google Cloud", type: "platform" },
-    { id: "vercel", name: "Vercel", type: "platform" },
-    { id: "netlify", name: "Netlify", type: "platform" },
-
-    // Databases
-    { id: "mysql", name: "MySQL", type: "database" },
-    { id: "postgresql", name: "PostgreSQL", type: "database" },
-    { id: "mongodb", name: "MongoDB", type: "database" },
-    { id: "redis", name: "Redis", type: "database" },
-    { id: "firebase", name: "Firebase", type: "database" },
-  ];
+  // Transform API data to component format
+  const technologies = apiTechnologies.map((tech) => ({
+    id: tech.technologyId,
+    name: tech.technologyName,
+    type: tech.technologyType as TechnologyType,
+  }));
 
   useEffect(() => {
     if (initialData) {
@@ -107,14 +70,6 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
     setSelectedTechnologies((prev) => [...prev, newTech]);
   };
 
-  const handleLevelChange = (technologyId: string, level: TechLevel) => {
-    setSelectedTechnologies((prev) =>
-      prev.map((tech) =>
-        tech.technologyId === technologyId ? { ...tech, level } : tech,
-      ),
-    );
-  };
-
   const handleTechnologyRemove = (technologyId: string) => {
     setSelectedTechnologies((prev) =>
       prev.filter((tech) => tech.technologyId !== technologyId),
@@ -132,30 +87,27 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
     });
   };
 
-  const getLevelColor = (level: TechLevel): string => {
-    const colors = {
-      none: "default",
-      basic: "blue",
-      intermediate: "green",
-      advanced: "orange",
-      expert: "red",
-    };
-    return colors[level];
-  };
-
   const onFinish = () => {
     const result: Survey2FormValues = {
       programmingLanguages: getSelectedTechnologiesByType(
-        "programming_language",
+        TechnologyType.ProgrammingLanguage,
       ),
-      frameworks: getSelectedTechnologiesByType("framework"),
-      tools: getSelectedTechnologiesByType("tool"),
-      platforms: getSelectedTechnologiesByType("platform"),
-      databases: getSelectedTechnologiesByType("database"),
-      others: getSelectedTechnologiesByType("other"),
+      frameworks: getSelectedTechnologiesByType(TechnologyType.Framework),
+      tools: getSelectedTechnologiesByType(TechnologyType.Tool),
+      platforms: getSelectedTechnologiesByType(TechnologyType.Platform),
+      databases: getSelectedTechnologiesByType(TechnologyType.Database),
+      others: getSelectedTechnologiesByType(TechnologyType.Other),
     };
-
+    window.scrollTo({ top: 0, behavior: "smooth" });
     onComplete(result);
+  };
+
+  const handleBack = () => {
+    // Scroll to top before going back
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (onBack) {
+      onBack();
+    }
   };
 
   const renderTechnologySection = (type: TechnologyType, title: string) => {
@@ -177,11 +129,11 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
             className="!mb-4 !text-xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-3"
           >
             <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              {type === "programming_language" && "💻"}
-              {type === "framework" && "⚛️"}
-              {type === "tool" && "🛠️"}
-              {type === "platform" && "☁️"}
-              {type === "database" && "🗄️"}
+              {type === TechnologyType.ProgrammingLanguage && "💻"}
+              {type === TechnologyType.Framework && "⚛️"}
+              {type === TechnologyType.Tool && "🛠️"}
+              {type === TechnologyType.Platform && "☁️"}
+              {type === TechnologyType.Database && "🗄️"}
             </div>
             {title}
           </Title>
@@ -314,27 +266,26 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
               {/* Sắp xếp tuần tự từ trên xuống dưới */}
               <div className="space-y-6 flex flex-col gap-6">
                 {renderTechnologySection(
-                  "programming_language",
+                  TechnologyType.ProgrammingLanguage,
                   "Ngôn ngữ lập trình",
                 )}
 
-                {renderTechnologySection("framework", "Framework")}
+                {renderTechnologySection(TechnologyType.Framework, "Framework")}
 
-                {renderTechnologySection("tool", "Tools")}
+                {renderTechnologySection(TechnologyType.Tool, "Tools")}
 
-                {renderTechnologySection("platform", "Platform")}
+                {renderTechnologySection(TechnologyType.Platform, "Platform")}
 
-                {renderTechnologySection("database", "Database")}
+                {renderTechnologySection(TechnologyType.Database, "Database")}
               </div>
 
               <Divider className="my-8 border-gray-200 dark:border-gray-600" />
-
 
               <div className="flex justify-between mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
                 <Button
                   type="default"
                   icon={<ArrowLeftOutlined />}
-                  onClick={onBack}
+                  onClick={handleBack}
                   size="large"
                   className="px-6 py-3 h-auto rounded-xl border-gray-200 hover:border-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200"
                 >
