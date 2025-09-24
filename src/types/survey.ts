@@ -3,12 +3,10 @@
 // ============ SURVEY 1: Basic Info & Career Orientation ============
 export interface Survey1FormValues {
   semester: string; // Kỳ học
-  specialization?: string; // Chuyên ngành hẹp (chỉ hiển thị nếu kỳ > 4)
+  major: string; // Chuyên ngành chính (luôn hiển thị)
+  specialization?: string; // Chuyên ngành hẹp (chỉ hiển thị khi kỳ > 4 và có major)
   learningGoal: string; // Mục tiêu học tập
-  hasFutureOrientation: boolean; // Đã có định hướng tương lai chưa?
-  futureOrientation?: string; // Input nếu có định hướng
-  interests?: string[]; // List sở thích nếu chưa có định hướng (legacy)
-  interestSurveyAnswers?: InterestSurveyAnswer[]; // Câu trả lời khảo sát sở thích mới
+  interestSurveyAnswers?: InterestSurveyAnswer[]; // Câu trả lời khảo sát sở thích (khi chọn "Chưa có định hướng")
 }
 
 export interface InterestSurveyAnswer {

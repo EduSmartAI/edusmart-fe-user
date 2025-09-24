@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Form, Button, Card, Typography, Select, Divider } from "antd";
+import { Form, Button, Card, Typography, Select } from "antd";
 import { ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { Survey2FormValues, TechnologyLevel } from "EduSmart/types";
 import { TechnologyType } from "EduSmart/enum/enum";
@@ -10,7 +10,7 @@ const { Title, Paragraph } = Typography;
 interface Survey2TechKnowledgeProps {
   initialData?: Survey2FormValues | null;
   onComplete: (data: Survey2FormValues) => void;
-  onBack?: () => void;
+  onBack?: (data: Survey2FormValues) => void;
   technologies?: Array<{
     technologyId: string;
     technologyName: string;
@@ -87,8 +87,8 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
     });
   };
 
-  const onFinish = () => {
-    const result: Survey2FormValues = {
+  const getCurrentData = (): Survey2FormValues => {
+    return {
       programmingLanguages: getSelectedTechnologiesByType(
         TechnologyType.ProgrammingLanguage,
       ),
@@ -98,15 +98,18 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
       databases: getSelectedTechnologiesByType(TechnologyType.Database),
       others: getSelectedTechnologiesByType(TechnologyType.Other),
     };
+  };
+
+  const onFinish = () => {
+    const result = getCurrentData();
     window.scrollTo({ top: 0, behavior: "smooth" });
     onComplete(result);
   };
 
   const handleBack = () => {
-    // Scroll to top before going back
-    window.scrollTo({ top: 0, behavior: "smooth" });
     if (onBack) {
-      onBack();
+      const currentData = getCurrentData();
+      onBack(currentData);
     }
   };
 
@@ -272,14 +275,15 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
 
                 {renderTechnologySection(TechnologyType.Framework, "Framework")}
 
-                {renderTechnologySection(TechnologyType.Tool, "Tools")}
+                {renderTechnologySection(TechnologyType.Tool, "Công cụ")}
 
-                {renderTechnologySection(TechnologyType.Platform, "Platform")}
+                {renderTechnologySection(TechnologyType.Platform, "Nền tảng")}
 
-                {renderTechnologySection(TechnologyType.Database, "Database")}
+                {renderTechnologySection(
+                  TechnologyType.Database,
+                  "Cơ sỏ dữ liệu",
+                )}
               </div>
-
-              <Divider className="my-8 border-gray-200 dark:border-gray-600" />
 
               <div className="flex justify-between mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
                 <Button

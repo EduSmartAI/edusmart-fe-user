@@ -46,6 +46,183 @@ export interface SurveyRecommendationResponse {
   };
 }
 
+// ======================== HELPER FUNCTIONS ========================
+
+/**
+ * Validate UUID format
+ */
+function isValidUUID(uuid: string): boolean {
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(uuid);
+}
+
+/**
+ * Log payload structure for debugging
+ */
+function logPayloadStructure(
+  payload: {
+    studentInformation?: {
+      majorId?: string;
+      semesterId?: string;
+      technologies?: Array<unknown>;
+      learningGoal?: {
+        learningGoalId?: string;
+        learningGoalType?: number;
+      };
+    };
+    studentSurveys?: Array<{
+      surveyId?: string;
+      surveyCode?: string;
+      answers?: Array<unknown>;
+    }>;
+  },
+  title: string = "Payload Structure",
+): void {
+  console.log(`\n🔍 ${title}:`);
+  console.log("├── studentInformation:");
+  console.log(
+    "│   ├── majorId:",
+    payload.studentInformation?.majorId ? "✅" : "❌",
+  );
+  console.log(
+    "│   ├── semesterId:",
+    payload.studentInformation?.semesterId ? "✅" : "❌",
+  );
+  console.log(
+    "│   ├── technologies:",
+    `[${payload.studentInformation?.technologies?.length || 0} items]`,
+  );
+  console.log("│   └── learningGoal:");
+  console.log(
+    "│       ├── learningGoalId:",
+    payload.studentInformation?.learningGoal?.learningGoalId ? "✅" : "❌",
+  );
+  console.log(
+    "│       └── learningGoalType:",
+    payload.studentInformation?.learningGoal?.learningGoalType,
+  );
+  console.log(
+    "└── studentSurveys:",
+    `[${payload.studentSurveys?.length || 0} surveys]`,
+  );
+  payload.studentSurveys?.forEach((survey, index) => {
+    console.log(`    ├── Survey ${index + 1}:`);
+    console.log(`    │   ├── surveyId: ${survey.surveyId ? "✅" : "❌"}`);
+    console.log(`    │   ├── surveyCode: ${survey.surveyCode}`);
+    console.log(
+      `    │   └── answers: [${survey.answers?.length || 0} answers]`,
+    );
+  });
+}
+
+/**
+ * Validate survey payload before submission
+ */
+function validateSurveyPayload(payload: {
+  studentInformation: {
+    majorId: string;
+    semesterId: string;
+    technologies: Array<{
+      technologyId: string;
+      technologyName: string;
+      technologyType: number;
+    }>;
+    learningGoal: {
+      learningGoalId: string;
+      learningGoalType: number;
+    };
+  };
+  studentSurveys: Array<{
+    surveyId: string;
+    surveyCode: string;
+    answers: Array<{
+      questionId: string;
+      answerId: string;
+    }>;
+  }>;
+}): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  // Validate student information
+  if (!payload.studentInformation) {
+    errors.push("Student information is required");
+  } else {
+    if (!payload.studentInformation.majorId) {
+      errors.push("Major ID is required");
+    } else if (!isValidUUID(payload.studentInformation.majorId)) {
+      errors.push("Major ID must be a valid UUID");
+    }
+
+    if (!payload.studentInformation.semesterId) {
+      errors.push("Semester ID is required");
+    } else if (!isValidUUID(payload.studentInformation.semesterId)) {
+      errors.push("Semester ID must be a valid UUID");
+    }
+
+    if (!payload.studentInformation.learningGoal?.learningGoalId) {
+      errors.push("Learning Goal ID is required");
+    } else if (
+      !isValidUUID(payload.studentInformation.learningGoal.learningGoalId)
+    ) {
+      errors.push("Learning Goal ID must be a valid UUID");
+    }
+
+    if (
+      typeof payload.studentInformation.learningGoal?.learningGoalType !==
+      "number"
+    ) {
+      errors.push("Learning Goal Type must be a number");
+    }
+  }
+
+  // Validate student surveys
+  if (payload.studentSurveys && Array.isArray(payload.studentSurveys)) {
+    payload.studentSurveys.forEach((survey, index) => {
+      if (!survey.surveyId) {
+        errors.push(`Survey ${index + 1}: Survey ID is required`);
+      } else if (!isValidUUID(survey.surveyId)) {
+        errors.push(`Survey ${index + 1}: Survey ID must be a valid UUID`);
+      }
+
+      if (!survey.surveyCode) {
+        errors.push(`Survey ${index + 1}: Survey code is required`);
+      }
+
+      if (!survey.answers || !Array.isArray(survey.answers)) {
+        errors.push(`Survey ${index + 1}: Answers array is required`);
+      } else {
+        survey.answers.forEach((answer, answerIndex) => {
+          if (!answer.questionId) {
+            errors.push(
+              `Survey ${index + 1}, Answer ${answerIndex + 1}: Question ID is required`,
+            );
+          } else if (!isValidUUID(answer.questionId)) {
+            errors.push(
+              `Survey ${index + 1}, Answer ${answerIndex + 1}: Question ID must be a valid UUID`,
+            );
+          }
+
+          if (!answer.answerId) {
+            errors.push(
+              `Survey ${index + 1}, Answer ${answerIndex + 1}: Answer ID is required`,
+            );
+          } else if (!isValidUUID(answer.answerId)) {
+            errors.push(
+              `Survey ${index + 1}, Answer ${answerIndex + 1}: Answer ID must be a valid UUID`,
+            );
+          }
+        });
+      }
+    });
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
 // ======================== SERVER ACTIONS ========================
 
 /**
@@ -516,6 +693,19 @@ export async function submitSurveyAction(surveyData: {
       technologyType: number;
     }> = [];
 
+    // Get technology types from API to map to survey data
+    const technologyTypesMap: Map<string, number> = new Map();
+    try {
+      const techResult = await getTechnologyAction();
+      if (techResult.ok && techResult.data) {
+        techResult.data.forEach((tech) => {
+          technologyTypesMap.set(tech.technologyId, tech.technologyType);
+        });
+      }
+    } catch (error) {
+      console.warn("Failed to get technology types:", error);
+    }
+
     // Collect all technologies from Survey 2
     if (survey2Data) {
       if (survey2Data.programmingLanguages) {
@@ -523,7 +713,7 @@ export async function submitSurveyAction(surveyData: {
           ...survey2Data.programmingLanguages.map((tech) => ({
             technologyId: tech.technologyId,
             technologyName: tech.technologyName,
-            technologyType: 1, // Programming Language
+            technologyType: technologyTypesMap.get(tech.technologyId) || 1, // Get from API or default to Programming Language
           })),
         );
       }
@@ -532,7 +722,7 @@ export async function submitSurveyAction(surveyData: {
           ...survey2Data.frameworks.map((tech) => ({
             technologyId: tech.technologyId,
             technologyName: tech.technologyName,
-            technologyType: 2, // Framework
+            technologyType: technologyTypesMap.get(tech.technologyId) || 2, // Get from API or default to Framework
           })),
         );
       }
@@ -541,38 +731,109 @@ export async function submitSurveyAction(surveyData: {
           ...survey2Data.tools.map((tech) => ({
             technologyId: tech.technologyId,
             technologyName: tech.technologyName,
-            technologyType: 3, // Tool
+            technologyType: technologyTypesMap.get(tech.technologyId) || 3, // Get from API or default to Tool
+          })),
+        );
+      }
+      if (survey2Data.platforms) {
+        allTechnologies.push(
+          ...survey2Data.platforms.map((tech) => ({
+            technologyId: tech.technologyId,
+            technologyName: tech.technologyName,
+            technologyType: technologyTypesMap.get(tech.technologyId) || 4, // Get from API or default to Platform
+          })),
+        );
+      }
+      if (survey2Data.databases) {
+        allTechnologies.push(
+          ...survey2Data.databases.map((tech) => ({
+            technologyId: tech.technologyId,
+            technologyName: tech.technologyName,
+            technologyType: technologyTypesMap.get(tech.technologyId) || 5, // Get from API or default to Database
+          })),
+        );
+      }
+      if (survey2Data.others) {
+        allTechnologies.push(
+          ...survey2Data.others.map((tech) => ({
+            technologyId: tech.technologyId,
+            technologyName: tech.technologyName,
+            technologyType: technologyTypesMap.get(tech.technologyId) || 6, // Get from API or default to Other
           })),
         );
       }
     }
 
+    // Get learningGoalType from API data
+    let learningGoalType = 1; // Default value
+    try {
+      const learningGoalsResult = await getLearningGoalAction();
+      if (learningGoalsResult.ok && learningGoalsResult.data) {
+        const selectedGoal = learningGoalsResult.data.find(
+          (goal) => goal.learningGoalId === survey1Data.learningGoal,
+        );
+        if (selectedGoal) {
+          learningGoalType = selectedGoal.learningGoalType;
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to get learning goal type, using default:", error);
+    }
+
     const studentInformation = {
-      majorId: survey1Data.specialization || survey1Data.semester, // Use appropriate field
+      majorId: survey1Data.specialization || survey1Data.major, // Use specialization if available, otherwise major
       semesterId: survey1Data.semester,
       technologies: allTechnologies,
       learningGoal: {
         learningGoalId: survey1Data.learningGoal,
-        learningGoalType: 1, // Default type
+        learningGoalType: learningGoalType,
       },
     };
 
     // Prepare student surveys array
-    const studentSurveys = [];
+    const studentSurveys: Array<{
+      surveyId: string;
+      surveyCode: string;
+      answers: Array<{
+        questionId: string;
+        answerId: string;
+      }>;
+    }> = [];
 
     // Add INTEREST survey if we have interest survey answers
     if (
       survey1Data.interestSurveyAnswers &&
       survey1Data.interestSurveyAnswers.length > 0
     ) {
-      studentSurveys.push({
-        surveyId: "f60a7c49-8fb3-417d-82b9-5d45c9e58374", // INTEREST survey ID from API response
-        surveyCode: "INTEREST",
-        answers: survey1Data.interestSurveyAnswers.map((answer) => ({
-          questionId: answer.questionId,
-          answerId: answer.selectedAnswerId,
-        })),
-      });
+      // Try to get INTEREST survey ID dynamically
+      try {
+        const interestSurveyResult = await getSurveyByCodeAction("INTEREST");
+        const interestSurveyId =
+          interestSurveyResult.data?.surveyId ||
+          "f60a7c49-8fb3-417d-82b9-5d45c9e58374";
+
+        studentSurveys.push({
+          surveyId: interestSurveyId,
+          surveyCode: "INTEREST",
+          answers: survey1Data.interestSurveyAnswers.map((answer) => ({
+            questionId: answer.questionId,
+            answerId: answer.selectedAnswerId,
+          })),
+        });
+      } catch (error) {
+        console.warn(
+          "Failed to get INTEREST survey ID, using fallback:",
+          error,
+        );
+        studentSurveys.push({
+          surveyId: "f60a7c49-8fb3-417d-82b9-5d45c9e58374", // Fallback INTEREST survey ID
+          surveyCode: "INTEREST",
+          answers: survey1Data.interestSurveyAnswers.map((answer) => ({
+            questionId: answer.questionId,
+            answerId: answer.selectedAnswerId,
+          })),
+        });
+      }
     }
 
     // Add HABIT survey if we have survey 3 data
@@ -591,20 +852,62 @@ export async function submitSurveyAction(surveyData: {
       });
 
       if (habitAnswers.length > 0) {
-        studentSurveys.push({
-          surveyId: "0cbf895e-005e-4bf7-82ed-627acdad0f39", // HABIT survey ID from API response
-          surveyCode: "HABIT",
-          answers: habitAnswers,
-        });
+        try {
+          const habitSurveyResult = await getSurveyByCodeAction("HABIT");
+          const habitSurveyId =
+            habitSurveyResult.data?.surveyId ||
+            "0cbf895e-005e-4bf7-82ed-627acdad0f39";
+
+          studentSurveys.push({
+            surveyId: habitSurveyId,
+            surveyCode: "HABIT",
+            answers: habitAnswers,
+          });
+        } catch (error) {
+          console.warn("Failed to get HABIT survey ID, using fallback:", error);
+          studentSurveys.push({
+            surveyId: "0cbf895e-005e-4bf7-82ed-627acdad0f39", // Fallback HABIT survey ID
+            surveyCode: "HABIT",
+            answers: habitAnswers,
+          });
+        }
       }
     }
 
-    // Submit to API
+    // Prepare final payload
+    const finalPayload = {
+      studentInformation: {
+        majorId: studentInformation.majorId,
+        semesterId: studentInformation.semesterId,
+        technologies: studentInformation.technologies,
+        learningGoal: {
+          learningGoalId: studentInformation.learningGoal.learningGoalId,
+          learningGoalType: studentInformation.learningGoal.learningGoalType,
+        },
+      },
+      studentSurveys: studentSurveys,
+    };
+
+    // Validate payload before sending
+    const validation = validateSurveyPayload(finalPayload);
+    if (!validation.isValid) {
+      console.error("❌ Payload validation failed:", validation.errors);
+      return {
+        ok: false,
+        error: `Validation failed: ${validation.errors.join(", ")}`,
+      };
+    }
+
+    console.log("📋 Submitting survey with validated payload:", finalPayload);
+    logPayloadStructure(finalPayload, "Final Submission Payload");
+
+    // Submit to API with validated payload
     const response =
-      await apiServer.quiz.api.v1StudentSurveyInsertStudentSurveyCreate({
-        studentInformation,
-        studentSurveys,
-      });
+      await apiServer.quiz.api.v1StudentSurveyInsertStudentSurveyCreate(
+        finalPayload,
+      );
+
+    console.log("📋 API Response:", response.data);
 
     if (response.data?.success) {
       return {

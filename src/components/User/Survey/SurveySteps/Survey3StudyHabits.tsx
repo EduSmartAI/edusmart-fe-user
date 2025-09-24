@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Form, Button, Card, Typography, Radio, Checkbox } from "antd";
+import { Form, Button, Card, Typography, Radio, Checkbox, Spin } from "antd";
 import { ArrowLeftOutlined, CheckOutlined } from "@ant-design/icons";
 import {
   Survey3FormValues,
@@ -13,7 +13,8 @@ const { Title, Paragraph, Text } = Typography;
 interface Survey3StudyHabitsProps {
   initialData?: Survey3FormValues | null;
   onComplete: (data: Survey3FormValues) => void;
-  onBack?: () => void;
+  onBack?: (data: Survey3FormValues) => void;
+  isSubmitting?: boolean;
   habitSurveyDetail?: {
     surveyId: string;
     title?: string;
@@ -36,6 +37,7 @@ const Survey3StudyHabits: React.FC<Survey3StudyHabitsProps> = ({
   initialData,
   onComplete,
   onBack,
+  isSubmitting = false,
   habitSurveyDetail = null,
 }) => {
   const [form] = Form.useForm();
@@ -273,15 +275,15 @@ const Survey3StudyHabits: React.FC<Survey3StudyHabitsProps> = ({
       studyHabits: answers,
     };
     // Scroll to top before completing
-    window.scrollTo({ top: 0, behavior: "smooth" });
     onComplete(result);
   };
 
   const handleBack = () => {
-    // Scroll to top before going back
-    window.scrollTo({ top: 0, behavior: "smooth" });
     if (onBack) {
-      onBack();
+      const currentData: Survey3FormValues = {
+        studyHabits: answers,
+      };
+      onBack(currentData);
     }
   };
 
@@ -413,59 +415,68 @@ const Survey3StudyHabits: React.FC<Survey3StudyHabitsProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Survey Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
-            <span className="text-2xl">📚</span>
+    <Spin spinning={isSubmitting} tip="Đang xử lý khảo sát...">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Survey Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
+              <span className="text-2xl">📚</span>
+            </div>
+            <Title
+              level={1}
+              className="!mb-3 !text-3xl text-gray-800 dark:text-gray-100"
+            >
+              Thói quen học tập
+            </Title>
+            <Paragraph className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              Giúp chúng tôi hiểu cách bạn học tập hiệu quả nhất
+            </Paragraph>
           </div>
-          <Title
-            level={1}
-            className="!mb-3 !text-3xl text-gray-800 dark:text-gray-100"
+
+          <Form
+            form={form}
+            onFinish={onFinish}
+            layout="vertical"
+            size="large"
+            disabled={isSubmitting}
           >
-            Thói quen học tập
-          </Title>
-          <Paragraph className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Giúp chúng tôi hiểu cách bạn học tập hiệu quả nhất
-          </Paragraph>
+            {/* Survey Questions */}
+            <div className="space-y-4">
+              {studyHabitQuestions.map((question, index) =>
+                renderStudyHabitQuestion(question, index),
+              )}
+            </div>
+
+            {/* <Divider className="my-8 border-gray-200 dark:border-gray-600" /> */}
+
+            <div className="flex justify-between mt-8 pt-6 border-gray-100 dark:border-gray-700">
+              <Button
+                type="default"
+                icon={<ArrowLeftOutlined />}
+                onClick={handleBack}
+                size="large"
+                className="px-6 py-3 h-auto rounded-xl border-gray-200 hover:border-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200"
+              >
+                Quay lại
+              </Button>
+
+              <Button
+                type="primary"
+                icon={<CheckOutlined />}
+                htmlType="submit"
+                size="large"
+                loading={isSubmitting}
+                disabled={!isFormComplete() || isSubmitting}
+                className="px-8 py-3 h-auto rounded-xl bg-blue-600 hover:bg-blue-700 border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {isSubmitting ? "Đang xử lý..." : "Hoàn thành khảo sát"}
+              </Button>
+            </div>
+          </Form>
         </div>
-
-        <Form form={form} onFinish={onFinish} layout="vertical" size="large">
-          {/* Survey Questions */}
-          <div className="space-y-4">
-            {studyHabitQuestions.map((question, index) =>
-              renderStudyHabitQuestion(question, index),
-            )}
-          </div>
-
-          {/* <Divider className="my-8 border-gray-200 dark:border-gray-600" /> */}
-
-          <div className="flex justify-between mt-8 pt-6 border-gray-100 dark:border-gray-700">
-            <Button
-              type="default"
-              icon={<ArrowLeftOutlined />}
-              onClick={handleBack}
-              size="large"
-              className="px-6 py-3 h-auto rounded-xl border-gray-200 hover:border-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200"
-            >
-              Quay lại
-            </Button>
-
-            <Button
-              type="primary"
-              icon={<CheckOutlined />}
-              htmlType="submit"
-              size="large"
-              disabled={!isFormComplete()}
-              className="px-8 py-3 h-auto rounded-xl bg-blue-600 hover:bg-blue-700 border-0 shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Hoàn thành khảo sát
-            </Button>
-          </div>
-        </Form>
       </div>
-    </div>
+    </Spin>
   );
 };
 

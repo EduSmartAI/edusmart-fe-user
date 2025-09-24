@@ -282,6 +282,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
         })),
 
       goToPreviousStep: () =>
+        // set currentStep về tối thiểu 1
         set((state) => ({
           currentStep:
             state.currentStep > 1 ? state.currentStep - 1 : state.currentStep,
@@ -303,7 +304,20 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
       markDraftSaved: () => set({ lastSavedAt: new Date().toISOString() }),
 
       // Utility
-      resetSurvey: () => set(initialState),
+      resetSurvey: () => {
+        set(initialState);
+        // Xóa dữ liệu khảo sát khỏi localStorage
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("survey-storage");
+          } catch (err) {
+            console.warn(
+              "Không thể xóa survey-storage khỏi localStorage:",
+              err,
+            );
+          }
+        }
+      },
 
       clearSurveyData: () =>
         set({
@@ -375,6 +389,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
 
           if (result.ok && result.surveyId) {
             set({ surveyId: result.surveyId });
+
+            // Clear toàn bộ dữ liệu survey sau khi submit thành công
+            get().resetSurvey();
 
             // Auto-load recommendations
             const loadResult = await getSurveyRecommendationsAction(

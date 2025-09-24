@@ -2,13 +2,11 @@
 import React, { useState, useEffect } from "react";
 import {
   Form,
-  Input,
   Select,
   Radio,
   Button,
   Card,
   Typography,
-  Space,
   Row,
   Col,
   Divider,
@@ -18,19 +16,17 @@ import { ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import {
   Survey1FormValues,
   SemesterOption,
-  SpecializationOption,
   LearningGoalOption,
   InterestSurveyQuestion,
   InterestSurveyAnswer,
 } from "EduSmart/types";
 
 const { Title, Text, Paragraph } = Typography;
-const { TextArea } = Input;
 
 interface Survey1BasicInfoProps {
   initialData?: Survey1FormValues | null;
   onComplete: (data: Survey1FormValues) => void;
-  onBack?: () => void;
+  onBack?: (data: Survey1FormValues) => void;
   semesters?: Array<{
     semesterId: string;
     semesterName: string;
@@ -77,10 +73,10 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
   isLoading = false,
 }) => {
   const [form] = Form.useForm<Survey1FormValues>();
-  const [hasFutureOrientation, setHasFutureOrientation] = useState<
-    boolean | undefined
-  >();
+
   const [currentSemester, setCurrentSemester] = useState<string>();
+  const [selectedMajor, setSelectedMajor] = useState<string>();
+  const [selectedLearningGoal, setSelectedLearningGoal] = useState<string>();
   const [interestSurveyAnswers, setInterestSurveyAnswers] = useState<
     InterestSurveyAnswer[]
   >([]);
@@ -231,10 +227,25 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
     value: semester.semesterId,
   }));
 
-  const specializations: SpecializationOption[] = majors.map((major) => ({
-    label: major.majorName,
-    value: major.majorId,
-  }));
+  // Separate major (parent) and specialization (child) data
+  const majorOptions = majors
+    .filter(
+      (major) =>
+        major.parentMajorId === null || major.parentMajorId === undefined,
+    )
+    .map((major) => ({
+      label: major.majorName,
+      value: major.majorId,
+    }));
+
+  const getSpecializationOptions = (selectedMajorId: string) => {
+    return majors
+      .filter((major) => major.parentMajorId === selectedMajorId)
+      .map((major) => ({
+        label: major.majorName,
+        value: major.majorId,
+      }));
+  };
 
   const learningGoalOptions: LearningGoalOption[] = learningGoals.map(
     (goal) => ({
@@ -246,8 +257,9 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
   useEffect(() => {
     if (initialData) {
       form.setFieldsValue(initialData);
-      setHasFutureOrientation(initialData.hasFutureOrientation);
       setCurrentSemester(initialData.semester);
+      setSelectedMajor(initialData.major);
+      setSelectedLearningGoal(initialData.learningGoal);
 
       // Set initial interest survey answers if available
       if (initialData.interestSurveyAnswers) {
@@ -256,29 +268,31 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
     }
   }, [initialData, form]);
 
-  const handleFutureOrientationChange = (value: boolean) => {
-    setHasFutureOrientation(value);
-    // Reset related fields when switching
-    if (value) {
-      form.setFieldValue("interests", undefined);
-      setInterestSurveyAnswers([]); // Clear survey answers
-    } else {
-      form.setFieldValue("futureOrientation", undefined);
-    }
-  };
-
   const handleSemesterChange = (value: string) => {
     setCurrentSemester(value);
     // Find semester number from API data
     const selectedSemester = semesters.find((s) => s.semesterId === value);
+    // Clear specialization khi chuyển từ semester > 4 về <= 4
     if (selectedSemester && selectedSemester.semesterNumber <= 4) {
       form.setFieldValue("specialization", undefined);
     }
   };
 
+  const handleMajorChange = (value: string) => {
+    setSelectedMajor(value);
+    // Clear specialization when major changes
+    form.setFieldValue("specialization", undefined);
+  };
+
+  const handleLearningGoalChange = (value: string) => {
+    setSelectedLearningGoal(value);
+    // Clear interest survey answers when learning goal changes
+    setInterestSurveyAnswers([]);
+  };
+
   const onFinish = (values: Survey1FormValues) => {
-    // Nếu user chọn "chưa có định hướng", cần validate khảo sát sở thích
-    if (hasFutureOrientation === false) {
+    // Nếu chọn "Chưa có định hướng", cần validate khảo sát sở thích
+    if (shouldShowInterestSurvey()) {
       if (interestSurveyAnswers.length < interestSurveyQuestions.length) {
         // Show a more user-friendly notification
         const unansweredCount =
@@ -296,25 +310,45 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
       });
     } else {
       window.scrollTo({ top: 0, behavior: "smooth" });
-      // Gửi data bình thường với futureOrientation
+      // Gửi data bình thường
       onComplete(values);
     }
   };
 
   const handleBack = () => {
-    // Scroll to top before going back
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Gửi data hiện tại trước khi back
     if (onBack) {
-      onBack();
+      const currentFormData = form.getFieldsValue();
+      const backupData: Survey1FormValues = {
+        ...currentFormData,
+        interestSurveyAnswers,
+      };
+      onBack(backupData);
     }
   };
 
+  // Chỉ hiển thị specialization khi semester > 4
   const shouldShowSpecialization = () => {
-    if (!currentSemester) return false;
+    if (!currentSemester || !selectedMajor) return false;
     const selectedSemester = semesters.find(
       (s) => s.semesterId === currentSemester,
     );
-    return selectedSemester ? selectedSemester.semesterNumber > 4 : false;
+    // Chỉ hiển thị specialization khi semester > 4
+    if (!selectedSemester || selectedSemester.semesterNumber <= 4) return false;
+    const hasSpecializations =
+      getSpecializationOptions(selectedMajor).length > 0;
+    return hasSpecializations;
+  };
+
+  // Kiểm tra nếu cần hiển thị khảo sát sở thích (khi chọn "Chưa có định hướng")
+  const shouldShowInterestSurvey = () => {
+    if (!selectedLearningGoal) return false;
+    const selectedGoal = learningGoals.find(
+      (g) => g.learningGoalId === selectedLearningGoal,
+    );
+    return (
+      selectedGoal && selectedGoal.learningGoalName === "Chưa có định hướng"
+    );
   };
 
   const handleInterestSurveyAnswer = (questionId: string, answerId: string) => {
@@ -468,25 +502,51 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                   </Form.Item>
                 </Col>
 
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="major"
+                    label={
+                      <span className="text-base font-medium text-gray-700 dark:text-gray-200">
+                        Khối ngành
+                      </span>
+                    }
+                    rules={[
+                      { required: true, message: "Vui lòng chọn chuyên ngành" },
+                    ]}
+                  >
+                    <Select
+                      placeholder="Chọn khối ngành"
+                      options={majorOptions}
+                      onChange={handleMajorChange}
+                      size="large"
+                      className="rounded-lg"
+                    />
+                  </Form.Item>
+                </Col>
+
                 {shouldShowSpecialization() && (
                   <Col xs={24} md={12}>
                     <Form.Item
                       name="specialization"
                       label={
                         <span className="text-base font-medium text-gray-700 dark:text-gray-200">
-                          Chuyên ngành hẹp bạn quan tâm
+                          Chuyên ngành hẹp
                         </span>
                       }
                       rules={[
                         {
                           required: true,
-                          message: "Vui lòng chọn chuyên ngành",
+                          message: "Vui lòng chọn chuyên ngành hẹp",
                         },
                       ]}
                     >
                       <Select
-                        placeholder="Chọn chuyên ngành"
-                        options={specializations}
+                        placeholder="Chọn chuyên ngành hẹp"
+                        options={
+                          selectedMajor
+                            ? getSpecializationOptions(selectedMajor)
+                            : []
+                        }
                         size="large"
                         className="rounded-lg"
                       />
@@ -509,82 +569,17 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                 <Select
                   placeholder="Chọn mục tiêu học tập"
                   options={learningGoalOptions}
+                  onChange={handleLearningGoalChange}
                   size="large"
                   className="rounded-lg"
                 />
               </Form.Item>
 
-              <Divider className="my-8 border-gray-200 dark:border-gray-600" />
-
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 mb-6">
-                <Form.Item
-                  name="hasFutureOrientation"
-                  label={
-                    <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                      Bạn đã có định hướng rõ ràng cho tương lai chưa?
-                    </span>
-                  }
-                  rules={[
-                    { required: true, message: "Vui lòng chọn một tùy chọn" },
-                  ]}
-                >
-                  <Radio.Group
-                    onChange={(e) =>
-                      handleFutureOrientationChange(e.target.value)
-                    }
-                    className="mt-4"
-                  >
-                    <Space direction="vertical" size="large" className="w-full">
-                      <Radio
-                        value={true}
-                        className="p-4 rounded-xl border border-transparent hover:border-gray-300 hover:bg-white dark:hover:bg-gray-600 transition-all duration-200"
-                      >
-                        <span className="text-base font-medium">
-                          Có, tôi đã có định hướng rõ ràng
-                        </span>
-                      </Radio>
-                      <Radio
-                        value={false}
-                        className="p-4 rounded-xl border border-transparent hover:border-gray-300 hover:bg-white dark:hover:bg-gray-600 transition-all duration-200"
-                      >
-                        <span className="text-base font-medium">
-                          Chưa, tôi cần tìm hiểu thêm
-                        </span>
-                      </Radio>
-                    </Space>
-                  </Radio.Group>
-                </Form.Item>
-              </div>
-
-              {hasFutureOrientation === true && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 mb-6 border border-blue-200 dark:border-blue-800">
-                  <Form.Item
-                    name="futureOrientation"
-                    label={
-                      <span className="text-base font-medium text-gray-700 dark:text-gray-200">
-                        Mô tả định hướng tương lai của bạn
-                      </span>
-                    }
-                    rules={[
-                      {
-                        required: true,
-                        message: "Vui lòng mô tả định hướng của bạn",
-                      },
-                      { max: 500, message: "Tối đa 500 ký tự" },
-                    ]}
-                  >
-                    <TextArea
-                      rows={4}
-                      placeholder="Ví dụ: Tôi muốn trở thành một Frontend Developer, làm việc với React và TypeScript..."
-                      showCount
-                      maxLength={500}
-                      className="rounded-lg resize-none"
-                    />
-                  </Form.Item>
-                </div>
+              {shouldShowInterestSurvey() && (
+                <Divider className="my-8 border-gray-200 dark:border-gray-600" />
               )}
 
-              {hasFutureOrientation === false && (
+              {shouldShowInterestSurvey() && (
                 <div className="mb-6">
                   {/* Survey Header */}
                   <div className="text-center mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800">

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
-import { Layout, Steps, Card } from "antd";
+import { Layout, Steps, Card, message } from "antd";
 import {
   SurveyStep,
   Survey1FormValues,
@@ -16,7 +16,9 @@ const { Content } = Layout;
 
 interface SurveyMainFlowProps {
   onComplete?: () => void;
-  onBack?: () => void;
+  onBack?: (
+    data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
+  ) => void;
 }
 
 const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
@@ -47,7 +49,7 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleStepComplete = (
+  const handleStepComplete = async (
     step: SurveyStep,
     data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
   ) => {
@@ -56,23 +58,94 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
     survey.markStepCompleted(step);
 
     // Auto save draft after completing each step
-    survey.saveDraft().then((result) => {
-      if (result.success) {
-        console.log(`✅ Step ${step} data saved successfully`);
-      } else {
-        console.warn(`⚠️ Failed to save step ${step} draft:`, result.error);
-      }
-    });
+    const saveResult = await survey.saveDraft();
+    if (saveResult.success) {
+      console.log(`✅ Step ${step} data saved successfully`);
+    } else {
+      console.warn(`⚠️ Failed to save step ${step} draft:`, saveResult.error);
+    }
 
     // Chuyển sang bước tiếp theo nếu không phải bước cuối
     if (step < 3) {
       survey.goToNextStep();
-    } else if (onComplete) {
-      onComplete();
+    } else {
+      // Bước cuối - submit toàn bộ survey
+      console.log("🚀 Submitting complete survey...");
+
+      // Show loading message
+      const hideLoading = message.loading("Đang xử lý khảo sát của bạn...", 0);
+
+      try {
+        console.log("Submitting data:", {
+          survey1: survey.survey1Data,
+          survey2: survey.survey2Data,
+          survey3: survey.survey3Data,
+        });
+
+        const submitResult = await survey.submitSurvey();
+        console.log("Submit result:", submitResult);
+
+        // Hide loading message
+        hideLoading();
+
+        if (submitResult.success) {
+          console.log("✅ Survey submitted successfully:", {
+            surveyId: submitResult.surveyId,
+          });
+          alert("✅ Survey submitted successfully:" + submitResult.surveyId);
+
+          // Show success message
+          message.success({
+            content:
+              "🎉 Khảo sát đã được gửi thành công! Cảm ơn bạn đã tham gia.",
+            duration: 4,
+          });
+
+          // Delay before calling onComplete to let user see the success message
+          setTimeout(() => {
+            if (onComplete) {
+              onComplete();
+            }
+          }, 1500);
+        } else {
+          console.error("❌ Survey submission failed:", submitResult.error);
+          alert("❌ Survey submission failed:" + submitResult.error);
+
+          // Show error message
+          message.error({
+            content: `❌ Gửi khảo sát thất bại: ${submitResult.error || "Vui lòng thử lại sau."}`,
+            duration: 6,
+          });
+        }
+      } catch (error) {
+        console.error("❌ Survey submission error:", error);
+
+        // Hide loading message
+        hideLoading();
+
+        // Show error message
+        message.error({
+          content: "❌ Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.",
+          duration: 6,
+        });
+      }
     }
   };
 
-  const handlePrevStep = () => {
+  const handlePrevStep = (
+    step: number,
+    data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
+  ) => {
+    // Scroll to top before going back
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Backup current form data before going back
+    if (data) {
+      survey.updateSurveyData(step, data);
+      console.log(`📝 Backed up step ${step} data:`, data);
+    }
+
+    // Navigate to previous step
     if (survey.currentStep > 1) {
       survey.goToPreviousStep();
     }
@@ -99,7 +172,7 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
           <Survey1BasicInfo
             initialData={survey.survey1Data}
             onComplete={(data) => handleStepComplete(1, data)}
-            onBack={handlePrevStep}
+            onBack={(data: Survey1FormValues) => handlePrevStep(1, data)}
             semesters={survey.semesters}
             majors={survey.majors}
             learningGoals={survey.learningGoals}
@@ -117,7 +190,7 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
           <Survey2TechKnowledge
             initialData={survey.survey2Data}
             onComplete={(data) => handleStepComplete(2, data)}
-            onBack={handlePrevStep}
+            onBack={(data: Survey2FormValues) => handlePrevStep(2, data)}
             technologies={survey.technologies}
             isLoading={survey.isLoadingTechnologies}
           />
@@ -127,7 +200,8 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
           <Survey3StudyHabits
             initialData={survey.survey3Data}
             onComplete={(data) => handleStepComplete(3, data)}
-            onBack={handlePrevStep}
+            onBack={(data: Survey3FormValues) => handlePrevStep(3, data)}
+            isSubmitting={survey.isSubmitting}
             habitSurveyDetail={survey.habitSurveyDetail}
           />
         );
