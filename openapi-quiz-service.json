@@ -158,7 +158,7 @@
         }
       }
     },
-    "/api/v1/StudentSurvey": {
+    "/api/v1/StudentSurvey/InsertStudentSurvey": {
       "post": {
         "tags": ["StudentSurvey"],
         "summary": "Lưu câu trả lời phần khảo sát của học sinh",
@@ -182,7 +182,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v1/StudentSurvey/SelectStudentSurvey": {
       "get": {
         "tags": ["StudentSurvey"],
         "summary": "Hiển câu trả lời phần khảo sát của học sinh",
@@ -254,7 +256,7 @@
         }
       }
     },
-    "/api/v1/Survey": {
+    "/api/v1/Survey/InsertSurvey": {
       "post": {
         "tags": ["Survey"],
         "summary": "Tạo khảo sát mới",
@@ -278,7 +280,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v1/Survey": {
       "get": {
         "tags": ["Survey"],
         "summary": "Lấy danh sách các khảo sát",
@@ -457,6 +461,20 @@
       },
       "additionalProperties": false
     },
+    "LearningGoal": {
+      "type": "object",
+      "properties": {
+        "learningGoalId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "learningGoalType": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
     "LearningGoalSelectsEventResponse": {
       "type": "object",
       "properties": {
@@ -493,6 +511,10 @@
         },
         "learningGoalName": {
           "type": "string"
+        },
+        "learningGoalType": {
+          "format": "int32",
+          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -532,6 +554,9 @@
           "type": "string"
         },
         "majorName": {
+          "type": "string"
+        },
+        "majorCode": {
           "type": "string"
         },
         "parentMajorId": {
@@ -993,7 +1018,7 @@
       "additionalProperties": false
     },
     "StudentInformation": {
-      "required": ["learningGoalIds", "majorId", "semesterId", "technologyIds"],
+      "required": ["learningGoal", "majorId", "semesterId", "technologies"],
       "type": "object",
       "properties": {
         "majorId": {
@@ -1004,19 +1029,14 @@
           "format": "uuid",
           "type": "string"
         },
-        "technologyIds": {
+        "technologies": {
           "type": "array",
           "items": {
-            "format": "uuid",
-            "type": "string"
+            "$ref": "#/definitions/Technology"
           }
         },
-        "learningGoalIds": {
-          "type": "array",
-          "items": {
-            "format": "uuid",
-            "type": "string"
-          }
+        "learningGoal": {
+          "$ref": "#/definitions/LearningGoal"
         }
       },
       "additionalProperties": false
@@ -1032,15 +1052,12 @@
         "answerId": {
           "format": "uuid",
           "type": "string"
-        },
-        "answerText": {
-          "type": "string"
         }
       },
       "additionalProperties": false
     },
     "StudentSurveyInsertCommand": {
-      "required": ["studentInformation"],
+      "required": ["studentInformation", "studentSurveys"],
       "type": "object",
       "properties": {
         "studentInformation": {
@@ -1056,11 +1073,15 @@
       "additionalProperties": false
     },
     "StudentSurveyInsertRequest": {
-      "required": ["answers", "surveyId"],
+      "required": ["answers", "surveyCode", "surveyId"],
       "type": "object",
       "properties": {
         "surveyId": {
           "format": "uuid",
+          "type": "string"
+        },
+        "surveyCode": {
+          "minLength": 1,
           "type": "string"
         },
         "answers": {
@@ -1355,6 +1376,9 @@
         "description": {
           "type": "string"
         },
+        "surveyCode": {
+          "type": "string"
+        },
         "questions": {
           "type": "array",
           "items": {
@@ -1402,7 +1426,7 @@
       "additionalProperties": false
     },
     "SurveyInsertCommand": {
-      "required": ["description", "questions", "title"],
+      "required": ["description", "questions", "surveyCode", "title"],
       "type": "object",
       "properties": {
         "title": {
@@ -1410,6 +1434,10 @@
           "type": "string"
         },
         "description": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "surveyCode": {
           "minLength": 1,
           "type": "string"
         },
@@ -1506,6 +1534,28 @@
         },
         "description": {
           "type": "string"
+        },
+        "surveyCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Technology": {
+      "type": "object",
+      "properties": {
+        "technologyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "technologyName": {
+          "type": "string"
+        },
+        "technologyType": {
+          "format": "int32",
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
         }
       },
       "additionalProperties": false
