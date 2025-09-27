@@ -43,6 +43,8 @@ import CourseInstructor from "EduSmart/components/User/Course/CourseInstructor";
 import CourseOverview from "EduSmart/components/User/Course/CourseOverView";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
 import { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
+import { useCourseStore } from "EduSmart/stores/course/courseStore";
+import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
 
@@ -53,6 +55,7 @@ type Props = {
   data?: CourseDetailForGuestDto;
   modulesCount?: number;
   lessonsCount?: number;
+  isLearning: boolean;
 };
 
 /* =======================
@@ -144,6 +147,7 @@ export default function CourseDetailUI({
   data,
   modulesCount = 0,
   lessonsCount = 0,
+  isLearning = false,
 }: Props) {
   const [activeTab, setActiveTab] = useState<string>("reviews");
 
@@ -151,7 +155,8 @@ export default function CourseDetailUI({
   const coverUrl = data?.courseImageUrl || IMG_FALLBACK;
   const subjectTag = data?.subjectCode ? [data.subjectCode] : [];
   const levelTag = levelLabel(data?.level ?? 0);
-
+  const enRollingCourseById = useCourseStore((s) => s.enRollingCourseById);
+  const router = useRouter();
   const durationText = useMemo(
     () => formatDuration(data?.durationHours ?? 0, data?.durationMinutes ?? 0),
     [data?.durationHours, data?.durationMinutes],
@@ -204,6 +209,16 @@ export default function CourseDetailUI({
     } catch {
       message.info(url ? "Sao chép thủ công: " + url : "Không có URL");
     }
+  };
+
+  const onStudyCourse = async () => {
+    if (isLearning) {
+      // message.success("Tiếp tục học");
+      router.push(`/course/${data?.courseId}/learn`);
+      console.log("Continue learning course:", data?.courseId);
+    }
+    enRollingCourseById(data?.courseId || "");
+    router.push(`/course/${data?.courseId}/learn`);
   };
 
   return (
@@ -360,8 +375,9 @@ export default function CourseDetailUI({
                 <Divider className="!my-4 sm:!my-5" />
 
                 {/* CTA */}
-                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                  <div className="sm:order-1">
+                <div className="flex flex-col gap-4">
+                  {/* Giá */}
+                  <div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       Giá
                     </div>
@@ -379,7 +395,8 @@ export default function CourseDetailUI({
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:order-2">
+                  {/* Nút hành động — nằm dưới giá */}
+                  <div className="flex flex-col sm:flex-row gap-2 w-full">
                     <Button
                       icon={<ShoppingCartOutlined />}
                       className="w-full sm:w-auto"
@@ -391,9 +408,9 @@ export default function CourseDetailUI({
                       type="primary"
                       icon={<PlayCircleOutlined />}
                       className="w-full sm:w-auto"
-                      onClick={() => message.success("Bắt đầu học ngay")}
+                      onClick={onStudyCourse}
                     >
-                      Học ngay
+                      {isLearning ? "Tiếp tục học" : "Mua và học ngay"}
                     </Button>
                   </div>
                 </div>

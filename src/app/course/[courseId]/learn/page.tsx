@@ -1,10 +1,9 @@
-export const dynamic = "force-dynamic";
 export const revalidate = 120;
 
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import CourseDetailUI from "./Client";
-import { CheckCourseById, fetchCourseById } from "EduSmart/app/apiServer/courseAction";
+import { CheckCourseById } from "EduSmart/app/apiServer/courseAction";
+import CourseViewVideoPage from "./Client";
 
 export const metadata: Metadata = {
   title: "EduSmart – Khóa học",
@@ -31,19 +30,11 @@ export default async function Page({
     return notFound();
   }
 
-  const api = await fetchCourseById(courseId);
   const isLearning = await CheckCourseById(courseId);
-  console.log("CourseDetail - api:", api);
-  if (!api?.data?.courseId) return notFound();
-
-  const { data, modulesCount = 0, lessonsCount = 0 } = api;
+  if (!isLearning?.data) return notFound();
 
   return (
-    <CourseDetailUI
-      data={data}
-      modulesCount={modulesCount}
-      lessonsCount={lessonsCount}
-      isLearning={isLearning.data}
+    <CourseViewVideoPage
     />
     // <div></div>
   );

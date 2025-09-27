@@ -119,3 +119,27 @@ export async function fetchCourseById(
     };
   }
 }
+
+
+export async function CheckCourseById(
+  id: string,
+): Promise<{
+  data: boolean;
+}> {
+  try {
+    const res = await apiServer.course.api.v1CoursesEnrollmentList(id);
+    if (res.data?.success && res.data.response === true) {
+      return {
+        data: res.data.response ?? {},
+      };
+    }
+    return {
+      data: false,
+    };
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return {
+      data: false,
+    };
+  }
+}
