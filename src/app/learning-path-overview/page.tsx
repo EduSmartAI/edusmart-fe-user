@@ -73,33 +73,47 @@ export default function LearningPathOverview() {
   return (
     <BaseScreenAdmin>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-6 py-20">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-blue-600 dark:text-blue-400 text-sm font-medium mb-6">
+        {/* Hero Section - Giới thiệu */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+          <div className="max-w-7xl mx-auto px-6 py-24">
+            {/* Section Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full text-blue-600 dark:text-blue-400 text-sm font-medium mb-8">
                 <FiCpu className="w-4 h-4 mr-2" />
-                Được cá nhân hóa bởi AI
+                Lộ trình cá nhân hóa bởi AI
               </div>
-              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-                Khám phá{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                  lộ trình học tập
-                </span>
-                <br />
-                dành riêng cho bạn
-              </h1>
-              
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
-                Trả lời một vài câu hỏi đơn giản, EduSmart sẽ sử dụng AI để phân tích và đề xuất 
-                lộ trình học tập cá nhân hóa phù hợp với mục tiêu và trình độ của bạn.
-              </p>
+            </div>
 
-              <div className="flex justify-center">
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <FiCheckCircle className="w-4 h-4 mr-2 text-green-500" />
-                  Chỉ mất 5-10 phút để hoàn thành toàn bộ quy trình
+            {/* Main Content */}
+            <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-12 shadow-2xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 dark:bg-blue-900/20 rounded-full transform translate-x-16 -translate-y-16"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-100 dark:bg-purple-900/20 rounded-full transform -translate-x-12 translate-y-12"></div>
+              
+              <div className="relative z-10 text-center">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white mb-8 leading-tight">
+                  Khám phá{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                    lộ trình học tập
+                  </span>
+                  <br />
+                  <span className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-700 dark:text-gray-300">
+                    dành riêng cho bạn
+                  </span>
+                </h1>
+                
+                <div className="max-w-4xl mx-auto">
+                  <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed font-medium">
+                    Trả lời một vài câu hỏi đơn giản, EduSmart sẽ sử dụng AI để phân tích và đề xuất 
+                    lộ trình học tập cá nhân hóa phù hợp với mục tiêu và trình độ của bạn.
+                  </p>
+
+                  <div className="flex justify-center mb-8">
+                    <div className="flex items-center bg-green-50 dark:bg-green-900/20 px-6 py-3 rounded-full text-green-600 dark:text-green-400 font-medium">
+                      <FiCheckCircle className="w-5 h-5 mr-3" />
+                      Chỉ mất 5-10 phút để hoàn thành toàn bộ quy trình
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -113,14 +127,21 @@ export default function LearningPathOverview() {
           </div>
         </section>
 
-        {/* Steps Section */}
-        <section className="py-20 bg-white dark:bg-gray-800/50">
+        {/* Steps Section - Quy trình */}
+        <section className="py-24 bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            {/* Section Header */}
+            <div className="text-center mb-20">
+              {/* <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-blue-100 dark:from-green-900/30 dark:to-blue-900/30 rounded-full text-green-600 dark:text-green-400 text-sm font-medium mb-8">
+                <FiTarget className="w-4 h-4 mr-2" />
+                3 Bước Đơn Giản
+              </div> */}
+              
+              <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-6">
                 Quy trình đơn giản
               </h2>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+              
+              <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-medium leading-relaxed">
                 Chỉ với 3 bước đơn giản, bạn sẽ có được lộ trình học tập được cá nhân hóa hoàn toàn
               </p>
             </div>
