@@ -1,19 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Layout } from "antd";
 import { useQuizList, useQuizTest } from "EduSmart/hooks/quiz";
 import { Quiz } from "EduSmart/types/quiz";
 import QuizSelectionHeader from "EduSmart/components/User/Quiz/QuizSelection/QuizSelectionHeader";
 import QuizSelectionList from "EduSmart/components/User/Quiz/QuizSelection/QuizSelectionList";
 import ActionButtons from "EduSmart/components/User/Quiz/QuizSelection/ActionButtons";
-import QuizEduSmartHeader from "EduSmart/components/User/Quiz/QuizEdusmartHeader";
-import { Spin } from "antd";
+import { Spin, Button } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
-
-const { Content } = Layout;
+import { FiRefreshCcw } from "react-icons/fi";
 
 interface QuizSelectionScreenProps {
-  onQuizSelect: (testId: string) => void; // Changed from quizIds to testId
+  onQuizSelect: (testId: string) => void;
   onSkip?: () => void;
 }
 
@@ -135,69 +132,79 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
   };
 
   // Show loading state
-  if (isLoading) {
+  if (isLoading || !hasInitialized) {
     return (
-      <Layout className="min-h-screen h-screen  bg-gray-50 dark:bg-gray-900">
-        <QuizEduSmartHeader />
-        <Content>
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center h-screen flex items-center justify-center">
-              <Spin
-                indicator={<LoadingOutlined style={{ fontSize: 28 }} spin />}
-              />
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Spin
+              indicator={
+                <LoadingOutlined
+                  style={{ fontSize: 24, color: "#3b82f6" }}
+                  spin
+                />
+              }
+            />
           </div>
-        </Content>
-      </Layout>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            Đang tải danh sách quiz
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300">
+            Vui lòng chờ trong giây lát...
+          </p>
+        </div>
+      </div>
     );
   }
 
   // Show error state
   if (error) {
     return (
-      <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <QuizEduSmartHeader />
-        <Content className="p-10">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center text-red-600">
-              <p>Lỗi: {error}</p>
-              <button
-                onClick={() => loadQuizzes()}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-              >
-                Thử lại
-              </button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="max-w-md mx-auto px-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FiRefreshCcw className="w-8 h-8 text-red-500" />
             </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Không thể tải danh sách quiz
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              {error}
+            </p>
+            <Button
+              type="primary"
+              onClick={() => loadQuizzes()}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 border-none hover:from-blue-700 hover:to-purple-700 px-6 py-2 h-auto font-semibold rounded-lg"
+              icon={<FiRefreshCcw className="w-4 h-4" />}
+            >
+              Thử lại
+            </Button>
           </div>
-        </Content>
-      </Layout>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* EduSmart Header */}
-      <QuizEduSmartHeader />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header Section */}
+        <QuizSelectionHeader
+          currentSeries={currentSeries}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+        />
 
-      <Content className="p-10">
-        <div className="max-w-7xl mx-auto min-h-screen">
-          {/* Header Section */}
-          <QuizSelectionHeader
-            currentSeries={currentSeries}
-            selectedFilter={selectedFilter}
-            onFilterChange={setSelectedFilter}
-          />
-
-          {/* Quiz List */}
-          <QuizSelectionList
-            quizzes={filteredQuizzes}
-            selectedQuizIds={selectedQuizIds}
-            isLoading={isLoading || !hasInitialized}
-            onQuizSelect={handleQuizSelect}
-            onQuizStart={handleQuizStart}
-          />
-        </div>
-      </Content>
+        {/* Quiz List */}
+        <QuizSelectionList
+          quizzes={filteredQuizzes}
+          selectedQuizIds={selectedQuizIds}
+          isLoading={isLoading || !hasInitialized}
+          onQuizSelect={handleQuizSelect}
+          onQuizStart={handleQuizStart}
+        />
+      </div>
 
       {/* Action Buttons */}
       <ActionButtons
@@ -206,7 +213,7 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
         onStart={handleStartSelected}
         disabled={selectedQuizIds.length === 0}
       />
-    </Layout>
+    </div>
   );
 };
 

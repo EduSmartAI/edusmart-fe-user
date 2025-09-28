@@ -393,24 +393,29 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             // Clear toàn bộ dữ liệu survey sau khi submit thành công
             get().resetSurvey();
 
-            // Auto-load recommendations
-            const loadResult = await getSurveyRecommendationsAction(
-              result.surveyId,
-            );
-            if (loadResult.ok && loadResult.data) {
-              set({ recommendations: loadResult.data.recommendations });
+            // Auto-load recommendations (optional, don't fail if this fails)
+            try {
+              const loadResult = await getSurveyRecommendationsAction(
+                result.surveyId,
+              );
+              if (loadResult.ok && loadResult.data) {
+                set({ recommendations: loadResult.data.recommendations });
+              }
+            } catch (recommendationError) {
+              console.warn("Failed to load recommendations:", recommendationError);
+              // Don't fail the entire submission if recommendations fail
             }
 
             return { success: true, surveyId: result.surveyId };
           } else {
-            set({ submitError: result.error || "Thất bại khi gửi khảo sát" });
-            return { success: false, error: result.error };
+            set({ submitError: result.error || "Không thể gửi khảo sát. Vui lòng thử lại sau." });
+            return { success: false, error: result.error || "Không thể gửi khảo sát. Vui lòng thử lại sau." };
           }
         } catch (error) {
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Đã xảy ra lỗi không xác định";
+              : "Không thể gửi khảo sát. Vui lòng thử lại sau.";
           set({ submitError: errorMessage });
           return { success: false, error: errorMessage };
         } finally {
@@ -520,13 +525,13 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingSemesters: false });
             return {
               success: false,
-              error: response.error || "Failed to load semesters",
+              error: response.error || "Không thể tải danh sách kỳ học. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
           set({ isLoadingSemesters: false });
           const errorMessage =
-            error instanceof Error ? error.message : "Failed to load semesters";
+            error instanceof Error ? error.message : "Không thể tải danh sách kỳ học. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -543,13 +548,13 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingMajors: false });
             return {
               success: false,
-              error: response.error || "Failed to load majors",
+              error: response.error || "Không thể tải danh sách chuyên ngành. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
           set({ isLoadingMajors: false });
           const errorMessage =
-            error instanceof Error ? error.message : "Failed to load majors";
+            error instanceof Error ? error.message : "Không thể tải danh sách chuyên ngành. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -566,7 +571,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingTechnologies: false });
             return {
               success: false,
-              error: response.error || "Failed to load technologies",
+              error: response.error || "Không thể tải danh sách công nghệ. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -574,7 +579,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to load technologies";
+              : "Không thể tải danh sách công nghệ. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -594,7 +599,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingLearningGoals: false });
             return {
               success: false,
-              error: response.error || "Failed to load learning goals",
+              error: response.error || "Không thể tải danh sách mục tiêu học tập. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -602,7 +607,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to load learning goals";
+              : "Không thể tải danh sách mục tiêu học tập. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -619,7 +624,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingSurveyList: false });
             return {
               success: false,
-              error: response.error || "Failed to load survey list",
+              error: response.error || "Không thể tải danh sách khảo sát. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -627,7 +632,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to load survey list";
+              : "Không thể tải danh sách khảo sát. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -647,7 +652,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingInterestSurvey: false });
             return {
               success: false,
-              error: response.error || "Failed to load interest survey",
+              error: response.error || "Không thể tải khảo sát sở thích. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -655,7 +660,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to load interest survey";
+              : "Không thể tải khảo sát sở thích. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -675,7 +680,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingHabitSurvey: false });
             return {
               success: false,
-              error: response.error || "Failed to load habit survey",
+              error: response.error || "Không thể tải khảo sát thói quen học tập. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -683,7 +688,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to load habit survey";
+              : "Không thể tải khảo sát thói quen học tập. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -715,13 +720,23 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             learningGoalsResult,
             interestSurveyResult,
             habitSurveyResult,
-          ].filter((result) => result.status === "rejected");
+          ].filter((result) => result.status === "rejected" || 
+            (result.status === "fulfilled" && !result.value.success));
 
           if (failures.length > 0) {
             console.warn("Some data failed to load:", failures);
+            const errorMessages = failures
+              .map((failure) => {
+                if (failure.status === "fulfilled" && failure.value.error) {
+                  return failure.value.error;
+                }
+                return "Unknown error";
+              })
+              .join(", ");
+            
             return {
               success: false,
-              error: `Failed to load ${failures.length} data sources`,
+              error: `Không thể tải dữ liệu khảo sát: ${errorMessages}`,
             };
           }
 
@@ -730,7 +745,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to initialize form data";
+              : "Không thể khởi tạo dữ liệu khảo sát. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },

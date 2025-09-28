@@ -1,10 +1,8 @@
 "use client";
 import React from "react";
-import { Typography } from "antd";
 import QuizSelectionLine from "./QuizSelectionLine";
 import { Quiz } from "EduSmart/types/quiz";
-
-const { Text } = Typography;
+import { FiTarget } from "react-icons/fi";
 
 interface QuizSelectionListProps {
   quizzes: Quiz[];
@@ -24,16 +22,22 @@ const QuizSelectionList: React.FC<QuizSelectionListProps> = ({
   // Chỉ hiển thị "không có quiz" khi đã load xong và thực sự không có dữ liệu
   if (!isLoading && quizzes.length === 0) {
     return (
-      <div className="text-center py-12">
-        <Text className="text-lg text-gray-500">
-          Không có quiz nào phù hợp với bộ lọc đã chọn
-        </Text>
+      <div className="text-center py-16">
+        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+          <FiTarget className="w-8 h-8 text-gray-400" />
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+          Không có quiz nào
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400">
+          Hiện tại chưa có quiz nào phù hợp với bộ lọc đã chọn
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
       {quizzes.map((quiz: Quiz) => (
         <QuizSelectionLine
           key={quiz.id}

@@ -76,6 +76,9 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
       const hideLoading = message.loading("Đang xử lý khảo sát của bạn...", 0);
 
       try {
+        onComplete?.();
+        return;
+
         console.log("Submitting data:", {
           survey1: survey.survey1Data,
           survey2: survey.survey2Data,

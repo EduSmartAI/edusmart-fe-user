@@ -240,7 +240,6 @@ export async function getSemesterAction(): Promise<{
   try {
     console.log("🔒 SERVER ACTION: Getting semesters via server");
 
-    // Try actual API call first
     const response =
       await apiServer.quiz.api.v1ExternalQuizSelectSemestersList();
 
@@ -258,20 +257,10 @@ export async function getSemesterAction(): Promise<{
     throw new Error(response.data?.message || "Failed to get semesters");
   } catch (error) {
     console.error("Server Action - Get semesters error:", error);
-
-    // Fallback to mock data
+    const errorMessage = error instanceof Error ? error.message : "Failed to get semesters";
     return {
-      ok: true,
-      data: [
-        { semesterId: "sem1", semesterName: "Kỳ 1", semesterNumber: 1 },
-        { semesterId: "sem2", semesterName: "Kỳ 2", semesterNumber: 2 },
-        { semesterId: "sem3", semesterName: "Kỳ 3", semesterNumber: 3 },
-        { semesterId: "sem4", semesterName: "Kỳ 4", semesterNumber: 4 },
-        { semesterId: "sem5", semesterName: "Kỳ 5", semesterNumber: 5 },
-        { semesterId: "sem6", semesterName: "Kỳ 6", semesterNumber: 6 },
-        { semesterId: "sem7", semesterName: "Kỳ 7", semesterNumber: 7 },
-        { semesterId: "sem8", semesterName: "Kỳ 8", semesterNumber: 8 },
-      ],
+      ok: false,
+      error: errorMessage,
     };
   }
 }
@@ -292,7 +281,6 @@ export async function getMajorAction(): Promise<{
   try {
     console.log("🔒 SERVER ACTION: Getting majors via server");
 
-    // Try actual API call first
     const response = await apiServer.quiz.api.v1ExternalQuizSelectMajorsList();
 
     if (response.data?.success && response.data?.response) {
@@ -310,21 +298,10 @@ export async function getMajorAction(): Promise<{
     throw new Error(response.data?.message || "Failed to get majors");
   } catch (error) {
     console.error("Server Action - Get majors error:", error);
-
-    // Fallback to mock data
+    const errorMessage = error instanceof Error ? error.message : "Failed to get majors";
     return {
-      ok: true,
-      data: [
-        { majorId: "SE", majorName: "Software Engineering", majorCode: "SE" },
-        {
-          majorId: "AI",
-          majorName: "Artificial Intelligence",
-          majorCode: "AI",
-        },
-        { majorId: "IS", majorName: "Information System", majorCode: "IS" },
-        { majorId: "IA", majorName: "Information Assurance", majorCode: "IA" },
-        { majorId: "IOT", majorName: "Internet of Things", majorCode: "IOT" },
-      ],
+      ok: false,
+      error: errorMessage,
     };
   }
 }
@@ -344,7 +321,6 @@ export async function getLearningGoalAction(): Promise<{
   try {
     console.log("🔒 SERVER ACTION: Getting learning goals via server");
 
-    // Try actual API call first
     const response =
       await apiServer.quiz.api.v1ExternalQuizSelectLearningGoalsList();
 
@@ -362,32 +338,10 @@ export async function getLearningGoalAction(): Promise<{
     throw new Error(response.data?.message || "Failed to get learning goals");
   } catch (error) {
     console.error("Server Action - Get learning goals error:", error);
-
-    // Fallback to mock data
+    const errorMessage = error instanceof Error ? error.message : "Failed to get learning goals";
     return {
-      ok: true,
-      data: [
-        {
-          learningGoalId: "career",
-          learningGoalName: "Phát triển sự nghiệp",
-          learningGoalType: 1,
-        },
-        {
-          learningGoalId: "skill",
-          learningGoalName: "Nâng cao kỹ năng",
-          learningGoalType: 2,
-        },
-        {
-          learningGoalId: "knowledge",
-          learningGoalName: "Mở rộng kiến thức",
-          learningGoalType: 3,
-        },
-        {
-          learningGoalId: "certification",
-          learningGoalName: "Lấy chứng chỉ",
-          learningGoalType: 4,
-        },
-      ],
+      ok: false,
+      error: errorMessage,
     };
   }
 }
@@ -407,7 +361,6 @@ export async function getTechnologyAction(): Promise<{
   try {
     console.log("🔒 SERVER ACTION: Getting technologies via server");
 
-    // Try actual API call first
     const response =
       await apiServer.quiz.api.v1ExternalQuizSelectTechnologiesList();
 
@@ -425,36 +378,10 @@ export async function getTechnologyAction(): Promise<{
     throw new Error(response.data?.message || "Failed to get technologies");
   } catch (error) {
     console.error("Server Action - Get technologies error:", error);
-
-    // Fallback to mock data
+    const errorMessage = error instanceof Error ? error.message : "Failed to get technologies";
     return {
-      ok: true,
-      data: [
-        { technologyId: "react", technologyName: "React", technologyType: 2 },
-        { technologyId: "vue", technologyName: "Vue.js", technologyType: 2 },
-        {
-          technologyId: "angular",
-          technologyName: "Angular",
-          technologyType: 2,
-        },
-        {
-          technologyId: "nodejs",
-          technologyName: "Node.js",
-          technologyType: 4,
-        },
-        {
-          technologyId: "javascript",
-          technologyName: "JavaScript",
-          technologyType: 1,
-        },
-        {
-          technologyId: "typescript",
-          technologyName: "TypeScript",
-          technologyType: 1,
-        },
-        { technologyId: "python", technologyName: "Python", technologyType: 1 },
-        { technologyId: "java", technologyName: "Java", technologyType: 1 },
-      ],
+      ok: false,
+      error: errorMessage,
     };
   }
 }
@@ -695,15 +622,13 @@ export async function submitSurveyAction(surveyData: {
 
     // Get technology types from API to map to survey data
     const technologyTypesMap: Map<string, number> = new Map();
-    try {
-      const techResult = await getTechnologyAction();
-      if (techResult.ok && techResult.data) {
-        techResult.data.forEach((tech) => {
-          technologyTypesMap.set(tech.technologyId, tech.technologyType);
-        });
-      }
-    } catch (error) {
-      console.warn("Failed to get technology types:", error);
+    const techResult = await getTechnologyAction();
+    if (techResult.ok && techResult.data) {
+      techResult.data.forEach((tech) => {
+        technologyTypesMap.set(tech.technologyId, tech.technologyType);
+      });
+    } else {
+      throw new Error(techResult.error || "Failed to get technology types");
     }
 
     // Collect all technologies from Survey 2
@@ -765,20 +690,18 @@ export async function submitSurveyAction(surveyData: {
     }
 
     // Get learningGoalType from API data
-    let learningGoalType = 1; // Default value
-    try {
-      const learningGoalsResult = await getLearningGoalAction();
-      if (learningGoalsResult.ok && learningGoalsResult.data) {
-        const selectedGoal = learningGoalsResult.data.find(
-          (goal) => goal.learningGoalId === survey1Data.learningGoal,
-        );
-        if (selectedGoal) {
-          learningGoalType = selectedGoal.learningGoalType;
-        }
-      }
-    } catch (error) {
-      console.warn("Failed to get learning goal type, using default:", error);
+    const learningGoalsResult = await getLearningGoalAction();
+    if (!learningGoalsResult.ok || !learningGoalsResult.data) {
+      throw new Error(learningGoalsResult.error || "Failed to get learning goals");
     }
+    
+    const selectedGoal = learningGoalsResult.data.find(
+      (goal) => goal.learningGoalId === survey1Data.learningGoal,
+    );
+    if (!selectedGoal) {
+      throw new Error("Selected learning goal not found");
+    }
+    const learningGoalType = selectedGoal.learningGoalType;
 
     const studentInformation = {
       majorId: survey1Data.specialization || survey1Data.major, // Use specialization if available, otherwise major
@@ -805,35 +728,20 @@ export async function submitSurveyAction(surveyData: {
       survey1Data.interestSurveyAnswers &&
       survey1Data.interestSurveyAnswers.length > 0
     ) {
-      // Try to get INTEREST survey ID dynamically
-      try {
-        const interestSurveyResult = await getSurveyByCodeAction("INTEREST");
-        const interestSurveyId =
-          interestSurveyResult.data?.surveyId ||
-          "f60a7c49-8fb3-417d-82b9-5d45c9e58374";
-
-        studentSurveys.push({
-          surveyId: interestSurveyId,
-          surveyCode: "INTEREST",
-          answers: survey1Data.interestSurveyAnswers.map((answer) => ({
-            questionId: answer.questionId,
-            answerId: answer.selectedAnswerId,
-          })),
-        });
-      } catch (error) {
-        console.warn(
-          "Failed to get INTEREST survey ID, using fallback:",
-          error,
-        );
-        studentSurveys.push({
-          surveyId: "f60a7c49-8fb3-417d-82b9-5d45c9e58374", // Fallback INTEREST survey ID
-          surveyCode: "INTEREST",
-          answers: survey1Data.interestSurveyAnswers.map((answer) => ({
-            questionId: answer.questionId,
-            answerId: answer.selectedAnswerId,
-          })),
-        });
+      // Get INTEREST survey ID dynamically
+      const interestSurveyResult = await getSurveyByCodeAction("INTEREST");
+      if (!interestSurveyResult.ok || !interestSurveyResult.data?.surveyId) {
+        throw new Error(interestSurveyResult.error || "Failed to get INTEREST survey");
       }
+
+      studentSurveys.push({
+        surveyId: interestSurveyResult.data.surveyId,
+        surveyCode: "INTEREST",
+        answers: survey1Data.interestSurveyAnswers.map((answer) => ({
+          questionId: answer.questionId,
+          answerId: answer.selectedAnswerId,
+        })),
+      });
     }
 
     // Add HABIT survey if we have survey 3 data
@@ -852,25 +760,16 @@ export async function submitSurveyAction(surveyData: {
       });
 
       if (habitAnswers.length > 0) {
-        try {
-          const habitSurveyResult = await getSurveyByCodeAction("HABIT");
-          const habitSurveyId =
-            habitSurveyResult.data?.surveyId ||
-            "0cbf895e-005e-4bf7-82ed-627acdad0f39";
-
-          studentSurveys.push({
-            surveyId: habitSurveyId,
-            surveyCode: "HABIT",
-            answers: habitAnswers,
-          });
-        } catch (error) {
-          console.warn("Failed to get HABIT survey ID, using fallback:", error);
-          studentSurveys.push({
-            surveyId: "0cbf895e-005e-4bf7-82ed-627acdad0f39", // Fallback HABIT survey ID
-            surveyCode: "HABIT",
-            answers: habitAnswers,
-          });
+        const habitSurveyResult = await getSurveyByCodeAction("HABIT");
+        if (!habitSurveyResult.ok || !habitSurveyResult.data?.surveyId) {
+          throw new Error(habitSurveyResult.error || "Failed to get HABIT survey");
         }
+
+        studentSurveys.push({
+          surveyId: habitSurveyResult.data.surveyId,
+          surveyCode: "HABIT",
+          answers: habitAnswers,
+        });
       }
     }
 
@@ -943,58 +842,9 @@ export async function getSurveyRecommendationsAction(
   error?: string;
 }> {
   try {
-    // Mock implementation - replace with actual API call when backend is ready
-    const mockRecommendations: SurveyRecommendationResponse = {
-      userId: "user_123",
-      surveyId,
-      generatedAt: new Date().toISOString(),
-      recommendations: {
-        courses: [
-          {
-            courseId: "react-101",
-            courseName: "React Fundamentals",
-            difficulty: "Beginner",
-            priority: 1,
-          },
-          {
-            courseId: "ts-advanced",
-            courseName: "TypeScript Advanced",
-            difficulty: "Intermediate",
-            priority: 2,
-          },
-        ],
-        learningPath: [
-          {
-            stepId: "step1",
-            stepName: "HTML/CSS Basics",
-            description: "Learn web fundamentals",
-            estimatedWeeks: 2,
-          },
-          {
-            stepId: "step2",
-            stepName: "JavaScript ES6+",
-            description: "Modern JavaScript features",
-            estimatedWeeks: 3,
-          },
-        ],
-        skills: [
-          {
-            skillId: "react",
-            skillName: "React",
-            currentLevel: "Beginner",
-            targetLevel: "Intermediate",
-          },
-          {
-            skillId: "js",
-            skillName: "JavaScript",
-            currentLevel: "Intermediate",
-            targetLevel: "Advanced",
-          },
-        ],
-      },
-    };
-
-    return { ok: true, data: mockRecommendations };
+    // TODO: Implement actual API call when backend is ready
+    // For now, return error to indicate API not implemented
+    throw new Error("Survey recommendations API not implemented yet");
   } catch (error: unknown) {
     const fetchError = normalizeFetchError(error);
     console.error("Get recommendations error:", fetchError);
@@ -1021,13 +871,9 @@ export async function saveSurveyDraftAction(
   error?: string;
 }> {
   try {
-    // Mock implementation - replace with actual API call when backend is ready
-    console.log("Saving survey draft:", surveyData);
-
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    return { ok: true };
+    // TODO: Implement actual API call when backend is ready
+    // For now, return error to indicate API not implemented
+    throw new Error("Save survey draft API not implemented yet");
   } catch (error: unknown) {
     const fetchError = normalizeFetchError(error);
     console.error("Save draft error:", fetchError);
@@ -1054,17 +900,9 @@ export async function loadSurveyDraftAction(): Promise<{
   error?: string;
 }> {
   try {
-    // Mock implementation - replace with actual API call when backend is ready
-    console.log("Loading survey draft");
-
-    const mockDraftData = {
-      survey1Data: undefined,
-      survey2Data: undefined,
-      survey3Data: undefined,
-      lastStep: 1,
-    };
-
-    return { ok: true, data: mockDraftData };
+    // TODO: Implement actual API call when backend is ready
+    // For now, return error to indicate API not implemented
+    throw new Error("Load survey draft API not implemented yet");
   } catch (error: unknown) {
     const fetchError = normalizeFetchError(error);
     console.error("Load draft error:", fetchError);
@@ -1132,39 +970,22 @@ export async function submitSurveyServerAction(submissionData: {
     };
 
     // Try actual API call
-    try {
-      const response =
-        await apiServer.quiz.api.v1StudentSurveyInsertStudentSurveyCreate(
-          apiPayload,
-        );
-
-      if (response.data?.success) {
-        return {
-          ok: true,
-          data: {
-            submissionId: response.data.response || `sub_${Date.now()}`,
-            status: "success" as const,
-            message: response.data.message || "Survey submitted successfully",
-          },
-        };
-      } else {
-        throw new Error(response.data?.message || "Failed to submit survey");
-      }
-    } catch (apiError) {
-      console.error(
-        "API submission failed, creating fallback response:",
-        apiError,
+    const response =
+      await apiServer.quiz.api.v1StudentSurveyInsertStudentSurveyCreate(
+        apiPayload,
       );
 
-      // Fallback response when API fails
+    if (response.data?.success) {
       return {
         ok: true,
         data: {
-          submissionId: `sub_${Date.now()}`,
+          submissionId: response.data.response || `sub_${Date.now()}`,
           status: "success" as const,
-          message: "Survey submitted successfully (fallback)",
+          message: response.data.message || "Survey submitted successfully",
         },
       };
+    } else {
+      throw new Error(response.data?.message || "Failed to submit survey");
     }
   } catch (error) {
     console.error("Server Action - Submit survey error:", error);
@@ -1201,81 +1022,46 @@ export async function getSurveyResultsAction(submissionId: string): Promise<{
   try {
     console.log("🔒 SERVER ACTION: Getting survey results via server");
 
-    // Try to get survey results - check if there's a specific API for results
-    // For now, since there doesn't appear to be a direct results API,
-    // we'll try to get the survey data by submissionId
+    // Try to get student survey by ID (if submissionId is a student survey ID)
+    const response =
+      await apiServer.quiz.api.v1StudentSurveySelectStudentSurveyList({
+        request: {
+          studentSurveyId: submissionId,
+          pageIndex: 0,
+          pageSize: 1,
+        },
+      });
 
-    try {
-      // Try to get student survey by ID (if submissionId is a student survey ID)
-      const response =
-        await apiServer.quiz.api.v1StudentSurveySelectStudentSurveyList({
-          request: {
-            studentSurveyId: submissionId,
-            pageIndex: 0,
-            pageSize: 1,
-          },
-        });
-
-      if (
-        response.data?.success &&
-        response.data?.response &&
-        response.data.response.length > 0
-      ) {
-        const surveyData = response.data.response[0];
-        return {
-          ok: true,
-          data: {
-            submissionId,
-            surveyId: surveyData.studentSurveyId || "unknown",
-            score: 85, // Default since API doesn't provide
-            maxScore: 100,
-            percentage: 85,
-            passStatus: true,
-            feedback: `Khảo sát "${surveyData.survey?.title || "Survey"}" đã hoàn thành.`,
-            completedAt: new Date().toISOString(),
-            recommendations: [
-              {
-                type: "course",
-                title: "Recommended Course",
-                description: "Based on your survey responses",
-                priority: 1,
-              },
-            ],
-          },
-        };
-      }
-    } catch (apiError) {
-      console.log("API call failed, using fallback data:", apiError);
+    if (
+      response.data?.success &&
+      response.data?.response &&
+      response.data.response.length > 0
+    ) {
+      const surveyData = response.data.response[0];
+      return {
+        ok: true,
+        data: {
+          submissionId,
+          surveyId: surveyData.studentSurveyId || "unknown",
+          score: 85, // Default since API doesn't provide
+          maxScore: 100,
+          percentage: 85,
+          passStatus: true,
+          feedback: `Khảo sát "${surveyData.survey?.title || "Survey"}" đã hoàn thành.`,
+          completedAt: new Date().toISOString(),
+          recommendations: [
+            {
+              type: "course",
+              title: "Recommended Course",
+              description: "Based on your survey responses",
+              priority: 1,
+            },
+          ],
+        },
+      };
+    } else {
+      throw new Error(response.data?.message || "Failed to get survey results");
     }
-
-    // Fallback mock data when API is not available or fails
-    const mockResults = {
-      submissionId,
-      surveyId: "survey",
-      score: 85,
-      maxScore: 100,
-      percentage: 85,
-      passStatus: true,
-      feedback:
-        "Khảo sát hoàn thành tốt. Bạn có xu hướng học tập phù hợp với công nghệ web.",
-      completedAt: new Date().toISOString(),
-      recommendations: [
-        {
-          type: "course",
-          title: "React Fundamentals",
-          description: "Học React từ cơ bản đến nâng cao",
-          priority: 1,
-        },
-        {
-          type: "skill",
-          title: "JavaScript ES6+",
-          description: "Nâng cao kỹ năng JavaScript hiện đại",
-          priority: 2,
-        },
-      ],
-    };
-
-    return { ok: true, data: mockResults };
   } catch (error) {
     console.error("Server Action - Get survey results error:", error);
     return {
