@@ -18,12 +18,28 @@ export enum CourseSortBy {
   Value4 = 4,
 }
 
+export interface Answers {
+  text?: string | null;
+  isCorrect?: boolean;
+}
+
 export interface CheckEnrollmentResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: boolean;
+}
+
+export interface ContinueHintDto {
+  /** @format uuid */
+  moduleId?: string;
+  moduleName?: string | null;
+  /** @format uuid */
+  lessonId?: string;
+  lessonTitle?: string | null;
+  /** @format int32 */
+  resumeSecond?: number;
 }
 
 export interface CourseCommentDto {
@@ -126,6 +142,51 @@ export interface CourseDetailForLectureDto {
   ratingsAverage?: number;
 }
 
+export interface CourseDetailForStudentDto {
+  /** @format uuid */
+  courseId?: string;
+  /** @format uuid */
+  subjectId?: string;
+  subjectCode?: string | null;
+  title?: string | null;
+  shortDescription?: string | null;
+  description?: string | null;
+  slug?: string | null;
+  courseImageUrl?: string | null;
+  /** @format int32 */
+  learnerCount?: number;
+  videoUrl?: string | null;
+  /** @format int32 */
+  videoDurationSec?: number;
+  /** @format int32 */
+  durationMinutes?: number | null;
+  /** @format double */
+  durationHours?: number | null;
+  /** @format int32 */
+  level?: number | null;
+  /** @format double */
+  price?: number;
+  /** @format double */
+  dealPrice?: number | null;
+  isActive?: boolean;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string;
+  objectives?: CourseObjectiveDto[] | null;
+  requirements?: CourseRequirementDto[] | null;
+  modules?: ModuleDetailForStudentDto[] | null;
+  comments?: CourseCommentDto[] | null;
+  tags?: CourseTagDto[] | null;
+  ratings?: CourseRatingDto[] | null;
+  /** @format int32 */
+  ratingsCount?: number;
+  /** @format double */
+  ratingsAverage?: number;
+  progress?: CourseProgressDto;
+  continue?: ContinueHintDto;
+}
+
 export interface CourseDto {
   /** @format uuid */
   courseId?: string;
@@ -181,6 +242,21 @@ export interface CourseObjectiveDto {
   isActive?: boolean;
 }
 
+export interface CourseProgressDto {
+  /** @format int32 */
+  lessonsTotal?: number;
+  /** @format int32 */
+  lessonsCompleted?: number;
+  /** @format double */
+  percentCompleted?: number;
+  /** @format int32 */
+  status?: number;
+  /** @format date-time */
+  startedAt?: string | null;
+  /** @format date-time */
+  completedAt?: string | null;
+}
+
 export interface CourseRatingDto {
   /** @format uuid */
   ratingId?: string;
@@ -213,13 +289,18 @@ export interface CourseTagDto {
   tagName?: string | null;
 }
 
+export interface CreateCourseAudienceDto {
+  content?: string | null;
+  /** @format int32 */
+  positionIndex?: number;
+  isActive?: boolean;
+}
+
 export interface CreateCourseCommand {
   payload?: CreateCourseDto;
 }
 
 export interface CreateCourseDto {
-  /** @format uuid */
-  teacherId?: string;
   /** @format uuid */
   subjectId?: string;
   title?: string | null;
@@ -240,6 +321,7 @@ export interface CreateCourseDto {
   objectives?: CreateCourseObjectiveDto[] | null;
   requirements?: CreateCourseRequirementDto[] | null;
   courseTags?: CreateCourseTagDto[] | null;
+  audiences?: CreateCourseAudienceDto[] | null;
   modules?: CreateModuleDto[] | null;
 }
 
@@ -278,6 +360,7 @@ export interface CreateLessonDto {
   /** @format int32 */
   positionIndex?: number;
   isActive?: boolean;
+  lessonQuiz?: CreateQuizDto;
 }
 
 export interface CreateModuleDiscussionDto {
@@ -302,6 +385,7 @@ export interface CreateModuleDto {
   lessons?: CreateLessonDto[] | null;
   discussions?: CreateModuleDiscussionDto[] | null;
   materials?: CreateModuleMaterialDto[] | null;
+  moduleQuiz?: CreateQuizDto;
 }
 
 export interface CreateModuleMaterialDto {
@@ -316,6 +400,38 @@ export interface CreateModuleObjectiveDto {
   /** @format int32 */
   positionIndex?: number;
   isActive?: boolean;
+}
+
+export interface CreateQuizDto {
+  quizSettings?: CreateQuizSettingsDto;
+  questions?: Questions[] | null;
+}
+
+export interface CreateQuizSettingsDto {
+  /** @format int32 */
+  durationMinutes?: number;
+  /** @format int32 */
+  passingScorePercentage?: number;
+  shuffleQuestions?: boolean;
+  showResultsImmediately?: boolean;
+  allowRetake?: boolean;
+}
+
+export interface CreateUserLessonProgressCommand {
+  userLessonProgress?: CreateUserLessonProgressDto;
+}
+
+export interface CreateUserLessonProgressDto {
+  /** @format uuid */
+  lessonId?: string;
+}
+
+export interface CreateUserLessonProgressResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
 }
 
 export interface DetailError {
@@ -404,6 +520,30 @@ export interface GetCoursesResponse {
   response?: CourseDtoPaginatedResult;
 }
 
+export interface GetDetailsProgressByCourseIdForStudentResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseDetailForStudentDto;
+  /** @format int32 */
+  modulesCount?: number;
+  /** @format int32 */
+  lessonsCount?: number;
+}
+
+export interface GetDetailsProgressByCourseSlugForStudentResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseDetailForStudentDto;
+  /** @format int32 */
+  modulesCount?: number;
+  /** @format int32 */
+  lessonsCount?: number;
+}
+
 export interface GuestLessonDetailDto {
   /** @format uuid */
   lessonId?: string;
@@ -442,6 +582,7 @@ export interface LectureLessonDetailDto {
   /** @format int32 */
   positionIndex?: number;
   isActive?: boolean;
+  lessonQuiz?: QuizOutDto;
 }
 
 export interface ModuleDetailForLectureDto {
@@ -463,6 +604,30 @@ export interface ModuleDetailForLectureDto {
   moduleDiscussionDetails?: ModuleDiscussionDetailDto[] | null;
   moduleMaterialDetails?: ModuleMaterialDetailDto[] | null;
   lessons?: LectureLessonDetailDto[] | null;
+  moduleQuiz?: QuizOutDto;
+}
+
+export interface ModuleDetailForStudentDto {
+  /** @format uuid */
+  moduleId?: string;
+  moduleName?: string | null;
+  description?: string | null;
+  /** @format int32 */
+  positionIndex?: number;
+  isActive?: boolean;
+  isCore?: boolean;
+  /** @format int32 */
+  durationMinutes?: number | null;
+  /** @format double */
+  durationHours?: number | null;
+  /** @format int32 */
+  level?: number | null;
+  objectives?: ModuleObjectiveDto[] | null;
+  moduleDiscussionDetails?: ModuleDiscussionDetailDto[] | null;
+  moduleMaterialDetails?: ModuleMaterialDetailDto[] | null;
+  lessons?: StudentLessonDetailDto[] | null;
+  moduleQuiz?: QuizOutDto;
+  progress?: ModuleProgressDto;
 }
 
 export interface ModuleDiscussionDetailDto {
@@ -498,6 +663,85 @@ export interface ModuleObjectiveDto {
   isActive?: boolean;
 }
 
+export interface ModuleProgressDto {
+  /** @format int32 */
+  lessonsTotal?: number;
+  /** @format int32 */
+  lessonsCompleted?: number;
+  /** @format double */
+  percentCompleted?: number;
+  /** @format int32 */
+  status?: number;
+  /** @format date-time */
+  startedAt?: string | null;
+  /** @format date-time */
+  completedAt?: string | null;
+}
+
+export interface Questions {
+  /** @format int32 */
+  questionType?: number;
+  questionText?: string | null;
+  options?: Answers[] | null;
+  explanation?: string | null;
+}
+
+export interface QuizAnswerOutDto {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string | null;
+}
+
+export interface QuizOutDto {
+  quizSettings?: QuizSettingsOutDto;
+  questions?: QuizQuestionOutDto[] | null;
+}
+
+export interface QuizQuestionOutDto {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string | null;
+  explanation?: string | null;
+  /** @format int32 */
+  questionType?: number;
+  answers?: QuizAnswerOutDto[] | null;
+}
+
+export interface QuizSettingsOutDto {
+  /** @format int32 */
+  durationMinutes?: number;
+  /** @format int32 */
+  passingScorePercentage?: number;
+  shuffleQuestions?: boolean;
+  showResultsImmediately?: boolean;
+  allowRetake?: boolean;
+}
+
+export interface StudentLessonDetailDto {
+  /** @format uuid */
+  lessonId?: string;
+  title?: string | null;
+  videoUrl?: string | null;
+  /** @format int32 */
+  videoDurationSec?: number | null;
+  /** @format int32 */
+  positionIndex?: number;
+  isActive?: boolean;
+  isCompleted?: boolean;
+  /** @format int32 */
+  lastPositionSec?: number;
+  lessonQuiz?: QuizOutDto;
+}
+
+export interface UpdateCourseAudienceDto {
+  /** @format uuid */
+  audienceId?: string | null;
+  content?: string | null;
+  /** @format int32 */
+  positionIndex?: number;
+  isActive?: boolean;
+}
+
 export interface UpdateCourseCommand {
   /** @format uuid */
   courseId?: string;
@@ -525,6 +769,8 @@ export interface UpdateCourseDto {
   isActive?: boolean;
   objectives?: UpdateCourseObjectiveDto[] | null;
   requirements?: UpdateCourseRequirementDto[] | null;
+  audiences?: UpdateCourseAudienceDto[] | null;
+  courseTags?: UpdateCourseTagDto[] | null;
 }
 
 export interface UpdateCourseLessonDto {
@@ -554,6 +800,8 @@ export interface UpdateCourseModuleDto {
   level?: number | null;
   objectives?: UpdateCourseModuleObjectiveDto[] | null;
   lessons?: UpdateCourseLessonDto[] | null;
+  discussions?: UpdateModuleDiscussionDto[] | null;
+  materials?: UpdateModuleMaterialDto[] | null;
 }
 
 export interface UpdateCourseModuleObjectiveDto {
@@ -609,6 +857,11 @@ export interface UpdateCourseResponse {
   response?: string | null;
 }
 
+export interface UpdateCourseTagDto {
+  /** @format int64 */
+  tagId?: number;
+}
+
 export interface UpdateLessonDto {
   /** @format uuid */
   lessonId?: string | null;
@@ -627,6 +880,15 @@ export interface UpdateModuleCommand {
   updateModuleDto?: UpdateModuleDto;
 }
 
+export interface UpdateModuleDiscussionDto {
+  /** @format uuid */
+  discussionId?: string | null;
+  title?: string | null;
+  description?: string | null;
+  discussionQuestion?: string | null;
+  isActive?: boolean;
+}
+
 export interface UpdateModuleDto {
   /** @format uuid */
   moduleId?: string | null;
@@ -642,6 +904,17 @@ export interface UpdateModuleDto {
   level?: number | null;
   objectives?: UpdateModuleObjectiveDto[] | null;
   lessons?: UpdateLessonDto[] | null;
+  discussions?: UpdateModuleDiscussionDto[] | null;
+  materials?: UpdateModuleMaterialDto[] | null;
+}
+
+export interface UpdateModuleMaterialDto {
+  /** @format uuid */
+  materialId?: string | null;
+  title?: string | null;
+  description?: string | null;
+  fileUrl?: string | null;
+  isActive?: boolean;
 }
 
 export interface UpdateModuleObjectiveDto {
@@ -659,6 +932,31 @@ export interface UpdateModuleResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: string | null;
+}
+
+export interface UpdateUserLessonProgressCommand {
+  updateUserLessonProgress?: UpdateUserLessonProgressDto;
+}
+
+export interface UpdateUserLessonProgressDto {
+  /** @format uuid */
+  lessonId?: string;
+  /** @format int32 */
+  status?: number;
+  /** @format date-time */
+  completedAt?: string | null;
+  /** @format int32 */
+  durationWatchedSec?: number;
+  /** @format int32 */
+  lastPositionSec?: number | null;
+}
+
+export interface UpdateUserLessonProgressResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -982,7 +1280,7 @@ export class Api<
      *
      * @tags Courses
      * @name V1CoursesLectureList
-     * @summary Get list of courses by teacher ID
+     * @summary Get list of courses for lecture
      * @request GET:/api/v1/Courses/lecture
      * @secure
      */
@@ -1131,42 +1429,6 @@ export class Api<
       }),
 
     /**
-     * @description Check if the authenticated user is enrolled in the specified course
-     *
-     * @tags Courses
-     * @name V1CoursesEnrollmentList
-     * @summary Check if current user is enrolled in a course
-     * @request GET:/api/v1/Courses/{courseId}/enrollment
-     * @secure
-     */
-    v1CoursesEnrollmentList: (courseId: string, params: RequestParams = {}) =>
-      this.request<CheckEnrollmentResponse, any>({
-        path: `/api/v1/Courses/${courseId}/enrollment`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Enroll the authenticated user in the specified course
-     *
-     * @tags Courses
-     * @name V1CoursesEnrollmentCreate
-     * @summary Enroll the current user in a course
-     * @request POST:/api/v1/Courses/{courseId}/enrollment
-     * @secure
-     */
-    v1CoursesEnrollmentCreate: (courseId: string, params: RequestParams = {}) =>
-      this.request<EnrollInCourseResponse, any>({
-        path: `/api/v1/Courses/${courseId}/enrollment`,
-        method: "POST",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Retrieve all available course tags
      *
      * @tags Courses
@@ -1204,6 +1466,138 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Check if the authenticated user is enrolled in the specified course
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressEnrollmentList
+     * @summary Check if current user is enrolled in a course
+     * @request GET:/api/StudentLessonProgress/{courseId}/enrollment
+     * @secure
+     */
+    studentLessonProgressEnrollmentList: (
+      courseId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<CheckEnrollmentResponse, any>({
+        path: `/api/StudentLessonProgress/${courseId}/enrollment`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Enroll the authenticated user in the specified course
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressEnrollmentCreate
+     * @summary Enroll the current user in a course
+     * @request POST:/api/StudentLessonProgress/{courseId}/enrollment
+     * @secure
+     */
+    studentLessonProgressEnrollmentCreate: (
+      courseId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<EnrollInCourseResponse, any>({
+        path: `/api/StudentLessonProgress/${courseId}/enrollment`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create user lesson progress for a specific lesson
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressCreate
+     * @summary Create user lesson progress
+     * @request POST:/api/StudentLessonProgress
+     * @secure
+     */
+    studentLessonProgressCreate: (
+      data: CreateUserLessonProgressCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateUserLessonProgressResponse, any>({
+        path: `/api/StudentLessonProgress`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update user lesson progress for a specific lesson
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressUpdate
+     * @summary Update user lesson progress
+     * @request PUT:/api/StudentLessonProgress
+     * @secure
+     */
+    studentLessonProgressUpdate: (
+      data: UpdateUserLessonProgressCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateUserLessonProgressResponse, any>({
+        path: `/api/StudentLessonProgress`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve detailed information about a specific course by its ID, including modules and lessons, accessible to students.
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressDetail
+     * @summary Get course details by ID for students
+     * @request GET:/api/StudentLessonProgress/{courseId}
+     * @secure
+     */
+    studentLessonProgressDetail: (
+      courseId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetDetailsProgressByCourseIdForStudentResponse, any>({
+        path: `/api/StudentLessonProgress/${courseId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to students.
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressDetail2
+     * @summary Get course details by slug for students
+     * @request GET:/api/StudentLessonProgress/{courseSlug}
+     * @originalName studentLessonProgressDetail
+     * @duplicate
+     * @secure
+     */
+    studentLessonProgressDetail2: (
+      courseSlug: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetDetailsProgressByCourseSlugForStudentResponse, any>({
+        path: `/api/StudentLessonProgress/${courseSlug}`,
+        method: "GET",
+        secure: true,
         format: "json",
         ...params,
       }),

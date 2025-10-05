@@ -13,20 +13,58 @@ const CID = process.env.CLIENT_ID!;
 const CSECRET = process.env.CLIENT_SECRET!;
 const isProd = process.env.NODE_ENV === "production";
 const SID_NAME = isProd ? "__Host-sid" : "sid"; // dev không dùng __Host-
-const mustSecure = SID_NAME.startsWith("__Host-"); // __Host-* bắt buộc Secure
+const mustSecure = SID_NAME.startsWith("__Host-");
 
 const agent = new Agent({ connect: { rejectUnauthorized: false } });
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   setGlobalDispatcher(agent);
 }
 
-async function setSidCookie(sid: string) {
+/** ===== Helpers cho cookie payload 1-chiếc ===== */
+type CookiePayload = {
+  sid: string;
+  access: string;
+  refresh: string;
+  expAt: number; // epoch ms
+};
+
+function b64url(s: string) {
+  return Buffer.from(s, "utf8").toString("base64url");
+}
+function ub64url(s: string) {
+  try {
+    return Buffer.from(s, "base64url").toString("utf8");
+  } catch {
+    return "";
+  }
+}
+function safeJson<T>(t: string): T | null {
+  try {
+    return JSON.parse(t) as T;
+  } catch {
+    return null;
+  }
+}
+function isCookiePayload(x: unknown): x is CookiePayload {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return (
+    typeof o.sid === "string" &&
+    typeof o.access === "string" &&
+    typeof o.refresh === "string" &&
+    typeof o.expAt === "number"
+  );
+}
+
+/** Ghi cookie: giá trị là base64url(JSON payload) */
+async function setSidCookie(payload: CookiePayload) {
   const jar = await cookies();
+  const val = b64url(JSON.stringify(payload));
   jar.set({
     name: SID_NAME,
-    value: sid,
+    value: val,
     httpOnly: true,
-    secure: mustSecure || isProd,  // đảm bảo true nếu __Host-
+    secure: mustSecure || isProd, // đảm bảo true nếu __Host-
     sameSite: "strict",
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 ngày
@@ -34,6 +72,19 @@ async function setSidCookie(sid: string) {
   });
 }
 
+/** Đọc cookie và parse payload; hỗ trợ legacy (raw sid) bằng cách trả null */
+export async function readSidCookiePayload(): Promise<CookiePayload | null> {
+  const jar = await cookies();
+  const raw = jar.get(SID_NAME)?.value;
+  if (!raw) return null;
+
+  const asJson = ub64url(raw);
+  if (!asJson) return null; // có thể là legacy chuỗi sid
+  const obj = safeJson<CookiePayload>(asJson);
+  return obj && isCookiePayload(obj) ? obj : null;
+}
+
+/** ===== Token response helpers ===== */
 type TokenResponse = {
   access_token?: string;
   accessToken?: string;
@@ -51,6 +102,7 @@ function pickTokens(data: TokenResponse) {
   return { access, refresh, expSec };
 }
 
+/** ===== Flows ===== */
 export async function exchangePassword(email: string, password: string) {
   console.log("[exchangePassword] start");
   const body = new URLSearchParams({
@@ -69,47 +121,48 @@ export async function exchangePassword(email: string, password: string) {
       body: body.toString(),
       cache: "no-store",
     });
-    // console.log("response Login", resp)
   } catch (err) {
     console.error("[exchangePassword] fetch error:", err);
     throw new Error("Không gọi được /auth/connect/token");
   }
 
-  // Log ở server terminal / function logs
   console.log("[exchangePassword] status:", resp.status);
 
-  // Nếu cần xem body để debug:
   const raw = await resp.clone().text(); // cẩn thận dữ liệu nhạy cảm!
   console.log("[exchangePassword] raw body (trim):", raw.slice(0, 1000));
 
-  const data = safeJson(raw); // tránh .json() throw
+  const data = safeJson<TokenResponse>(raw);
   if (!resp.ok)
-    throw new Error(data?.error || `Đăng nhập thất bại (HTTP ${resp.status})`);
+    throw new Error((data as unknown as { error?: string })?.error || `Đăng nhập thất bại (HTTP ${resp.status})`);
 
-  const { access, refresh, expSec } = pickTokens(data);
+  const picked = data ? pickTokens(data) : { access: null, refresh: null, expSec: 600 };
+  const { access, refresh, expSec } = picked;
   if (!access || !refresh) throw new Error("Thiếu token từ backend");
 
   const sid = randomUUID();
   const expAt = Date.now() + Math.max(30, expSec) * 1000;
+
+  // Lưu in-memory
   await saveTokens(sid, { access, refresh, expAt });
 
-  await setSidCookie(sid); // nhớ await
-  const jar = await cookies();
-  console.log("refresh", jar.get("__Host-sid"));
+  // Ghi cookie duy nhất kèm payload
+  await setSidCookie({ sid, access, refresh, expAt });
+
   return { sid };
 }
 
-function safeJson(t: string) {
-  try {
-    return JSON.parse(t);
-  } catch {
-    return {};
-  }
-}
-
 export async function refreshTokens(sid: string) {
-  const bundle = await loadTokens(sid);
+  let bundle = await loadTokens(sid);
   console.log("load sid", sid, "bundle:", bundle);
+
+  // Fallback: nếu in-mem trống (cold start), thử khôi phục từ cookie
+  if (!bundle) {
+    const payload = await readSidCookiePayload();
+    if (payload && payload.sid === sid) {
+      bundle = { access: payload.access, refresh: payload.refresh, expAt: payload.expAt };
+      await saveTokens(sid, bundle);
+    }
+  }
   if (!bundle) throw new Error("Session not found");
 
   const body = new URLSearchParams({
@@ -124,19 +177,22 @@ export async function refreshTokens(sid: string) {
     body: body.toString(),
     cache: "no-store",
   });
-  
-  const data = await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new Error(data?.error || "Refresh failed");
 
-  const { access, refresh, expSec } = pickTokens(data);
-  console.log("refresh-token", refresh)
+  const data: TokenResponse | unknown = await resp.json().catch(() => ({}));
+  if (!resp.ok) {
+    const errMsg = (data as { error?: string })?.error || "Refresh failed";
+    throw new Error(errMsg);
+  }
+
+  const { access, refresh, expSec } = pickTokens(data as TokenResponse);
+  console.log("refresh-token", refresh);
   if (!access || !refresh) throw new Error("Refresh response invalid");
 
-  await updateTokens(sid, {
-    access,
-    refresh,
-    expAt: Date.now() + Math.max(30, expSec) * 1000,
-  });
+  const newExpAt = Date.now() + Math.max(30, expSec) * 1000;
+
+  await updateTokens(sid, { access, refresh, expAt: newExpAt });
+  // Đồng bộ cookie duy nhất
+  await setSidCookie({ sid, access, refresh, expAt: newExpAt });
   return true;
 }
 
@@ -157,63 +213,75 @@ export async function getBearerForSid(sid: string) {
   return `Bearer ${b.access}`;
 }
 
+/** ===== Cookie ops ===== */
 export async function clearSidCookie() {
   const jar = await cookies();
-  jar.delete(SID_NAME);
+  jar.set({
+    name: SID_NAME,
+    value: "",
+    httpOnly: true,
+    secure: mustSecure || isProd,
+    sameSite: "strict",
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 export async function clearAppCookies() {
-  const jar = await cookies();
-  const deletable = jar.getAll().filter(c =>
-    c.name === "__Host-idt" ||
-    c.name === (process.env.NODE_ENV === "production" ? "__Host-sid" : "sid")
-  );
-
-  for (const c of deletable) {
-    jar.set({
-      name: c.name,
-      value: "",
-      httpOnly: true,     // có hay không không ảnh hưởng xoá, nhưng giữ consistent
-      secure: c.name.startsWith("__Host-") ? true : (process.env.NODE_ENV === "production"),
-      sameSite: "strict",
-      path: "/",
-      maxAge: 0,
-    });
-  }
+  // Chỉ còn 1 cookie cần xoá
+  await clearSidCookie();
 }
 
 export async function destroySession(sid: string) {
   await deleteSession(sid);
-  clearAppCookies();
+  await clearAppCookies();
 }
 
+/** ===== Getters từ cookie duy nhất ===== */
 export async function getAccessTokenFromCookie(): Promise<string | null> {
-  const jar = await cookies();
-  const sid = jar.get(SID_NAME)?.value;
-  if (!sid) return null;
-  const nb = await loadTokens(sid);
-  return nb?.access ?? null;
+  const payload = await readSidCookiePayload();
+  if (!payload) return null;
+
+  // đồng bộ lại in-mem khi cần (giúp cold start/HMR)
+  await saveTokens(payload.sid, {
+    access: payload.access,
+    refresh: payload.refresh,
+    expAt: payload.expAt,
+  });
+
+  return payload.access ?? null;
 }
 
 export async function getAuthHeaderFromCookie() {
-  const jar = await cookies();
-  const sid = jar.get(SID_NAME)?.value;
+  const sid = await getSidFromCookie();
   if (!sid) return null;
   const bearer = await getBearerForSid(sid);
   return bearer ? { Authorization: bearer } : null;
 }
 
 export async function getSidFromCookie(): Promise<string | null> {
+  const payload = await readSidCookiePayload();
+  if (payload?.sid) return payload.sid;
+
+  // legacy fallback: nếu cookie là raw sid (cũ)
   const jar = await cookies();
   return jar.get(SID_NAME)?.value ?? null;
 }
 
-/** Trả về true nếu refresh-token tồn tại trong session store */
+/** Trả về true nếu refresh-token tồn tại trong session store (hoặc cookie) */
 export async function hasRefreshToken(sid?: string): Promise<boolean> {
   try {
-    const jar = await cookies();
-    const realSid = sid ?? jar.get(SID_NAME)?.value ?? null;
+    const payload = await readSidCookiePayload();
+    const realSid = sid ?? payload?.sid ?? null;
     if (!realSid) return false;
+
+    if (payload) {
+      await saveTokens(payload.sid, {
+        access: payload.access,
+        refresh: payload.refresh,
+        expAt: payload.expAt,
+      });
+    }
 
     const bundle = await loadTokens(realSid);
     return typeof bundle?.refresh === "string" && bundle.refresh.trim().length > 0;
@@ -222,22 +290,30 @@ export async function hasRefreshToken(sid?: string): Promise<boolean> {
   }
 }
 
-// Thu hồi token
+/** Thu hồi token local: xoá refresh, rút ngắn access ~5s, đồng bộ cookie */
 export async function revokeRefreshLocal(sid?: string): Promise<boolean> {
-  const jar = await cookies();
-  const realSid = sid ?? jar.get(SID_NAME)?.value ?? null;
+  const payload = await readSidCookiePayload();
+  const realSid = sid ?? payload?.sid ?? null;
   if (!realSid) return false;
 
   const bundle = await loadTokens(realSid);
   if (!bundle) return false;
 
+  const newExpAt = Math.min(bundle.expAt ?? Date.now(), Date.now() + 5_000);
+
   await updateTokens(realSid, {
-    access: bundle.access,      // giữ access để người dùng đang dùng tiếp được
+    access: bundle.access, // cho phép tiếp tục vài giây
     refresh: "",
-    // ép access sẽ hết hạn sớm để lần sau buộc đăng nhập lại (5s)
-    expAt: Math.min(bundle.expAt ?? Date.now(), Date.now() + 5_000),
+    expAt: newExpAt,
+  });
+
+  // Đồng bộ cookie duy nhất
+  await setSidCookie({
+    sid: realSid,
+    access: bundle.access,
+    refresh: "",
+    expAt: newExpAt,
   });
 
   return true;
 }
-

@@ -2,6 +2,7 @@
 import React, { ReactNode, FC } from "react";
 import NavigationbarWhite from "EduSmart/components/Navbar/NavigationbarWhite";
 import Footer from "EduSmart/components/Footer/Footer";
+import Loading from "EduSmart/components/Loading/Loading";
 
 interface BaseScreenProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ const BaseScreenWhiteNav: FC<BaseScreenProps> = ({ children }) => {
     <div className="flex flex-col min-h-screen overflow-x-clip md:scroll-smooth">
       <NavigationbarWhite />
       <main className="relative isolate flex-grow pt-24 text-slate-900 dark:text-slate-100 overflow-x-clip">
+        <Loading />
         {/* BASE */}
         <div className="absolute inset-0 -z-50">
           {/* Light: xanh lam dịu */}

@@ -15,6 +15,7 @@ import {
   Typography,
   message,
   Collapse,
+  Modal,
 } from "antd";
 import {
   CheckCircleTwoTone,
@@ -183,9 +184,6 @@ export default function CourseDetailUI({
       .map((o) => o.content || "")
       .filter(Boolean) ?? [];
 
-  console.log("CourseDetailUI - data:", data?.objectives);
-  console.log("CourseDetailUI - learnings:", learnings);
-
   const requirements =
     data?.requirements
       ?.filter((r) => !!r.isActive)
@@ -213,12 +211,50 @@ export default function CourseDetailUI({
 
   const onStudyCourse = async () => {
     if (isLearning) {
-      // message.success("Tiếp tục học");
+      message.success("Tiếp tục học");
       router.push(`/course/${data?.courseId}/learn`);
-      console.log("Continue learning course:", data?.courseId);
+      return;
     }
-    enRollingCourseById(data?.courseId || "");
-    router.push(`/course/${data?.courseId}/learn`);
+    try {
+      await enRollingCourseById(data?.courseId || "");
+      router.push(`/course/${data?.courseId}/learn`);
+      router.refresh();
+    } catch (err: unknown) {
+      let status: number | undefined;
+      if (typeof err === "number") {
+        status = err;
+      } else if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response?: { status?: number } }).response?.status ===
+          "number"
+      ) {
+        status = (err as { response?: { status?: number } }).response?.status;
+      }
+
+      if (status === 401) {
+        Modal.confirm({
+          title: "Bạn cần đăng nhập",
+          content: "Vui lòng đăng nhập để ghi danh khóa học.",
+          okText: "Đăng nhập",
+          cancelText: "Hủy",
+          onOk: () => {
+            const returnUrl =
+              typeof window !== "undefined" ? window.location.pathname : "/";
+            router.push(`/Login?returnUrl=${encodeURIComponent(returnUrl)}`);
+          },
+        });
+        return;
+      }
+
+      if (status === 403) {
+        message.error("Bạn không có quyền ghi danh khóa học này.");
+        return;
+      }
+
+      message.error("Có lỗi xảy ra khi ghi danh. Vui lòng thử lại.");
+    }
   };
 
   return (

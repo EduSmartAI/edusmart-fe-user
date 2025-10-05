@@ -8,20 +8,22 @@ interface CourseState {
 
 export const useCourseStore = create<CourseState>(() => ({
   enRollingCourseById: async (id) => {
+    const setLoading = useLoadingStore.getState().setLoading;
+    const hideLoading = useLoadingStore.getState().hideLoading;
+    setLoading(true);
     try {
-        const setLoading = useLoadingStore.getState().setLoading;
-        const hideLoading = useLoadingStore.getState().hideLoading;
       const res =
-        await apiClient.courseService.api.v1CoursesEnrollmentCreate(id);
-      setLoading(true);
+        await apiClient.courseService.api.studentLessonProgressEnrollmentCreate(id);
       if (res.data?.success) {
-        await hideLoading();
         return res.data.response || "";
       }
-      await hideLoading();
       return "";
-    } catch {
-      return "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      const status = e?.response?.status;
+      throw status ?? e;
+    } finally {
+      hideLoading();
     }
   },
 }));

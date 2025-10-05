@@ -1,6 +1,9 @@
 // import { CourseSortBy } from "EduSmart/api/api-course-service";
 import {
   CourseDetailForGuestDto,
+  CourseDetailForStudentDto,
+  GetCourseBySlugForGuestResponse,
+  GetDetailsProgressByCourseSlugForStudentResponse,
 } from "EduSmart/api/api-course-service";
 import apiServer from "EduSmart/lib/apiServer";
 
@@ -87,6 +90,46 @@ export async function fetchCourseByQuery(
   }
 }
 
+export async function fetchCourseByQueryForSlug(
+  searchQuery: string,
+  pageIndex: number,
+  pageSize: number,
+): Promise<{ data: Course[]; totalPages: number; totalCount: number }> {
+  try {
+    const res = await apiServer.course.api.v1CoursesList({
+      "Filter.Search": searchQuery,
+      "Pagination.PageIndex": pageIndex - 1,
+      "Pagination.PageSize": pageSize,
+      "Filter.IsActive": true,
+    });
+
+    if (res.data?.success && res.data.response?.data) {
+      const courses: Course[] = res.data.response.data.map((courseDto) => ({
+        imageUrl: courseDto.courseImageUrl || "/default-course-image.jpg",
+        title: courseDto.title || "Untitled Course",
+        descriptionLines: [
+          courseDto.shortDescription || "",
+          courseDto.description || "",
+        ].filter((line: string) => line.length > 0),
+        instructor: "Instructor Name",
+        price: courseDto.dealPrice
+          ? `$${courseDto.dealPrice} (was $${courseDto.price})`
+          : `$${courseDto.price}`,
+        routerPush: `/course/${courseDto.slug || courseDto.courseId}`,
+      }));
+      return {
+        data: courses,
+        totalPages: res.data.response.totalPages ?? 0,
+        totalCount: res.data.response.totalCount ?? 0,
+      };
+    }
+    return { data: [], totalPages: 0, totalCount: 0 };
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return { data: [], totalPages: 0, totalCount: 0 };
+  }
+}
+
 export async function fetchCourseById(
   id: string,
 ): Promise<{
@@ -121,14 +164,50 @@ export async function fetchCourseById(
 }
 
 
+export async function fetchCourseBySlug(
+  id: string,
+): Promise<{
+  data: GetCourseBySlugForGuestResponse;
+  modulesCount: number;
+  lessonsCount: number;
+}> {
+  try {
+    console.log("fetchCourseById - id:", id);
+    const res = await apiServer.course.api.v1CoursesSlugDetail(id);
+    console.log("fetchCourseById - res:", res);
+    if (res.data?.success && res.data.response) {
+      return {
+        data: res.data ?? {},
+        lessonsCount: res.data.lessonsCount ?? 0,
+        modulesCount: res.data.modulesCount ?? 0,
+      };
+    }
+    return {
+      data: {},
+      lessonsCount: 0,
+      modulesCount: 0,
+    };
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return {
+      data: {},
+      lessonsCount: 0,
+      modulesCount: 0,
+    };
+  }
+}
+
+
 export async function CheckCourseById(
   id: string,
 ): Promise<{
   data: boolean;
 }> {
   try {
-    const res = await apiServer.course.api.v1CoursesEnrollmentList(id);
+    const res = await apiServer.course.api.studentLessonProgressEnrollmentList(id);
     if (res.data?.success && res.data.response === true) {
+      console.log("CheckCourseById - res:", res.data.response)
+      console.log("CheckCourseById - res:", res.data.success)
       return {
         data: res.data.response ?? {},
       };
@@ -143,3 +222,54 @@ export async function CheckCourseById(
     };
   }
 }
+
+export async function GetStudentCourseProgressByCourseId(
+  id: string,
+): Promise<{
+  data: CourseDetailForStudentDto;
+}> {
+  try {
+    const res = await apiServer.course.api.studentLessonProgressDetail(id);
+    if (res.data?.success && res.data.response) {
+      console.log("CheckCourseById - res:", res.data.response)
+      console.log("CheckCourseById - res:", res.data.success)
+      return {
+        data: res.data.response ?? {},
+      };
+    }
+    return {
+      data: res.data.response ?? {},
+    };
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return {
+      data: {},
+    };
+  }
+}
+
+export async function GetStudentCourseProgressByCourseSlug(
+  id: string,
+): Promise<{
+  data: GetDetailsProgressByCourseSlugForStudentResponse;
+}> {
+  try {
+    const res = await apiServer.course.api.studentLessonProgressDetail2(id);
+    if (res.data?.success && res.data.response) {
+      console.log("CheckCourseById - res:", res.data.response)
+      console.log("CheckCourseById - res:", res.data.success)
+      return {
+        data: res.data ?? {},
+      };
+    }
+    return {
+      data: res.data ?? {},
+    };
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return {
+      data: {},
+    };
+  }
+}
+

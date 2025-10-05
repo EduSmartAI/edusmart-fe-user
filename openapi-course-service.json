@@ -56,6 +56,14 @@
             }
           },
           {
+            "name": "Filter.LectureId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "name": "Filter.SortBy",
             "in": "query",
             "schema": {
@@ -91,7 +99,7 @@
           "Courses"
         ],
         "summary": "Create a new course",
-        "description": "Create a new course with its modules and lessons",
+        "description": "Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.",
         "requestBody": {
           "content": {
             "application/json": {
@@ -128,6 +136,91 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CreateCourseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Courses/lecture": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "Get list of courses for lecture",
+        "description": "Retrieve a paginated list of courses created by a specific teacher with optional filtering.",
+        "parameters": [
+          {
+            "name": "Pagination.PageIndex",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Pagination.PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Filter.Search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Filter.SubjectCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Filter.IsActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "Filter.LectureId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Filter.SortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/CourseSortBy"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCoursesByTeacherIdResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCoursesByTeacherIdResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCoursesByTeacherIdResponse"
                 }
               }
             }
@@ -278,60 +371,81 @@
         }
       }
     },
-    "/api/v1/Courses/Module/{id}": {
-      "put": {
+    "/api/v1/Courses/slug/{slug}": {
+      "get": {
         "tags": [
           "Courses"
         ],
-        "summary": "Update a module within a course",
-        "description": "Update a module within a course, including its objectives and lessons",
+        "summary": "Get course details by slug for guest users",
+        "description": "Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to guest users.",
         "parameters": [
           {
-            "name": "id",
+            "name": "slug",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                  "$ref": "#/components/schemas/GetCourseBySlugForGuestResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                  "$ref": "#/components/schemas/GetCourseBySlugForGuestResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                  "$ref": "#/components/schemas/GetCourseBySlugForGuestResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Courses/auth/slug/{slug}": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "Get course details by slug for lectures",
+        "description": "Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to lectures.",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseBySlugForLectureResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseBySlugForLectureResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseBySlugForLectureResponse"
                 }
               }
             }
@@ -399,10 +513,431 @@
           }
         }
       }
+    },
+    "/api/v1/Courses/tags": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "Get all course tags",
+        "description": "Retrieve all available course tags",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseTagsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseTagsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCourseTagsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Modules/{id}": {
+      "put": {
+        "tags": [
+          "Modules"
+        ],
+        "summary": "Update a module within a course",
+        "description": "Update a module within a course, including its objectives and lessons",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModuleCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModuleCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateModuleCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/StudentLessonProgress/{courseId}/enrollment": {
+      "get": {
+        "tags": [
+          "StudentLessonProgress"
+        ],
+        "summary": "Check if current user is enrolled in a course",
+        "description": "Check if the authenticated user is enrolled in the specified course",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEnrollmentResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEnrollmentResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckEnrollmentResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "StudentLessonProgress"
+        ],
+        "summary": "Enroll the current user in a course",
+        "description": "Enroll the authenticated user in the specified course",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollInCourseResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollInCourseResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrollInCourseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/StudentLessonProgress": {
+      "post": {
+        "tags": [
+          "StudentLessonProgress"
+        ],
+        "summary": "Create user lesson progress",
+        "description": "Create user lesson progress for a specific lesson",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserLessonProgressCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserLessonProgressCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserLessonProgressCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserLessonProgressResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserLessonProgressResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserLessonProgressResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "StudentLessonProgress"
+        ],
+        "summary": "Update user lesson progress",
+        "description": "Update user lesson progress for a specific lesson",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserLessonProgressCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserLessonProgressCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserLessonProgressCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateUserLessonProgressResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateUserLessonProgressResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateUserLessonProgressResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/StudentLessonProgress/{courseId}": {
+      "get": {
+        "tags": [
+          "StudentLessonProgress"
+        ],
+        "summary": "Get course details by ID for students",
+        "description": "Retrieve detailed information about a specific course by its ID, including modules and lessons, accessible to students.",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailsProgressByCourseIdForStudentResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailsProgressByCourseIdForStudentResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailsProgressByCourseIdForStudentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/StudentLessonProgress/{courseSlug}": {
+      "get": {
+        "tags": [
+          "StudentLessonProgress"
+        ],
+        "summary": "Get course details by slug for students",
+        "description": "Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to students.",
+        "parameters": [
+          {
+            "name": "courseSlug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailsProgressByCourseSlugForStudentResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailsProgressByCourseSlugForStudentResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailsProgressByCourseSlugForStudentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Answers": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "nullable": true
+          },
+          "isCorrect": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CheckEnrollmentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContinueHintDto": {
+        "type": "object",
+        "properties": {
+          "moduleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "moduleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lessonId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lessonTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "resumeSecond": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "CourseCommentDto": {
         "type": "object",
         "properties": {
@@ -667,7 +1202,7 @@
           "modules": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/LectureLessonDetailDtoModuleDetailDto"
+              "$ref": "#/components/schemas/ModuleDetailForLectureDto"
             },
             "nullable": true
           },
@@ -699,6 +1234,147 @@
           "ratingsAverage": {
             "type": "number",
             "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CourseDetailForStudentDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
+          "courseImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "learnerCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "videoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoDurationSec": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "durationHours": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "dealPrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "objectives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseObjectiveDto"
+            },
+            "nullable": true
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseRequirementDto"
+            },
+            "nullable": true
+          },
+          "modules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleDetailForStudentDto"
+            },
+            "nullable": true
+          },
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseCommentDto"
+            },
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseTagDto"
+            },
+            "nullable": true
+          },
+          "ratings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseRatingDto"
+            },
+            "nullable": true
+          },
+          "ratingsCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ratingsAverage": {
+            "type": "number",
+            "format": "double"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/CourseProgressDto"
+          },
+          "continue": {
+            "$ref": "#/components/schemas/ContinueHintDto"
           }
         },
         "additionalProperties": false
@@ -845,6 +1521,38 @@
         },
         "additionalProperties": false
       },
+      "CourseProgressDto": {
+        "type": "object",
+        "properties": {
+          "lessonsTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonsCompleted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "percentCompleted": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CourseRatingDto": {
         "type": "object",
         "properties": {
@@ -898,6 +1606,20 @@
         "type": "integer",
         "format": "int32"
       },
+      "CourseTagDetailsDto": {
+        "type": "object",
+        "properties": {
+          "courseTagId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tagName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CourseTagDto": {
         "type": "object",
         "properties": {
@@ -908,6 +1630,23 @@
           "tagName": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateCourseAudienceDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -924,10 +1663,6 @@
       "CreateCourseDto": {
         "type": "object",
         "properties": {
-          "teacherId": {
-            "type": "string",
-            "format": "uuid"
-          },
           "subjectId": {
             "type": "string",
             "format": "uuid"
@@ -971,6 +1706,10 @@
             "format": "double",
             "nullable": true
           },
+          "courseIntroVideoUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "isActive": {
             "type": "boolean"
           },
@@ -985,6 +1724,20 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CreateCourseRequirementDto"
+            },
+            "nullable": true
+          },
+          "courseTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateCourseTagDto"
+            },
+            "nullable": true
+          },
+          "audiences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateCourseAudienceDto"
             },
             "nullable": true
           },
@@ -1060,6 +1813,16 @@
         },
         "additionalProperties": false
       },
+      "CreateCourseTagDto": {
+        "type": "object",
+        "properties": {
+          "tagId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateLessonDto": {
         "type": "object",
         "properties": {
@@ -1079,6 +1842,30 @@
           "positionIndex": {
             "type": "integer",
             "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "lessonQuiz": {
+            "$ref": "#/components/schemas/CreateQuizDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateModuleDiscussionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "discussionQuestion": {
+            "type": "string",
+            "nullable": true
           },
           "isActive": {
             "type": "boolean"
@@ -1130,6 +1917,44 @@
               "$ref": "#/components/schemas/CreateLessonDto"
             },
             "nullable": true
+          },
+          "discussions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateModuleDiscussionDto"
+            },
+            "nullable": true
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateModuleMaterialDto"
+            },
+            "nullable": true
+          },
+          "moduleQuiz": {
+            "$ref": "#/components/schemas/CreateQuizDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateModuleMaterialDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -1151,6 +1976,91 @@
         },
         "additionalProperties": false
       },
+      "CreateQuizDto": {
+        "type": "object",
+        "properties": {
+          "quizSettings": {
+            "$ref": "#/components/schemas/CreateQuizSettingsDto"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Questions"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateQuizSettingsDto": {
+        "type": "object",
+        "properties": {
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "passingScorePercentage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shuffleQuestions": {
+            "type": "boolean"
+          },
+          "showResultsImmediately": {
+            "type": "boolean"
+          },
+          "allowRetake": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateUserLessonProgressCommand": {
+        "type": "object",
+        "properties": {
+          "userLessonProgress": {
+            "$ref": "#/components/schemas/CreateUserLessonProgressDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateUserLessonProgressDto": {
+        "type": "object",
+        "properties": {
+          "lessonId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateUserLessonProgressResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "DetailError": {
         "type": "object",
         "properties": {
@@ -1163,6 +2073,34 @@
             "nullable": true
           },
           "errorMessage": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EnrollInCourseResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
             "type": "string",
             "nullable": true
           }
@@ -1239,6 +2177,134 @@
         },
         "additionalProperties": false
       },
+      "GetCourseBySlugForGuestResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CourseDetailForGuestDto"
+          },
+          "modulesCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonsCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetCourseBySlugForLectureResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CourseDetailForLectureDto"
+          },
+          "modulesCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonsCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetCourseTagsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseTagDetailsDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetCoursesByTeacherIdResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CourseDtoPaginatedResult"
+          }
+        },
+        "additionalProperties": false
+      },
       "GetCoursesResponse": {
         "type": "object",
         "properties": {
@@ -1262,6 +2328,76 @@
           },
           "response": {
             "$ref": "#/components/schemas/CourseDtoPaginatedResult"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetDetailsProgressByCourseIdForStudentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CourseDetailForStudentDto"
+          },
+          "modulesCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonsCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetDetailsProgressByCourseSlugForStudentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CourseDetailForStudentDto"
+          },
+          "modulesCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonsCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -1370,11 +2506,14 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "lessonQuiz": {
+            "$ref": "#/components/schemas/QuizOutDto"
           }
         },
         "additionalProperties": false
       },
-      "LectureLessonDetailDtoModuleDetailDto": {
+      "ModuleDetailForLectureDto": {
         "type": "object",
         "properties": {
           "moduleId": {
@@ -1421,12 +2560,167 @@
             },
             "nullable": true
           },
+          "moduleDiscussionDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleDiscussionDetailDto"
+            },
+            "nullable": true
+          },
+          "moduleMaterialDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleMaterialDetailDto"
+            },
+            "nullable": true
+          },
           "lessons": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/LectureLessonDetailDto"
             },
             "nullable": true
+          },
+          "moduleQuiz": {
+            "$ref": "#/components/schemas/QuizOutDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ModuleDetailForStudentDto": {
+        "type": "object",
+        "properties": {
+          "moduleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "moduleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isCore": {
+            "type": "boolean"
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "durationHours": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "objectives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleObjectiveDto"
+            },
+            "nullable": true
+          },
+          "moduleDiscussionDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleDiscussionDetailDto"
+            },
+            "nullable": true
+          },
+          "moduleMaterialDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModuleMaterialDetailDto"
+            },
+            "nullable": true
+          },
+          "lessons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentLessonDetailDto"
+            },
+            "nullable": true
+          },
+          "moduleQuiz": {
+            "$ref": "#/components/schemas/QuizOutDto"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/ModuleProgressDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ModuleDiscussionDetailDto": {
+        "type": "object",
+        "properties": {
+          "discussionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "discussionQuestion": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ModuleMaterialDetailDto": {
+        "type": "object",
+        "properties": {
+          "materialId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false
@@ -1437,6 +2731,207 @@
           "objectiveId": {
             "type": "string",
             "format": "uuid"
+          },
+          "content": {
+            "type": "string",
+            "nullable": true
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ModuleProgressDto": {
+        "type": "object",
+        "properties": {
+          "lessonsTotal": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonsCompleted": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "percentCompleted": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Questions": {
+        "type": "object",
+        "properties": {
+          "questionType": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "questionText": {
+            "type": "string",
+            "nullable": true
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Answers"
+            },
+            "nullable": true
+          },
+          "explanation": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuizAnswerOutDto": {
+        "type": "object",
+        "properties": {
+          "answerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "answerText": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuizOutDto": {
+        "type": "object",
+        "properties": {
+          "quizSettings": {
+            "$ref": "#/components/schemas/QuizSettingsOutDto"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuizQuestionOutDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuizQuestionOutDto": {
+        "type": "object",
+        "properties": {
+          "questionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "questionText": {
+            "type": "string",
+            "nullable": true
+          },
+          "explanation": {
+            "type": "string",
+            "nullable": true
+          },
+          "questionType": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuizAnswerOutDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "QuizSettingsOutDto": {
+        "type": "object",
+        "properties": {
+          "durationMinutes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "passingScorePercentage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shuffleQuestions": {
+            "type": "boolean"
+          },
+          "showResultsImmediately": {
+            "type": "boolean"
+          },
+          "allowRetake": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StudentLessonDetailDto": {
+        "type": "object",
+        "properties": {
+          "lessonId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "videoDurationSec": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isCompleted": {
+            "type": "boolean"
+          },
+          "lastPositionSec": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lessonQuiz": {
+            "$ref": "#/components/schemas/QuizOutDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateCourseAudienceDto": {
+        "type": "object",
+        "properties": {
+          "audienceId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           },
           "content": {
             "type": "string",
@@ -1531,6 +3026,20 @@
               "$ref": "#/components/schemas/UpdateCourseRequirementDto"
             },
             "nullable": true
+          },
+          "audiences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateCourseAudienceDto"
+            },
+            "nullable": true
+          },
+          "courseTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateCourseTagDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1613,6 +3122,20 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/UpdateCourseLessonDto"
+            },
+            "nullable": true
+          },
+          "discussions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateModuleDiscussionDto"
+            },
+            "nullable": true
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateModuleMaterialDto"
             },
             "nullable": true
           }
@@ -1767,6 +3290,16 @@
         },
         "additionalProperties": false
       },
+      "UpdateCourseTagDto": {
+        "type": "object",
+        "properties": {
+          "tagId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateLessonDto": {
         "type": "object",
         "properties": {
@@ -1807,6 +3340,32 @@
           },
           "updateModuleDto": {
             "$ref": "#/components/schemas/UpdateModuleDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateModuleDiscussionDto": {
+        "type": "object",
+        "properties": {
+          "discussionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "discussionQuestion": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -1860,6 +3419,46 @@
               "$ref": "#/components/schemas/UpdateLessonDto"
             },
             "nullable": true
+          },
+          "discussions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateModuleDiscussionDto"
+            },
+            "nullable": true
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateModuleMaterialDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateModuleMaterialDto": {
+        "type": "object",
+        "properties": {
+          "materialId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -1910,6 +3509,70 @@
           "response": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateUserLessonProgressCommand": {
+        "type": "object",
+        "properties": {
+          "updateUserLessonProgress": {
+            "$ref": "#/components/schemas/UpdateUserLessonProgressDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateUserLessonProgressDto": {
+        "type": "object",
+        "properties": {
+          "lessonId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationWatchedSec": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastPositionSec": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateUserLessonProgressResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false

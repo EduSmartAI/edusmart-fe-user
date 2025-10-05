@@ -6,6 +6,94 @@
   },
   "basePath": "/quiz",
   "paths": {
+    "/api/v1/ExternalQuiz/SelectSemesters": {
+      "get": {
+        "tags": [
+          "ExternalQuiz"
+        ],
+        "summary": "Lấy danh sách tất cả các học kỳ",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SemesterSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectMajors": {
+      "get": {
+        "tags": [
+          "ExternalQuiz"
+        ],
+        "summary": "Lấy danh sách tất cả các chuyên ngành trong trường",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/MajorSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectTechnologies": {
+      "get": {
+        "tags": [
+          "ExternalQuiz"
+        ],
+        "summary": "Lấy danh sách tất cả các ngôn ngữ lập trình/ framework",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TechnologySelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectLearningGoals": {
+      "get": {
+        "tags": [
+          "ExternalQuiz"
+        ],
+        "summary": "Lấy danh sách tất cả các mục tiêu học tập đang có",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LearningGoalSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Question": {
       "put": {
         "tags": [
@@ -104,7 +192,7 @@
         }
       }
     },
-    "/api/v1/Quiz": {
+    "/api/v1/Quiz/SelectQuizzes": {
       "get": {
         "tags": [
           "Quiz"
@@ -126,7 +214,71 @@
         }
       }
     },
-    "/api/v1/StudentTest": {
+    "/api/v1/StudentSurvey/InsertStudentSurvey": {
+      "post": {
+        "tags": [
+          "StudentSurvey"
+        ],
+        "summary": "Lưu câu trả lời phần khảo sát của học sinh",
+        "description": "Cần cấp quyền Student cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/StudentSurveyInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSurveyInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/StudentSurvey/SelectStudentSurvey": {
+      "get": {
+        "tags": [
+          "StudentSurvey"
+        ],
+        "summary": "Hiển câu trả lời phần khảo sát của học sinh",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSurveySelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/StudentTest/InsertStudentTest": {
       "post": {
         "tags": [
           "StudentTest"
@@ -160,7 +312,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v1/StudentTest/SelectStudentTest": {
       "get": {
         "tags": [
           "StudentTest"
@@ -190,7 +344,7 @@
         }
       }
     },
-    "/api/v1/Survey": {
+    "/api/v1/Survey/InsertSurvey": {
       "post": {
         "tags": [
           "Survey"
@@ -224,7 +378,9 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v1/Survey": {
       "get": {
         "tags": [
           "Survey"
@@ -246,7 +402,7 @@
         }
       }
     },
-    "/api/v1/Survey/details": {
+    "/api/v1/Survey/Detail": {
       "get": {
         "tags": [
           "Survey"
@@ -289,7 +445,7 @@
         }
       }
     },
-    "/api/v1/Test": {
+    "/api/v1/Test/InsertTest": {
       "post": {
         "tags": [
           "Test"
@@ -323,13 +479,15 @@
             }
           }
         }
-      },
+      }
+    },
+    "/api/v1/Test/SelectTest": {
       "get": {
         "tags": [
           "Test"
         ],
         "summary": "Lấy bài kiểm tra gồm các quiz mà student chọn",
-        "description": "Cần cấp quyền Student cho API",
+        "description": "Cần cấp quyền cho API",
         "produces": [
           "text/plain",
           "application/json",
@@ -368,9 +526,6 @@
         },
         "answerText": {
           "type": "string"
-        },
-        "isCorrect": {
-          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -435,6 +590,111 @@
       },
       "additionalProperties": false
     },
+    "LearningGoal": {
+      "type": "object",
+      "properties": {
+        "learningGoalId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "learningGoalType": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningGoalSelectsEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LearningGoalSelectsEventResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningGoalSelectsEventResponseEntity": {
+      "type": "object",
+      "properties": {
+        "learningGoalId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "learningGoalName": {
+          "type": "string"
+        },
+        "learningGoalType": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MajorSelectsEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MajorSelectsEventResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "MajorSelectsEventResponseEntity": {
+      "type": "object",
+      "properties": {
+        "majorId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "majorName": {
+          "type": "string"
+        },
+        "majorCode": {
+          "type": "string"
+        },
+        "parentMajorId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "QuestionDeleteResponse": {
       "type": "object",
       "properties": {
@@ -468,6 +728,14 @@
         },
         "questionText": {
           "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
         },
         "answers": {
           "type": "array",
@@ -596,6 +864,7 @@
     "Questions": {
       "required": [
         "answers",
+        "difficultyLevel",
         "questionText"
       ],
       "type": "object",
@@ -604,6 +873,14 @@
           "minLength": 1,
           "type": "string"
         },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
         "explanation": {
           "type": "string"
         },
@@ -611,6 +888,73 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/Answers"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionsResultSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentAnswerDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizResultSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "subjectCode": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "subjectCodeName": {
+          "type": "string"
+        },
+        "totalQuestions": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalCorrectAnswers": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "questionResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionsResultSelectResponseEntity"
           }
         }
       },
@@ -659,6 +1003,13 @@
         "subjectCode": {
           "format": "uuid",
           "type": "string"
+        },
+        "subjectCodeName": {
+          "type": "string"
+        },
+        "totalQuestions": {
+          "format": "int32",
+          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -679,6 +1030,13 @@
         "subjectCode": {
           "format": "uuid",
           "type": "string"
+        },
+        "subjectCodeName": {
+          "type": "string"
+        },
+        "totalQuestions": {
+          "format": "int32",
+          "type": "integer"
         },
         "questions": {
           "type": "array",
@@ -719,6 +1077,69 @@
       },
       "additionalProperties": false
     },
+    "SemesterSelectsEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SemesterSelectsEventResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SemesterSelectsEventResponseEntity": {
+      "type": "object",
+      "properties": {
+        "semesterId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "semesterName": {
+          "type": "string"
+        },
+        "semesterNumber": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentAnswerDetailResponse": {
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isCorrectAnswer": {
+          "type": "boolean"
+        },
+        "selectedByStudent": {
+          "type": "boolean"
+        },
+        "answerText": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentAnswerRequest": {
       "required": [
         "answerId",
@@ -737,7 +1158,39 @@
       },
       "additionalProperties": false
     },
-    "StudentAnswerSelectResponseEntity": {
+    "StudentInformation": {
+      "required": [
+        "learningGoal",
+        "majorId",
+        "semesterId",
+        "technologies"
+      ],
+      "type": "object",
+      "properties": {
+        "majorId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "semesterId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "technologies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Technology"
+          }
+        },
+        "learningGoal": {
+          "$ref": "#/definitions/LearningGoal"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentQuizAnswerInsertRequest": {
+      "required": [
+        "questionId"
+      ],
       "type": "object",
       "properties": {
         "questionId": {
@@ -747,12 +1200,171 @@
         "answerId": {
           "format": "uuid",
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveyInsertCommand": {
+      "required": [
+        "studentInformation",
+        "studentSurveys"
+      ],
+      "type": "object",
+      "properties": {
+        "studentInformation": {
+          "$ref": "#/definitions/StudentInformation"
+        },
+        "studentSurveys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveyInsertRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveyInsertRequest": {
+      "required": [
+        "answers",
+        "surveyCode",
+        "surveyId"
+      ],
+      "type": "object",
+      "properties": {
+        "surveyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "surveyCode": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentQuizAnswerInsertRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveyInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectAnswerResponseEntity": {
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
         },
         "isCorrect": {
           "type": "boolean"
         },
-        "explanation": {
+        "answerText": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectQuery": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "StudentSurveySelectQuestionResponseEntity": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySelectAnswerResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectQuizResponseEntity": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySelectQuestionResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySelectResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "studentSurveyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "survey": {
+          "$ref": "#/definitions/StudentSurveySelectQuizResponseEntity"
         }
       },
       "additionalProperties": false
@@ -760,6 +1372,7 @@
     "StudentTestInsertCommand": {
       "required": [
         "answers",
+        "quizIds",
         "startedAt",
         "testId"
       ],
@@ -772,6 +1385,13 @@
         "startedAt": {
           "format": "date-time",
           "type": "string"
+        },
+        "quizIds": {
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
         },
         "answers": {
           "type": "array",
@@ -842,6 +1462,12 @@
           "format": "uuid",
           "type": "string"
         },
+        "testName": {
+          "type": "string"
+        },
+        "testDescription": {
+          "type": "string"
+        },
         "startedAt": {
           "format": "date-time",
           "type": "string"
@@ -850,10 +1476,10 @@
           "format": "date-time",
           "type": "string"
         },
-        "answers": {
+        "quizResults": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/StudentAnswerSelectResponseEntity"
+            "$ref": "#/definitions/QuizResultSelectResponseEntity"
           }
         }
       },
@@ -912,6 +1538,9 @@
         "description": {
           "type": "string"
         },
+        "surveyCode": {
+          "type": "string"
+        },
         "questions": {
           "type": "array",
           "items": {
@@ -962,6 +1591,7 @@
       "required": [
         "description",
         "questions",
+        "surveyCode",
         "title"
       ],
       "type": "object",
@@ -971,6 +1601,10 @@
           "type": "string"
         },
         "description": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "surveyCode": {
           "minLength": 1,
           "type": "string"
         },
@@ -1071,6 +1705,72 @@
         },
         "description": {
           "type": "string"
+        },
+        "surveyCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Technology": {
+      "type": "object",
+      "properties": {
+        "technologyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "technologyName": {
+          "type": "string"
+        },
+        "technologyType": {
+          "format": "int32",
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TechnologySelectsEventResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TechnologySelectsEventResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TechnologySelectsEventResponseEntity": {
+      "type": "object",
+      "properties": {
+        "technologyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "technologyName": {
+          "type": "string"
+        },
+        "technologyType": {
+          "format": "int32",
+          "type": "integer"
         }
       },
       "additionalProperties": false

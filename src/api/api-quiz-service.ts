@@ -40,6 +40,13 @@ export interface InsertAnswers {
   isCorrect?: boolean;
 }
 
+export interface LearningGoal {
+  /** @format uuid */
+  learningGoalId?: string;
+  /** @format int32 */
+  learningGoalType?: number;
+}
+
 export interface LearningGoalSelectsEventResponse {
   success?: boolean;
   messageId?: string;
@@ -68,6 +75,7 @@ export interface MajorSelectsEventResponseEntity {
   /** @format uuid */
   majorId?: string;
   majorName?: string;
+  majorCode?: string;
   /** @format uuid */
   parentMajorId?: string;
 }
@@ -249,8 +257,8 @@ export interface StudentInformation {
   majorId: string;
   /** @format uuid */
   semesterId: string;
-  technologyIds: string[];
-  learningGoalIds: string[];
+  technologies: Technology[];
+  learningGoal: LearningGoal;
 }
 
 export interface StudentQuizAnswerInsertRequest {
@@ -258,17 +266,18 @@ export interface StudentQuizAnswerInsertRequest {
   questionId: string;
   /** @format uuid */
   answerId?: string;
-  answerText?: string;
 }
 
 export interface StudentSurveyInsertCommand {
   studentInformation: StudentInformation;
-  studentSurveys?: StudentSurveyInsertRequest[];
+  studentSurveys: StudentSurveyInsertRequest[];
 }
 
 export interface StudentSurveyInsertRequest {
   /** @format uuid */
   surveyId: string;
+  /** @minLength 1 */
+  surveyCode: string;
   answers: StudentQuizAnswerInsertRequest[];
 }
 
@@ -375,6 +384,7 @@ export interface SurveyDetailSelectResponseEntity {
   surveyId?: string;
   title?: string;
   description?: string;
+  surveyCode?: string;
   questions?: QuestionSurveySelects[];
 }
 
@@ -397,6 +407,8 @@ export interface SurveyInsertCommand {
   title: string;
   /** @minLength 1 */
   description: string;
+  /** @minLength 1 */
+  surveyCode: string;
   questions: SurveyQuestionRequest[];
 }
 
@@ -429,6 +441,19 @@ export interface SurveySelectsResponseEntity {
   surveyId?: string;
   title?: string;
   description?: string;
+  surveyCode?: string;
+}
+
+export interface Technology {
+  /** @format uuid */
+  technologyId?: string;
+  technologyName?: string;
+  /**
+   * @format int32
+   * @min 1
+   * @max 4
+   */
+  technologyType?: number;
 }
 
 export interface TechnologySelectsEventResponse {
@@ -1009,14 +1034,17 @@ export class Api<
      * @description Tạo khảo sát mới với các câu hỏi và câu trả lời tương ứng
      *
      * @tags Survey
-     * @name V1SurveyCreate
+     * @name V1SurveyInsertSurveyCreate
      * @summary Tạo khảo sát mới
-     * @request POST:/api/v1/Survey
+     * @request POST:/api/v1/Survey/InsertSurvey
      * @secure
      */
-    v1SurveyCreate: (body: SurveyInsertCommand, params: RequestParams = {}) =>
+    v1SurveyInsertSurveyCreate: (
+      body: SurveyInsertCommand,
+      params: RequestParams = {},
+    ) =>
       this.request<SurveyInsertResponse, any>({
-        path: `/api/v1/Survey`,
+        path: `/api/v1/Survey/InsertSurvey`,
         method: "POST",
         body: body,
         secure: true,
