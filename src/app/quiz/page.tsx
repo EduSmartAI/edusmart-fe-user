@@ -5,9 +5,5 @@ import QuizMainFlow from "../../components/User/Quiz/QuizMainFlow";
 import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
 
 export default function QuizPage() {
-    return (
-        <BaseScreenAdmin>
-            <QuizMainFlow />
-        </BaseScreenAdmin>
-    );
+  return <QuizMainFlow />;
 }

@@ -1,17 +1,18 @@
 "use client";
 
 import React from "react";
-import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
 import { useRouter } from "next/navigation";
-import { 
-  FiUser, 
-  FiCode, 
-  FiBookOpen, 
-  FiTarget, 
+import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
+import LearningPathLayout from "EduSmart/layout/LearningPathLayout";
+import {
+  FiUser,
+  FiCode,
+  FiBookOpen,
+  FiTarget,
   FiArrowRight,
   FiCheckCircle,
   FiStar,
-  FiCpu
+  FiCpu,
 } from "react-icons/fi";
 import { Button } from "antd";
 
@@ -20,47 +21,50 @@ const steps = [
     id: 1,
     icon: <FiUser className="w-8 h-8" />,
     title: "Làm khảo sát",
-    description: "Thu thập thông tin cá nhân, kiến thức công nghệ và thói quen học tập của bạn",
+    description:
+      "Thu thập thông tin cá nhân, kiến thức công nghệ và thói quen học tập của bạn",
     color: "bg-blue-500",
     lightColor: "bg-blue-50 dark:bg-blue-900/20",
-    textColor: "text-blue-600 dark:text-blue-400"
+    textColor: "text-blue-600 dark:text-blue-400",
   },
   {
     id: 2,
     icon: <FiTarget className="w-8 h-8" />,
     title: "Làm bài đánh giá năng lực",
-    description: "Xác định năng lực của sinh viên để có thể lựa chọn khóa học phù hợp",
+    description:
+      "Xác định năng lực của sinh viên để có thể lựa chọn khóa học phù hợp",
     color: "bg-green-500",
     lightColor: "bg-green-50 dark:bg-green-900/20",
-    textColor: "text-green-600 dark:text-green-400"
+    textColor: "text-green-600 dark:text-green-400",
   },
   {
     id: 3,
     icon: <FiCpu className="w-8 h-8" />,
     title: "Nhận kết quả lộ trình",
-    description: "AI phân tích dữ liệu và đưa ra lộ trình học tập cá nhân hóa phù hợp nhất",
+    description:
+      "AI phân tích dữ liệu và đưa ra lộ trình học tập cá nhân hóa phù hợp nhất",
     color: "bg-purple-500",
     lightColor: "bg-purple-50 dark:bg-purple-900/20",
-    textColor: "text-purple-600 dark:text-purple-400"
-  }
+    textColor: "text-purple-600 dark:text-purple-400",
+  },
 ];
 
 const benefits = [
   {
     icon: <FiTarget className="w-6 h-6" />,
     title: "Lộ trình cá nhân hóa",
-    description: "Nhận được đề xuất khóa học phù hợp với mục tiêu và trình độ"
+    description: "Nhận được đề xuất khóa học phù hợp với mục tiêu và trình độ",
   },
   {
     icon: <FiCpu className="w-6 h-6" />,
     title: "AI thông minh",
-    description: "Công nghệ AI phân tích và đưa ra gợi ý tối ưu cho bạn"
+    description: "Công nghệ AI phân tích và đưa ra gợi ý tối ưu cho bạn",
   },
   {
     icon: <FiStar className="w-6 h-6" />,
     title: "Tiết kiệm thời gian",
-    description: "Không còn phải tìm kiếm khóa học phù hợp một cách mù quáng"
-  }
+    description: "Không còn phải tìm kiếm khóa học phù hợp một cách mù quáng",
+  },
 ];
 
 export default function LearningPathOverview() {
@@ -71,7 +75,6 @@ export default function LearningPathOverview() {
   };
 
   return (
-    <BaseScreenAdmin>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Hero Section - Giới thiệu */}
         <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -89,7 +92,7 @@ export default function LearningPathOverview() {
               {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 dark:bg-blue-900/20 rounded-full transform translate-x-16 -translate-y-16"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-100 dark:bg-purple-900/20 rounded-full transform -translate-x-12 translate-y-12"></div>
-              
+
               <div className="relative z-10 text-center">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 dark:text-white mb-8 leading-tight">
                   Khám phá{" "}
@@ -101,11 +104,12 @@ export default function LearningPathOverview() {
                     dành riêng cho bạn
                   </span>
                 </h1>
-                
+
                 <div className="max-w-4xl mx-auto">
                   <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed font-medium">
-                    Trả lời một vài câu hỏi đơn giản, EduSmart sẽ sử dụng AI để phân tích và đề xuất 
-                    lộ trình học tập cá nhân hóa phù hợp với mục tiêu và trình độ của bạn.
+                    Trả lời một vài câu hỏi đơn giản, EduSmart sẽ sử dụng AI để
+                    phân tích và đề xuất lộ trình học tập cá nhân hóa phù hợp
+                    với mục tiêu và trình độ của bạn.
                   </p>
 
                   <div className="flex justify-center mb-8">
@@ -136,13 +140,14 @@ export default function LearningPathOverview() {
                 <FiTarget className="w-4 h-4 mr-2" />
                 3 Bước Đơn Giản
               </div> */}
-              
+
               <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-6">
                 Quy trình đơn giản
               </h2>
-              
+
               <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto font-medium leading-relaxed">
-                Chỉ với 3 bước đơn giản, bạn sẽ có được lộ trình học tập được cá nhân hóa hoàn toàn
+                Chỉ với 3 bước đơn giản, bạn sẽ có được lộ trình học tập được cá
+                nhân hóa hoàn toàn
               </p>
             </div>
 
@@ -153,7 +158,7 @@ export default function LearningPathOverview() {
                   {index < steps.length - 1 && (
                     <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-gray-300 to-transparent dark:from-gray-600 z-0 transform translate-x-4"></div>
                   )}
-                  
+
                   <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 group hover:-translate-y-2">
                     {/* Step number */}
                     <div className="absolute -top-4 -left-4 w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
@@ -161,14 +166,16 @@ export default function LearningPathOverview() {
                     </div>
 
                     {/* Icon */}
-                    <div className={`${step.lightColor} ${step.textColor} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <div
+                      className={`${step.lightColor} ${step.textColor} w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
+                    >
                       {step.icon}
                     </div>
 
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                       {step.title}
                     </h3>
-                    
+
                     <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       {step.description}
                     </p>
@@ -226,8 +233,6 @@ export default function LearningPathOverview() {
             </div>
           </div>
         </section> */}
-
       </div>
-    </BaseScreenAdmin>
   );
 }
