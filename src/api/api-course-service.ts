@@ -283,6 +283,12 @@ export interface CourseTagDetailsDto {
   tagName?: string | null;
 }
 
+export interface CourseTagDetailsDto {
+  /** @format int64 */
+  courseTagId?: number;
+  tagName?: string | null;
+}
+
 export interface CourseTagDto {
   /** @format int64 */
   tagId?: number;
@@ -345,6 +351,11 @@ export interface CreateCourseResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: string | null;
+}
+
+export interface CreateCourseTagDto {
+  /** @format int64 */
+  tagId?: number;
 }
 
 export interface CreateCourseTagDto {
@@ -1242,6 +1253,8 @@ export class Api<
         "Filter.IsActive"?: boolean;
         /** @format uuid */
         "Filter.LectureId"?: string;
+        /** @format uuid */
+        "Filter.LectureId"?: string;
         "Filter.SortBy"?: CourseSortBy;
       },
       params: RequestParams = {},
@@ -1256,6 +1269,7 @@ export class Api<
       }),
 
     /**
+     * @description Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.
      * @description Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.
      *
      * @tags Courses

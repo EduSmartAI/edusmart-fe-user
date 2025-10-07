@@ -64,6 +64,14 @@
             }
           },
           {
+            "name": "Filter.LectureId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "name": "Filter.SortBy",
             "in": "query",
             "schema": {
@@ -99,6 +107,7 @@
           "Courses"
         ],
         "summary": "Create a new course",
+        "description": "Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.",
         "description": "Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.",
         "requestBody": {
           "content": {
@@ -554,7 +563,7 @@
         "description": "Update a module within a course, including its objectives and lessons",
         "parameters": [
           {
-            "name": "id",
+            "name": "courseId",
             "in": "path",
             "required": true,
             "schema": {
@@ -567,17 +576,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
+                "$ref": "#/components/schemas/UpdateCourseModulesCommand"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
+                "$ref": "#/components/schemas/UpdateCourseModulesCommand"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateModuleCommand"
+                "$ref": "#/components/schemas/UpdateCourseModulesCommand"
               }
             }
           }
@@ -588,17 +597,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                  "$ref": "#/components/schemas/UpdateCourseModulesResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                  "$ref": "#/components/schemas/UpdateCourseModulesResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdateModuleResponse"
+                  "$ref": "#/components/schemas/UpdateCourseModulesResponse"
                 }
               }
             }
@@ -611,6 +620,8 @@
         "tags": [
           "StudentLessonProgress"
         ],
+        "summary": "Check if current user is enrolled in a course",
+        "description": "Check if the authenticated user is enrolled in the specified course",
         "summary": "Check if current user is enrolled in a course",
         "description": "Check if the authenticated user is enrolled in the specified course",
         "parameters": [
@@ -1620,6 +1631,20 @@
         },
         "additionalProperties": false
       },
+      "CourseTagDetailsDto": {
+        "type": "object",
+        "properties": {
+          "courseTagId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "tagName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "CourseTagDto": {
         "type": "object",
         "properties": {
@@ -1809,6 +1834,16 @@
           "response": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateCourseTagDto": {
+        "type": "object",
+        "properties": {
+          "tagId": {
+            "type": "integer",
+            "format": "int64"
           }
         },
         "additionalProperties": false
