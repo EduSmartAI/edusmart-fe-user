@@ -298,6 +298,7 @@ export const useQuizStore = create<QuizStore>()(
         submitTest: async (testData) => {
           try {
             set({ isSubmitting: true, error: null });
+            console.log("📤 Final payload:", testData);
             const result = await submitStudentTestAction(testData);
 
             if (result.ok) {

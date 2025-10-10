@@ -87,7 +87,9 @@ export type NormalizedHttpError = {
   status?: number;
 };
 
-export async function normalizeFetchError(err: unknown): Promise<NormalizedHttpError> {
+export async function normalizeFetchError(
+  err: unknown,
+): Promise<NormalizedHttpError> {
   // Lỗi do fetch ném ra Response
   if (err instanceof Response) {
     let details = "";
@@ -133,9 +135,10 @@ export async function normalizeFetchError(err: unknown): Promise<NormalizedHttpE
 
   // Fallback
   return {
-    message: unknownErr && typeof unknownErr === "object" && "message" in unknownErr
-      ? String((unknownErr as { message?: unknown }).message)
-      : String(err),
+    message:
+      unknownErr && typeof unknownErr === "object" && "message" in unknownErr
+        ? String((unknownErr as { message?: unknown }).message)
+        : String(err),
   };
 }
 
@@ -287,7 +290,7 @@ export async function submitStudentTestAction(testData: {
     const res =
       await apiServer.quiz.api.v1StudentTestInsertStudentTestCreate(payload);
 
-    console.log("📥 Submit test response:", res);
+    console.log("✅ Submit test response:", res);
 
     if (!res.data.success) {
       return {

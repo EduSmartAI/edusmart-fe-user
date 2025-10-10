@@ -10,10 +10,28 @@
  * ---------------------------------------------------------------
  */
 
+/** @format int32 */
+export enum AnswerRuleUnit {
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+  Value4 = 4,
+}
+
 export interface AnswerDetailResponse {
   /** @format uuid */
   answerId?: string;
   answerText?: string;
+}
+
+export interface AnswerRuleRequest {
+  /** @format int32 */
+  numericMin?: number;
+  /** @format int32 */
+  numericMax?: number;
+  unit?: AnswerRuleUnit;
+  mappedField?: string;
+  formula?: string;
 }
 
 export interface AnswerSurveySelects {
@@ -151,6 +169,16 @@ export interface Questions {
   answers: Answers[];
 }
 
+export interface QuestionsCourseResultSelectResponseEntity {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  /** @format int32 */
+  questionType?: number;
+  explanation?: string;
+  answers?: StudentQuizCourseAnswerDetailResponse[];
+}
+
 export interface QuestionsResultSelectResponseEntity {
   /** @format uuid */
   questionId?: string;
@@ -252,6 +280,29 @@ export interface StudentAnswerRequest {
   answerId: string;
 }
 
+export interface StudentCourseQuizSelectQuery {
+  /** @format uuid */
+  studentQuizCourseId?: string;
+}
+
+export interface StudentCourseQuizSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentCourseQuizSelectResponseEntity;
+}
+
+export interface StudentCourseQuizSelectResponseEntity {
+  /** @format uuid */
+  quizId?: string;
+  /** @format int32 */
+  totalQuestions?: number;
+  /** @format int32 */
+  totalCorrectAnswers?: number;
+  questionResults?: QuestionsCourseResultSelectResponseEntity[];
+}
+
 export interface StudentInformation {
   /** @format uuid */
   majorId: string;
@@ -266,6 +317,29 @@ export interface StudentQuizAnswerInsertRequest {
   questionId: string;
   /** @format uuid */
   answerId?: string;
+}
+
+export interface StudentQuizCourseAnswerDetailResponse {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
+  isCorrectAnswer?: boolean;
+  selectedByStudent?: boolean;
+}
+
+export interface StudentQuizCourseInsertCommand {
+  /** @format uuid */
+  quizId?: string;
+  studentQuizAnswers?: StudentQuizAnswerInsertRequest[];
+}
+
+export interface StudentQuizCourseInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  /** @format uuid */
+  response?: string;
 }
 
 export interface StudentSurveyInsertCommand {
@@ -369,6 +443,7 @@ export interface SurveyAnswerRequest {
   /** @minLength 1 */
   answerText: string;
   isCorrect?: boolean;
+  answerRules?: AnswerRuleRequest[];
 }
 
 export interface SurveyDetailSelectResponse {
@@ -774,6 +849,52 @@ export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
   api = {
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizInsertStudentQuizCourseCreate
+     * @summary Lưu câu trả lời của sinh viên trong bài kiếm tra course
+     * @request POST:/api/v1/CourseQuiz/InsertStudentQuizCourse
+     * @secure
+     */
+    v1CourseQuizInsertStudentQuizCourseCreate: (
+      body: StudentQuizCourseInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentQuizCourseInsertResponse, any>({
+        path: `/api/v1/CourseQuiz/InsertStudentQuizCourse`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizSelectStudentQuizCourseCreate
+     * @summary Hiển thị bài kiểm tra course cho sinh viên
+     * @request POST:/api/v1/CourseQuiz/SelectStudentQuizCourse
+     * @secure
+     */
+    v1CourseQuizSelectStudentQuizCourseCreate: (
+      body: StudentCourseQuizSelectQuery,
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentCourseQuizSelectResponse, any>({
+        path: `/api/v1/CourseQuiz/SelectStudentQuizCourse`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
     /**
      * @description Cần cấp quyền cho API
      *

@@ -257,7 +257,8 @@ export async function getSemesterAction(): Promise<{
     throw new Error(response.data?.message || "Failed to get semesters");
   } catch (error) {
     console.error("Server Action - Get semesters error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to get semesters";
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to get semesters";
     return {
       ok: false,
       error: errorMessage,
@@ -298,7 +299,8 @@ export async function getMajorAction(): Promise<{
     throw new Error(response.data?.message || "Failed to get majors");
   } catch (error) {
     console.error("Server Action - Get majors error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to get majors";
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to get majors";
     return {
       ok: false,
       error: errorMessage,
@@ -338,7 +340,8 @@ export async function getLearningGoalAction(): Promise<{
     throw new Error(response.data?.message || "Failed to get learning goals");
   } catch (error) {
     console.error("Server Action - Get learning goals error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to get learning goals";
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to get learning goals";
     return {
       ok: false,
       error: errorMessage,
@@ -378,7 +381,8 @@ export async function getTechnologyAction(): Promise<{
     throw new Error(response.data?.message || "Failed to get technologies");
   } catch (error) {
     console.error("Server Action - Get technologies error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to get technologies";
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to get technologies";
     return {
       ok: false,
       error: errorMessage,
@@ -692,9 +696,11 @@ export async function submitSurveyAction(surveyData: {
     // Get learningGoalType from API data
     const learningGoalsResult = await getLearningGoalAction();
     if (!learningGoalsResult.ok || !learningGoalsResult.data) {
-      throw new Error(learningGoalsResult.error || "Failed to get learning goals");
+      throw new Error(
+        learningGoalsResult.error || "Failed to get learning goals",
+      );
     }
-    
+
     const selectedGoal = learningGoalsResult.data.find(
       (goal) => goal.learningGoalId === survey1Data.learningGoal,
     );
@@ -731,7 +737,9 @@ export async function submitSurveyAction(surveyData: {
       // Get INTEREST survey ID dynamically
       const interestSurveyResult = await getSurveyByCodeAction("INTEREST");
       if (!interestSurveyResult.ok || !interestSurveyResult.data?.surveyId) {
-        throw new Error(interestSurveyResult.error || "Failed to get INTEREST survey");
+        throw new Error(
+          interestSurveyResult.error || "Failed to get INTEREST survey",
+        );
       }
 
       studentSurveys.push({
@@ -762,7 +770,9 @@ export async function submitSurveyAction(surveyData: {
       if (habitAnswers.length > 0) {
         const habitSurveyResult = await getSurveyByCodeAction("HABIT");
         if (!habitSurveyResult.ok || !habitSurveyResult.data?.surveyId) {
-          throw new Error(habitSurveyResult.error || "Failed to get HABIT survey");
+          throw new Error(
+            habitSurveyResult.error || "Failed to get HABIT survey",
+          );
         }
 
         studentSurveys.push({
