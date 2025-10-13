@@ -26,9 +26,6 @@ function pickInitialLessonId(
 
   if (hasId(requested)) return requested;
 
-  if (hasId(course.continue?.lessonId))
-    return course.continue?.lessonId ?? undefined;
-
   const firstIncomplete = allLessons.find((l) => !l.isCompleted)?.lessonId;
   if (hasId(firstIncomplete)) return firstIncomplete;
 

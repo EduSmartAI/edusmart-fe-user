@@ -31,15 +31,13 @@ export interface CheckEnrollmentResponse {
   response?: boolean;
 }
 
-export interface ContinueHintDto {
+export interface CourseAudienceDto {
   /** @format uuid */
-  moduleId?: string;
-  moduleName?: string | null;
-  /** @format uuid */
-  lessonId?: string;
-  lessonTitle?: string | null;
+  audienceId?: string;
+  content?: string | null;
   /** @format int32 */
-  resumeSecond?: number;
+  positionIndex?: number;
+  isActive?: boolean;
 }
 
 export interface CourseCommentDto {
@@ -112,9 +110,7 @@ export interface CourseDetailForLectureDto {
   courseImageUrl?: string | null;
   /** @format int32 */
   learnerCount?: number;
-  videoUrl?: string | null;
-  /** @format int32 */
-  videoDurationSec?: number;
+  courseIntroVideoUrl?: string | null;
   /** @format int32 */
   durationMinutes?: number | null;
   /** @format double */
@@ -132,9 +128,10 @@ export interface CourseDetailForLectureDto {
   updatedAt?: string;
   objectives?: CourseObjectiveDto[] | null;
   requirements?: CourseRequirementDto[] | null;
+  audiences?: CourseAudienceDto[] | null;
+  tags?: CourseTagDto[] | null;
   modules?: ModuleDetailForLectureDto[] | null;
   comments?: CourseCommentDto[] | null;
-  tags?: CourseTagDto[] | null;
   ratings?: CourseRatingDto[] | null;
   /** @format int32 */
   ratingsCount?: number;
@@ -155,19 +152,12 @@ export interface CourseDetailForStudentDto {
   courseImageUrl?: string | null;
   /** @format int32 */
   learnerCount?: number;
-  videoUrl?: string | null;
-  /** @format int32 */
-  videoDurationSec?: number;
   /** @format int32 */
   durationMinutes?: number | null;
   /** @format double */
   durationHours?: number | null;
   /** @format int32 */
   level?: number | null;
-  /** @format double */
-  price?: number;
-  /** @format double */
-  dealPrice?: number | null;
   isActive?: boolean;
   /** @format date-time */
   createdAt?: string;
@@ -184,7 +174,6 @@ export interface CourseDetailForStudentDto {
   /** @format double */
   ratingsAverage?: number;
   progress?: CourseProgressDto;
-  continue?: ContinueHintDto;
 }
 
 export interface CourseDto {
@@ -283,16 +272,33 @@ export interface CourseTagDetailsDto {
   tagName?: string | null;
 }
 
-export interface CourseTagDetailsDto {
-  /** @format int64 */
-  courseTagId?: number;
-  tagName?: string | null;
-}
-
 export interface CourseTagDto {
   /** @format int64 */
   tagId?: number;
   tagName?: string | null;
+}
+
+export interface CoursesSelectEvent {
+  majorCodes?: string[] | null;
+  /** @format uuid */
+  semesterId?: string;
+  /** @format int32 */
+  limitTime?: number;
+  /** @format int32 */
+  studentLevel?: number;
+}
+
+export interface CoursesSelectEventResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CoursesSelectEventResponseEntity[] | null;
+}
+
+export interface CoursesSelectEventResponseEntity {
+  majorCode?: string | null;
+  courseCodeIds?: string[] | null;
 }
 
 export interface CreateCourseAudienceDto {
@@ -351,11 +357,6 @@ export interface CreateCourseResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: string | null;
-}
-
-export interface CreateCourseTagDto {
-  /** @format int64 */
-  tagId?: number;
 }
 
 export interface CreateCourseTagDto {
@@ -428,16 +429,7 @@ export interface CreateQuizSettingsDto {
   allowRetake?: boolean;
 }
 
-export interface CreateUserLessonProgressCommand {
-  userLessonProgress?: CreateUserLessonProgressDto;
-}
-
-export interface CreateUserLessonProgressDto {
-  /** @format uuid */
-  lessonId?: string;
-}
-
-export interface CreateUserLessonProgressResponse {
+export interface DeleteCourseResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
@@ -945,29 +937,38 @@ export interface UpdateModuleResponse {
   response?: string | null;
 }
 
-export interface UpdateUserLessonProgressCommand {
-  updateUserLessonProgress?: UpdateUserLessonProgressDto;
-}
-
-export interface UpdateUserLessonProgressDto {
+export interface UpsertUserLessonProgressCommand {
   /** @format uuid */
   lessonId?: string;
-  /** @format int32 */
-  status?: number;
-  /** @format date-time */
-  completedAt?: string | null;
-  /** @format int32 */
-  durationWatchedSec?: number;
-  /** @format int32 */
-  lastPositionSec?: number | null;
+  userLessonProgress?: UpsertUserLessonProgressDto;
 }
 
-export interface UpdateUserLessonProgressResponse {
+export interface UpsertUserLessonProgressDto {
+  /** @format int32 */
+  lastPositionSec?: number | null;
+  /** @format int32 */
+  watchedDeltaSec?: number | null;
+}
+
+export interface UpsertUserLessonProgressResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
   detailErrors?: DetailError[] | null;
-  response?: boolean;
+  response?: UserLessonProgressEntity;
+}
+
+export interface UserLessonProgressEntity {
+  /** @format uuid */
+  lessonId?: string;
+  /** @format int32 */
+  status?: number;
+  /** @format int32 */
+  lastPositionSec?: number;
+  /** @format int32 */
+  durationWatchedSec?: number;
+  /** @format date-time */
+  completedAt?: string | null;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -1253,8 +1254,6 @@ export class Api<
         "Filter.IsActive"?: boolean;
         /** @format uuid */
         "Filter.LectureId"?: string;
-        /** @format uuid */
-        "Filter.LectureId"?: string;
         "Filter.SortBy"?: CourseSortBy;
       },
       params: RequestParams = {},
@@ -1269,7 +1268,6 @@ export class Api<
       }),
 
     /**
-     * @description Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.
      * @description Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.
      *
      * @tags Courses
@@ -1443,6 +1441,24 @@ export class Api<
       }),
 
     /**
+     * @description Delete a specific course by its ID. Only the lecturer who created the course can delete it.
+     *
+     * @tags Courses
+     * @name V1CoursesDelete
+     * @summary Delete a course by ID
+     * @request DELETE:/api/v1/Courses/{courseId}
+     * @secure
+     */
+    v1CoursesDelete: (courseId: string, params: RequestParams = {}) =>
+      this.request<DeleteCourseResponse, any>({
+        path: `/api/v1/Courses/${courseId}`,
+        method: "DELETE",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Retrieve all available course tags
      *
      * @tags Courses
@@ -1456,6 +1472,28 @@ export class Api<
         path: `/api/v1/Courses/tags`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Courses
+     * @name V1CoursesEventCoursesTestCreate
+     * @request POST:/api/v1/Courses/event/courses/test
+     * @secure
+     */
+    v1CoursesEventCoursesTestCreate: (
+      data: CoursesSelectEvent,
+      params: RequestParams = {},
+    ) =>
+      this.request<CoursesSelectEventResponse, any>({
+        path: `/api/v1/Courses/event/courses/test`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1527,42 +1565,19 @@ export class Api<
       }),
 
     /**
-     * @description Create user lesson progress for a specific lesson
-     *
-     * @tags StudentLessonProgress
-     * @name StudentLessonProgressCreate
-     * @summary Create user lesson progress
-     * @request POST:/api/StudentLessonProgress
-     * @secure
-     */
-    studentLessonProgressCreate: (
-      data: CreateUserLessonProgressCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<CreateUserLessonProgressResponse, any>({
-        path: `/api/StudentLessonProgress`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update user lesson progress for a specific lesson
+     * @description Create or update the progress of a user in a specific lesson
      *
      * @tags StudentLessonProgress
      * @name StudentLessonProgressUpdate
-     * @summary Update user lesson progress
+     * @summary Upsert user lesson progress
      * @request PUT:/api/StudentLessonProgress
      * @secure
      */
     studentLessonProgressUpdate: (
-      data: UpdateUserLessonProgressCommand,
+      data: UpsertUserLessonProgressCommand,
       params: RequestParams = {},
     ) =>
-      this.request<UpdateUserLessonProgressResponse, any>({
+      this.request<UpsertUserLessonProgressResponse, any>({
         path: `/api/StudentLessonProgress`,
         method: "PUT",
         body: data,
