@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Col,
@@ -24,6 +24,7 @@ import CourseSearchSection from "EduSmart/components/Course/HeroBannerCourse";
 import { ZoomIn } from "EduSmart/components/Animation/ZoomIn";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
 import { Course } from "../apiServer/courseAction";
+import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
 
 interface CourseListPageProps {
   courses: Course[];
@@ -84,10 +85,19 @@ export default function CourseListPage({
   );
   const sortValue = searchParams.get("sortBy") ?? "BEST_MATCH";
 
+
+  const showLoading = useLoadingStore((s) => s.showLoading);
+  const hideLoading = useLoadingStore((s) => s.hideLoading);
+
+  const replaceWithLoading = (url: string) => {
+    showLoading();
+    router.replace(url, { scroll: false });
+  };
+
   const setQueryParams = (updater: (sp: URLSearchParams) => void) => {
     const next = new URLSearchParams(searchParams.toString());
     updater(next);
-    router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+    replaceWithLoading(`${pathname}?${next.toString()}`);
   };
 
   const setPage = (nextPage: number) => {
@@ -108,6 +118,7 @@ export default function CourseListPage({
     next.set("sortBy", val);
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
   };
+
   const readParamValues = (sp: URLSearchParams, key: string) => {
     const multi = sp.getAll(key);
     if (multi.length) return multi;
@@ -129,6 +140,10 @@ export default function CourseListPage({
     router.replace(`${pathname}?${next.toString()}`, { scroll: false });
   };
 
+  useEffect(() => {
+    hideLoading();
+  }, [courses, hideLoading]);
+
   const selectedChips = useMemo(() => {
     return filterGroups.flatMap((g) => {
       const vals = readParamValues(searchParams, g.param);
@@ -140,9 +155,13 @@ export default function CourseListPage({
     });
   }, [searchParams, filterGroups]);
   const handleSearch = (value: string) => {
-    console.log("Search:", value);
-    // Gọi API tìm kiếm hoặc router.push query
-  };
+  setQueryParams((next) => {
+    if (value) next.set("search", value);
+    else next.delete("search");
+    next.set("page", "1");
+  });
+};
+
   return (
     <BaseScreenWhiteNav>
       <ZoomIn>

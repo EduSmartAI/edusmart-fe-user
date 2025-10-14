@@ -8,18 +8,12 @@ const Loading: React.FC = () => {
 
   return (
     <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "rgba(255, 255, 255, 0.5)",
-        zIndex: 1000,
-      }}
+      className="
+        fixed inset-0 z-[1000] flex items-center justify-center
+        bg-black/20 dark:bg-slate-900/35 backdrop-blur-sm
+      "
+      role="status"
+      aria-live="polite"
     >
       <Spin size="large" />
     </div>

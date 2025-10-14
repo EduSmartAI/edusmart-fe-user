@@ -1,4 +1,6 @@
-// DEV: In-memory (per process). PROD: thay bằng Redis/Upstash.
+// sessionStore.ts
+import { readSidCookiePayload } from "./authServer"; // CHANGED: thay vì readIdtCookiePersist
+
 export type Sid = string;
 
 export interface TokenBundle {
@@ -9,7 +11,7 @@ export interface TokenBundle {
 
 // --- GIỮ MAP TOÀN CỤC, SỐNG QUA HMR ---
 declare global {
-  var __SESSION_MEM__: Map<Sid, TokenBundle> | undefined;
+   var __SESSION_MEM__: Map<Sid, TokenBundle> | undefined;
 }
 const mem: Map<Sid, TokenBundle> =
   globalThis.__SESSION_MEM__ ?? (globalThis.__SESSION_MEM__ = new Map());
@@ -19,7 +21,16 @@ export async function saveTokens(sid: Sid, tokens: TokenBundle) {
 }
 
 export async function loadTokens(sid: Sid) {
-  return mem.get(sid) ?? null;
+  const inMem = mem.get(sid);
+  if (inMem) return inMem;
+
+  // NEW: đọc payload ngay từ cookie sid
+  const payload = await readSidCookiePayload();
+  if (payload && payload.sid === sid) {
+    mem.set(sid, { access: payload.access, refresh: payload.refresh, expAt: payload.expAt });
+    return mem.get(sid)!;
+  }
+  return null;
 }
 
 export async function updateTokens(sid: Sid, tokens: Partial<TokenBundle>) {
@@ -35,11 +46,3 @@ export async function deleteSession(sid: Sid) {
 export function dumpSessionKeys() {
   return Array.from(mem.keys());
 }
-
-// Optional: Redis skeleton (cài ioredis hoặc Upstash)
-// import Redis from 'ioredis';
-// const redis = new Redis(process.env.REDIS_URL!);
-// export async function saveTokens(sid: Sid, t: TokenBundle) { await redis.setex(`sess:${sid}`, 60*60*24*30, JSON.stringify(t)); }
-// export async function loadTokens(sid: Sid) { const s = await redis.get(`sess:${sid}`); return s ? JSON.parse(s) as TokenBundle : null; }
-// export async function updateTokens(sid: Sid, t: Partial<TokenBundle>) { const cur = await loadTokens(sid); if (cur) await saveTokens(sid, { ...cur, ...t }); }
-// export async function deleteSession(sid: Sid) { await redis.del(`sess:${sid}`); }

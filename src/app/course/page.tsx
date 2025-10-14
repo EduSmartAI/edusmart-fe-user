@@ -39,12 +39,13 @@ export const metadata: Metadata = {
 
 type SP = Record<string, string | string[] | undefined>;
 const PAGE_SIZE = 9 as const;
+
 export default async function Page({
   searchParams,
 }: {
   searchParams?: Promise<SP>;
 }) {
-  const sp: SP = (searchParams ? await searchParams : {}) as SP;
+  const sp: SP = (await searchParams) ?? {};
 
   const pick = (v: string | string[] | undefined) =>
     Array.isArray(v) ? v[0] : v;
