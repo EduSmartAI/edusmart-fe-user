@@ -298,8 +298,32 @@ export const useQuizStore = create<QuizStore>()(
         submitTest: async (testData) => {
           try {
             set({ isSubmitting: true, error: null });
-            console.log("📤 Final payload:", testData);
+            
+            // 🚀 DETAILED QUIZ STORE SUBMISSION LOGGING
+            console.group("🔥 QUIZ STORE SUBMISSION DEBUG");
+            console.log("📋 Test Data from Store:", JSON.stringify(testData, null, 2));
+            console.log("🆔 Test ID:", testData.testId);
+            console.log("⏰ Started At:", testData.startedAt);
+            console.log("📚 Quiz IDs:", testData.quizIds);
+            console.log("📝 Answers Count:", testData.answers.length);
+            console.log("🎯 Answers Details:");
+            testData.answers.forEach((answer, index) => {
+              console.log(`  ${index + 1}. Question: ${answer.questionId} -> Answer: ${answer.answerId}`);
+            });
+            console.groupEnd();
+            
             const result = await submitStudentTestAction(testData);
+
+            // 📤 QUIZ STORE RESULT LOGGING
+            console.group("📤 QUIZ STORE RESULT DEBUG");
+            console.log("✅ Submission Result:", result);
+            console.log("🎯 Success:", result.ok);
+            if (result.ok) {
+              console.log("🆔 Student Test ID:", result.data?.response?.studentTestId);
+            } else {
+              console.log("❌ Error:", result.error);
+            }
+            console.groupEnd();
 
             if (result.ok) {
               set({ isSubmitting: false });
@@ -313,6 +337,7 @@ export const useQuizStore = create<QuizStore>()(
             set({ error: errorMsg, isSubmitting: false });
             return { ok: false, error: errorMsg };
           } catch (error) {
+            console.error("💥 Quiz Store Submission Exception:", error);
             const errorMsg =
               error instanceof Error ? error.message : "Failed to submit test";
             set({ error: errorMsg, isSubmitting: false });

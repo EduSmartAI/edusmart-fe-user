@@ -807,7 +807,30 @@ export async function submitSurveyAction(surveyData: {
       };
     }
 
-    console.log("📋 Submitting survey with validated payload:", finalPayload);
+    // 🚀 DETAILED SURVEY SUBMISSION LOGGING
+    console.group("🔥 SURVEY SUBMISSION PAYLOAD DEBUG");
+    console.log("📋 Complete Survey Payload:", JSON.stringify(finalPayload, null, 2));
+    console.log("🎓 Student Information:");
+    console.log("  - Major ID:", finalPayload.studentInformation.majorId);
+    console.log("  - Semester ID:", finalPayload.studentInformation.semesterId);
+    console.log("  - Technologies Count:", finalPayload.studentInformation.technologies.length);
+    console.log("  - Learning Goal ID:", finalPayload.studentInformation.learningGoal.learningGoalId);
+    console.log("  - Learning Goal Type:", finalPayload.studentInformation.learningGoal.learningGoalType);
+    
+    console.log("📝 Student Surveys:");
+    finalPayload.studentSurveys.forEach((survey, index) => {
+      console.log(`  📖 Survey ${index + 1}:`);
+      console.log(`    - Survey ID: ${survey.surveyId}`);
+      console.log(`    - Survey Code: ${survey.surveyCode}`);
+      console.log(`    - Answers Count: ${survey.answers.length}`);
+      survey.answers.forEach((answer, answerIndex) => {
+        console.log(`      ${answerIndex + 1}. Question: ${answer.questionId} -> Answer: ${answer.answerId}`);
+      });
+    });
+    
+    console.log("🔍 Payload Validation Status: PASSED ✅");
+    console.groupEnd();
+    
     logPayloadStructure(finalPayload, "Final Submission Payload");
 
     // Submit to API with validated payload
@@ -816,7 +839,13 @@ export async function submitSurveyAction(surveyData: {
         finalPayload,
       );
 
-    console.log("📋 API Response:", response.data);
+    console.group("📤 SURVEY API RESPONSE DEBUG");
+    console.log("✅ API Response Status:", response.status);
+    console.log("📋 API Response Data:", JSON.stringify(response.data, null, 2));
+    console.log("🎯 Success:", response.data?.success);
+    console.log("💬 Message:", response.data?.message);
+    console.log("🆔 Response ID:", response.data?.response);
+    console.groupEnd();
 
     if (response.data?.success) {
       return {
@@ -951,10 +980,9 @@ export async function submitSurveyServerAction(submissionData: {
   error?: string;
 }> {
   try {
-    console.log(
-      "🔒 SERVER ACTION: Submitting survey securely via server",
-      submissionData,
-    );
+    console.group("🔒 SERVER ACTION: Survey Submission (Alternative Method)");
+    console.log("📋 Submission Data:", JSON.stringify(submissionData, null, 2));
+    console.groupEnd();
 
     // Prepare data for API call using the correct structure
     const apiPayload = {

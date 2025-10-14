@@ -33,19 +33,17 @@
       }
     },
     "/api/v1/CourseQuiz/SelectStudentQuizCourse": {
-      "post": {
+      "get": {
         "tags": ["CourseQuiz"],
         "summary": "Hiển thị bài kiểm tra course cho sinh viên",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": ["application/json", "text/json", "application/*+json"],
         "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/StudentCourseQuizSelectQuery"
-            }
+            "in": "query",
+            "name": "StudentQuizCourseId",
+            "type": "string",
+            "format": "uuid"
           }
         ],
         "responses": {
@@ -1123,16 +1121,6 @@
       },
       "additionalProperties": false
     },
-    "StudentCourseQuizSelectQuery": {
-      "type": "object",
-      "properties": {
-        "studentQuizCourseId": {
-          "format": "uuid",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
     "StudentCourseQuizSelectResponse": {
       "type": "object",
       "properties": {
@@ -1243,6 +1231,18 @@
       "type": "object",
       "properties": {
         "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "moduleId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "lessonId": {
           "format": "uuid",
           "type": "string"
         },
