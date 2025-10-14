@@ -1,18 +1,18 @@
 // File: src/components/BaseScreen.tsx
 import React, { ReactNode, FC } from "react";
-import NavigationbarWhite from "EduSmart/components/Navbar/NavigationbarWhite";
 import Footer from "EduSmart/components/Footer/Footer";
+import CourseNavigationbar from "EduSmart/components/Navbar/CourseNavbar/CourseNavigationbar";
 import Loading from "EduSmart/components/Loading/Loading";
 
 interface BaseScreenProps {
   children: ReactNode;
 }
 
-const BaseScreenWhiteNav: FC<BaseScreenProps> = ({ children }) => {
+const BaseScreenStudyLayout: FC<BaseScreenProps> = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen overflow-x-clip md:scroll-smooth">
-      <NavigationbarWhite />
-      <main className="relative isolate flex-grow pt-24 text-slate-900 dark:text-slate-100 overflow-x-clip">
+      <CourseNavigationbar />
+      <main className="relative isolate flex-grow pt-[5rem] text-slate-900 dark:text-slate-100 overflow-x-clip">
         <Loading />
         {/* BASE */}
         <div className="absolute inset-0 -z-50">
@@ -81,4 +81,4 @@ const BaseScreenWhiteNav: FC<BaseScreenProps> = ({ children }) => {
   );
 };
 
-export default BaseScreenWhiteNav;
+export default BaseScreenStudyLayout;

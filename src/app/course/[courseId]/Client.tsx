@@ -15,6 +15,7 @@ import {
   Typography,
   message,
   Collapse,
+  Modal,
 } from "antd";
 import {
   CheckCircleTwoTone,
@@ -43,6 +44,8 @@ import CourseInstructor from "EduSmart/components/User/Course/CourseInstructor";
 import CourseOverview from "EduSmart/components/User/Course/CourseOverView";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
 import { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
+import { useCourseStore } from "EduSmart/stores/course/courseStore";
+import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
 
@@ -53,6 +56,7 @@ type Props = {
   data?: CourseDetailForGuestDto;
   modulesCount?: number;
   lessonsCount?: number;
+  isLearning: boolean;
 };
 
 /* =======================
@@ -144,6 +148,7 @@ export default function CourseDetailUI({
   data,
   modulesCount = 0,
   lessonsCount = 0,
+  isLearning = false,
 }: Props) {
   const [activeTab, setActiveTab] = useState<string>("reviews");
 
@@ -151,7 +156,8 @@ export default function CourseDetailUI({
   const coverUrl = data?.courseImageUrl || IMG_FALLBACK;
   const subjectTag = data?.subjectCode ? [data.subjectCode] : [];
   const levelTag = levelLabel(data?.level ?? 0);
-
+  const enRollingCourseById = useCourseStore((s) => s.enRollingCourseById);
+  const router = useRouter();
   const durationText = useMemo(
     () => formatDuration(data?.durationHours ?? 0, data?.durationMinutes ?? 0),
     [data?.durationHours, data?.durationMinutes],
@@ -178,9 +184,6 @@ export default function CourseDetailUI({
       .map((o) => o.content || "")
       .filter(Boolean) ?? [];
 
-  console.log("CourseDetailUI - data:", data?.objectives);
-  console.log("CourseDetailUI - learnings:", learnings);
-
   const requirements =
     data?.requirements
       ?.filter((r) => !!r.isActive)
@@ -203,6 +206,54 @@ export default function CourseDetailUI({
       message.success("Đã copy link khóa học");
     } catch {
       message.info(url ? "Sao chép thủ công: " + url : "Không có URL");
+    }
+  };
+
+  const onStudyCourse = async () => {
+    if (isLearning) {
+      message.success("Tiếp tục học");
+      router.push(`/course/${data?.courseId}/learn`);
+      return;
+    }
+    try {
+      await enRollingCourseById(data?.courseId || "");
+      router.push(`/course/${data?.courseId}/learn`);
+      router.refresh();
+    } catch (err: unknown) {
+      let status: number | undefined;
+      if (typeof err === "number") {
+        status = err;
+      } else if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err &&
+        typeof (err as { response?: { status?: number } }).response?.status ===
+          "number"
+      ) {
+        status = (err as { response?: { status?: number } }).response?.status;
+      }
+
+      if (status === 401) {
+        Modal.confirm({
+          title: "Bạn cần đăng nhập",
+          content: "Vui lòng đăng nhập để ghi danh khóa học.",
+          okText: "Đăng nhập",
+          cancelText: "Hủy",
+          onOk: () => {
+            const returnUrl =
+              typeof window !== "undefined" ? window.location.pathname : "/";
+            router.push(`/Login?returnUrl=${encodeURIComponent(returnUrl)}`);
+          },
+        });
+        return;
+      }
+
+      if (status === 403) {
+        message.error("Bạn không có quyền ghi danh khóa học này.");
+        return;
+      }
+
+      message.error("Có lỗi xảy ra khi ghi danh. Vui lòng thử lại.");
     }
   };
 
@@ -360,8 +411,9 @@ export default function CourseDetailUI({
                 <Divider className="!my-4 sm:!my-5" />
 
                 {/* CTA */}
-                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                  <div className="sm:order-1">
+                <div className="flex flex-col gap-4">
+                  {/* Giá */}
+                  <div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       Giá
                     </div>
@@ -379,7 +431,8 @@ export default function CourseDetailUI({
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:order-2">
+                  {/* Nút hành động — nằm dưới giá */}
+                  <div className="flex flex-col sm:flex-row gap-2 w-full">
                     <Button
                       icon={<ShoppingCartOutlined />}
                       className="w-full sm:w-auto"
@@ -391,9 +444,9 @@ export default function CourseDetailUI({
                       type="primary"
                       icon={<PlayCircleOutlined />}
                       className="w-full sm:w-auto"
-                      onClick={() => message.success("Bắt đầu học ngay")}
+                      onClick={onStudyCourse}
                     >
-                      Học ngay
+                      {isLearning ? "Tiếp tục học" : "Mua và học ngay"}
                     </Button>
                   </div>
                 </div>
