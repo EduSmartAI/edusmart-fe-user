@@ -76,9 +76,6 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
       const hideLoading = message.loading("Đang xử lý khảo sát của bạn...", 0);
 
       try {
-        // onComplete?.();
-        // return;
-
         console.log("Submitting data:", {
           survey1: survey.survey1Data,
           survey2: survey.survey2Data,
@@ -95,24 +92,21 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
           console.log("✅ Survey submitted successfully:", {
             surveyId: submitResult.surveyId,
           });
-          alert("✅ Survey submitted successfully:" + submitResult.surveyId);
 
-          // Show success message
+          // Show success message (non-blocking)
           message.success({
             content:
-              "🎉 Khảo sát đã được gửi thành công! Cảm ơn bạn đã tham gia.",
-            duration: 4,
+              "🎉 Khảo sát đã được gửi thành công! Đang chuyển sang bước tiếp theo...",
+            duration: 2,
           });
 
-          // Delay before calling onComplete to let user see the success message
-          setTimeout(() => {
-            if (onComplete) {
-              onComplete();
-            }
-          }, 1500);
+          // Immediately redirect to transition page
+          if (onComplete) {
+            console.log("current step: ", survey.currentStep);
+            onComplete();
+          }
         } else {
           console.error("❌ Survey submission failed:", submitResult.error);
-          alert("❌ Survey submission failed:" + submitResult.error);
 
           // Show error message
           message.error({

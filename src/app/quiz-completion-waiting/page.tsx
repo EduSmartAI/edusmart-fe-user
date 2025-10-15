@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import LearningPathLayout from "EduSmart/layout/LearningPathLayout";
-import { useRouter } from "next/navigation";
-import { Button } from "antd";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button, message } from "antd";
 import { 
   FiCpu, 
   FiLoader,
@@ -13,22 +13,78 @@ import {
   FiArrowRight,
   FiClock
 } from "react-icons/fi";
+import { getLearningPathAction } from "EduSmart/app/(learning-path)/learningPathAction";
 
 export default function QuizCompletionWaiting() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const learningPathId = searchParams.get("learningPathId");
+  
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isPolling, setIsPolling] = useState(true);
+  const [pollingAttempts, setPollingAttempts] = useState(0);
 
   useEffect(() => {
-    // Simulate processing time
-    const timer = setTimeout(() => {
-      setIsCompleted(true);
-    }, 5000); // 5 seconds
+    if (!learningPathId) {
+      message.error("Không tìm thấy ID lộ trình học tập");
+      router.push("/");
+      return;
+    }
 
-    return () => clearTimeout(timer);
-  }, []);
+    let pollInterval: NodeJS.Timeout;
+    let attemptCount = 0;
+
+    const checkLearningPathStatus = async () => {
+      try {
+        attemptCount++;
+        setPollingAttempts(attemptCount);
+        console.log(`🔄 Polling learning path status (Attempt ${attemptCount})...`);
+        
+        const result = await getLearningPathAction(learningPathId);
+
+        if (result.success && result.data) {
+          const status = result.data.status;
+          console.log(`📊 Learning path status: ${status}`);
+
+          // Status 0 = AI đang generating, status !== 0 = đã hoàn thành
+          if (status !== 0) {
+            console.log("✅ Learning path is ready!");
+            setIsCompleted(true);
+            setIsPolling(false);
+            if (pollInterval) {
+              clearInterval(pollInterval);
+            }
+          } else {
+            console.log("⏳ Still generating... will check again in 5 seconds");
+          }
+        } else {
+          console.error("❌ Failed to fetch learning path:", result.error);
+          // Continue polling even on error (might be temporary)
+        }
+      } catch (error) {
+        console.error("💥 Error checking learning path status:", error);
+        // Continue polling even on error
+      }
+    };
+
+    // Initial check
+    checkLearningPathStatus();
+
+    // Poll every 5 seconds
+    pollInterval = setInterval(checkLearningPathStatus, 5000);
+
+    // Cleanup on unmount
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [learningPathId, router]);
 
   const handleViewResults = () => {
-    router.push("/learning-path-results");
+    if (learningPathId) {
+      router.push(`/learning-path-recommendation/${learningPathId}`);
+    }
   };
 
   return (
@@ -57,11 +113,19 @@ export default function QuizCompletionWaiting() {
             )}
           </h1>
 
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-4 leading-relaxed max-w-2xl mx-auto">
             {!isCompleted
               ? "Vui lòng chờ trong giây lát. AI đang phân tích thông tin khảo sát và kết quả đánh giá năng lực để tạo ra lộ trình học tập cá nhân hóa tốt nhất cho bạn."
               : "Tuyệt vời! Lộ trình học tập cá nhân hóa của bạn đã được tạo thành công. Hãy xem kết quả ngay bây giờ!"}
           </p>
+          
+          {/* Polling indicator */}
+          {isPolling && !isCompleted && (
+            <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 dark:text-gray-400 mb-8">
+              <FiClock className="w-4 h-4 animate-pulse" />
+              <span>Đang kiểm tra trạng thái... (Lần thứ {pollingAttempts + 1})</span>
+            </div>
+          )}
         </div>
 
         {/* Simple Progress Steps */}

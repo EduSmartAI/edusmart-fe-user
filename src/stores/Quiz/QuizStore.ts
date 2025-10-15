@@ -100,7 +100,7 @@ interface QuizStoreActions {
     startedAt: string;
     quizIds: string[];
     answers: Array<{ questionId: string; answerId: string }>;
-  }) => Promise<{ ok: boolean; studentTestId?: string; error?: string }>; // Submit test
+  }) => Promise<{ ok: boolean; learningPathId?: string; error?: string }>; // Submit test
   loadTestResult: (studentTestId: string) => Promise<boolean>; // Load kết quả test
 
   // ===== SERIES MANAGEMENT =====
@@ -319,7 +319,7 @@ export const useQuizStore = create<QuizStore>()(
             console.log("✅ Submission Result:", result);
             console.log("🎯 Success:", result.ok);
             if (result.ok) {
-              console.log("🆔 Student Test ID:", result.data?.response?.studentTestId);
+              console.log("🆔 Learning Path ID:", result.data?.response?.learningPathId);
             } else {
               console.log("❌ Error:", result.error);
             }
@@ -329,7 +329,7 @@ export const useQuizStore = create<QuizStore>()(
               set({ isSubmitting: false });
               return {
                 ok: true,
-                studentTestId: result.data.response?.studentTestId,
+                learningPathId: result.data.response?.learningPathId,
               };
             }
 

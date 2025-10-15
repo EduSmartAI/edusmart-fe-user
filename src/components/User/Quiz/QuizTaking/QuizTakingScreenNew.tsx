@@ -46,11 +46,10 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   const { state, actions } = useQuizTaking();
 
   const handleSubmitTest = useCallback(async () => {
-    const studentTestId = await actions.submitTest();
-    // const studentTestId = true;
-    if (studentTestId) {
-      // Redirect to quiz completion waiting screen for AI processing
-      router.push("/quiz-completion-waiting");
+    const learningPathId = await actions.submitTest();
+    if (learningPathId) {
+      // Redirect to quiz completion waiting screen with learningPathId for AI processing
+      router.push(`/quiz-completion-waiting?learningPathId=${learningPathId}`);
     }
   }, [actions, router]);
 

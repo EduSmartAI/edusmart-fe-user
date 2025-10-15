@@ -5,6 +5,7 @@ import { Agent, setGlobalDispatcher } from "undici";
 import { Api as AuthApi } from "EduSmart/api/api-auth-service"; // <-- đường dẫn tới file đã gen
 import { Api as CourseApi } from "EduSmart/api/api-course-service"; // Import Course API
 import { Api as QuizApi } from "EduSmart/api/api-quiz-service";
+import { Api as StudentApi } from "EduSmart/api/api-student-service"; // Import Student API
 import {
     getAuthHeaderFromCookie,
     getSidFromCookie,
@@ -84,6 +85,16 @@ export const quizService = new QuizApi({
     },
 });
 
+export const studentService = new StudentApi({
+    baseUrl: `${BACKEND}/student`,
+    customFetch: with401Retry,
+    baseApiParams: { credentials: "include" },
+    securityWorker: async () => {
+        const auth = await getAuthHeaderFromCookie();
+        return { headers: auth ?? {} };
+    },
+});
+
 // const createBaseConfig = (baseUrl: string) => ({
 //   baseUrl,
 //   customFetch: with401Retry,
@@ -105,9 +116,10 @@ export const apiServer = {
     auth: authService,
     course: courseService,
     quiz: quizService,
+    student: studentService,
 };
 
-// Export default để có thể import { apiServer } hoặc import apiServer
+// Export default để có thể import { apiServer} hoặc import apiServer
 export default apiServer;
 
 // Type definitions cho dễ sử dụng
@@ -115,3 +127,4 @@ export type ApiServer = typeof apiServer;
 export type AuthService = typeof authService;
 export type CourseService = typeof courseService;
 export type QuizService = typeof quizService;
+export type StudentService = typeof studentService;

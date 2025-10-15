@@ -26,7 +26,7 @@ export interface UseQuizTakingReturn {
     nextQuestion: () => void;
     previousQuestion: () => void;
     goToQuiz: (quizIndex: number) => void;
-    submitTest: () => Promise<string | null>; // returns studentTestId
+    submitTest: () => Promise<string | null>; // returns learningPathId
     setTimeRemaining: (time: number) => void;
   };
 }
@@ -270,13 +270,13 @@ export function useQuizTaking(): UseQuizTakingReturn {
         console.error("  - Full result object:", result);
       } else {
         console.log("✅ Quiz submission successful!");
-        console.log("  - Student Test ID:", result.studentTestId);
+        console.log("  - Learning Path ID:", result.learningPathId);
       }
 
       setState((prev) => ({ ...prev, isLoading: false }));
 
-      if (result.ok && result.studentTestId) {
-        return result.studentTestId;
+      if (result.ok && result.learningPathId) {
+        return result.learningPathId;
       } else {
         console.error("🚨 Setting error state:", result.error || "Failed to submit test");
         setState((prev) => ({

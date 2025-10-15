@@ -270,7 +270,7 @@ export async function submitStudentTestAction(testData: {
   quizIds: string[];
   answers: Array<{ questionId: string; answerId: string }>;
 }): Promise<
-  | { ok: true; data: ApiResponse<{ studentTestId: string }> }
+  | { ok: true; data: ApiResponse<{ learningPathId: string }> }
   | { ok: false; error: string; status?: number }
 > {
   try {
@@ -300,13 +300,14 @@ export async function submitStudentTestAction(testData: {
       };
     }
 
-    const studentTestId = res.data.response ?? "";
+    // Response is learningPathId (UUID string)
+    const learningPathId = res.data.response ?? "";
     return {
       ok: true,
       data: {
         success: res.data.success ?? true,
         message: res.data.message ?? "OK",
-        response: { studentTestId },
+        response: { learningPathId },
         messageId: res.data.messageId,
         detailErrors: res.data.detailErrors ?? null,
       },
