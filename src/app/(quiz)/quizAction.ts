@@ -178,12 +178,12 @@ export async function getQuizListAction(): Promise<
       },
     };
   } catch (error) {
-    const n = await normalizeFetchError(error);
-    console.error("❌ getQuizListAction failed:", n);
+    const nErr = await normalizeFetchError(error);
+    console.error("❌ getQuizListAction failed:", nErr);
     return {
       ok: false,
-      error: n.details ? `${n.message} — ${n.details}` : n.message,
-      status: n.status,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }

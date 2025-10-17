@@ -48,8 +48,8 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   const handleSubmitTest = useCallback(async () => {
     const learningPathId = await actions.submitTest();
     if (learningPathId) {
-      // Redirect to quiz completion waiting screen with learningPathId for AI processing
-      router.push(`/quiz-completion-waiting?learningPathId=${learningPathId}`);
+      // Redirect to new processing page with learningPathId for AI processing
+      router.push(`/learning-path/assessment/processing?learningPathId=${learningPathId}`);
     }
   }, [actions, router]);
 

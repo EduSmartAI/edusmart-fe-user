@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { Button, Tag, Spin, message } from "antd";
 import {
@@ -202,7 +201,6 @@ export default function LearningPathRecommendation() {
   // Show loading state
   if (isLoading) {
     return (
-      <BaseScreenAdmin>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
           <div className="text-center">
             <Spin size="large" />
@@ -211,14 +209,12 @@ export default function LearningPathRecommendation() {
             </p>
           </div>
         </div>
-      </BaseScreenAdmin>
     );
   }
 
   // Show error state if no data
   if (!learningPathData) {
     return (
-      <BaseScreenAdmin>
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
           <div className="text-center">
             <p className="text-lg text-gray-600 dark:text-gray-300">
@@ -233,7 +229,6 @@ export default function LearningPathRecommendation() {
             </Button>
           </div>
         </div>
-      </BaseScreenAdmin>
     );
   }
 
@@ -301,7 +296,6 @@ export default function LearningPathRecommendation() {
   );
 
   return (
-    <BaseScreenAdmin>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-6 py-8">
           {/* Header */}
@@ -903,6 +897,5 @@ export default function LearningPathRecommendation() {
           )}
         </div>
       </div>
-    </BaseScreenAdmin>
   );
 }
