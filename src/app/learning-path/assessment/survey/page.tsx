@@ -43,10 +43,10 @@ export default function SurveyAssessmentPage() {
         </div>
 
         {/* Survey Content */}
-        <SurveyMainFlow 
-          onComplete={handleSurveyComplete} 
-          onBack={handleBack} 
-        />
+            <SurveyMainFlow
+              onComplete={handleSurveyComplete}
+              onBack={handleBack}
+            />
       </div>
     </LearningPathGuard>
   );

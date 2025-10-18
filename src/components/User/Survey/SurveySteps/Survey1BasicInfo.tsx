@@ -498,6 +498,18 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                       onChange={handleSemesterChange}
                       size="large"
                       className="rounded-lg"
+                      styles={{
+                        // 1. Tùy chỉnh hộp chọn chính
+                        selector: {
+                          backgroundColor: "#fff0f6", // Màu nền hồng nhạt
+                          border: "2px solid #ff85c0", // Viền đậm hơn
+                        },
+                        // 2. Tùy chỉnh menu thả xuống
+                        dropdown: {
+                          boxShadow: "0 8px 16px 0 rgba(179, 0, 32, 0.4)", // Shadow màu đỏ đậm
+                          borderRadius: 12,
+                        },
+                      }}
                     />
                   </Form.Item>
                 </Col>

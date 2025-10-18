@@ -275,14 +275,14 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
 
                 {renderTechnologySection(TechnologyType.Framework, "Framework")}
 
-                {renderTechnologySection(TechnologyType.Tool, "Công cụ")}
+                {/* {renderTechnologySection(TechnologyType.Tool, "Công cụ")} */}
 
-                {renderTechnologySection(TechnologyType.Platform, "Nền tảng")}
+                {/* {renderTechnologySection(TechnologyType.Platform, "Nền tảng")} */}
 
-                {renderTechnologySection(
+                {/* {renderTechnologySection(
                   TechnologyType.Database,
                   "Cơ sỏ dữ liệu",
-                )}
+                )} */}
               </div>
 
               <div className="flex justify-between mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
