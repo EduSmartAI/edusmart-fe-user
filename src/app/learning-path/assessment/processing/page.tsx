@@ -13,10 +13,7 @@ import {
   FiClock,
 } from "react-icons/fi";
 import { getLearningPathAction } from "EduSmart/app/(learning-path)/learningPathAction";
-import {
-  LearningPathGuard,
-  learningPathProgress,
-} from "EduSmart/components/LearningPath";
+import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
 import { useSessionAuthStore } from "EduSmart/stores/Auth/SessionAuthStore";
 

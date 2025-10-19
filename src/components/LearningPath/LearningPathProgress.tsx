@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Steps, Progress as AntProgress } from "antd";
+import {  Progress as AntProgress } from "antd";
 import {
   FiUser,
   FiTarget,

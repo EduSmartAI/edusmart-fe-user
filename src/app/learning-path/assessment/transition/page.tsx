@@ -6,12 +6,7 @@ import { Button } from "antd";
 import { FiCheckCircle, FiArrowRight, FiAward, FiUser } from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
 import { FaMapLocationDot } from "react-icons/fa6";
-import { GiArtificialIntelligence } from "react-icons/gi";
-import { MdMoreTime } from "react-icons/md";
-import {
-  LearningPathGuard,
-  learningPathProgress,
-} from "EduSmart/components/LearningPath";
+import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
 
 export default function SurveyToQuizTransition() {

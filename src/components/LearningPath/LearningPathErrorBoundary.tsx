@@ -3,7 +3,7 @@ import React, { Component, ReactNode } from "react";
 import { Button } from "antd";
 import { FiRefreshCcw } from "react-icons/fi";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
-import { HttpError, isHttpError } from "EduSmart/types/errors";
+import { isHttpError } from "EduSmart/types/errors";
 
 interface Props {
   children: ReactNode;

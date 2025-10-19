@@ -3,10 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import QuizMainFlow from "EduSmart/components/User/Quiz/QuizMainFlow";
-import {
-  LearningPathGuard,
-  learningPathProgress,
-} from "EduSmart/components/LearningPath";
+import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
 import LearningPathErrorBoundary from "EduSmart/components/LearningPath/LearningPathErrorBoundary";
 import { useSessionAuthStore } from "EduSmart/stores/Auth/SessionAuthStore";
@@ -39,19 +36,21 @@ export default function QuizAssessmentPage() {
     }
   }, [isChecking, session, router]);
 
-  const handleQuizComplete = (learningPathId: string) => {
-    console.log("Quiz completed with learning path ID:", learningPathId);
+  /* 
+    const handleQuizComplete = (learningPathId: string) => {
+        console.log("Quiz completed with learning path ID:", learningPathId);
 
-    // Mark step 2 as completed
-    learningPathProgress.completeStep(2);
+        // Mark step 2 as completed
+        learningPathProgress.completeStep(2);
 
-    // Store learning path ID
-    learningPathProgress.setLearningPathId(learningPathId);
-  };
+        // Store learning path ID
+        learningPathProgress.setLearningPathId(learningPathId);
+    };
 
-  const handleBack = () => {
-    router.push("/learning-path/overview");
-  };
+    const handleBack = () => {
+        router.push("/learning-path/overview");
+    };
+  */
 
   // Show loading while checking auth
   if (isChecking || isLoading) {
