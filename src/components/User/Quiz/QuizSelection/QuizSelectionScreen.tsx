@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuizList, useQuizTest } from "EduSmart/hooks/quiz";
 import { Quiz } from "EduSmart/types/quiz";
 import QuizSelectionHeader from "EduSmart/components/User/Quiz/QuizSelection/QuizSelectionHeader";
@@ -8,6 +9,11 @@ import ActionButtons from "EduSmart/components/User/Quiz/QuizSelection/ActionBut
 import { Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { throwStoreError } from "EduSmart/types/errors";
+import {
+  LearningPathExitConfirmModal,
+  learningPathProgress,
+} from "EduSmart/components/LearningPath";
+import { useSurvey } from "EduSmart/hooks/survey";
 
 interface QuizSelectionScreenProps {
   onQuizSelect: (testId: string) => void;
@@ -19,6 +25,9 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
   onQuizSelect,
   onSkip,
 }) => {
+  const router = useRouter();
+  const survey = useSurvey();
+
   // API hooks để lấy danh sách quiz từ backend
   const {
     quizzes: availableQuizzes,
@@ -34,6 +43,7 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
     "all" | "completed" | "pending"
   >("all");
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   // Load quizzes khi component mount
   useEffect(() => {
@@ -117,9 +127,42 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
   };
 
   const handleSkip = () => {
+    // Show exit confirmation modal instead of exiting directly
+    setShowExitModal(true);
+  };
+
+  const handleConfirmExit = () => {
+    console.log(
+      "🚪 User confirmed exit from quiz selection - clearing all data",
+    );
+
+    // 1. Clear all learning path progress data
+    learningPathProgress.clearProgress();
+
+    // 2. Reset survey store
+    survey.resetSurvey();
+
+    // 3. Clear any other survey-related data in localStorage
+    localStorage.removeItem("survey_data");
+    localStorage.removeItem("survey_step");
+    localStorage.removeItem("survey-storage");
+
+    console.log("✅ All data cleared successfully");
+
+    // 4. Close modal
+    setShowExitModal(false);
+
+    // 5. Call onSkip if provided or redirect to overview
     if (onSkip) {
       onSkip();
+    } else {
+      router.push("/learning-path/overview");
     }
+  };
+
+  const handleCancelExit = () => {
+    console.log("User cancelled exit from quiz selection");
+    setShowExitModal(false);
   };
 
   // Create currentSeries for header (backward compatibility)
@@ -187,6 +230,18 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
         onSkip={handleSkip}
         onStart={handleStartSelected}
         disabled={selectedQuizIds.length === 0}
+      />
+
+      {/* Exit Confirmation Modal */}
+      <LearningPathExitConfirmModal
+        open={showExitModal}
+        title="Xác nhận thoát đánh giá năng lực"
+        warningMessage="Tất cả dữ liệu khảo sát và tiến độ của bạn sẽ bị xóa. Bạn sẽ cần bắt đầu lại từ đầu nếu muốn tiếp tục lộ trình học tập."
+        confirmText="Thoát và xóa dữ liệu"
+        cancelText="Tiếp tục làm bài"
+        onConfirm={handleConfirmExit}
+        onCancel={handleCancelExit}
+        type="warning"
       />
     </div>
   );

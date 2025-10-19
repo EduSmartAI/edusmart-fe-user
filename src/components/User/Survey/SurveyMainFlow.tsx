@@ -25,6 +25,7 @@ interface SurveyMainFlowProps {
 
 const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
   onComplete,
+  onBack,
   showProgress,
 }) => {
   // Sử dụng hook thay vì local state
@@ -101,21 +102,27 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
             surveyId: submitResult.surveyId,
           });
 
-          // Immediately redirect BEFORE hiding loading and showing message
-          // This prevents UI from re-rendering Survey1
-          if (onComplete) {
-            console.log("Redirecting to transition page...");
-            onComplete();
-          }
-
-          // Hide loading message after redirect
+          // Hide loading message BEFORE redirect
           hideLoading();
 
-          // Show success message (user will see it on next page briefly)
+          // Show success message (briefly visible)
           message.success({
-            content: "🎉 Khảo sát đã được gửi thành công!",
-            duration: 1.5,
+            content: "Khảo sát đã được gửi thành công!",
+            duration: 1,
           });
+
+          // Clear survey data BEFORE redirecting to prevent flash of Survey1
+          // Use a small delay to ensure message is visible
+          setTimeout(() => {
+            // Clear survey store data
+            survey.resetSurvey();
+
+            // Redirect to transition page
+            if (onComplete) {
+              console.log("Redirecting to transition page...");
+              onComplete();
+            }
+          }, 300);
         } else {
           // Hide loading message
           hideLoading();
@@ -146,6 +153,13 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
     step: number,
     data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
   ) => {
+    // Special case: If at step 1 and onBack prop is provided, call it (Exit to overview)
+    if (step === 1 && onBack) {
+      console.log("🚪 Step 1 - Calling parent onBack (Exit)");
+      onBack(data);
+      return;
+    }
+
     // Scroll to top before going back
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -182,7 +196,11 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
           <Survey1BasicInfo
             initialData={survey.survey1Data}
             onComplete={(data) => handleStepComplete(1, data)}
-            onBack={(data: Survey1FormValues) => handlePrevStep(1, data)}
+            onBack={
+              onBack
+                ? (data: Survey1FormValues) => handlePrevStep(1, data)
+                : undefined
+            }
             semesters={survey.semesters}
             majors={survey.majors}
             learningGoals={survey.learningGoals}

@@ -28,6 +28,7 @@ import {
   mapBackendQuestionType,
   mapBackendDifficulty,
 } from "EduSmart/types/quiz";
+import { learningPathProgress } from "EduSmart/components/LearningPath";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -48,6 +49,10 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   const handleSubmitTest = useCallback(async () => {
     const learningPathId = await actions.submitTest();
     if (learningPathId) {
+      // Mark step 2 as completed BEFORE redirecting
+      learningPathProgress.completeStep(2);
+      learningPathProgress.setLearningPathId(learningPathId);
+
       // Redirect to new processing page with learningPathId for AI processing
       router.push(
         `/learning-path/assessment/processing?learningPathId=${learningPathId}`,
@@ -346,7 +351,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                           onChange={() => handleAnswerChange(answer.answerId)}
                           className="w-full"
                         >
-                          <div className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                          <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                             {answer.answerText}
                           </div>
                         </Radio>

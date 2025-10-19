@@ -658,13 +658,13 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
               <div className="flex justify-between mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
                 <Button
                   type="default"
-                  icon={<ArrowLeftOutlined />}
                   onClick={handleBack}
+                  icon={<ArrowLeftOutlined />}
                   disabled={!onBack}
                   size="large"
-                  className="px-6 py-3 h-auto rounded-xl border-gray-200 hover:border-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200"
+                  className="px-6 py-3 h-auto rounded-xl border-red-200 hover:border-red-400 text-red-600 hover:text-red-700 dark:hover:text-red-400 transition-all duration-200"
                 >
-                  Quay lại
+                  Thoát
                 </Button>
 
                 <Button

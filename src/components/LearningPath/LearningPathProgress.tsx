@@ -35,7 +35,7 @@ const STEPS = [
     title: "Đánh giá năng lực",
     description: "Kiểm tra năng lực",
     icon: <FiTarget className="w-5 h-5" />,
-    estimatedMinutes: 15,
+    estimatedMinutes: 25,
     color: "green",
     gradient: "from-green-500 to-emerald-500",
   },
@@ -75,10 +75,9 @@ export default function LearningPathProgress({
   };
 
   const getRemainingTime = () => {
-    const remainingSteps = STEPS.filter(
-      (step) => !completedSteps.includes(step.id) && step.id >= currentStep,
-    );
-    return remainingSteps.reduce((sum, step) => sum + step.estimatedMinutes, 0);
+    // Return estimated time for current step only
+    const currentStepData = STEPS.find((step) => step.id === currentStep);
+    return currentStepData?.estimatedMinutes || 0;
   };
 
   // Minimal mode - Ultra simple for survey/quiz pages
@@ -94,8 +93,8 @@ export default function LearningPathProgress({
           <div className="flex items-center gap-4 min-w-0">
             {/* Step Counter with Accent */}
             <div className="flex items-center gap-2.5">
-              {/* <div className="flex items-center gap-2 bg-gradient-to-r from-[#49BBBD] to-cyan-600 px-5 py-3 rounded-lg shadow-md"> */}
-                <div className="flex items-center gap-2 bg-gradient-to-r from-orange-300 to-orange-500 px-5 py-3 rounded-lg shadow-md">
+              <div className="flex items-center gap-2 bg-gradient-to-r from-[#49BBBD] to-cyan-600 px-5 py-3 rounded-lg shadow-md">
+                {/* <div className="flex items-center gap-2 bg-gradient-to-r from-orange-300 to-orange-500 px-5 py-3 rounded-lg shadow-md"> */}
                 <span className="text-md font-black text-white whitespace-nowrap">
                   Bước {currentStep}
                 </span>
@@ -109,11 +108,19 @@ export default function LearningPathProgress({
 
           {/* Right: Time with Icon */}
           {showTimeRemaining && (
-            <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-900/30 px-3 py-1.5 rounded-lg border border-orange-100 dark:border-orange-800 shadow-sm">
-              <FiClock className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-              <span className="text-sm font-bold text-orange-700 dark:text-orange-300 whitespace-nowrap">
-                ~{getRemainingTime()} phút
-              </span>
+            // <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-900/30 px-3 py-1.5 rounded-lg border border-orange-100 dark:border-orange-800 shadow-sm">
+            //   <FiClock className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+            //   <span className="text-sm font-bold text-orange-700 dark:text-orange-300 whitespace-nowrap">
+            //     ~{getRemainingTime()} phút
+            //   </span>
+            // </div>
+            <div className="flex items-center gap-2 bg-cyan-50 dark:bg-cyan-900/30 px-3 py-1.5 rounded-lg border border-cyan-100 dark:border-cyan-800 shadow-sm">
+              {" "}
+              <FiClock className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />{" "}
+              <span className="text-sm font-bold text-cyan-700 dark:text-cyan-300 whitespace-nowrap">
+                {" "}
+                ~{getRemainingTime()} phút{" "}
+              </span>{" "}
             </div>
           )}
         </div>

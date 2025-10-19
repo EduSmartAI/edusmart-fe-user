@@ -273,7 +273,7 @@ class LearningPathErrorBoundary extends Component<Props, State> {
     if (path.includes("/learning-path/assessment/processing")) {
       return { currentStep: 3, completedSteps: [0, 1, 2] };
     }
-    if (path.includes("/learning-path/recommendation")) {
+    if (path.includes("/dashboard/learning-paths")) {
       return { currentStep: 4, completedSteps: [0, 1, 2, 3] };
     }
 

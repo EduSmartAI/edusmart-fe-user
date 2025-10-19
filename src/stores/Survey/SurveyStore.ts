@@ -306,11 +306,11 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
 
       // Utility
       resetSurvey: () => {
-        set(initialState);
-        // Xóa dữ liệu khảo sát khỏi localStorage
+        // Xóa dữ liệu khảo sát khỏi localStorage TRƯỚC KHI reset state
         if (typeof window !== "undefined") {
           try {
             localStorage.removeItem("survey-storage");
+            console.log("✅ Removed survey-storage from localStorage");
           } catch (err) {
             console.warn(
               "Không thể xóa survey-storage khỏi localStorage:",
@@ -318,6 +318,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             );
           }
         }
+        // Reset state về initialState
+        set(initialState);
+        console.log("✅ Survey state reset to initial");
       },
 
       clearSurveyData: () =>
@@ -397,8 +400,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           if (result.ok && result.surveyId) {
             set({ surveyId: result.surveyId });
 
-            // Clear toàn bộ dữ liệu survey sau khi submit thành công
-            get().resetSurvey();
+            // ✅ DON'T clear survey data here - let the parent component handle it after redirect
+            // This prevents the UI from flashing back to Survey1 before redirect completes
+            // get().resetSurvey(); // ❌ REMOVED - causes UI flash
 
             // Auto-load recommendations (optional, don't fail if this fails)
             try {

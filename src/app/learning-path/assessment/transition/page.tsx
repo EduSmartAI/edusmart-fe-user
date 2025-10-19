@@ -3,12 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "antd";
-import {
-  FiCheckCircle,
-  FiArrowRight,
-  FiAward,
-  FiUser,
-} from "react-icons/fi";
+import { FiCheckCircle, FiArrowRight, FiAward, FiUser } from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
 import { FaMapLocationDot } from "react-icons/fa6";
 import { GiArtificialIntelligence } from "react-icons/gi";
@@ -43,7 +38,7 @@ export default function SurveyToQuizTransition() {
         <div className="flex items-center justify-center px-6 py-16 md:py-24">
           <div className="max-w-4xl mx-auto">
             {/* Main Card with subtle celebration */}
-            <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-3xl p-10 md:p-12 shadow-2xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+            <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-lg p-10 md:p-12 shadow-2xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
               {/* Decorative elements - minimal */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-teal-100 dark:bg-teal-900/20 rounded-full transform translate-x-16 -translate-y-16 opacity-40"></div>
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-cyan-100 dark:bg-cyan-900/20 rounded-full transform -translate-x-12 translate-y-12 opacity-40"></div>
@@ -52,14 +47,9 @@ export default function SurveyToQuizTransition() {
                 {/* Success Icon with subtle animation */}
                 <div className="text-center mb-8">
                   <div className="inline-block relative">
-                    {/* Animated ring */}
-                    <div className="absolute inset-0 animate-ping opacity-20">
-                      <div className="w-20 h-20 border-4 border-green-500 rounded-full"></div>
-                    </div>
-
                     {/* Main icon */}
-                    <div className="relative w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                      <FiCheckCircle className="w-10 h-10 text-white" />
+                    <div className="relative w-18 h-18 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-md">
+                      <FiCheckCircle className="w-8 h-8 text-white" />
                     </div>
                   </div>
                 </div>
@@ -77,7 +67,7 @@ export default function SurveyToQuizTransition() {
                 </div>
 
                 {/* Progress Indicator - Clean Timeline */}
-                <div className="mb-10">
+                <div className="mb-12">
                   <div className="relative">
                     {/* Connecting line */}
                     <div className="absolute top-6 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 via-[#49BBBD] to-gray-300 dark:to-gray-600"></div>
@@ -133,31 +123,6 @@ export default function SurveyToQuizTransition() {
                 </div>
 
                 {/* Motivation Box - Minimal */}
-                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-2xl p-6 mb-8 border border-teal-100 dark:border-teal-800">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#49BBBD] to-cyan-600 rounded-lg flex items-center justify-center">
-                        <FiAward className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-gray-900 dark:text-white">
-                          Bạn đang tiến rất tốt!
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">
-                          Đã hoàn thành 1/3 hành trình
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#49BBBD] to-cyan-600">
-                      33%
-                    </div>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="mt-4 h-2 bg-white dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div className="h-full w-1/3 bg-gradient-to-r from-[#49BBBD] to-cyan-600 rounded-full transition-all duration-1000"></div>
-                  </div>
-                </div>
 
                 {/* CTA Section */}
                 <div className="text-center">

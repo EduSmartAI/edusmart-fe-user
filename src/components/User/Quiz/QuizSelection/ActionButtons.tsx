@@ -52,7 +52,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
                 className="px-6 py-3 h-auto font-semibold rounded-xl border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300"
                 icon={<FiX className="w-5 h-5" />}
               >
-                Bỏ qua
+                Thoát
               </Button>
             </div>
 

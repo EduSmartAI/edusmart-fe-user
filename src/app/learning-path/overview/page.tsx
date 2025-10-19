@@ -15,8 +15,9 @@ import { SiQuizlet } from "react-icons/si";
 import { FaMapLocationDot } from "react-icons/fa6";
 import { GiArtificialIntelligence } from "react-icons/gi";
 import { MdMoreTime } from "react-icons/md";
-import { Button, Collapse } from "antd";
+import { Button, Collapse, message } from "antd";
 import { learningPathProgress } from "EduSmart/components/LearningPath";
+import { useSessionAuthStore } from "EduSmart/stores/Auth/SessionAuthStore";
 
 const steps = [
   {
@@ -32,7 +33,7 @@ const steps = [
     cardBg:
       "bg-gradient-to-br from-teal-50/20 to-white dark:from-teal-900/5 dark:to-gray-800",
     lineGradient: "from-[#49BBBD] to-orange-400",
-    duration: "5-7 phút",
+    duration: "~7 phút",
   },
   {
     id: 2,
@@ -49,7 +50,7 @@ const steps = [
     cardBg:
       "bg-gradient-to-br from-orange-50/20 to-white dark:from-orange-900/5 dark:to-gray-800",
     lineGradient: "from-orange-400 to-cyan-500",
-    duration: "10-15 phút",
+    duration: "15-20 phút",
   },
   {
     id: 3,
@@ -64,7 +65,7 @@ const steps = [
     cardBg:
       "bg-gradient-to-br from-cyan-50/20 to-white dark:from-cyan-900/5 dark:to-gray-800",
     lineGradient: "from-cyan-500 to-teal-400",
-    duration: "2-3 phút",
+    duration: "~3 phút",
   },
 ];
 
@@ -82,7 +83,7 @@ const benefits = [
     icon: <MdMoreTime className="w-6 h-6" />,
     title: "Tiết kiệm thời gian tối đa",
     description:
-      "Chỉ 15-20 phút để có lộ trình hoàn chỉnh. Không cần duyệt hàng trăm khóa học, bắt đầu học ngay với khóa học phù hợp nhất",
+      "Chỉ 25-30 phút để có lộ trình hoàn chỉnh. Không cần duyệt hàng trăm khóa học, bắt đầu học ngay với khóa học phù hợp nhất",
     color: "text-orange-500",
     bgColor: "bg-orange-50",
     darkBgColor: "dark:bg-orange-900/20",
@@ -112,7 +113,7 @@ const faqs = [
     question: "Tôi cần chuẩn bị gì trước khi bắt đầu?",
     answer: "Bạn không cần chuẩn bị gì đặc biệt! Chỉ cần:",
     details: [
-      "15-20 phút thời gian rảnh",
+      "~35 phút thời gian rảnh",
       "Trả lời các câu hỏi một cách trung thực nhất",
       "Suy nghĩ về mục tiêu học tập của bản thân",
     ],
@@ -149,20 +150,45 @@ const faqs = [
 export default function LearningPathOverview() {
   const router = useRouter();
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
+  const { session, fetchSession } = useSessionAuthStore();
 
   useEffect(() => {
+    // Fetch session to check authentication
+    fetchSession();
+
     // Check if user has existing progress
     const completedSteps = learningPathProgress.getCompletedSteps();
     setHasExistingProgress(completedSteps.length > 0);
-  }, []);
+  }, [fetchSession]);
 
   const handleStartSurvey = () => {
-    // Clear any existing progress to start fresh
+    if (!session) {
+      message.warning({
+        content:
+          "Bạn cần đăng nhập để bắt đầu khảo sát và nhận đề xuất lộ trình học tập",
+        duration: 4,
+      });
+      setTimeout(() => {
+        router.push("/Login?redirect=/learning-path/assessment/survey");
+      }, 500);
+      return;
+    }
     learningPathProgress.clearProgress();
     router.push("/learning-path/assessment/survey");
   };
 
   const handleContinue = () => {
+    // Check if user is logged in
+    if (!session) {
+      message.warning({
+        content:
+          "Vui lòng đăng nhập để tiếp tục luồng đề xuất lộ trình học tập",
+        duration: 3,
+      });
+      router.push("/Login?redirect=/learning-path/overview");
+      return;
+    }
+
     const currentStep = learningPathProgress.getCurrentStep();
     const completedSteps = learningPathProgress.getCompletedSteps();
 
@@ -185,7 +211,6 @@ export default function LearningPathOverview() {
     <BaseScreenWhiteNav>
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Hero Section - Giới thiệu */}
-        <TestErrorButton />
         <section className="relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 py-32">
             {/* Section Header */}
@@ -216,7 +241,7 @@ export default function LearningPathOverview() {
                   <div className="flex justify-center mb-8 mt-8">
                     <div className="flex items-center text-gray-600 dark:text-gray-300 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30 px-7 py-3 rounded-full font-light border border-teal-100 dark:border-teal-800">
                       <FiClock className="w-5 h-5 mr-3" />
-                      Chỉ mất 15-20 phút để hoàn thành toàn bộ quy trình
+                      Chỉ mất tầm 25-30 phút để hoàn thành toàn bộ quy trình
                     </div>
                   </div>
                   <div className="text-center">

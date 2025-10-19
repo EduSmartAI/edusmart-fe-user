@@ -416,7 +416,8 @@ const Survey3StudyHabits: React.FC<Survey3StudyHabitsProps> = ({
           {/* Survey Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-teal-100 to-cyan-100 dark:bg-teal-900/30 rounded-full mb-4">
-              <span className="text-2xl">📚</span>
+              {/* <span className="text-2xl">📚</span> */}
+              <span className="text-2xl">📔</span>
             </div>
             <Title
               level={1}

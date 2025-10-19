@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Spin, Result, Button } from "antd";
-import { FiLock, FiAlertCircle } from "react-icons/fi";
+import { Spin, Button } from "antd";
+import { FiLock } from "react-icons/fi";
+import { LearningPathExitConfirmModal } from "EduSmart/components/LearningPath";
+import { useSurvey } from "EduSmart/hooks/survey";
 
 interface LearningPathGuardProps {
   children: React.ReactNode;
@@ -45,9 +47,11 @@ export function LearningPathGuard({
 }: LearningPathGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const survey = useSurvey();
   const [isChecking, setIsChecking] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [missingSteps, setMissingSteps] = useState<number[]>([]);
+  const [showRestartModal, setShowRestartModal] = useState(false);
 
   useEffect(() => {
     checkAccess();
@@ -57,7 +61,7 @@ export function LearningPathGuard({
     try {
       // Get completed steps from localStorage
       const completedStepsStr = localStorage.getItem(
-        STORAGE_KEYS.COMPLETED_STEPS
+        STORAGE_KEYS.COMPLETED_STEPS,
       );
       const completedSteps: number[] = completedStepsStr
         ? JSON.parse(completedStepsStr)
@@ -65,7 +69,7 @@ export function LearningPathGuard({
 
       // Check if all required steps are completed
       const missing = requiredCompletedSteps.filter(
-        (step) => !completedSteps.includes(step)
+        (step) => !completedSteps.includes(step),
       );
 
       if (missing.length > 0) {
@@ -100,10 +104,8 @@ export function LearningPathGuard({
             return;
           }
         }
-        
-        router.push(
-          STEP_FLOW[firstMissing as keyof typeof STEP_FLOW].path
-        );
+
+        router.push(STEP_FLOW[firstMissing as keyof typeof STEP_FLOW].path);
       } else {
         router.push("/learning-path/overview");
       }
@@ -111,11 +113,38 @@ export function LearningPathGuard({
   };
 
   const handleStartFromBeginning = () => {
-    // Clear all progress
+    // Show confirmation modal instead of clearing directly
+    setShowRestartModal(true);
+  };
+
+  const handleConfirmRestart = () => {
+    console.log("🔄 User confirmed restart - clearing all progress");
+
+    // Clear all learning path progress
     Object.values(STORAGE_KEYS).forEach((key) => {
       localStorage.removeItem(key);
     });
+
+    // Clear survey data
+    survey.resetSurvey();
+
+    // Clear any other survey-related data in localStorage
+    localStorage.removeItem("survey_data");
+    localStorage.removeItem("survey_step");
+    localStorage.removeItem("survey-storage");
+
+    console.log("✅ All progress cleared");
+
+    // Close modal
+    setShowRestartModal(false);
+
+    // Redirect to overview
     router.push("/learning-path/overview");
+  };
+
+  const handleCancelRestart = () => {
+    console.log("User cancelled restart");
+    setShowRestartModal(false);
   };
 
   if (isChecking) {
@@ -133,66 +162,72 @@ export function LearningPathGuard({
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-md w-full">
-          <Result
-            status="warning"
-            icon={<FiLock className="w-16 h-16 mx-auto text-yellow-500" />}
-            title={
-              <span className="text-gray-900 dark:text-white">
-                Chưa thể truy cập
-              </span>
-            }
-            subTitle={
-              <div className="text-gray-600 dark:text-gray-400">
-                <p className="mb-4">
-                  Bạn cần hoàn thành các bước trước để tiếp tục.
-                </p>
-                {missingSteps.length > 0 && (
-                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 text-left">
-                    <div className="flex items-start">
-                      <FiAlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2 flex-shrink-0" />
-                      <div>
-                        <p className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
-                          Các bước chưa hoàn thành:
-                        </p>
-                        <ul className="list-disc list-inside space-y-1 text-sm">
-                          {missingSteps.map((step) => (
-                            <li key={step} className="text-yellow-700 dark:text-yellow-400">
-                              Bước {step}:{" "}
-                              {step === 1
-                                ? "Khảo sát"
-                                : step === 2
-                                  ? "Đánh giá năng lực"
-                                  : "Nhận kết quả"}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6">
+        <div className="max-w-lg w-full">
+          {/* Main Card */}
+          <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-xl px-6 py-10 sm:px-8 sm:py-12 shadow-xl border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 sm:w-40 sm:h-40 bg-teal-100 dark:bg-teal-900/20 rounded-full transform translate-x-16 sm:translate-x-20 -translate-y-16 sm:-translate-y-20 opacity-30"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-32 sm:h-32 bg-cyan-100 dark:bg-cyan-900/20 rounded-full transform -translate-x-12 sm:-translate-x-16 translate-y-12 sm:translate-y-16 opacity-30"></div>
+
+            <div className="relative z-10">
+              {/* Icon */}
+              <div className="text-center mb-5 sm:mb-6">
+                <div className="inline-block">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto shadow-md bg-gradient-to-br from-teal-100 to-cyan-100 dark:from-teal-900/30 dark:to-cyan-900/30">
+                    <FiLock className="w-8 h-8 sm:w-10 sm:h-10 text-[#49BBBD] dark:text-teal-400" />
                   </div>
-                )}
+                </div>
               </div>
-            }
-            extra={[
-              <Button
-                key="continue"
-                type="primary"
-                size="large"
-                onClick={handleRedirect}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 border-none"
-              >
-                Tiếp tục từ bước còn thiếu
-              </Button>,
-              <Button
-                key="restart"
-                size="large"
-                onClick={handleStartFromBeginning}
-              >
-                Bắt đầu lại từ đầu
-              </Button>,
-            ]}
+
+              {/* Title */}
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-2 sm:mb-3 text-[#49BBBD] dark:text-teal-400 px-4">
+                Chưa thể truy cập
+              </h1>
+
+              {/* Description */}
+              <p className="text-sm sm:text-base text-center text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 px-2 sm:px-4">
+                Bạn cần hoàn thành các bước trước để có thể tiếp tục bước này
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  type="primary"
+                  size="large"
+                  onClick={handleRedirect}
+                  className="flex-1 !h-11 sm:!h-11 !bg-gradient-to-r from-[#49BBBD] to-teal-600 border-none hover:from-[#3da8aa] hover:to-teal-700 !text-sm sm:!text-base font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300"
+                >
+                  Tiếp tục từ bước còn thiếu
+                </Button>
+                <Button
+                  size="large"
+                  onClick={handleStartFromBeginning}
+                  className="flex-1 !h-11 sm:!h-11 !text-sm sm:!text-base font-medium rounded-xl border-2 border-gray-300 dark:border-gray-600 hover:border-[#49BBBD] dark:hover:border-[#49BBBD] hover:text-[#49BBBD] dark:hover:text-[#49BBBD] transition-all duration-300"
+                >
+                  Bắt đầu lại
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Restart Confirmation Modal */}
+          <LearningPathExitConfirmModal
+            open={showRestartModal}
+            title="Xác nhận bắt đầu lại"
+            warningMessage="Tất cả tiến độ và dữ liệu khảo sát của bạn sẽ bị xóa. Bạn sẽ cần làm lại từ đầu."
+            confirmText="Bắt đầu lại từ đầu"
+            cancelText="Hủy"
+            onConfirm={handleConfirmRestart}
+            onCancel={handleCancelRestart}
+            type="warning"
           />
+
+          {/* Background decoration */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className="absolute top-20 right-10 w-16 h-16 sm:w-20 sm:h-20 bg-teal-200 dark:bg-teal-800 rounded-full opacity-10 animate-pulse"></div>
+            <div className="absolute bottom-32 left-1/4 w-20 h-20 sm:w-24 sm:h-24 bg-cyan-200 dark:bg-cyan-800 rounded-full opacity-10 animate-pulse delay-1000"></div>
+          </div>
         </div>
       </div>
     );
@@ -207,7 +242,7 @@ export const learningPathProgress = {
   completeStep: (step: number) => {
     try {
       const completedStepsStr = localStorage.getItem(
-        STORAGE_KEYS.COMPLETED_STEPS
+        STORAGE_KEYS.COMPLETED_STEPS,
       );
       const completedSteps: number[] = completedStepsStr
         ? JSON.parse(completedStepsStr)
@@ -217,7 +252,7 @@ export const learningPathProgress = {
         completedSteps.push(step);
         localStorage.setItem(
           STORAGE_KEYS.COMPLETED_STEPS,
-          JSON.stringify(completedSteps)
+          JSON.stringify(completedSteps),
         );
       }
 
@@ -232,7 +267,7 @@ export const learningPathProgress = {
   getCompletedSteps: (): number[] => {
     try {
       const completedStepsStr = localStorage.getItem(
-        STORAGE_KEYS.COMPLETED_STEPS
+        STORAGE_KEYS.COMPLETED_STEPS,
       );
       return completedStepsStr ? JSON.parse(completedStepsStr) : [];
     } catch (error) {
