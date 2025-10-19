@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { SurveyMainFlow } from "EduSmart/components/User/Survey";
+import LearningPathErrorBoundary from "EduSmart/components/LearningPath/LearningPathErrorBoundary";
 
 export default function SurveyPage() {
   const router = useRouter();
@@ -18,6 +19,8 @@ export default function SurveyPage() {
   };
 
   return (
-    <SurveyMainFlow onComplete={handleSurveyComplete} onBack={handleBack} />
+    <LearningPathErrorBoundary showProgress={true}>
+      <SurveyMainFlow onComplete={handleSurveyComplete} onBack={handleBack} />
+    </LearningPathErrorBoundary>
   );
 }

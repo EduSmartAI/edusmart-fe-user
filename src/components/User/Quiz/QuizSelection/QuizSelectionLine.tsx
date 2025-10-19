@@ -35,8 +35,8 @@ const QuizSelectionLine: React.FC<QuizSelectionLineProps> = ({
       <Card
         className={`mb-4 transition-all duration-300 hover:shadow-md border-2 cursor-pointer ${
           isSelected
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-sm"
-            : "border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-400"
+            ? "border-teal-500 bg-teal-50 dark:bg-teal-900/20 shadow-sm"
+            : "border-gray-200 hover:border-teal-300 dark:border-gray-700 dark:hover:border-teal-400"
         }`}
         styles={{ body: { padding: "16px" } }}
         onClick={() => onSelect(id)}
@@ -47,7 +47,7 @@ const QuizSelectionLine: React.FC<QuizSelectionLineProps> = ({
             <div className="flex flex-col justify-center mr-4 cursor-pointer">
               {isSelected ? (
                 <CheckCircleOutlined
-                  style={{ fontSize: 24, color: "#1677ff" }}
+                  style={{ fontSize: 24, color: "#49BBBD" }}
                 />
               ) : (
                 <div
@@ -70,20 +70,11 @@ const QuizSelectionLine: React.FC<QuizSelectionLineProps> = ({
                 >
                   {title}
                 </Title>
-                <Tag color="blue" className="ml-2">
+                <Tag color="cyan" className="ml-2">
                   Mã môn: {subjectCodeName}
                 </Tag>
               </div>
-              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
-                {/* <Tag color="blue" className="ml-2">
-                  Mã môn: {subjectCodeName}
-                </Tag> */}
-
-                {/* <Tag color={getDifficultyColor(difficulty)}>{difficulty}</Tag> */}
-                {/* <span className="text-xs text-gray-400">
-                  Mã môn: {subjectCodeName}
-                </span> */}
-              </div>
+              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300"></div>
               {description && (
                 <Paragraph
                   className="text-sm text-gray-500 dark:text-gray-400 mt-1 mb-0 line-clamp-2"
@@ -92,7 +83,7 @@ const QuizSelectionLine: React.FC<QuizSelectionLineProps> = ({
                   {description}
                 </Paragraph>
               )}
-              <Tag color="red" className="ml-2">
+              <Tag color="orange" className="ml-2">
                 {totalQuestions} câu hỏi
               </Tag>
             </div>
@@ -108,10 +99,8 @@ const QuizSelectionLine: React.FC<QuizSelectionLineProps> = ({
               icon={<PlayCircleOutlined />}
               onClick={() => onStart(id)}
               size="large"
-              className={`${
-                isCompleted
-                  ? "bg-green-500 hover:bg-green-600 border-green-500"
-                  : ""
+              className={`!bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 ${
+                isCompleted ? "opacity-80" : ""
               }`}
             >
               Bắt đầu

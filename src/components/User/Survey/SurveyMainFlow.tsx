@@ -11,6 +11,7 @@ import Survey1BasicInfo from "EduSmart/components/User/Survey/SurveySteps/Survey
 import Survey2TechKnowledge from "EduSmart/components/User/Survey/SurveySteps/Survey2TechKnowledge";
 import Survey3StudyHabits from "EduSmart/components/User/Survey/SurveySteps/Survey3StudyHabits";
 import { useSurvey } from "EduSmart/hooks/survey";
+import { throwStoreError } from "EduSmart/types/errors";
 
 const { Content } = Layout;
 
@@ -19,11 +20,21 @@ interface SurveyMainFlowProps {
   onBack?: (
     data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
   ) => void;
+  showProgress?: boolean; // Cho Learning Path
 }
 
-const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
+const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
+  onComplete,
+  showProgress,
+}) => {
   // Sử dụng hook thay vì local state
   const survey = useSurvey();
+
+  // ✅ Throw error nếu có submitError từ store
+  if (survey.submitError) {
+    survey.setSubmitError(null); // Clear error state
+    throwStoreError(survey.submitError);
+  }
 
   // Khởi tạo dữ liệu API khi component mount
   useEffect(() => {
@@ -85,27 +96,29 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
         const submitResult = await survey.submitSurvey();
         console.log("Submit result:", submitResult);
 
-        // Hide loading message
-        hideLoading();
-
         if (submitResult.success) {
           console.log("✅ Survey submitted successfully:", {
             surveyId: submitResult.surveyId,
           });
 
-          // Show success message (non-blocking)
-          message.success({
-            content:
-              "🎉 Khảo sát đã được gửi thành công! Đang chuyển sang bước tiếp theo...",
-            duration: 2,
-          });
-
-          // Immediately redirect to transition page
+          // Immediately redirect BEFORE hiding loading and showing message
+          // This prevents UI from re-rendering Survey1
           if (onComplete) {
-            console.log("current step: ", survey.currentStep);
+            console.log("Redirecting to transition page...");
             onComplete();
           }
+
+          // Hide loading message after redirect
+          hideLoading();
+
+          // Show success message (user will see it on next page briefly)
+          message.success({
+            content: "🎉 Khảo sát đã được gửi thành công!",
+            duration: 1.5,
+          });
         } else {
+          // Hide loading message
+          hideLoading();
           console.error("❌ Survey submission failed:", submitResult.error);
 
           // Show error message
@@ -211,23 +224,13 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
     <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Content className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          {/* <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Khảo sát định hướng học tập
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              Giúp chúng tôi hiểu về bạn để đề xuất lộ trình học tập phù hợp
-            </p>
-          </div> */}
-
           {/* Steps */}
           <Card className="mb-6 shadow-sm">
             <Steps
               current={survey.currentStep - 1}
               items={stepItems}
               size="small"
-              className="mb-0"
+              className="mb-0 survey-steps"
             />
           </Card>
 
@@ -250,4 +253,5 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
   );
 };
 
+// Export directly - ErrorBoundary should be at page/layout level
 export default SurveyMainFlow;

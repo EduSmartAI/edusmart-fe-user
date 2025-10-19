@@ -253,10 +253,12 @@ export async function createTestAction(
       },
     };
   } catch (error) {
-    console.error("❌ Error in createTestAction:", error);
+    const nErr = await normalizeFetchError(error);
+    console.error("❌ Error in createTestAction:", nErr);
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Failed to create test",
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -313,10 +315,12 @@ export async function submitStudentTestAction(testData: {
       },
     };
   } catch (error) {
-    console.error("❌ Error in submitStudentTestAction:", error);
+    const nErr = await normalizeFetchError(error);
+    console.error("❌ Error in submitStudentTestAction:", nErr);
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Failed to submit test",
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -400,11 +404,12 @@ export async function getStudentTestResultAction(
       },
     };
   } catch (error) {
-    console.error("❌ Error in getStudentTestResultAction:", error);
+    const nErr = await normalizeFetchError(error);
+    console.error("❌ Error in getStudentTestResultAction:", nErr);
     return {
       ok: false,
-      error:
-        error instanceof Error ? error.message : "Failed to get test result",
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }

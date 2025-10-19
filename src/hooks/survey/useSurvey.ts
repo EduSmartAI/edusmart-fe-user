@@ -40,6 +40,7 @@ export function useSurvey() {
     submitError: store.submitError,
     surveyId: store.surveyId,
     submitSurvey: store.submitSurvey, // Store method calls server action
+    setSubmitError: store.setSubmitError, // ✅ NEW: Expose for error clearing
 
     // ===== RECOMMENDATIONS - Store handles API calls =====
     recommendations: store.recommendations,

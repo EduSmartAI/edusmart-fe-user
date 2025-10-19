@@ -2,7 +2,14 @@
 
 import React from "react";
 import { Steps, Progress as AntProgress } from "antd";
-import { FiUser, FiTarget, FiCpu, FiCheckCircle, FiClock, FiZap } from "react-icons/fi";
+import {
+  FiUser,
+  FiTarget,
+  FiCpu,
+  FiCheckCircle,
+  FiClock,
+  FiZap,
+} from "react-icons/fi";
 
 interface LearningPathProgressProps {
   currentStep: number; // 1, 2, or 3
@@ -16,7 +23,7 @@ interface LearningPathProgressProps {
 const STEPS = [
   {
     id: 1,
-    title: "Khảo sát",
+    title: "Khảo sát thông tin",
     description: "Thu thập thông tin",
     icon: <FiUser className="w-5 h-5" />,
     estimatedMinutes: 7,
@@ -25,7 +32,7 @@ const STEPS = [
   },
   {
     id: 2,
-    title: "Đánh giá",
+    title: "Đánh giá năng lực",
     description: "Kiểm tra năng lực",
     icon: <FiTarget className="w-5 h-5" />,
     estimatedMinutes: 15,
@@ -34,7 +41,7 @@ const STEPS = [
   },
   {
     id: 3,
-    title: "Kết quả",
+    title: "Kết quả lộ trình",
     description: "Nhận lộ trình",
     icon: <FiCpu className="w-5 h-5" />,
     estimatedMinutes: 3,
@@ -69,7 +76,7 @@ export default function LearningPathProgress({
 
   const getRemainingTime = () => {
     const remainingSteps = STEPS.filter(
-      (step) => !completedSteps.includes(step.id) && step.id >= currentStep
+      (step) => !completedSteps.includes(step.id) && step.id >= currentStep,
     );
     return remainingSteps.reduce((sum, step) => sum + step.estimatedMinutes, 0);
   };
@@ -78,46 +85,36 @@ export default function LearningPathProgress({
   if (minimal) {
     const progress = calculateProgress();
     const currentStepData = STEPS[currentStep - 1];
-    
+
     return (
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Left: Step Info + Progress */}
-          <div className="flex items-center gap-4 min-w-0 flex-1">
-            {/* Step Number & Name */}
-            <div className="flex items-center gap-2 min-w-fit">
-              <span className="text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
-                Bước {currentStep}/{STEPS.length}
-              </span>
-              <span className="text-gray-300 dark:text-gray-600">•</span>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                {currentStepData?.title}
-              </span>
-            </div>
-            
-            {/* Progress Bar */}
-            <div className="flex items-center gap-2 flex-1 max-w-[200px]">
-              <div className="flex-1">
-                <AntProgress
-                  percent={progress}
-                  showInfo={false}
-                  strokeColor="#3b82f6"
-                  trailColor="#e5e7eb"
-                  strokeWidth={4}
-                  className="minimal-progress"
-                />
+      //   <div className="bg-gradient-to-r from-teal-50/30 via-white to-cyan-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border-teal-100 dark:border-gray-700 py-4 px-4 shadow-sm">
+      <div className="bg-white/80 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900   dark:border-gray-700 py-4 px-4 shadow-sm">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
+          {/* Left: Step Info */}
+          <div className="flex items-center gap-4 min-w-0">
+            {/* Step Counter with Accent */}
+            <div className="flex items-center gap-2.5">
+              {/* <div className="flex items-center gap-2 bg-gradient-to-r from-[#49BBBD] to-cyan-600 px-5 py-3 rounded-lg shadow-md"> */}
+                <div className="flex items-center gap-2 bg-gradient-to-r from-orange-300 to-orange-500 px-5 py-3 rounded-lg shadow-md">
+                <span className="text-md font-black text-white whitespace-nowrap">
+                  Bước {currentStep}
+                </span>
+                <span className="text-white/60 font-bold">–</span>
+                <span className="text-md font-semibold text-white/90 whitespace-nowrap">
+                  {currentStepData?.title}
+                </span>
               </div>
-              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">
-                {progress}%
-              </span>
             </div>
           </div>
-          
-          {/* Right: Time Remaining (optional) */}
+
+          {/* Right: Time with Icon */}
           {showTimeRemaining && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              ~{getRemainingTime()}p
-            </span>
+            <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-900/30 px-3 py-1.5 rounded-lg border border-orange-100 dark:border-orange-800 shadow-sm">
+              <FiClock className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+              <span className="text-sm font-bold text-orange-700 dark:text-orange-300 whitespace-nowrap">
+                ~{getRemainingTime()} phút
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -127,20 +124,23 @@ export default function LearningPathProgress({
   if (compact) {
     const currentStepData = STEPS[currentStep - 1];
     const progress = calculateProgress();
-    
+
     return (
       <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 rounded-2xl p-5 shadow-lg border-2 border-blue-100 dark:border-gray-700 backdrop-blur-sm">
         {/* Animated Background Effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 animate-pulse"></div>
-        
+
         <div className="relative z-10">
           {/* Header with Icons */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${currentStepData?.gradient} flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300`}>
-                {currentStepData?.icon && React.cloneElement(currentStepData.icon, {
-                  className: "w-5 h-5 text-white"
-                })}
+              <div
+                className={`w-10 h-10 rounded-xl bg-gradient-to-br ${currentStepData?.gradient} flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300`}
+              >
+                {currentStepData?.icon &&
+                  React.cloneElement(currentStepData.icon, {
+                    className: "w-5 h-5 text-white",
+                  })}
               </div>
               <div>
                 <div className="flex items-center space-x-2">
@@ -148,14 +148,16 @@ export default function LearningPathProgress({
                     Bước {currentStep}
                   </span>
                   <span className="text-gray-400 dark:text-gray-500">/</span>
-                  <span className="text-gray-600 dark:text-gray-400">{STEPS.length}</span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {STEPS.length}
+                  </span>
                 </div>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                   {currentStepData?.title}
                 </p>
               </div>
             </div>
-            
+
             {showTimeRemaining && (
               <div className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 rounded-full">
                 <FiClock className="w-4 h-4 text-orange-600 dark:text-orange-400 animate-pulse" />
@@ -218,7 +220,7 @@ export default function LearningPathProgress({
       {/* Animated Background Decoration */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-pink-500/10 to-orange-500/10 rounded-full blur-3xl"></div>
-      
+
       <div className="relative z-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
@@ -239,7 +241,7 @@ export default function LearningPathProgress({
               </p>
             </div>
           </div>
-          
+
           {showTimeRemaining && (
             <div className="mt-4 md:mt-0 inline-flex items-center px-5 py-3 bg-gradient-to-r from-orange-100 via-amber-100 to-yellow-100 dark:from-orange-900/40 dark:via-amber-900/40 dark:to-yellow-900/40 rounded-2xl shadow-lg border border-orange-200 dark:border-orange-800">
               <FiClock className="w-5 h-5 text-orange-600 dark:text-orange-400 mr-3 animate-pulse" />
@@ -265,7 +267,7 @@ export default function LearningPathProgress({
               {calculateProgress()}%
             </span>
           </div>
-          
+
           <div className="relative">
             <AntProgress
               percent={calculateProgress()}
@@ -302,7 +304,7 @@ export default function LearningPathProgress({
             const status = getStepStatus(step.id);
             const isCompleted = status === "finish";
             const isCurrent = status === "process";
-            
+
             return (
               <div
                 key={step.id}
@@ -326,62 +328,74 @@ export default function LearningPathProgress({
               >
                 {/* Step Number Badge */}
                 <div className="absolute -top-3 -left-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg ${
-                    isCompleted
-                      ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-                      : isCurrent
-                        ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white animate-pulse"
-                        : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
-                  }`}>
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-lg ${
+                      isCompleted
+                        ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                        : isCurrent
+                          ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white animate-pulse"
+                          : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
+                    }`}
+                  >
                     {step.id}
                   </div>
                 </div>
 
                 {/* Icon */}
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-lg transition-all duration-300 ${
-                  isCompleted
-                    ? "bg-gradient-to-br from-green-500 to-emerald-500 group-hover:scale-110"
-                    : isCurrent
-                      ? `bg-gradient-to-br ${step.gradient} group-hover:scale-110 animate-pulse`
-                      : "bg-gray-300 dark:bg-gray-600 group-hover:scale-105"
-                }`}>
+                <div
+                  className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-lg transition-all duration-300 ${
+                    isCompleted
+                      ? "bg-gradient-to-br from-green-500 to-emerald-500 group-hover:scale-110"
+                      : isCurrent
+                        ? `bg-gradient-to-br ${step.gradient} group-hover:scale-110 animate-pulse`
+                        : "bg-gray-300 dark:bg-gray-600 group-hover:scale-105"
+                  }`}
+                >
                   {isCompleted ? (
                     <FiCheckCircle className="w-8 h-8 text-white" />
                   ) : (
                     React.cloneElement(step.icon, {
-                      className: "w-8 h-8 text-white"
+                      className: "w-8 h-8 text-white",
                     })
                   )}
                 </div>
 
                 {/* Content */}
                 <div className="text-center">
-                  <h4 className={`text-lg font-bold mb-2 ${
-                    isCompleted || isCurrent
-                      ? "text-gray-900 dark:text-white"
-                      : "text-gray-600 dark:text-gray-400"
-                  }`}>
+                  <h4
+                    className={`text-lg font-bold mb-2 ${
+                      isCompleted || isCurrent
+                        ? "text-gray-900 dark:text-white"
+                        : "text-gray-600 dark:text-gray-400"
+                    }`}
+                  >
                     {step.title}
                   </h4>
-                  
-                  <p className={`text-sm mb-3 ${
-                    isCompleted || isCurrent
-                      ? "text-gray-600 dark:text-gray-300"
-                      : "text-gray-500 dark:text-gray-500"
-                  }`}>
+
+                  <p
+                    className={`text-sm mb-3 ${
+                      isCompleted || isCurrent
+                        ? "text-gray-600 dark:text-gray-300"
+                        : "text-gray-500 dark:text-gray-500"
+                    }`}
+                  >
                     {step.description}
                   </p>
 
                   {/* Time Badge */}
-                  <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
-                    isCompleted
-                      ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
-                      : isCurrent
-                        ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                        : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
-                  }`}>
+                  <div
+                    className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+                      isCompleted
+                        ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
+                        : isCurrent
+                          ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                          : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300"
+                    }`}
+                  >
                     <FiClock className="w-3 h-3 mr-1" />
-                    {isCompleted ? "Hoàn thành" : `~${step.estimatedMinutes} phút`}
+                    {isCompleted
+                      ? "Hoàn thành"
+                      : `~${step.estimatedMinutes} phút`}
                   </div>
                 </div>
 
@@ -405,7 +419,8 @@ export default function LearningPathProgress({
             <div className="relative z-10 flex items-center justify-center space-x-3">
               <FiZap className="w-6 h-6 text-white animate-pulse" />
               <p className="text-lg font-bold text-white">
-                Tổng thời gian: ~{getTotalEstimatedTime()} phút để hoàn thành toàn bộ
+                Tổng thời gian: ~{getTotalEstimatedTime()} phút để hoàn thành
+                toàn bộ
               </p>
             </div>
           </div>

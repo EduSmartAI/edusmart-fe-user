@@ -4,6 +4,11 @@ import { Form, Button, Card, Typography, Select } from "antd";
 import { ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { Survey2FormValues, TechnologyLevel } from "EduSmart/types";
 import { TechnologyType } from "EduSmart/enum/enum";
+import { FaJava } from "react-icons/fa6";
+import { GrReactjs } from "react-icons/gr";
+import { RiToolsLine } from "react-icons/ri";
+import { TfiCloud } from "react-icons/tfi";
+import { BsDatabase } from "react-icons/bs";
 
 const { Title, Paragraph } = Typography;
 
@@ -124,19 +129,19 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
     return (
       <Card
         size="small"
-        className="border border-gray-200 dark:border-gray-600 rounded-xl hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all duration-200"
+        className="border border-gray-200 dark:border-gray-600 rounded-xl hover:border-teal-300 dark:hover:border-teal-500 hover:shadow-md transition-all duration-200"
       >
         <div className="mb-6">
           <Title
             level={4}
             className="!mb-4 !text-xl font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-3"
           >
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              {type === TechnologyType.ProgrammingLanguage && "💻"}
-              {type === TechnologyType.Framework && "⚛️"}
-              {type === TechnologyType.Tool && "🛠️"}
-              {type === TechnologyType.Platform && "☁️"}
-              {type === TechnologyType.Database && "🗄️"}
+            <div className="w-8 h-8 bg-gradient-to-br from-cyan-100 to-teal-100 dark:from-cyan-900/30 dark:to-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg flex items-center justify-center">
+              {type === TechnologyType.ProgrammingLanguage && <FaJava />}
+              {type === TechnologyType.Framework && <GrReactjs />}
+              {type === TechnologyType.Tool && <RiToolsLine />}
+              {type === TechnologyType.Platform && <TfiCloud />}
+              {type === TechnologyType.Database && <BsDatabase />}
             </div>
             {title}
           </Title>
@@ -176,7 +181,7 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
                   {selectedTechs.map((tech) => (
                     <div
                       key={tech.technologyId}
-                      className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200"
+                      className="inline-flex items-center gap-2 bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-3 hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-all duration-200"
                     >
                       <span className="font-medium text-gray-800 dark:text-gray-100">
                         {tech.technologyName}
@@ -244,7 +249,7 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-teal-100 to-cyan-100 dark:bg-teal-900/30 rounded-full mb-4">
             <span className="text-2xl">💻</span>
           </div>
           <Title
@@ -281,7 +286,7 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
 
                 {/* {renderTechnologySection(
                   TechnologyType.Database,
-                  "Cơ sỏ dữ liệu",
+                  "Cơ sở dữ liệu",
                 )} */}
               </div>
 
@@ -302,7 +307,7 @@ const Survey2TechKnowledge: React.FC<Survey2TechKnowledgeProps> = ({
                   htmlType="submit"
                   size="large"
                   disabled={selectedTechnologies.length === 0}
-                  className="px-8 py-3 h-auto rounded-xl bg-blue-600 hover:bg-blue-700 border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+                  className={`px-8 py-3 h-auto rounded-xl ${selectedTechnologies.length !== 0 && `!bg-gradient-to-r from-[#49BBBD] to-cyan-600 hover:from-[#3da8aa] hover:to-cyan-700`}  border-0 shadow-lg hover:shadow-xl transition-all duration-200`}
                 >
                   Tiếp tục
                 </Button>
