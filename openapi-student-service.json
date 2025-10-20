@@ -1,0 +1,950 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Student Service Swagger",
+    "version": "v1"
+  },
+  "basePath": "/student",
+  "paths": {
+    "/api/AiQuizEvaluate": {
+      "post": {
+        "tags": ["AiQuizEvaluate"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AiEvaluationUpsertEvent"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CreateAiQuizEvaluateResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/LearningGoal": {
+      "post": {
+        "tags": ["LearningGoal"],
+        "summary": "Tạo mục tiêu học tập mới",
+        "description": "Cần cấp quyền Admin",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/LearningGoalInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LearningGoalInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/LearningPaths": {
+      "get": {
+        "tags": ["LearningPaths"],
+        "summary": "Lấy Learning Path",
+        "description": "Trả về Learning Path theo tham số query. Cần xác thực Bearer.",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "LearningPathId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LearningPathSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/LearningPaths/UpdateLearningPathCourses": {
+      "put": {
+        "tags": ["LearningPaths"],
+        "summary": "Cập nhật các khóa học được chọn trong lộ trình học tập",
+        "description": "API này cho phép sinh viên chọn các khóa học mong muốn.",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/LearningPathCourseUpdateCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LearningPathCourseUpdateResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/LearningPaths/choose-major": {
+      "put": {
+        "tags": ["LearningPaths"],
+        "summary": "Pick lộ trình chuyên ngành phù hợp",
+        "description": "",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateStatusLearningPathCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UpdateStatusLearningPathResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/LearningPaths/Sync-data-readmodel": {
+      "post": {
+        "tags": ["LearningPaths"],
+        "summary": "Đồng bộ dữ liệu từ write-model sang read-model (BACKEND)",
+        "description": "Dùng để đồng bộ dữ liệu từ write-model khi chỉnh data, chỉ dùng cho Backend",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateReadModelLearningPathCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UpdateReadModelLearningPathResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/LearningPaths/get-all": {
+      "get": {
+        "tags": ["LearningPaths"],
+        "summary": "Lấy tất cả Learning Path",
+        "description": "Trả về Learning Path đang có. Cần xác thực Bearer.",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "Pagination.PageIndex",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "Pagination.PageSize",
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SelectAllLearningPathResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Technology/InsertTechnology": {
+      "post": {
+        "tags": ["Technology"],
+        "summary": "Thêm ngôn ngữ/ framework/ tool/ platform mới",
+        "description": "Cần cấp quyền Admin",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/TechnologyInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TechnologyInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/UserBehaviour/InsertUserBehaviour": {
+      "post": {
+        "tags": ["UserBehaviour"],
+        "summary": "Dùng cho việc lưu hành vi của người dùng để theo dõi đưa ra lộ trình cá nhân hoá phù hợp",
+        "description": "Cần cấp quyền",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UserBehaviourInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UserBehaviourInsertResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AiEvaluationUpsertEvent": {
+      "type": "object",
+      "properties": {
+        "attemptId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "userId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/definitions/QuizScope"
+        },
+        "scopeId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "score100": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "improvements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RecommendedAction"
+          }
+        },
+        "skillGaps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SkillGap"
+          }
+        },
+        "confidence": {
+          "format": "double",
+          "type": "number"
+        },
+        "model": {
+          "type": "string"
+        },
+        "rubricVersion": {
+          "type": "string"
+        },
+        "createdAtUtc": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "BasicLearningPathDto": {
+      "type": "object",
+      "properties": {
+        "subjectName": {
+          "type": "string"
+        },
+        "semester": {
+          "type": "string"
+        },
+        "courses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CourseItemDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "CourseItemDto": {
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "type": "string"
+        },
+        "semesterPosition": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "subjectCode": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "shortDescription": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "courseImageUrl": {
+          "type": "string"
+        },
+        "learnerCount": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "durationMinutes": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "durationHours": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "level": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "price": {
+          "format": "double",
+          "type": "number"
+        },
+        "dealPrice": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CreateAiQuizEvaluateResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DetailError": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ExternalLearningPathDto": {
+      "type": "object",
+      "properties": {
+        "majorId": {
+          "type": "string"
+        },
+        "majorCode": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExternalStepDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ExternalStepDto": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "duration_Weeks": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "suggested_Courses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SuggestedCourseDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "InternalLearningPathDto": {
+      "type": "object",
+      "properties": {
+        "majorId": {
+          "type": "string"
+        },
+        "majorCode": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "positionIndex": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "majorCourse": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CourseItemDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningGoalInsertCommand": {
+      "type": "object",
+      "properties": {
+        "goalName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "learningGoalType": {
+          "format": "int32",
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningGoalInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningPathCourseUpdateCommand": {
+      "required": ["pathId", "selectedCourseIds"],
+      "type": "object",
+      "properties": {
+        "pathId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "selectedCourseIds": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningPathCourseUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningPathSelectAllDto": {
+      "type": "object",
+      "properties": {
+        "pathId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "pathName": {
+          "type": "string"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningPathSelectAllDtoPaginatedResult": {
+      "type": "object",
+      "properties": {
+        "pageIndex": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalCount": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/LearningPathSelectAllDto"
+          }
+        },
+        "totalPages": {
+          "format": "int32",
+          "type": "integer",
+          "readOnly": true
+        },
+        "hasPreviousPage": {
+          "type": "boolean",
+          "readOnly": true
+        },
+        "hasNextPage": {
+          "type": "boolean",
+          "readOnly": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningPathSelectDto": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "basicLearningPath": {
+          "$ref": "#/definitions/BasicLearningPathDto"
+        },
+        "internalLearningPath": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InternalLearningPathDto"
+          }
+        },
+        "externalLearningPath": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExternalLearningPathDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "LearningPathSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/LearningPathSelectDto"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizScope": {
+      "format": "int32",
+      "enum": [1, 2],
+      "type": "integer"
+    },
+    "RecommendedAction": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "targetUrl": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SelectAllLearningPathResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/LearningPathSelectAllDtoPaginatedResult"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SkillGap": {
+      "type": "object",
+      "properties": {
+        "skillTag": {
+          "type": "string"
+        },
+        "level": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "evidence": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SuggestedCourseDto": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "string"
+        },
+        "est_Duration_Weeks": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TechnologyInsertCommand": {
+      "type": "object",
+      "properties": {
+        "technologyName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "technologyType": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TechnologyInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateReadModelLearningPathCommand": {
+      "type": "object",
+      "properties": {
+        "learningPathId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateReadModelLearningPathResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateStatusLearningPathCommand": {
+      "type": "object",
+      "properties": {
+        "learningPathId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "internalMajorIds": {
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateStatusLearningPathResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UserBehaviourInsertCommand": {
+      "required": ["actionType"],
+      "type": "object",
+      "properties": {
+        "actionType": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "targetId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "targetType": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UserBehaviourInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "securityDefinitions": {
+    "JWT_Token": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Copy this into the value field: Bearer {token}"
+    }
+  },
+  "security": [
+    {
+      "JWT_Token": []
+    }
+  ]
+}

@@ -10,5 +10,9 @@
   {
     "key": "quiz-service",
     "url": "https://api.edusmart.pro.vn/quiz/swagger/v1/swagger.json"
+  },
+  {
+    "key": "student-service",
+    "url": "https://api.edusmart.pro.vn/student/swagger/v1/swagger.json"
   }
 ]
