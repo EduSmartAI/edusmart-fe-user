@@ -206,6 +206,7 @@ export interface CourseDto {
   createdAt?: string;
   /** @format date-time */
   updatedAt?: string;
+  tags?: CourseTagDto[] | null;
 }
 
 export interface CourseDtoPaginatedResult {
@@ -630,6 +631,9 @@ export interface ModuleDetailForStudentDto {
   moduleMaterialDetails?: ModuleMaterialDetailDto[] | null;
   lessons?: StudentLessonDetailDto[] | null;
   moduleQuiz?: QuizOutDto;
+  canAttempt?: boolean;
+  /** @format uuid */
+  studentQuizResultId?: string | null;
   progress?: ModuleProgressDto;
 }
 
@@ -693,9 +697,12 @@ export interface QuizAnswerOutDto {
   /** @format uuid */
   answerId?: string;
   answerText?: string | null;
+  isCorrect?: boolean | null;
 }
 
 export interface QuizOutDto {
+  /** @format uuid */
+  quizId?: string;
   quizSettings?: QuizSettingsOutDto;
   questions?: QuizQuestionOutDto[] | null;
 }
@@ -733,6 +740,9 @@ export interface StudentLessonDetailDto {
   isCompleted?: boolean;
   /** @format int32 */
   lastPositionSec?: number;
+  canAttempt?: boolean;
+  /** @format uuid */
+  studentQuizResultId?: string | null;
   lessonQuiz?: QuizOutDto;
 }
 

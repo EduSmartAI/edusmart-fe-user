@@ -1476,6 +1476,13 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseTagDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2733,6 +2740,14 @@
           "moduleQuiz": {
             "$ref": "#/components/schemas/QuizOutDto"
           },
+          "canAttempt": {
+            "type": "boolean"
+          },
+          "studentQuizResultId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
           "progress": {
             "$ref": "#/components/schemas/ModuleProgressDto"
           }
@@ -2888,6 +2903,10 @@
           "answerText": {
             "type": "string",
             "nullable": true
+          },
+          "isCorrect": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2895,6 +2914,10 @@
       "QuizOutDto": {
         "type": "object",
         "properties": {
+          "quizId": {
+            "type": "string",
+            "format": "uuid"
+          },
           "quizSettings": {
             "$ref": "#/components/schemas/QuizSettingsOutDto"
           },
@@ -2993,6 +3016,14 @@
           "lastPositionSec": {
             "type": "integer",
             "format": "int32"
+          },
+          "canAttempt": {
+            "type": "boolean"
+          },
+          "studentQuizResultId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
           },
           "lessonQuiz": {
             "$ref": "#/components/schemas/QuizOutDto"

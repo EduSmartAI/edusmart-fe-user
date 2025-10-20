@@ -6,17 +6,23 @@ import {
   Collapse,
   Input,
   List,
-  Tabs,
   Tag,
   Space,
   Button,
   Typography,
+  Empty,
+  Divider,
+  Dropdown,
 } from "antd";
 import {
   PlayCircleOutlined,
   FileOutlined,
   MessageOutlined,
   BookOutlined,
+  CommentOutlined,
+  QuestionCircleOutlined,
+  CalendarOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 
 import VideoPlayer, {
@@ -30,6 +36,8 @@ import {
   StudentLessonDetailDto,
 } from "EduSmart/api/api-course-service";
 import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
+import CourseDetailsCardTabs from "EduSmart/components/Course/CourseDetailsCardTabs";
+import BasecontrolModal from "EduSmart/components/BaseControl/BasecontrolModal";
 
 const { Text } = Typography;
 
@@ -62,7 +70,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
     initialLessonId,
   );
 
-  // NEW: map bài học -> module để mở đúng panel
+  // map bài học -> module để mở đúng panel
   const lessonToModule = useMemo(() => {
     const map = new Map<string, string>();
     for (const m of modules) {
@@ -74,11 +82,12 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
     return map;
   }, [modules]);
 
-  // NEW: điều khiển panel đang mở
+  // điều khiển panel đang mở
   const [activeModuleId, setActiveModuleId] = useState<string | undefined>(
     undefined,
   );
   const prevUrlLessonId = useRef<string | undefined>(undefined);
+
   // Sync với URL khi người dùng back/forward hoặc share link
   useEffect(() => {
     const q = searchParams.get("lessonId") ?? initialLessonId;
@@ -86,9 +95,9 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
 
     if (prevUrlLessonId.current !== q) {
       prevUrlLessonId.current = q;
-      if (q !== currentLessonId) setCurrentLessonId(q); // cập nhật bài đang phát
+      if (q !== currentLessonId) setCurrentLessonId(q);
       const mod = lessonToModule.get(q);
-      if (mod && mod !== activeModuleId) setActiveModuleId(mod); // mở đúng panel
+      if (mod && mod !== activeModuleId) setActiveModuleId(mod);
     }
   }, [
     searchParams,
@@ -98,7 +107,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
     currentLessonId,
   ]);
 
-  // NEW: mỗi khi currentLessonId đổi, tự mở panel chứa bài đó
+  // mỗi khi currentLessonId đổi, tự mở panel chứa bài đó
   useEffect(() => {
     if (currentLessonId) {
       const modId = lessonToModule.get(currentLessonId);
@@ -138,6 +147,41 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
     console.log("Paused:", info);
   };
 
+  const activeModule = useMemo(
+    () => modules.find((m) => m.moduleId === activeModuleId) ?? modules[0],
+    [modules, activeModuleId],
+  );
+
+  const currentDiscussions = useMemo(
+    () => activeModule?.moduleDiscussionDetails ?? [],
+    [activeModule],
+  );
+
+  const [replyOpenId, setReplyOpenId] = useState<string | null>(null);
+
+  const startQuiz = (lessonId: string) => {
+    if (!lessonId) return;
+    const sp = new URLSearchParams();
+    sp.set("lessonId", lessonId);
+    router.push(`/course/${course.courseId}/quiz?${sp.toString()}`);
+  };
+
+  const startModuleQuiz = (moduleId: string) => {
+    if (!moduleId) return;
+    const mod = modules.find((m) => m.moduleId === moduleId);
+    const quizId = mod?.moduleQuiz?.quizId;
+    if (!quizId) {
+      console.warn("Module không có quizId, bỏ qua.");
+      return;
+    }
+    const sp = new URLSearchParams();
+    sp.set("moduleId", moduleId);
+    router.push(`/course/${course.courseId}/quiz?${sp.toString()}`);
+  };
+
+  // Tên module đang mở (dùng cho UI & deps)
+  const activeModuleName = activeModule?.moduleName ?? "Untitled module";
+
   const tabItems = useMemo(
     () => [
       {
@@ -145,11 +189,11 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
         label: "Overview",
         children: (
           <div className="space-y-3">
-            <div 
+            <div
               className="text-sm"
-              dangerouslySetInnerHTML={{ 
-                __html: course.description ?? "No description provided." 
-              }} 
+              dangerouslySetInnerHTML={{
+                __html: course.description ?? "No description provided.",
+              }}
             />
             <div className="flex flex-wrap gap-2">
               <Tag>English (Auto)</Tag>
@@ -196,6 +240,214 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
           </div>
         ),
       },
+
+      /** -------- Discussions tab (mới, dùng BasecontrolModal) -------- */
+      {
+        key: "discussions",
+        label: (
+          <span className="inline-flex items-center gap-2">
+            <CommentOutlined /> Discussions
+          </span>
+        ),
+        children: (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                Thảo luận của module:{" "}
+                <span className="font-medium">
+                  {activeModule?.moduleName ?? "Untitled module"}
+                </span>
+              </div>
+              <Tag color="purple" className="m-0">
+                {currentDiscussions.length} topics
+              </Tag>
+            </div>
+
+            <Divider className="my-2" />
+
+            {currentDiscussions.length === 0 ? (
+              <Empty description="Module này chưa có thảo luận" />
+            ) : (
+              <List
+                itemLayout="vertical"
+                dataSource={currentDiscussions}
+                split
+                renderItem={(d, idx) => {
+                  const createdAt = d.createdAt
+                    ? new Date(d.createdAt).toLocaleDateString()
+                    : null;
+                  const updatedAt = d.updatedAt
+                    ? new Date(d.updatedAt).toLocaleDateString()
+                    : null;
+                  const id = d.discussionId ?? String(idx);
+                  const isReplyOpen = replyOpenId === id;
+
+                  return (
+                    <List.Item className="!px-0">
+                      <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 hover:shadow-sm transition">
+                        <div className="flex items-start gap-3">
+                          {/* Icon bubble */}
+                          <div className="shrink-0 h-9 w-9 rounded-full bg-violet-100 dark:bg-violet-900/40 flex items-center justify-center">
+                            <QuestionCircleOutlined className="text-violet-600 dark:text-violet-300" />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            {/* Title + meta */}
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="m-0 text-base font-semibold">
+                                {d.title ?? "Untitled"}
+                              </h3>
+                              {activeModuleName && (
+                                <Tag color="geekblue" className="m-0">
+                                  {activeModuleName}
+                                </Tag>
+                              )}
+                              {createdAt && (
+                                <Tag className="m-0">
+                                  <CalendarOutlined /> {createdAt}
+                                </Tag>
+                              )}
+                              {updatedAt && (
+                                <Tag className="m-0" color="blue">
+                                  updated {updatedAt}
+                                </Tag>
+                              )}
+                            </div>
+
+                            {/* Discussion question block */}
+                            {d.discussionQuestion && (
+                              <div className="mt-3 rounded-md border border-violet-200/60 dark:border-violet-800/60 bg-violet-50/60 dark:bg-violet-900/20 p-3">
+                                <div className="text-xs font-semibold tracking-wide text-violet-700 dark:text-violet-300 uppercase inline-flex items-center gap-1">
+                                  <QuestionCircleOutlined /> Câu hỏi thảo luận
+                                </div>
+                                <div className="text-sm mt-1">
+                                  {d.discussionQuestion}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Short description */}
+                            {d.description && (
+                              <p className="mt-3 text-[13px] text-neutral-700 dark:text-neutral-300">
+                                {d.description}
+                              </p>
+                            )}
+
+                            {/* Actions */}
+                            <div className="mt-3 flex flex-wrap items-center gap-8">
+                              {/* Nút mở ô trả lời inline */}
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type={isReplyOpen ? "default" : "primary"}
+                                  onClick={() =>
+                                    setReplyOpenId(isReplyOpen ? null : id)
+                                  }
+                                >
+                                  {isReplyOpen
+                                    ? "Đóng ô trả lời"
+                                    : "Viết câu trả lời"}
+                                </Button>
+                              </div>
+
+                              {/* Nút mở modal: xem các thảo luận khác */}
+                              <BasecontrolModal
+                                triggerText="Xem các thảo luận khác"
+                                title={
+                                  <div className="flex items-center gap-2">
+                                    <CommentOutlined />
+                                    <span>Các thảo luận trong module</span>
+                                    {activeModuleName && (
+                                      <Tag color="geekblue" className="m-0">
+                                        {activeModuleName}
+                                      </Tag>
+                                    )}
+                                  </div>
+                                }
+                                cancelText="Đóng"
+                                okText="OK"
+                                isResponsive
+                                triggerButtonProps={{
+                                  type: "primary",
+                                  ghost: true,
+                                }}
+                              >
+                                <List
+                                  itemLayout="vertical"
+                                  dataSource={currentDiscussions}
+                                  renderItem={(it, i2) => {
+                                    const isCurrent =
+                                      (it.discussionId ?? String(i2)) === id;
+                                    return (
+                                      <List.Item className="!px-0">
+                                        <div
+                                          className={`rounded-lg p-3 border ${
+                                            isCurrent
+                                              ? "border-violet-300 bg-violet-50/40 dark:bg-violet-900/20"
+                                              : "border-neutral-200 dark:border-neutral-800"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-medium">
+                                              {it.title ?? "Untitled"}
+                                            </span>
+                                            {isCurrent && (
+                                              <Tag
+                                                color="purple"
+                                                className="m-0"
+                                              >
+                                                Đang xem
+                                              </Tag>
+                                            )}
+                                          </div>
+                                          {it.discussionQuestion && (
+                                            <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">
+                                              {it.discussionQuestion}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </List.Item>
+                                    );
+                                  }}
+                                />
+                              </BasecontrolModal>
+                            </div>
+
+                            {/* Ô trả lời inline (chỉ hiện khi bấm nút) */}
+                            {isReplyOpen && (
+                              <div className="mt-3">
+                                <Input.TextArea
+                                  placeholder="Nhập câu trả lời của bạn…"
+                                  autoSize={{ minRows: 3, maxRows: 6 }}
+                                />
+                                <div className="mt-2 flex items-center gap-2">
+                                  <Button onClick={() => setReplyOpenId(null)}>
+                                    Hủy
+                                  </Button>
+                                  <Button
+                                    type="primary"
+                                    onClick={() => {
+                                      // TODO: gọi API post reply ở đây
+                                      setReplyOpenId(null);
+                                    }}
+                                  >
+                                    Đăng
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </List.Item>
+                  );
+                }}
+              />
+            )}
+          </div>
+        ),
+      },
+      /** -------- /Discussions -------- */
+
       { key: "ann", label: "Announcements", children: "No announcements." },
       {
         key: "reviews",
@@ -221,6 +473,10 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       course.updatedAt,
       course.ratingsAverage,
       course.ratingsCount,
+      currentDiscussions,
+      activeModule.moduleName,
+      activeModuleName, // ✅ dùng tên module đã chuẩn hoá
+      replyOpenId,
     ],
   );
 
@@ -229,7 +485,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       <div className="mx-8 mb-8">
         <div className="grid grid-cols-12 gap-4 lg:gap-6">
           {/* ========= LEFT ========= */}
-          <div className="col-span-12 lg:col-span-9">
+          <div className="col-span-12 lg:col-span-8">
             <div className="rounded-xl overflow-hidden bg-black shadow-sm ring-1 ring-neutral-200/60 dark:ring-neutral-800">
               <div className="relative aspect-video w-full">
                 <VideoPlayer
@@ -244,22 +500,15 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
               </div>
             </div>
 
-            <div className="mt-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm">
-              <div className="px-3 py-2 lg:px-4 lg:py-3 border-b border-neutral-200 dark:border-neutral-800">
-                <div className="text-sm font-semibold">Course details</div>
-              </div>
-              <div className="px-2 lg:px-4">
-                <Tabs
-                  defaultActiveKey="overview"
-                  items={tabItems}
-                  className="[&_.ant-tabs-nav]:mb-0"
-                />
-              </div>
-            </div>
+            <CourseDetailsCardTabs
+              title={currentLesson?.title ?? "Select a lesson"}
+              items={tabItems}
+              defaultActiveKey="overview"
+            />
           </div>
 
           {/* ========= RIGHT: Sidebar ========= */}
-          <aside className="col-span-12 lg:col-span-3">
+          <aside className="col-span-12 lg:col-span-4">
             <div className="rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-sm">
               <div className="flex items-center justify-between px-3 lg:px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="text-sm font-semibold">Course content</div>
@@ -279,10 +528,8 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                 <Collapse
                   accordion
                   ghost
-                  // NEW: điều khiển panel đang mở để khi reload vẫn mở đúng module
                   activeKey={activeModuleId}
                   onChange={(key) => {
-                    // key có thể là string | string[] vì accordion=true nên sẽ là string
                     const k = Array.isArray(key) ? key[0] : key;
                     setActiveModuleId(typeof k === "string" ? k : undefined);
                   }}
@@ -292,14 +539,90 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                       (sum, l) => sum + secToMinutes(l.videoDurationSec),
                       0,
                     );
+
+                    const materials = m.moduleMaterialDetails ?? [];
+                    const materialsCount = materials.length;
+
                     return {
                       key: m.moduleId ?? `m-${i}`,
                       label: (
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">{m.moduleName}</span>
-                          <span className="text-xs text-neutral-500">
-                            {lessons.length} lectures • {totalMinutes}m
-                          </span>
+                        <div className="w-full">
+                          {/* Hàng 1: tên module (trái) — tag file (phải) luôn cùng hàng */}
+                          <div className="min-w-0 flex items-center justify-between gap-2">
+                            <span className="font-medium truncate min-w-0">
+                              {m.moduleName}
+                            </span>
+
+                            {materialsCount > 0 &&
+                              (materialsCount === 1 ? (
+                                <a
+                                  href={materials[0].fileUrl ?? "#"}
+                                  download
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => e.stopPropagation()} // không toggle Collapse
+                                  className="shrink-0"
+                                >
+                                  <Tag className="m-0 cursor-pointer inline-flex items-center gap-1">
+                                    <FileOutlined /> 1 file
+                                  </Tag>
+                                  {m.moduleQuiz && (
+                                    <Tag
+                                      className="m-0 cursor-pointer inline-flex items-center gap-1 shrink-0"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation(); 
+                                        if (m.moduleId)
+                                          startModuleQuiz(m.moduleId);
+                                      }}
+                                      color="purple"
+                                    >
+                                      <QuestionCircleOutlined /> Quiz
+                                    </Tag>
+                                  )}
+                                </a>
+                              ) : (
+                                <Dropdown
+                                  trigger={["click"]}
+                                  menu={{
+                                    items: materials.map((mat, idx) => ({
+                                      key: mat.materialId ?? String(idx),
+                                      label: (
+                                        <a
+                                          href={mat.fileUrl ?? "#"}
+                                          download
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <DownloadOutlined />
+                                            <span>
+                                              {mat.title ??
+                                                `Tài liệu ${idx + 1}`}
+                                            </span>
+                                          </div>
+                                        </a>
+                                      ),
+                                    })),
+                                  }}
+                                >
+                                  <Tag
+                                    className="m-0 cursor-pointer inline-flex items-center gap-1 shrink-0"
+                                    onClick={(e) => e.stopPropagation()} // không toggle Collapse
+                                  >
+                                    <FileOutlined /> {materialsCount} files
+                                  </Tag>
+                                </Dropdown>
+                              ))}
+                          </div>
+
+                          {/* Hàng 2: thông tin lectures • minutes */}
+                          <div className="mt-0.5 text-xs text-neutral-500">
+                            <span className="whitespace-nowrap">
+                              {lessons.length} lectures • {totalMinutes}m
+                            </span>
+                          </div>
                         </div>
                       ),
                       children: (
@@ -311,28 +634,44 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                             const isActive = it.lessonId === currentLessonId;
                             return (
                               <List.Item className="!px-0">
-                                <button
+                                <div
+                                  role="button"
+                                  tabIndex={0}
                                   aria-current={isActive ? "true" : undefined}
-                                  className={`group w-full text-left px-2 py-2 rounded-lg transition
-                                  ${
+                                  className={`group w-full text-left px-2 py-2 rounded-lg transition ${
                                     isActive
                                       ? "bg-violet-50 dark:bg-violet-900/30 border-l-2 border-violet-500 ring-1 ring-violet-400/40"
                                       : "hover:bg-neutral-50 dark:hover:bg-neutral-800/60"
                                   }`}
-                                  onClick={() =>
-                                    it.lessonId &&
-                                    handleSelectLesson(it.lessonId)
-                                  }
-                                  disabled={!it.lessonId}
+                                  onClick={() => {
+                                    if (it.lessonId)
+                                      handleSelectLesson(it.lessonId);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                      e.preventDefault();
+                                      if (it.lessonId)
+                                        handleSelectLesson(it.lessonId);
+                                    }
+                                  }}
                                 >
                                   <div className="flex items-start gap-3">
                                     <PlayCircleOutlined
-                                      className={`mt-0.5 text-base transition-transform group-hover:scale-105
-                                      ${isActive ? "text-violet-600 dark:text-violet-300" : "text-neutral-500"}`}
+                                      className={`mt-0.5 text-base transition-transform group-hover:scale-105 ${
+                                        isActive
+                                          ? "text-violet-600 dark:text-violet-300"
+                                          : "text-neutral-500"
+                                      }`}
                                     />
+
+                                    {/* Nội dung bên trái */}
                                     <div className="flex-1">
                                       <div
-                                        className={`text-sm leading-snug ${isActive ? "text-violet-800 dark:text-violet-200 font-medium" : ""}`}
+                                        className={`text-sm leading-snug ${
+                                          isActive
+                                            ? "text-violet-800 dark:text-violet-200 font-medium"
+                                            : ""
+                                        }`}
                                       >
                                         {it.title}
                                       </div>
@@ -352,8 +691,26 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                                         )}
                                       </div>
                                     </div>
+                                    {Array.isArray(it.lessonQuiz?.questions) &&
+                                      it.lessonQuiz!.questions!.length > 0 && (
+                                        <div className="shrink-0 self-center">
+                                          <Button
+                                            size="small"
+                                            type={
+                                              isActive ? "primary" : "default"
+                                            }
+                                            icon={<QuestionCircleOutlined />}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              startQuiz(it.lessonId!);
+                                            }}
+                                          >
+                                            Làm bài kiểm tra
+                                          </Button>
+                                        </div>
+                                      )}
                                   </div>
-                                </button>
+                                </div>
                               </List.Item>
                             );
                           }}

@@ -18,6 +18,12 @@ export enum AnswerRuleUnit {
   Value4 = 4,
 }
 
+export interface AnswerAddRequest {
+  /** @minLength 1 */
+  answerText: string;
+  isCorrect: boolean;
+}
+
 export interface AnswerDetailResponse {
   /** @format uuid */
   answerId?: string;
@@ -39,6 +45,14 @@ export interface AnswerSurveySelects {
   answerId?: string;
   answerText?: string;
   isCorrect?: boolean;
+}
+
+export interface AnswerUpdateRequest {
+  /** @format uuid */
+  answerId?: string;
+  /** @minLength 1 */
+  answerText: string;
+  isCorrect: boolean;
 }
 
 export interface Answers {
@@ -98,6 +112,20 @@ export interface MajorSelectsEventResponseEntity {
   parentMajorId?: string;
 }
 
+export interface QuestionAddRequest {
+  /** @minLength 1 */
+  questionText: string;
+  /**
+   * @format int32
+   * @min 1
+   * @max 4
+   */
+  questionType?: number;
+  explanation?: string;
+  /** @minItems 2 */
+  answers: AnswerAddRequest[];
+}
+
 export interface QuestionDeleteResponse {
   success?: boolean;
   messageId?: string;
@@ -150,6 +178,16 @@ export interface QuestionUpdateCommand {
   answers?: UpdateAnswers[];
 }
 
+export interface QuestionUpdateRequest {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  /** @format int32 */
+  questionType?: number;
+  explanation?: string;
+  answers?: AnswerUpdateRequest[];
+}
+
 export interface QuestionUpdateResponse {
   success?: boolean;
   messageId?: string;
@@ -189,6 +227,159 @@ export interface QuestionsResultSelectResponseEntity {
   difficultyLevel?: number;
   explanation?: string;
   answers?: StudentAnswerDetailResponse[];
+}
+
+export interface QuizCourseAddQuestionsCommand {
+  /** @format uuid */
+  quizId: string;
+  /** @minItems 1 */
+  questions: QuestionAddRequest[];
+}
+
+export interface QuizCourseAddQuestionsResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface QuizCourseAnswersInsert {
+  /** @minLength 1 */
+  answerText: string;
+  isCorrect: boolean;
+}
+
+export interface QuizCourseCheckAttemptCommand {
+  /** @format uuid */
+  quizId?: string;
+  /** @format uuid */
+  studentId?: string;
+}
+
+export interface QuizCourseCheckAttemptEntity {
+  canAttempt?: boolean;
+  /** @format uuid */
+  studentQuizId?: string;
+}
+
+export interface QuizCourseCheckAttemptResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: QuizCourseCheckAttemptEntity;
+}
+
+export interface QuizCourseDeleteQuestionsCommand {
+  /** @format uuid */
+  quizId: string;
+  /** @minItems 1 */
+  questionIds: string[];
+}
+
+export interface QuizCourseDeleteQuestionsResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface QuizCourseInsertCommand {
+  /** @minLength 1 */
+  userEmail: string;
+  /** @format int32 */
+  durationMinutes: number;
+  /** @format int32 */
+  passingScorePercentage: number;
+  shuffleQuestions: boolean;
+  showResultsImmediately: boolean;
+  allowRetake: boolean;
+  questions: QuizCourseQuestionsInsert[];
+}
+
+export interface QuizCourseInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: QuizCourseInsertResponseEntity;
+}
+
+export interface QuizCourseInsertResponseEntity {
+  /** @format uuid */
+  quizId?: string;
+}
+
+export interface QuizCourseQuestionsInsert {
+  /** @minLength 1 */
+  questionText: string;
+  /** @format int32 */
+  questionType?: number;
+  explanation?: string;
+  answers: QuizCourseAnswersInsert[];
+}
+
+export interface QuizCourseSelectAnswerDetailResponse {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
+  isCorrect?: boolean;
+}
+
+export interface QuizCourseSelectQueryResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: QuizCourseSelectQueryResponseEntity;
+}
+
+export interface QuizCourseSelectQueryResponseEntity {
+  /** @format uuid */
+  quizId?: string;
+  /** @format int32 */
+  durationMinutes?: number;
+  /** @format int32 */
+  passingScorePercentage?: number;
+  shuffleQuestions?: boolean;
+  showResultsImmediately?: boolean;
+  allowRetake?: boolean;
+  /** @format int32 */
+  totalQuestions?: number;
+  questions?: QuizCourseSelectQuestionDetailResponse[];
+}
+
+export interface QuizCourseSelectQuestionDetailResponse {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  explanation?: string;
+  /** @format int32 */
+  questionType?: number;
+  answers?: QuizCourseSelectAnswerDetailResponse[];
+}
+
+export interface QuizCourseUpdateCommand {
+  /** @format uuid */
+  quizId: string;
+  /** @format int32 */
+  durationMinutes?: number;
+  /** @format int32 */
+  passingScorePercentage?: number;
+  shuffleQuestions?: boolean;
+  showResultsImmediately?: boolean;
+  allowRetake?: boolean;
+  questions?: QuestionUpdateRequest[];
+}
+
+export interface QuizCourseUpdateResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
 }
 
 export interface QuizResultSelectResponseEntity {
@@ -851,6 +1042,123 @@ export class Api<
 > extends HttpClient<SecurityDataType> {
   api = {
     /**
+     * @description Cần cấp quyền Teacher cho API. Chỉ cập nhật thông tin quiz settings và câu hỏi/câu trả lời hiện có
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizUpdateQuizCourseUpdate
+     * @summary Cập nhật bài kiểm tra cho khoá học
+     * @request PUT:/api/v1/CourseQuiz/UpdateQuizCourse
+     * @secure
+     */
+    v1CourseQuizUpdateQuizCourseUpdate: (
+      body: QuizCourseUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseUpdateResponse, any>({
+        path: `/api/v1/CourseQuiz/UpdateQuizCourse`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizInsertQuizCourseCreate
+     * @summary API dùng để test thêm mới bài kiểm tra cho khoá học
+     * @request POST:/api/v1/CourseQuiz/InsertQuizCourse
+     * @secure
+     */
+    v1CourseQuizInsertQuizCourseCreate: (
+      body: QuizCourseInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseInsertResponse, any>({
+        path: `/api/v1/CourseQuiz/InsertQuizCourse`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizSelectQuizCourseList
+     * @summary API dùng để test lấy bài kiểm tra cho khoá học
+     * @request GET:/api/v1/CourseQuiz/SelectQuizCourse
+     * @secure
+     */
+    v1CourseQuizSelectQuizCourseList: (
+      query?: {
+        /** @format uuid */
+        QuizId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseSelectQueryResponse, any>({
+        path: `/api/v1/CourseQuiz/SelectQuizCourse`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Teacher cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizInsertQuestionsToQuizCourseCreate
+     * @summary Thêm câu hỏi mới vào bài kiểm tra
+     * @request POST:/api/v1/CourseQuiz/InsertQuestionsToQuizCourse
+     * @secure
+     */
+    v1CourseQuizInsertQuestionsToQuizCourseCreate: (
+      body: QuizCourseAddQuestionsCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseAddQuestionsResponse, any>({
+        path: `/api/v1/CourseQuiz/InsertQuestionsToQuizCourse`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Teacher cho API. Xóa mềm (soft delete) - set IsActive = false
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizDeleteQuestionsFromQuizCourseDelete
+     * @summary Xóa câu hỏi khỏi bài kiểm tra
+     * @request DELETE:/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse
+     * @secure
+     */
+    v1CourseQuizDeleteQuestionsFromQuizCourseDelete: (
+      body: QuizCourseDeleteQuestionsCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseDeleteQuestionsResponse, any>({
+        path: `/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse`,
+        method: "DELETE",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cần cấp quyền Student cho API
      *
      * @tags CourseQuiz
@@ -894,6 +1202,29 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizCheckStudentQuizAttemptCreate
+     * @summary Kiểm tra bài kiểm tra course của sinh viên
+     * @request POST:/api/v1/CourseQuiz/CheckStudentQuizAttempt
+     * @secure
+     */
+    v1CourseQuizCheckStudentQuizAttemptCreate: (
+      body: QuizCourseCheckAttemptCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseCheckAttemptResponse, any>({
+        path: `/api/v1/CourseQuiz/CheckStudentQuizAttempt`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

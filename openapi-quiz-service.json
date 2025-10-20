@@ -6,6 +6,178 @@
   },
   "basePath": "/quiz",
   "paths": {
+    "/api/v1/CourseQuiz/UpdateQuizCourse": {
+      "put": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Cập nhật bài kiểm tra cho khoá học",
+        "description": "Cần cấp quyền Teacher cho API. Chỉ cập nhật thông tin quiz settings và câu hỏi/câu trả lời hiện có",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseUpdateCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseUpdateResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/InsertQuizCourse": {
+      "post": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "API dùng để test thêm mới bài kiểm tra cho khoá học",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/SelectQuizCourse": {
+      "get": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "API dùng để test lấy bài kiểm tra cho khoá học",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "QuizId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseSelectQueryResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/InsertQuestionsToQuizCourse": {
+      "post": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Thêm câu hỏi mới vào bài kiểm tra",
+        "description": "Cần cấp quyền Teacher cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseAddQuestionsCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseAddQuestionsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse": {
+      "delete": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Xóa câu hỏi khỏi bài kiểm tra",
+        "description": "Cần cấp quyền Teacher cho API. Xóa mềm (soft delete) - set IsActive = false",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseDeleteQuestionsCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseDeleteQuestionsResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/CourseQuiz/InsertStudentQuizCourse": {
       "post": {
         "tags": [
@@ -67,6 +239,42 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/StudentCourseQuizSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/CheckStudentQuizAttempt": {
+      "post": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Kiểm tra bài kiểm tra course của sinh viên",
+        "description": "Cần cấp quyền Student cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseCheckAttemptCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseCheckAttemptResponse"
             }
           }
         }
@@ -583,6 +791,23 @@
     }
   },
   "definitions": {
+    "AnswerAddRequest": {
+      "required": [
+        "answerText",
+        "isCorrect"
+      ],
+      "type": "object",
+      "properties": {
+        "answerText": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
     "AnswerDetailResponse": {
       "type": "object",
       "properties": {
@@ -637,6 +862,27 @@
           "type": "string"
         },
         "answerText": {
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AnswerUpdateRequest": {
+      "required": [
+        "answerText",
+        "isCorrect"
+      ],
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerText": {
+          "minLength": 1,
           "type": "string"
         },
         "isCorrect": {
@@ -794,6 +1040,36 @@
       },
       "additionalProperties": false
     },
+    "QuestionAddRequest": {
+      "required": [
+        "answers",
+        "questionText"
+      ],
+      "type": "object",
+      "properties": {
+        "questionText": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "maximum": 4,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "answers": {
+          "minItems": 2,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AnswerAddRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "QuestionDeleteResponse": {
       "type": "object",
       "properties": {
@@ -936,6 +1212,32 @@
       },
       "additionalProperties": false
     },
+    "QuestionUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AnswerUpdateRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "QuestionUpdateResponse": {
       "type": "object",
       "properties": {
@@ -1044,6 +1346,431 @@
           "items": {
             "$ref": "#/definitions/StudentAnswerDetailResponse"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseAddQuestionsCommand": {
+      "required": [
+        "questions",
+        "quizId"
+      ],
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionAddRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseAddQuestionsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseAnswersInsert": {
+      "required": [
+        "answerText",
+        "isCorrect"
+      ],
+      "type": "object",
+      "properties": {
+        "answerText": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseCheckAttemptCommand": {
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "studentId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseCheckAttemptEntity": {
+      "type": "object",
+      "properties": {
+        "canAttempt": {
+          "type": "boolean"
+        },
+        "studentQuizId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseCheckAttemptResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/QuizCourseCheckAttemptEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseDeleteQuestionsCommand": {
+      "required": [
+        "questionIds",
+        "quizId"
+      ],
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionIds": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseDeleteQuestionsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseInsertCommand": {
+      "required": [
+        "allowRetake",
+        "durationMinutes",
+        "passingScorePercentage",
+        "questions",
+        "showResultsImmediately",
+        "shuffleQuestions",
+        "userEmail"
+      ],
+      "type": "object",
+      "properties": {
+        "userEmail": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "durationMinutes": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "passingScorePercentage": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "shuffleQuestions": {
+          "type": "boolean"
+        },
+        "showResultsImmediately": {
+          "type": "boolean"
+        },
+        "allowRetake": {
+          "type": "boolean"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuizCourseQuestionsInsert"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/QuizCourseInsertResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseInsertResponseEntity": {
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseQuestionsInsert": {
+      "required": [
+        "answers",
+        "questionText"
+      ],
+      "type": "object",
+      "properties": {
+        "questionText": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuizCourseAnswersInsert"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseSelectAnswerDetailResponse": {
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerText": {
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseSelectQueryResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/QuizCourseSelectQueryResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseSelectQueryResponseEntity": {
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "durationMinutes": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "passingScorePercentage": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "shuffleQuestions": {
+          "type": "boolean"
+        },
+        "showResultsImmediately": {
+          "type": "boolean"
+        },
+        "allowRetake": {
+          "type": "boolean"
+        },
+        "totalQuestions": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuizCourseSelectQuestionDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseSelectQuestionDetailResponse": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuizCourseSelectAnswerDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseUpdateCommand": {
+      "required": [
+        "quizId"
+      ],
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "durationMinutes": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "passingScorePercentage": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "shuffleQuestions": {
+          "type": "boolean"
+        },
+        "showResultsImmediately": {
+          "type": "boolean"
+        },
+        "allowRetake": {
+          "type": "boolean"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionUpdateRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizCourseUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
         }
       },
       "additionalProperties": false
