@@ -236,6 +236,7 @@ export default function LearningPathRecommendation() {
   const displayData = learningPathData;
 
   // Helper function to convert course data to CourseCard format
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const convertToCourseCard = (course: any) => ({
     imageUrl: course.courseImageUrl,
     title: course.title,
@@ -250,6 +251,7 @@ export default function LearningPathRecommendation() {
 
   // Group basic courses by semester
   const groupedBasicCourses = displayData.basicLearningPath.courses.reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (acc: any, course) => {
       const semester = course.semesterPosition;
       if (!acc[semester]) {
@@ -267,6 +269,7 @@ export default function LearningPathRecommendation() {
     title,
   }: {
     semester: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     courses: any[];
     title: string;
   }) => (
@@ -363,6 +366,7 @@ export default function LearningPathRecommendation() {
                 <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-50 dark:bg-blue-900/10 rounded-full transform -translate-x-12 translate-y-12"></div>
                 <div className="relative z-10">
                   {Object.entries(groupedBasicCourses).map(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ([semester, courses]: [string, any]) => (
                       <SemesterSection
                         key={semester}

@@ -901,6 +901,7 @@ export async function submitSurveyAction(surveyData: {
  * Get survey recommendations
  */
 export async function getSurveyRecommendationsAction(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   surveyId: string,
 ): Promise<{
   ok: boolean;
@@ -927,6 +928,7 @@ export async function getSurveyRecommendationsAction(
  * Save survey draft
  */
 export async function saveSurveyDraftAction(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   surveyData: Partial<{
     survey1Data?: Survey1FormValues;
     survey2Data?: Survey2FormValues;

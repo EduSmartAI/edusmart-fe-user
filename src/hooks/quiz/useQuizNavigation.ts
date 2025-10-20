@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useMemo } from "react";
 import { useQuizStore } from "EduSmart/stores/Quiz/QuizStore";
 import { NavigationInfo } from "EduSmart/types/quiz";

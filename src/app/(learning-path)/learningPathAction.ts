@@ -177,6 +177,7 @@ export async function getAllLearningPathsAction(
   pageIndex: number = 1,
   pageSize: number = 10,
 ): Promise<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   { ok: true; data: any } | { ok: false; error: string; status?: number }
 > {
   try {

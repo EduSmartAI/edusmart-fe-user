@@ -149,6 +149,7 @@ const faqs = [
 
 export default function LearningPathOverview() {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const { session, fetchSession } = useSessionAuthStore();
 
@@ -175,36 +176,6 @@ export default function LearningPathOverview() {
     }
     learningPathProgress.clearProgress();
     router.push("/learning-path/assessment/survey");
-  };
-
-  const handleContinue = () => {
-    // Check if user is logged in
-    if (!session) {
-      message.warning({
-        content:
-          "Vui lòng đăng nhập để tiếp tục luồng đề xuất lộ trình học tập",
-        duration: 3,
-      });
-      router.push("/Login?redirect=/learning-path/overview");
-      return;
-    }
-
-    const currentStep = learningPathProgress.getCurrentStep();
-    const completedSteps = learningPathProgress.getCompletedSteps();
-
-    // Redirect to appropriate page based on progress
-    if (completedSteps.includes(1) && !completedSteps.includes(2)) {
-      router.push("/learning-path/assessment/quiz");
-    } else if (completedSteps.includes(2)) {
-      const learningPathId = learningPathProgress.getLearningPathId();
-      if (learningPathId) {
-        router.push(`/dashboard/learning-paths/${learningPathId}`);
-      } else {
-        router.push("/learning-path/assessment/quiz");
-      }
-    } else {
-      router.push("/learning-path/assessment/survey");
-    }
   };
 
   return (
@@ -337,7 +308,7 @@ export default function LearningPathOverview() {
               <div className="absolute top-1/2 right-20 w-12 h-12 bg-teal-100 dark:bg-teal-700 rounded-full opacity-15 animate-bounce delay-500"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-              {steps.map((step, index) => (
+              {steps.map((step) => (
                 <div key={step.id} className="relative">
                   <div
                     className={`relative ${step.cardBg} rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700 group hover:-translate-y-2`}

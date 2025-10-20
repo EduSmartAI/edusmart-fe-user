@@ -86,6 +86,7 @@ const LearningPathExitConfirmModal: React.FC<
 > = ({
   open,
   title = "Xác nhận thoát",
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   content = "",
   warningMessage,
   confirmText = "Thoát",

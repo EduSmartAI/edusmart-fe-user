@@ -81,6 +81,7 @@ export default function SurveyAssessmentPage() {
     router.push("/learning-path/assessment/transition");
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   const handleExitClick = (data?: any) => {
     // Show confirmation modal instead of exiting directly
     setShowExitModal(true);

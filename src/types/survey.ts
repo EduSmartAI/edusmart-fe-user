@@ -1,6 +1,3 @@
-// ======================== SURVEY TYPES ========================
-
-// ============ SURVEY 1: Basic Info & Career Orientation ============
 export interface Survey1FormValues {
   semester: string; // Kỳ học
   major: string; // Chuyên ngành chính (luôn hiển thị)

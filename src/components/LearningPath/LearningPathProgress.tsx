@@ -53,6 +53,7 @@ const STEPS = [
 export default function LearningPathProgress({
   currentStep,
   completedSteps = [],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   estimatedTime,
   showTimeRemaining = true,
   compact = false,
@@ -82,6 +83,7 @@ export default function LearningPathProgress({
 
   // Minimal mode - Ultra simple for survey/quiz pages
   if (minimal) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const progress = calculateProgress();
     const currentStepData = STEPS[currentStep - 1];
 

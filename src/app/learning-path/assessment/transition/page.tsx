@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "antd";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { FiCheckCircle, FiArrowRight, FiAward, FiUser } from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
 import { FaMapLocationDot } from "react-icons/fa6";
