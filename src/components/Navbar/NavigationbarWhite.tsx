@@ -51,7 +51,7 @@ export default function Navigationbar() {
     { key: "home", label: "Trang chủ", href: "/home" },
     { key: "jobs", label: "Khóa học", href: "/course" },
     { key: "contact", label: "Liên hệ chúng tôi", href: "/contact" },
-    { key: "match", label: "Công việc phù hợp cho bạn", href: "/my-job" },
+    { key: "learningPath", label: "Đề xuất lộ trình học tập", href: "/learning-path" },
     { key: "quiz", label: "Quiz", href: "/quiz" },
     { key: "login", label: "Đăng nhập", button: true, type: "link" },
     { key: "signup", label: "Đăng Ký", button: true, type: "primary" },

@@ -180,21 +180,11 @@
     },
     "/api/v1/CourseQuiz/InsertStudentQuizCourse": {
       "post": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Lưu câu trả lời của sinh viên trong bài kiếm tra course",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -216,16 +206,10 @@
     },
     "/api/v1/CourseQuiz/SelectStudentQuizCourse": {
       "get": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Hiển thị bài kiểm tra course cho sinh viên",
         "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -820,39 +804,6 @@
         }
       },
       "additionalProperties": false
-    },
-    "AnswerRuleRequest": {
-      "type": "object",
-      "properties": {
-        "numericMin": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "numericMax": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "unit": {
-          "$ref": "#/definitions/AnswerRuleUnit"
-        },
-        "mappedField": {
-          "type": "string"
-        },
-        "formula": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "AnswerRuleUnit": {
-      "format": "int32",
-      "enum": [
-        1,
-        2,
-        3,
-        4
-      ],
-      "type": "integer"
     },
     "AnswerSurveySelects": {
       "type": "object",
@@ -2052,37 +2003,9 @@
         "questionResults": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/QuestionsCourseResultSelectResponseEntity"
+            "format": "uuid",
+            "type": "string"
           }
-        }
-      },
-      "additionalProperties": false
-    },
-    "StudentInformation": {
-      "required": [
-        "learningGoal",
-        "majorId",
-        "semesterId",
-        "technologies"
-      ],
-      "type": "object",
-      "properties": {
-        "majorId": {
-          "format": "uuid",
-          "type": "string"
-        },
-        "semesterId": {
-          "format": "uuid",
-          "type": "string"
-        },
-        "technologies": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Technology"
-          }
-        },
-        "learningGoal": {
-          "$ref": "#/definitions/LearningGoal"
         }
       },
       "additionalProperties": false
@@ -2177,10 +2100,7 @@
       "additionalProperties": false
     },
     "StudentSurveyInsertCommand": {
-      "required": [
-        "studentInformation",
-        "studentSurveys"
-      ],
+      "required": ["studentInformation"],
       "type": "object",
       "properties": {
         "studentInformation": {
@@ -2196,11 +2116,7 @@
       "additionalProperties": false
     },
     "StudentSurveyInsertRequest": {
-      "required": [
-        "answers",
-        "surveyCode",
-        "surveyId"
-      ],
+      "required": ["answers", "surveyId"],
       "type": "object",
       "properties": {
         "surveyId": {
@@ -2566,12 +2482,7 @@
       "additionalProperties": false
     },
     "SurveyInsertCommand": {
-      "required": [
-        "description",
-        "questions",
-        "surveyCode",
-        "title"
-      ],
+      "required": ["description", "questions", "title"],
       "type": "object",
       "properties": {
         "title": {

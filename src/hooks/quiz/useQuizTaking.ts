@@ -26,7 +26,7 @@ export interface UseQuizTakingReturn {
     nextQuestion: () => void;
     previousQuestion: () => void;
     goToQuiz: (quizIndex: number) => void;
-    submitTest: () => Promise<string | null>; // returns studentTestId
+    submitTest: () => Promise<string | null>; // returns learningPathId
     setTimeRemaining: (time: number) => void;
   };
 }
@@ -62,7 +62,13 @@ export function useQuizTaking(): UseQuizTakingReturn {
     setState((prev) => ({
       ...prev,
       isLoading: apiLoading,
-      error: apiError,
+      error:
+        apiError == null
+          ? null
+          : typeof apiError === "string"
+          ? apiError
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          : (apiError as any).message ?? JSON.stringify(apiError),
     }));
   }, [apiLoading, apiError]);
 
@@ -212,15 +218,74 @@ export function useQuizTaking(): UseQuizTakingReturn {
         answers,
       };
 
+      // 🚀 DETAILED LOGGING FOR BACKEND DEBUG
+      console.group("🔥 QUIZ SUBMISSION PAYLOAD DEBUG");
+      console.log("📋 Complete Test Data Payload:", JSON.stringify(testData, null, 2));
+      console.log("🆔 Test ID:", testId);
+      console.log("⏰ Started At:", startedAt);
+      console.log("📚 Quiz IDs:", quizIds);
+      console.log("📝 Total Answers Count:", answers.length);
+      console.log("🎯 Answers Breakdown:");
+      
+      // Group answers by quiz for easier debugging
+      const answersByQuiz: Record<string, Array<{questionId: string, answerId: string, questionText: string}>> = {};
+      answers.forEach(answer => {
+        const question = state.testDetail?.quizzes
+          .flatMap(q => q.questions)
+          .find(q => q.questionId === answer.questionId);
+        
+        if (question) {
+          const quizId = state.testDetail?.quizzes
+            .find(q => q.questions.some(qq => qq.questionId === answer.questionId))?.quizId;
+          
+          if (quizId) {
+            if (!answersByQuiz[quizId]) {
+              answersByQuiz[quizId] = [];
+            }
+            answersByQuiz[quizId].push({
+              questionId: answer.questionId,
+              answerId: answer.answerId,
+              questionText: question.questionText?.substring(0, 50) + "..." || "N/A"
+            });
+          }
+        }
+      });
+      
+      Object.entries(answersByQuiz).forEach(([quizId, quizAnswers]) => {
+        console.log(`  📖 Quiz ${quizId}: ${quizAnswers.length} answers`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        quizAnswers.forEach((answer: any, index: number) => {
+          console.log(`    ${index + 1}. Q: ${answer.questionText}`);
+          console.log(`       A: ${answer.answerId} (Question: ${answer.questionId})`);
+        });
+      });
+      
+      console.log("🔍 Raw State for Reference:");
+      console.log("  - Current Answers State:", state.answers);
+      console.log("  - Test Detail:", state.testDetail);
+      console.log("  - Time Remaining:", state.timeRemaining);
+      console.groupEnd();
+
       const result = await quizStore.submitTest(testData);
 
       console.log("📤 Submit test result:", result);
+      
+      // Additional result logging for debugging
+      if (!result.ok) {
+        console.error("❌ Quiz submission failed:");
+        console.error("  - Error:", result.error);
+        console.error("  - Full result object:", result);
+      } else {
+        console.log("✅ Quiz submission successful!");
+        console.log("  - Learning Path ID:", result.learningPathId);
+      }
 
       setState((prev) => ({ ...prev, isLoading: false }));
 
-      if (result.ok && result.studentTestId) {
-        return result.studentTestId;
+      if (result.ok && result.learningPathId) {
+        return result.learningPathId;
       } else {
+        console.error("🚨 Setting error state:", result.error || "Failed to submit test");
         setState((prev) => ({
           ...prev,
           error: result.error || "Failed to submit test",
@@ -228,6 +293,7 @@ export function useQuizTaking(): UseQuizTakingReturn {
         return null;
       }
     } catch (error) {
+      console.error("💥 Exception during quiz submission:", error);
       setState((prev) => ({
         ...prev,
         isLoading: false,

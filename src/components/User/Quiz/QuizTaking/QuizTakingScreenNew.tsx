@@ -28,6 +28,7 @@ import {
   mapBackendQuestionType,
   mapBackendDifficulty,
 } from "EduSmart/types/quiz";
+import { learningPathProgress } from "EduSmart/components/LearningPath";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -46,10 +47,16 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   const { state, actions } = useQuizTaking();
 
   const handleSubmitTest = useCallback(async () => {
-    const studentTestId = await actions.submitTest();
-    if (studentTestId) {
-      // Redirect to quiz result page with studentTestId
-      router.push(`/quiz-result?studentTestId=${studentTestId}`);
+    const learningPathId = await actions.submitTest();
+    if (learningPathId) {
+      // Mark step 2 as completed BEFORE redirecting
+      learningPathProgress.completeStep(2);
+      learningPathProgress.setLearningPathId(learningPathId);
+
+      // Redirect to new processing page with learningPathId for AI processing
+      router.push(
+        `/learning-path/assessment/processing?learningPathId=${learningPathId}`,
+      );
     }
   }, [actions, router]);
 
@@ -63,10 +70,19 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   // Loading state
   if (state.isLoading) {
     return (
-      <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Layout className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
         <Content className="p-6 flex items-center justify-center">
-          <Spin size="large" />
-          <Text className="ml-4">Đang tải bài kiểm tra...</Text>
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-100 to-cyan-100 flex items-center justify-center">
+              <Spin
+                size="large"
+                className="[&_.ant-spin-dot-item]:bg-[#49BBBD]"
+              />
+            </div>
+            <Text className="text-gray-600 dark:text-gray-400">
+              Đang tải bài kiểm tra...
+            </Text>
+          </div>
         </Content>
       </Layout>
     );
@@ -75,14 +91,21 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   // Error state
   if (state.error) {
     return (
-      <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Layout className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
         <Content className="p-6 flex items-center justify-center">
           <Alert
             message="Lỗi tải bài kiểm tra"
             description={state.error}
             type="error"
             showIcon
-            action={<Button onClick={onExit}>Quay lại</Button>}
+            action={
+              <Button
+                onClick={onExit}
+                className="bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none text-white hover:from-[#3da8aa] hover:to-cyan-700"
+              >
+                Quay lại
+              </Button>
+            }
           />
         </Content>
       </Layout>
@@ -96,14 +119,21 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
     state.testDetail.quizzes.length === 0
   ) {
     return (
-      <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Layout className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
         <Content className="p-6 flex items-center justify-center">
           <Alert
             message="Không tìm thấy bài kiểm tra"
             description="Bài kiểm tra không tồn tại hoặc đã bị lỗi."
             type="error"
             showIcon
-            action={<Button onClick={onExit}>Quay lại</Button>}
+            action={
+              <Button
+                onClick={onExit}
+                className="bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none text-white hover:from-[#3da8aa] hover:to-cyan-700"
+              >
+                Quay lại
+              </Button>
+            }
           />
         </Content>
       </Layout>
@@ -168,13 +198,13 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   };
 
   return (
-    <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <Layout className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
       <Content className="p-4 h-screen overflow-hidden">
         <Row gutter={16} className="w-full mx-auto h-full">
           {/* Left Sidebar - Quiz Navigation */}
           <Col span={8} className="h-full">
             <Card
-              title="Danh sách Quiz"
+              title="Danh sách bài kiểm tra"
               className="h-full"
               styles={{
                 body: {
@@ -188,14 +218,22 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                 {state.testDetail.quizzes.map((quiz, quizIndex) => (
                   <div
                     key={quiz.quizId}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`p-3 rounded-lg border cursor-pointer transition-all duration-300 ${
                       quizIndex === state.currentQuizIndex
-                        ? "bg-blue-50 border-blue-200"
-                        : "bg-white border-gray-200 hover:bg-gray-50"
+                        ? "bg-teal-50 border-teal-200 shadow-sm"
+                        : "bg-white border-gray-200 hover:bg-gray-50 hover:border-teal-100"
                     }`}
                     onClick={() => actions.goToQuiz(quizIndex)}
                   >
-                    <div className="font-medium text-sm">{quiz.title}</div>
+                    <div
+                      className={`font-medium text-sm ${
+                        quizIndex === state.currentQuizIndex
+                          ? "text-[#49BBBD]"
+                          : "text-gray-900"
+                      }`}
+                    >
+                      {quiz.title}
+                    </div>
                     {quiz.description && (
                       <div className="text-xs text-gray-400 mt-1">
                         {quiz.description}
@@ -214,7 +252,10 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                         }
                         size="small"
                         showInfo={false}
-                        strokeColor="#1890ff"
+                        strokeColor={{
+                          "0%": "#49BBBD",
+                          "100%": "#06b6d4",
+                        }}
                       />
                       <Text className="text-xs text-gray-500">
                         {
@@ -253,9 +294,12 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                           currentQuiz.questions.length) *
                         100
                       }
-                      strokeColor="#1890ff"
+                      strokeColor={{
+                        "0%": "#49BBBD",
+                        "100%": "#06b6d4",
+                      }}
                       format={() => (
-                        <span style={{ color: "#1890ff", fontWeight: "500" }}>
+                        <span style={{ color: "#49BBBD", fontWeight: "500" }}>
                           {state.currentQuestionIndex + 1}/
                           {currentQuiz.questions.length}
                         </span>
@@ -270,7 +314,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-x-2 mb-3">
-                      <Tag color="blue">
+                      <Tag color="cyan">
                         {isMultipleChoice
                           ? "Chọn nhiều đáp án"
                           : "Chọn 1 đáp án"}
@@ -288,7 +332,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                   </Title>
                 </div>
 
-                <div className="space-y-3">
+                <div className="">
                   {currentQuestion.answers?.map((answer) => (
                     <div key={answer.answerId} className="w-full">
                       {isMultipleChoice ? (
@@ -297,7 +341,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                           onChange={() => handleAnswerChange(answer.answerId)}
                           className="w-full"
                         >
-                          <div className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                          <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                             {answer.answerText}
                           </div>
                         </Checkbox>
@@ -307,7 +351,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                           onChange={() => handleAnswerChange(answer.answerId)}
                           className="w-full"
                         >
-                          <div className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                          <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
                             {answer.answerText}
                           </div>
                         </Radio>
@@ -325,6 +369,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                     onClick={actions.previousQuestion}
                     disabled={!canGoPrevious()}
                     size="large"
+                    className="hover:border-teal-400 hover:text-[#49BBBD]"
                   >
                     Câu trước
                   </Button>
@@ -343,6 +388,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                           size="large"
                           loading={state.isLoading}
                           disabled={!areAllQuestionsAnswered()}
+                          className="!bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 hover:shadow-lg"
                           title={
                             !areAllQuestionsAnswered()
                               ? "Vui lòng hoàn thành tất cả câu hỏi trước khi nộp bài"
@@ -359,6 +405,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
                         onClick={actions.nextQuestion}
                         disabled={!canGoNext()}
                         size="large"
+                        className="!bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 hover:shadow-lg"
                       >
                         Câu tiếp
                       </Button>
