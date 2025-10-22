@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { HiChevronLeft } from "react-icons/hi";
 import { IoTimeOutline } from "react-icons/io5";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 import { FadeInUp } from "EduSmart/components/Animation/FadeInUp";
+import { Modal } from "antd";
+
 
 /* ===== Types & Enums khớp với backend ===== */
 export type Answer = { answerId: string; answerText: string };
@@ -16,17 +19,20 @@ export type Question = {
 };
 export type QuizData = { questions: Question[] };
 
+
 export enum QuestionType {
   MultipleChoice = 1,
   TrueFalse = 2,
   SingleChoice = 3,
 }
 
+
 export type QuizResponseItem = {
   questionId: string;
   questionType: number;
   selectedAnswerIds: string[];
 };
+
 
 /* ===== NEW: Result types (theo payload BE) ===== */
 type ResultAnswer = {
@@ -45,6 +51,7 @@ export type QuizResult = {
   questionResults?: ResultQuestion[];
 };
 
+
 export interface QuizPlayerProps {
   data: QuizData;
   title?: string;
@@ -57,6 +64,7 @@ export interface QuizPlayerProps {
   showSidebar?: boolean;
   className?: string;
 
+
   /* ===== NEW: bật xem kết quả ===== */
   isShowResult?: boolean;
   /* ===== NEW: nếu isAttemp === false -> tự bật xem kết quả ===== */
@@ -64,6 +72,7 @@ export interface QuizPlayerProps {
   /* ===== NEW: dữ liệu kết quả từ BE ===== */
   result?: QuizResult;
 }
+
 
 export default function QuizPlayerComponent({
   data,
@@ -80,8 +89,12 @@ export default function QuizPlayerComponent({
 }: QuizPlayerProps) {
   const panelShadow = "shadow-[0_8px_30px_rgba(0,0,0,0.25)]";
 
+
   /* ===== NEW: quyết định có hiển thị kết quả không ===== */
   const showResult = (isShowResult ?? isAttemp === false) === true;
+  // 🔒 Đang làm bài khi KHÔNG ở chế độ xem kết quả
+  const isActiveAttempt = !showResult;
+
 
   // ===== State =====
   const total = data.questions.length;
@@ -92,14 +105,18 @@ export default function QuizPlayerComponent({
     () => ({ ...initialSelections }),
   );
 
+
   const currentQ = data.questions[currentIdx];
+
 
   /* ===== NEW: helpers lấy meta kết quả ===== */
   const findQResult = (qid: string) =>
     result?.questionResults?.find((q) => q.questionId === qid);
 
+
   const getAnswerMeta = (qid: string, aid: string) =>
     findQResult(qid)?.answers?.find((a) => a.answerId === aid);
+
 
   // ===== Progress =====
   const answeredCount = useMemo(() => {
@@ -117,21 +134,26 @@ export default function QuizPlayerComponent({
     );
   }, [showResult, result, data.questions, selections]);
 
+
   const progressPct = useMemo(
     () => (total > 0 ? Math.round((answeredCount / total) * 100) : 0),
     [answeredCount, total],
   );
 
+
   // ===== Helpers =====
   const letterOf = (i: number) => String.fromCharCode(65 + i);
   const isMultiple = currentQ?.questionType === QuestionType.MultipleChoice;
+
 
   // ===== Handlers =====
   const handlePick = (answerId: string) => {
     if (showResult) return; // NEW: khoá chọn khi đang xem kết quả
 
+
     const qid = currentQ.questionId;
     const type = currentQ.questionType;
+
 
     setSelections((prev) => {
       const cur = new Set(prev[qid] ?? []);
@@ -145,18 +167,22 @@ export default function QuizPlayerComponent({
     });
   };
 
+
   const goPrev = () => setCurrentIdx((i) => Math.max(0, i - 1));
   const goNext = () =>
     currentIdx < total - 1 ? setCurrentIdx((i) => i + 1) : handleSubmit();
 
+
   const handleSubmit = async () => {
     if (showResult) return; // NEW: không nộp khi đang xem kết quả
+
 
     const responses: QuizResponseItem[] = data.questions.map((q) => ({
       questionId: q.questionId,
       questionType: q.questionType,
       selectedAnswerIds: selections[q.questionId] ?? [],
     }));
+
 
     const payload = { questions: data.questions, responses };
     if (onSubmit) await onSubmit(payload);
@@ -165,6 +191,102 @@ export default function QuizPlayerComponent({
       console.log("Submitting payload:", payload);
     }
   };
+
+
+  // 🔒 Giữ tham chiếu handleSubmit mới nhất để anti-cheat gọi không bị "stale"
+  const submitRef = useRef<(() => void | Promise<void>) | null>(null);
+  useEffect(() => {
+    submitRef.current = handleSubmit;
+  });
+
+
+  // 🔒 Anti-cheat: phát hiện rời tab / Ctrl+Tab / minimize + chặn copy khi đang làm bài
+  const antiCheatTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (!isActiveAttempt) return;
+
+
+    const triggerAutoSubmit = () => {
+      if (antiCheatTriggeredRef.current) return;
+      antiCheatTriggeredRef.current = true;
+
+
+      Modal.warning({
+        title: "Phát hiện rời khỏi bài làm",
+        content:
+          "Bạn vừa rời khỏi tab/trình duyệt trong lúc làm bài. Hệ thống sẽ tự động nộp bài.",
+        centered: true,
+        okText: "Đã hiểu",
+      });
+
+
+      try {
+        submitRef.current?.();
+      } catch {}
+    };
+
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        triggerAutoSubmit();
+      }
+    };
+
+
+    const onBlur = () => {
+      // tránh blur do focus UI ngắn
+      setTimeout(() => {
+        if (document.visibilityState === "hidden") {
+          triggerAutoSubmit();
+        }
+      }, 80);
+    };
+
+
+    const prevent = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+
+    const onKeydown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        const k = e.key.toLowerCase();
+        if (k === "c" || k === "x" || k === "a") {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    };
+
+
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", onBlur);
+
+
+    document.addEventListener("copy", prevent, true);
+    document.addEventListener("cut", prevent, true);
+    document.addEventListener("contextmenu", prevent, true);
+    document.addEventListener("selectstart", prevent, true);
+    document.addEventListener("keydown", onKeydown, true);
+
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", onBlur);
+
+
+      document.removeEventListener("copy", prevent, true);
+      document.removeEventListener("cut", prevent, true);
+      document.removeEventListener("contextmenu", prevent, true);
+      document.removeEventListener("selectstart", prevent, true);
+      document.removeEventListener("keydown", onKeydown, true);
+
+
+      antiCheatTriggeredRef.current = false;
+    };
+  }, [isActiveAttempt]);
+
 
   if (!currentQ) {
     return (
@@ -181,11 +303,18 @@ export default function QuizPlayerComponent({
     );
   }
 
+
   /* ===== NEW: dữ liệu kết quả cho câu hiện tại ===== */
   const qResult = findQResult(currentQ.questionId);
 
+
   return (
-    <div className={className}>
+    <div
+      className={[className, isActiveAttempt ? "select-none" : ""].join(" ")}
+      onCopy={isActiveAttempt ? (e) => e.preventDefault() : undefined}
+      onCut={isActiveAttempt ? (e) => e.preventDefault() : undefined}
+      onContextMenu={isActiveAttempt ? (e) => e.preventDefault() : undefined}
+    >
       {/* ===== Background giữ nguyên ===== */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         {/* LIGHT base */}
@@ -228,6 +357,7 @@ export default function QuizPlayerComponent({
             <div className="absolute inset-x-0 -bottom-px h-4 bg-gradient-to-b from-black/8 to-transparent dark:from-black/24" />
           </div>
 
+
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
             <div className="relative flex items-center justify-between gap-3">
               <button
@@ -241,9 +371,11 @@ export default function QuizPlayerComponent({
                 <span className="hidden sm:inline">Back</span>
               </button>
 
+
               <div className="justify-self-end">
                 <ThemeSwitch />
               </div>
+
 
               <h1
                 className="
@@ -259,6 +391,7 @@ export default function QuizPlayerComponent({
             </div>
           </div>
         </div>
+
 
         <FadeInUp>
           {/* Progress */}
@@ -282,6 +415,7 @@ export default function QuizPlayerComponent({
             </div>
           </div>
 
+
           {/* Content */}
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 pb-10 sm:px-6 lg:grid-cols-[1fr_360px] lg:px-8">
             {/* Left */}
@@ -295,11 +429,13 @@ export default function QuizPlayerComponent({
                     {currentIdx + 1}/{total}
                   </span>
 
+
                   <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-neutral-300">
                       <IoTimeOutline className="text-base text-rose-400" />
                       00:00
                     </span>
+
 
                     <span
                       className={`inline-flex items-center gap-2 rounded-full px-3 py-1 bg-slate-100 dark:bg-white/5
@@ -330,9 +466,11 @@ export default function QuizPlayerComponent({
                   </div>
                 </div>
 
+
                 <p className="text-[22px] font-semibold leading-relaxed md:text-[26px]">
                   {currentQ.questionText}
                 </p>
+
 
                 {/* NEW: Explanation nếu có */}
                 {showResult && qResult?.explanation && (
@@ -341,6 +479,7 @@ export default function QuizPlayerComponent({
                   </div>
                 )}
               </div>
+
 
               {/* Options */}
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -354,16 +493,15 @@ export default function QuizPlayerComponent({
                       )
                     : new Set(selections[currentQ.questionId] ?? []);
 
+
                   const picked = selectedIds.has(a.answerId);
+
 
                   /* NEW: trạng thái kết quả cho đáp án */
                   const meta = getAnswerMeta(currentQ.questionId, a.answerId);
-                  const isCorrect = showResult
-                    ? !!meta?.isCorrectAnswer
-                    : false;
-                  const isWrongPicked = showResult
-                    ? picked && !isCorrect
-                    : false;
+                  const isCorrect = showResult ? !!meta?.isCorrectAnswer : false;
+                  const isWrongPicked = showResult ? picked && !isCorrect : false;
+
 
                   const base =
                     "group relative overflow-hidden flex items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition " +
@@ -372,12 +510,14 @@ export default function QuizPlayerComponent({
                     "border-slate-200 bg-white hover:bg-white shadow-sm " +
                     "dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10";
 
+
                   /* giữ hiệu ứng pick cũ khi chưa chấm */
                   const pickedState =
                     picked && !showResult
                       ? "border-indigo-500/60 ring-2 ring-indigo-400/60 bg-gradient-to-r from-indigo-500/10 to-indigo-500/5 " +
                         "dark:border-violet-500/60 dark:ring-violet-400/60 dark:from-violet-500/10 dark:to-violet-500/5 motion-safe:scale-[1.01]"
                       : "";
+
 
                   /* NEW: màu theo kết quả */
                   const resultState = showResult
@@ -387,6 +527,7 @@ export default function QuizPlayerComponent({
                         ? "border-rose-500/60 ring-2 ring-rose-400/70 bg-rose-500/5"
                         : ""
                     : "";
+
 
                   return (
                     <button
@@ -420,6 +561,7 @@ export default function QuizPlayerComponent({
                         ].join(" ")}
                       />
 
+
                       <div className="flex items-center gap-4">
                         {/* Badge chữ cái */}
                         <span
@@ -439,6 +581,7 @@ export default function QuizPlayerComponent({
                           {letterOf(idx)}
                         </span>
 
+
                         {/* Text đáp án */}
                         <span
                           className={[
@@ -455,6 +598,7 @@ export default function QuizPlayerComponent({
                           {a.answerText}
                         </span>
                       </div>
+
 
                       {/* Indicator: check */}
                       <span
@@ -478,6 +622,7 @@ export default function QuizPlayerComponent({
                 })}
               </div>
 
+
               {/* Actions */}
               <div className="flex items-center justify-between">
                 <button
@@ -493,20 +638,19 @@ export default function QuizPlayerComponent({
                   Quay lại
                 </button>
 
+
                 <button
                   onClick={goNext}
-                  disabled={
-                    showResult
-                  } /* NEW: không cho bấm khi đang xem kết quả */
+                  disabled={isActiveAttempt ? false : true /* xem kết quả thì khoá */}
                   className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold !text-white shadow-md active:translate-y-[1px] ${
-                    showResult
+                    !isActiveAttempt
                       ? "bg-slate-400 cursor-not-allowed"
                       : currentIdx === total - 1
                         ? "bg-emerald-600 hover:bg-emerald-500"
                         : "bg-sky-700 hover:bg-sky-600 dark:bg-violet-600 dark:hover:bg-violet-500"
                   }`}
                 >
-                  {showResult
+                  {!isActiveAttempt
                     ? "Đã chấm"
                     : currentIdx === total - 1
                       ? "Nộp bài"
@@ -514,6 +658,7 @@ export default function QuizPlayerComponent({
                 </button>
               </div>
             </section>
+
 
             {/* Right: Stats */}
             {showSidebar && (
@@ -524,6 +669,7 @@ export default function QuizPlayerComponent({
                   <h3 className="mb-3 text-lg font-semibold">
                     Thống kê bài làm
                   </h3>
+
 
                   <div className="space-y-4">
                     <div className="rounded-xl border p-4 border-slate-200 bg-white text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100">
@@ -544,6 +690,7 @@ export default function QuizPlayerComponent({
                       </div>
                     </div>
 
+
                     <div className="rounded-xl border p-4 border-slate-200 bg-white text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-neutral-100">
                       <div className="text-sm text-slate-500 dark:text-neutral-400">
                         Đi tới câu
@@ -551,6 +698,7 @@ export default function QuizPlayerComponent({
                       <div className="mt-2 flex flex-wrap gap-2">
                         {data.questions.map((q, i) => {
                           const isCurrent = i === currentIdx;
+
 
                           // NEW: đánh dấu đúng/sai trên navigator khi xem kết quả
                           const r = findQResult(q.questionId);
@@ -562,6 +710,7 @@ export default function QuizPlayerComponent({
                               ? a.selectedByStudent
                               : !a.selectedByStudent,
                           ); // đúng nếu chọn đúng tất cả (đơn giản hoá)
+
 
                           return (
                             <button
@@ -606,3 +755,6 @@ export default function QuizPlayerComponent({
     </div>
   );
 }
+
+
+

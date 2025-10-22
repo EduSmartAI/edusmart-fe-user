@@ -1668,35 +1668,15 @@
     },
     "QuizCourseUpdateCommand": {
       "required": [
-        "quizId"
+        "quizzes"
       ],
       "type": "object",
       "properties": {
-        "quizId": {
-          "format": "uuid",
-          "type": "string"
-        },
-        "durationMinutes": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "passingScorePercentage": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "shuffleQuestions": {
-          "type": "boolean"
-        },
-        "showResultsImmediately": {
-          "type": "boolean"
-        },
-        "allowRetake": {
-          "type": "boolean"
-        },
-        "questions": {
+        "quizzes": {
+          "minItems": 1,
           "type": "array",
           "items": {
-            "$ref": "#/definitions/QuestionUpdateRequest"
+            "$ref": "#/definitions/QuizUpdateRequest"
           }
         }
       },
@@ -1813,6 +1793,42 @@
         "totalQuestions": {
           "format": "int32",
           "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizUpdateRequest": {
+      "required": [
+        "quizId"
+      ],
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "durationMinutes": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "passingScorePercentage": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "shuffleQuestions": {
+          "type": "boolean"
+        },
+        "showResultsImmediately": {
+          "type": "boolean"
+        },
+        "allowRetake": {
+          "type": "boolean"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionUpdateRequest"
+          }
         }
       },
       "additionalProperties": false

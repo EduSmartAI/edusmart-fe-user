@@ -22,6 +22,7 @@ import styles from "EduSmart/components/Video/styles/VideoPlayer.module.css";
 import { Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { createPortal } from "react-dom";
+import { useCourseStore } from "EduSmart/stores/course/courseStore";
 
 // Bổ sung type cho field không có trong định nghĩa
 declare module "hls.js" {
@@ -73,6 +74,8 @@ type Props = {
     resumedAt: number;
   }) => void;
   timedOverlays?: TimedOverlay[];
+  lessonId?: string;
+  tickSec?: number;
 };
 
 type PlyrQualityOption = {
@@ -99,6 +102,8 @@ export default function YouTubeStylePlayer({
   onPause,
   onResume,
   timedOverlays = [],
+  lessonId,
+  tickSec = 3,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const trackRef = useRef<HTMLTrackElement | null>(null);
@@ -726,6 +731,74 @@ export default function YouTubeStylePlayer({
     v.addEventListener("timeupdate", onTimeUpdate);
     return () => v.removeEventListener("timeupdate", onTimeUpdate);
   }, []);
+
+  const studentLessonProgressUpdate = useCourseStore(
+    (s) => s.studentLessonProgressUpdate,
+  );
+
+  // + NEW: state/ref quản lý ticker
+  const watchingRef = useRef(false);
+  const tickerRef = useRef<number | null>(null);
+
+  // + NEW: start/stop ticker
+  const startTicker = useCallback(() => {
+    if (tickerRef.current || !lessonId) return;
+    tickerRef.current = window.setInterval(() => {
+      const v = videoRef.current;
+      if (!v) return;
+      // chỉ tick nếu thật sự đang xem
+      if (!watchingRef.current || v.paused) return;
+
+      const lastPositionSec = Math.floor(v.currentTime || 0);
+      // yêu cầu: luôn gửi 3 giây mỗi nhịp
+      studentLessonProgressUpdate(lessonId, lastPositionSec, tickSec).catch(() => {});
+    }, tickSec * 500);
+  }, [lessonId, tickSec, studentLessonProgressUpdate]);
+
+  const stopTicker = useCallback(() => {
+    if (tickerRef.current) {
+      clearInterval(tickerRef.current);
+      tickerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    const onPlaying = () => {
+      watchingRef.current = true;
+      startTicker();
+    };
+
+    const onPauseGeneric = () => {
+      watchingRef.current = false;
+      stopTicker();
+    };
+
+    const onWaiting = () => {
+      watchingRef.current = false;
+      stopTicker();
+    };
+
+    const onEnded = () => {
+      watchingRef.current = false;
+      stopTicker();
+    };
+
+    v.addEventListener("playing", onPlaying);
+    v.addEventListener("pause", onPauseGeneric);
+    v.addEventListener("waiting", onWaiting);
+    v.addEventListener("ended", onEnded);
+
+    return () => {
+      v.removeEventListener("playing", onPlaying);
+      v.removeEventListener("pause", onPauseGeneric);
+      v.removeEventListener("waiting", onWaiting);
+      v.removeEventListener("ended", onEnded);
+      stopTicker();
+    };
+  }, [startTicker, stopTicker]);
 
   return (
     <div className="w-full mx-auto">

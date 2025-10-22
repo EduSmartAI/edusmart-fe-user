@@ -362,16 +362,8 @@ export interface QuizCourseSelectQuestionDetailResponse {
 }
 
 export interface QuizCourseUpdateCommand {
-  /** @format uuid */
-  quizId: string;
-  /** @format int32 */
-  durationMinutes?: number;
-  /** @format int32 */
-  passingScorePercentage?: number;
-  shuffleQuestions?: boolean;
-  showResultsImmediately?: boolean;
-  allowRetake?: boolean;
-  questions?: QuestionUpdateRequest[];
+  /** @minItems 1 */
+  quizzes: QuizUpdateRequest[];
 }
 
 export interface QuizCourseUpdateResponse {
@@ -415,6 +407,19 @@ export interface QuizSelectsResponseEntity {
   subjectCodeName?: string;
   /** @format int32 */
   totalQuestions?: number;
+}
+
+export interface QuizUpdateRequest {
+  /** @format uuid */
+  quizId: string;
+  /** @format int32 */
+  durationMinutes?: number;
+  /** @format int32 */
+  passingScorePercentage?: number;
+  shuffleQuestions?: boolean;
+  showResultsImmediately?: boolean;
+  allowRetake?: boolean;
+  questions?: QuestionUpdateRequest[];
 }
 
 export interface QuizzDetailResponse {

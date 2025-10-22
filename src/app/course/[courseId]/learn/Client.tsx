@@ -23,6 +23,8 @@ import {
   QuestionCircleOutlined,
   CalendarOutlined,
   DownloadOutlined,
+  CheckCircleOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 
 import VideoPlayer, {
@@ -496,6 +498,9 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                   onResume={(info) =>
                     console.log(`Resumed after ${info.pausedForMs}ms`, info)
                   }
+                  lessonId={currentLessonId}
+                  tickSec={1}
+                  poster={course.courseImageUrl ?? "https://www.shutterstock.com/image-vector/play-button-icon-vector-illustration-600nw-1697833306.jpg"}
                 />
               </div>
             </div>
@@ -571,13 +576,25 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                                       className="m-0 cursor-pointer inline-flex items-center gap-1 shrink-0"
                                       onClick={(e) => {
                                         e.preventDefault();
-                                        e.stopPropagation(); 
+                                        e.stopPropagation();
                                         if (m.moduleId)
                                           startModuleQuiz(m.moduleId);
                                       }}
-                                      color="purple"
+                                      color={
+                                        m.canAttempt === false
+                                          ? "green"
+                                          : "purple"
+                                      }
                                     >
-                                      <QuestionCircleOutlined /> Quiz
+                                      {m.canAttempt === false ? (
+                                        <>
+                                          <CheckCircleOutlined /> Đã làm quiz
+                                        </>
+                                      ) : (
+                                        <>
+                                          <QuestionCircleOutlined /> Quiz
+                                        </>
+                                      )}
                                     </Tag>
                                   )}
                                 </a>
@@ -694,19 +711,42 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                                     {Array.isArray(it.lessonQuiz?.questions) &&
                                       it.lessonQuiz!.questions!.length > 0 && (
                                         <div className="shrink-0 self-center">
-                                          <Button
-                                            size="small"
-                                            type={
-                                              isActive ? "primary" : "default"
-                                            }
-                                            icon={<QuestionCircleOutlined />}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              startQuiz(it.lessonId!);
-                                            }}
-                                          >
-                                            Làm bài kiểm tra
-                                          </Button>
+                                          {(() => {
+                                            const isDone =
+                                              it.canAttempt === false;
+                                            return (
+                                              <Button
+                                                size="small"
+                                                type={
+                                                  isDone
+                                                    ? "default"
+                                                    : isActive
+                                                      ? "primary"
+                                                      : "default"
+                                                }
+                                                icon={
+                                                  isDone ? (
+                                                    <EyeOutlined />
+                                                  ) : (
+                                                    <QuestionCircleOutlined />
+                                                  )
+                                                }
+                                                className={
+                                                  isDone
+                                                    ? "bg-green-50 text-green-700 border-green-300 hover:!bg-green-100"
+                                                    : undefined
+                                                }
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  startQuiz(it.lessonId!);
+                                                }}
+                                              >
+                                                {isDone
+                                                  ? "Xem kết quả"
+                                                  : "Làm bài kiểm tra"}
+                                              </Button>
+                                            );
+                                          })()}
                                         </div>
                                       )}
                                   </div>

@@ -1,12 +1,15 @@
 import { StudentCourseQuizSelectResponse, StudentQuizCourseInsertResponse } from "EduSmart/api/api-quiz-service";
 import apiServer from "EduSmart/lib/apiServer";
+import { unstable_noStore } from "next/cache";
 
 export async function GetResultOfQuizByQuizResultId(
   id: string,
 ): Promise<{
   data: StudentCourseQuizSelectResponse;
 }> {
+  unstable_noStore();
   try {
+    console.log("GetResultOfQuizByQuizResultId - id:", id);
     const res = await apiServer.quiz.api.v1CourseQuizSelectStudentQuizCourseList({
       StudentQuizCourseId: id ?? "",
     });
