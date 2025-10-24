@@ -35,7 +35,7 @@ const isMac = () =>
   /(Mac|iPhone|iPad|iPod)/i.test(navigator.platform);
 
 export default function BaseControlSearchInput({
-  placeholder = "Type keywords...",
+  placeholder = "Nhập từ khóa tìm kiếm...",
   hintLabel,
   onSearch,
   onSelect,
@@ -138,7 +138,12 @@ export default function BaseControlSearchInput({
     }
   }, [activeIndex]);
 
-  const handleSelect = (item: SearchItem) => {
+  const handleSelect = async (item: SearchItem) => {
+    if (item.id === "__query__") {
+      onSelect?.({ id: "__query__", title: query.trim() });
+      setOpen(false);
+      return;
+    }
     onSelect?.(item);
     setOpen(false);
   };
@@ -160,7 +165,9 @@ export default function BaseControlSearchInput({
     return hasExact ? results : [queryRow, ...results];
   }, [results, query]);
 
-  const onInputKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+  const onInputKeyDown: React.KeyboardEventHandler<HTMLInputElement> = async (
+    e,
+  ) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActiveIndex((i) =>
@@ -170,8 +177,16 @@ export default function BaseControlSearchInput({
       e.preventDefault();
       setActiveIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
-      const item = displayResults[activeIndex];
-      if (item) handleSelect(item); // Enter sẽ chọn dòng đầu tiên là chính chuỗi đang gõ
+      const q = query.trim();
+      // Nếu trống ⇒ coi như chọn "__query__" với title=""
+      if (!q) {
+        onSelect?.({ id: "__query__", title: "" });
+        setOpen(false);
+        return;
+      }
+      // Nếu có chữ ⇒ chọn item active; fallback về "__query__"
+      const item = displayResults[activeIndex] ?? { id: "__query__", title: q };
+      await handleSelect(item);
     } else if (e.key === "PageDown") {
       e.preventDefault();
       setActiveIndex((i) =>
@@ -268,7 +283,7 @@ export default function BaseControlSearchInput({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onInputKeyDown}
-              placeholder="What are you looking for?"
+              placeholder="Bạn đang tìm gì?"
               prefix={
                 <SearchOutlined style={{ color: token.colorTextQuaternary }} />
               }

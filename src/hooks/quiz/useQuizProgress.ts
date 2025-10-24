@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useMemo } from "react";
 import { useQuizStore } from "EduSmart/stores/Quiz/QuizStore";
 import { SeriesStatus, QuizStatus } from "EduSmart/types/quiz";

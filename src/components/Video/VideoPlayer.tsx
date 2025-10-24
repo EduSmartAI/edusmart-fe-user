@@ -728,7 +728,7 @@ export default function YouTubeStylePlayer({
   }, []);
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto">
+    <div className="w-full mx-auto">
       <div className={`${styles.player} relative w-full`}>
         <video
           ref={videoRef}

@@ -26,7 +26,7 @@ export interface UseQuizTakingReturn {
     nextQuestion: () => void;
     previousQuestion: () => void;
     goToQuiz: (quizIndex: number) => void;
-    submitTest: () => Promise<string | null>; // returns studentTestId
+    submitTest: () => Promise<string | null>; // returns learningPathId
     setTimeRemaining: (time: number) => void;
   };
 }
@@ -62,7 +62,13 @@ export function useQuizTaking(): UseQuizTakingReturn {
     setState((prev) => ({
       ...prev,
       isLoading: apiLoading,
-      error: apiError,
+      error:
+        apiError == null
+          ? null
+          : typeof apiError === "string"
+          ? apiError
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          : (apiError as any).message ?? JSON.stringify(apiError),
     }));
   }, [apiLoading, apiError]);
 
@@ -247,6 +253,7 @@ export function useQuizTaking(): UseQuizTakingReturn {
       
       Object.entries(answersByQuiz).forEach(([quizId, quizAnswers]) => {
         console.log(`  📖 Quiz ${quizId}: ${quizAnswers.length} answers`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         quizAnswers.forEach((answer: any, index: number) => {
           console.log(`    ${index + 1}. Q: ${answer.questionText}`);
           console.log(`       A: ${answer.answerId} (Question: ${answer.questionId})`);
@@ -270,13 +277,13 @@ export function useQuizTaking(): UseQuizTakingReturn {
         console.error("  - Full result object:", result);
       } else {
         console.log("✅ Quiz submission successful!");
-        console.log("  - Student Test ID:", result.studentTestId);
+        console.log("  - Learning Path ID:", result.learningPathId);
       }
 
       setState((prev) => ({ ...prev, isLoading: false }));
 
-      if (result.ok && result.studentTestId) {
-        return result.studentTestId;
+      if (result.ok && result.learningPathId) {
+        return result.learningPathId;
       } else {
         console.error("🚨 Setting error state:", result.error || "Failed to submit test");
         setState((prev) => ({

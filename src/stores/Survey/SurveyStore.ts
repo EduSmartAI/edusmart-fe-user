@@ -20,6 +20,7 @@ import {
   // getSurveyDetailAction, // Unused - can be removed
   getSurveyByCodeAction,
 } from "EduSmart/app/(survey)/surveyAction";
+import { StoreError, createStoreError } from "EduSmart/types/errors";
 // Client API imports removed - now using server actions to avoid CORS
 // Types will be imported from the API client
 
@@ -59,7 +60,7 @@ export interface SurveyState {
   // Submission state
   isSubmitting: boolean;
   surveyId: string | null;
-  submitError: string | null;
+  submitError: StoreError | null; // ✅ NEW: Typed error object
 
   // Draft state
   isDraftSaving: boolean;
@@ -156,7 +157,7 @@ export interface SurveyActions {
   // Submission management - Internal state setters
   setSubmittingState: (isSubmitting: boolean) => void;
   setSurveyId: (id: string | null) => void;
-  setSubmitError: (error: string | null) => void;
+  setSubmitError: (error: StoreError | null) => void; // ✅ NEW: Accept StoreError
 
   // Draft management - Internal state setters
   setDraftSaving: (isSaving: boolean) => void;
@@ -305,11 +306,11 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
 
       // Utility
       resetSurvey: () => {
-        set(initialState);
-        // Xóa dữ liệu khảo sát khỏi localStorage
+        // Xóa dữ liệu khảo sát khỏi localStorage TRƯỚC KHI reset state
         if (typeof window !== "undefined") {
           try {
             localStorage.removeItem("survey-storage");
+            console.log("✅ Removed survey-storage from localStorage");
           } catch (err) {
             console.warn(
               "Không thể xóa survey-storage khỏi localStorage:",
@@ -317,6 +318,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             );
           }
         }
+        // Reset state về initialState
+        set(initialState);
+        console.log("✅ Survey state reset to initial");
       },
 
       clearSurveyData: () =>
@@ -372,7 +376,13 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           !allData.survey2Data ||
           !allData.survey3Data
         ) {
-          set({ submitError: "Hãy hoàn thành tất cả khảo sát trước khi gửi." });
+          // ✅ NEW: Create StoreError for validation
+          set({
+            submitError: createStoreError({
+              error: "Hãy hoàn thành tất cả khảo sát trước khi gửi.",
+              status: 400, // Validation error
+            }),
+          });
           return { success: false, error: "Dữ liệu khảo sát không đầy đủ" };
         }
 
@@ -390,8 +400,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
           if (result.ok && result.surveyId) {
             set({ surveyId: result.surveyId });
 
-            // Clear toàn bộ dữ liệu survey sau khi submit thành công
-            get().resetSurvey();
+            // ✅ DON'T clear survey data here - let the parent component handle it after redirect
+            // This prevents the UI from flashing back to Survey1 before redirect completes
+            // get().resetSurvey(); // ❌ REMOVED - causes UI flash
 
             // Auto-load recommendations (optional, don't fail if this fails)
             try {
@@ -402,22 +413,35 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
                 set({ recommendations: loadResult.data.recommendations });
               }
             } catch (recommendationError) {
-              console.warn("Failed to load recommendations:", recommendationError);
+              console.warn(
+                "Failed to load recommendations:",
+                recommendationError,
+              );
               // Don't fail the entire submission if recommendations fail
             }
 
             return { success: true, surveyId: result.surveyId };
           } else {
-            set({ submitError: result.error || "Không thể gửi khảo sát. Vui lòng thử lại sau." });
-            return { success: false, error: result.error || "Không thể gửi khảo sát. Vui lòng thử lại sau." };
+            // ✅ NEW: Create StoreError from action result
+            const storeError = createStoreError({
+              error:
+                result.error || "Không thể gửi khảo sát. Vui lòng thử lại sau.",
+              status: result.status,
+            });
+
+            set({ submitError: storeError });
+            return { success: false, error: storeError.message };
           }
         } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : "Không thể gửi khảo sát. Vui lòng thử lại sau.";
-          set({ submitError: errorMessage });
-          return { success: false, error: errorMessage };
+          // ✅ NEW: Create StoreError from exception
+          const storeError = createStoreError({
+            error:
+              error instanceof Error
+                ? error.message
+                : "Không thể gửi khảo sát. Vui lòng thử lại sau.",
+          });
+          set({ submitError: storeError });
+          return { success: false, error: storeError.message };
         } finally {
           set({ isSubmitting: false });
         }
@@ -525,13 +549,17 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingSemesters: false });
             return {
               success: false,
-              error: response.error || "Không thể tải danh sách kỳ học. Vui lòng thử lại sau.",
+              error:
+                response.error ||
+                "Không thể tải danh sách kỳ học. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
           set({ isLoadingSemesters: false });
           const errorMessage =
-            error instanceof Error ? error.message : "Không thể tải danh sách kỳ học. Vui lòng thử lại sau.";
+            error instanceof Error
+              ? error.message
+              : "Không thể tải danh sách kỳ học. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -548,13 +576,17 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingMajors: false });
             return {
               success: false,
-              error: response.error || "Không thể tải danh sách chuyên ngành. Vui lòng thử lại sau.",
+              error:
+                response.error ||
+                "Không thể tải danh sách chuyên ngành. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
           set({ isLoadingMajors: false });
           const errorMessage =
-            error instanceof Error ? error.message : "Không thể tải danh sách chuyên ngành. Vui lòng thử lại sau.";
+            error instanceof Error
+              ? error.message
+              : "Không thể tải danh sách chuyên ngành. Vui lòng thử lại sau.";
           return { success: false, error: errorMessage };
         }
       },
@@ -571,7 +603,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingTechnologies: false });
             return {
               success: false,
-              error: response.error || "Không thể tải danh sách công nghệ. Vui lòng thử lại sau.",
+              error:
+                response.error ||
+                "Không thể tải danh sách công nghệ. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -599,7 +633,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingLearningGoals: false });
             return {
               success: false,
-              error: response.error || "Không thể tải danh sách mục tiêu học tập. Vui lòng thử lại sau.",
+              error:
+                response.error ||
+                "Không thể tải danh sách mục tiêu học tập. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -624,7 +660,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingSurveyList: false });
             return {
               success: false,
-              error: response.error || "Không thể tải danh sách khảo sát. Vui lòng thử lại sau.",
+              error:
+                response.error ||
+                "Không thể tải danh sách khảo sát. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -652,7 +690,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingInterestSurvey: false });
             return {
               success: false,
-              error: response.error || "Không thể tải khảo sát sở thích. Vui lòng thử lại sau.",
+              error:
+                response.error ||
+                "Không thể tải khảo sát sở thích. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -680,7 +720,9 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             set({ isLoadingHabitSurvey: false });
             return {
               success: false,
-              error: response.error || "Không thể tải khảo sát thói quen học tập. Vui lòng thử lại sau.",
+              error:
+                response.error ||
+                "Không thể tải khảo sát thói quen học tập. Vui lòng thử lại sau.",
             };
           }
         } catch (error) {
@@ -720,8 +762,11 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             learningGoalsResult,
             interestSurveyResult,
             habitSurveyResult,
-          ].filter((result) => result.status === "rejected" || 
-            (result.status === "fulfilled" && !result.value.success));
+          ].filter(
+            (result) =>
+              result.status === "rejected" ||
+              (result.status === "fulfilled" && !result.value.success),
+          );
 
           if (failures.length > 0) {
             console.warn("Some data failed to load:", failures);
@@ -733,7 +778,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
                 return "Unknown error";
               })
               .join(", ");
-            
+
             return {
               success: false,
               error: `Không thể tải dữ liệu khảo sát: ${errorMessages}`,

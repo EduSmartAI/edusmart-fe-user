@@ -164,7 +164,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
                     )}
                     <div className="mt-6">
                       <Button style={{ marginRight: 8 }}>Chọn</Button>
-                      <Button type="primary">Mua ngay</Button>
+                      <Button type="primary">Xem ngay</Button>
                     </div>
                   </div>
                 </>

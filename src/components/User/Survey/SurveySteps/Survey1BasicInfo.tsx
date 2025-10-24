@@ -377,17 +377,12 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
     return (
       <Card
         key={question.questionId}
-        className="mb-5 border-0 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300"
-        style={{
-          background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-          boxShadow:
-            "0 2px 4px -1px rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.04)",
-        }}
+        className="!mb-5 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 bg-white dark:bg-gray-800/50"
       >
         <div className="p-5">
           {/* Question Header */}
           <div className="flex items-center gap-4 mb-5">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full flex items-center justify-center font-bold text-base shadow-md">
+            <div className="w-8 h-8 bg-gradient-to-r from-[#49BBBD] to-cyan-600 text-white rounded-full flex items-center justify-center font-bold text-base shadow-md">
               {index + 1}
             </div>
             <div className="flex-1">
@@ -408,7 +403,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
             }
             className="w-full"
           >
-            <div className="grid gap-3">
+            <div className="grid">
               {question.answers.map((answer) => (
                 <Radio
                   key={answer.answerId}
@@ -416,18 +411,18 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                   className="!m-0 w-full group"
                 >
                   <div
-                    className={`w-full p-3 rounded-lg transition-all duration-200 cursor-pointer group-hover:scale-[1.01] ${
+                    className={`w-full px-3 py-5 rounded-lg transition-all duration-200 cursor-pointer group-hover:scale-[1.01] ${
                       selectedAnswer?.selectedAnswerId === answer.answerId
-                        ? "border-blue-400 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 shadow"
-                        : "border-gray-200 dark:border-gray-600 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-700/30"
+                        ? "border-[#49BBBD] bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30 shadow-md"
+                        : "border-gray-200 dark:border-gray-600 hover:border-[#49BBBD] hover:bg-gray-50 dark:hover:bg-gray-700/50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Text
                         className={`text-sm font-medium ${
                           selectedAnswer?.selectedAnswerId === answer.answerId
-                            ? "text-blue-700 dark:text-blue-300"
-                            : "text-gray-700 dark:text-gray-200"
+                            ? "text-[#49BBBD] dark:text-[#5fd4d6]"
+                            : "text-gray-700 dark:text-gray-300"
                         }`}
                       >
                         {answer.answerText}
@@ -456,7 +451,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
       <div className="max-w-4xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-teal-100 to-cyan-100 dark:bg-teal-900/30 rounded-full mb-4">
             <span className="text-2xl">👤</span>
           </div>
           <Title
@@ -582,8 +577,8 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
               {shouldShowInterestSurvey() && (
                 <div className="mb-6">
                   {/* Survey Header */}
-                  <div className="text-center mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full mb-4 shadow-md">
+                  <div className="text-center mb-6 p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-xl border border-teal-100 dark:border-teal-800">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-[#49BBBD] to-cyan-600 rounded-full mb-4 shadow-md">
                       <span className="text-xl">📋</span>
                     </div>
                     <Title
@@ -610,11 +605,11 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                               interestSurveyQuestions.length
                                 ? "bg-green-500"
                                 : interestSurveyAnswers.length > 0
-                                  ? "bg-blue-500"
+                                  ? "bg-[#49BBBD]"
                                   : "bg-gray-300"
                             }`}
                           />
-                          <Text className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                          <Text className="text-xs font-bold text-[#49BBBD] dark:text-cyan-400">
                             {interestSurveyAnswers.length}/
                             {interestSurveyQuestions.length}
                           </Text>
@@ -622,7 +617,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                       </div>
                       <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                         <div
-                          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500 ease-out shadow-sm"
+                          className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#49BBBD] to-cyan-600 rounded-full transition-all duration-500 ease-out shadow-sm"
                           style={{
                             width: `${(interestSurveyAnswers.length / interestSurveyQuestions.length) * 100}%`,
                           }}
@@ -663,13 +658,13 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
               <div className="flex justify-between mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
                 <Button
                   type="default"
-                  icon={<ArrowLeftOutlined />}
                   onClick={handleBack}
+                  icon={<ArrowLeftOutlined />}
                   disabled={!onBack}
                   size="large"
-                  className="px-6 py-3 h-auto rounded-xl border-gray-200 hover:border-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200"
+                  className="px-6 py-3 h-auto rounded-xl border-red-200 hover:border-red-400 text-red-600 hover:text-red-700 dark:hover:text-red-400 transition-all duration-200"
                 >
-                  Quay lại
+                  Thoát
                 </Button>
 
                 <Button
@@ -677,7 +672,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                   icon={<ArrowRightOutlined />}
                   htmlType="submit"
                   size="large"
-                  className="px-8 py-3 h-auto rounded-xl bg-blue-600 hover:bg-blue-700 border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="px-8 py-3 h-auto rounded-xl !bg-gradient-to-r from-[#49BBBD] to-cyan-600 hover:from-[#3da8aa] hover:to-cyan-700 border-0 shadow-lg hover:shadow-xl transition-all duration-200"
                 >
                   Tiếp tục
                 </Button>

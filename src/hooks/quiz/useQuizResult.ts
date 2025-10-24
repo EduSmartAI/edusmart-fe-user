@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /*
  * Quiz Result Hook
  * Hook to manage quiz result data and transform for QuizResultScreen component
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useQuizStore } from "EduSmart/stores/Quiz/QuizStore";
 import { QuestionType, mapBackendQuestionType } from "EduSmart/types/quiz";
 import type { StudentTestResult } from "EduSmart/app/(quiz)/quizAction";
@@ -54,6 +55,22 @@ interface UseQuizResultResult {
 export function useQuizResult(): UseQuizResultResult {
   const { testResult, loadTestResult, isLoading, error } = useQuizStore();
   const [results, setResults] = useState<QuizResultData[]>([]);
+
+  const formattedError = useMemo<string | null>(() => {
+    if (!error) return null;
+    if (typeof error === "string") return error;
+    const maybeMsg =
+      (error as any)?.message ??
+      (error as any)?.error ??
+      (error as any)?.msg ??
+      (error as any)?.reason;
+    if (typeof maybeMsg === "string") return maybeMsg;
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return "Unexpected error";
+    }
+  }, [error]);
 
   const transformTestResult = useCallback(
     (testResult: StudentTestResult): QuizResultData[] => {
@@ -148,7 +165,7 @@ export function useQuizResult(): UseQuizResultResult {
   return {
     results,
     isLoading,
-    error,
+    error: formattedError,
     loadResult,
     transformTestResult,
   };

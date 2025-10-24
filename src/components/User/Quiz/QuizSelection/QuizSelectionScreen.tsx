@@ -1,23 +1,33 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuizList, useQuizTest } from "EduSmart/hooks/quiz";
 import { Quiz } from "EduSmart/types/quiz";
 import QuizSelectionHeader from "EduSmart/components/User/Quiz/QuizSelection/QuizSelectionHeader";
 import QuizSelectionList from "EduSmart/components/User/Quiz/QuizSelection/QuizSelectionList";
 import ActionButtons from "EduSmart/components/User/Quiz/QuizSelection/ActionButtons";
-import { Spin, Button } from "antd";
+import { Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
-import { FiRefreshCcw } from "react-icons/fi";
+import { throwStoreError } from "EduSmart/types/errors";
+import {
+  LearningPathExitConfirmModal,
+  learningPathProgress,
+} from "EduSmart/components/LearningPath";
+import { useSurvey } from "EduSmart/hooks/survey";
 
 interface QuizSelectionScreenProps {
   onQuizSelect: (testId: string) => void;
   onSkip?: () => void;
+  showProgress?: boolean; // Cho Learning Path
 }
 
 const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
   onQuizSelect,
   onSkip,
 }) => {
+  const router = useRouter();
+  const survey = useSurvey();
+
   // API hooks để lấy danh sách quiz từ backend
   const {
     quizzes: availableQuizzes,
@@ -33,6 +43,7 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
     "all" | "completed" | "pending"
   >("all");
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   // Load quizzes khi component mount
   useEffect(() => {
@@ -108,19 +119,50 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
           onQuizSelect(result.testId!);
         } else {
           console.error("Failed to create test:", result.error);
-          // TODO: Show error message to user
         }
       } catch (error) {
         console.error("Error creating test:", error);
-        // TODO: Show error message to user
       }
     }
   };
 
   const handleSkip = () => {
+    // Show exit confirmation modal instead of exiting directly
+    setShowExitModal(true);
+  };
+
+  const handleConfirmExit = () => {
+    console.log(
+      "🚪 User confirmed exit from quiz selection - clearing all data",
+    );
+
+    // 1. Clear all learning path progress data
+    learningPathProgress.clearProgress();
+
+    // 2. Reset survey store
+    survey.resetSurvey();
+
+    // 3. Clear any other survey-related data in localStorage
+    localStorage.removeItem("survey_data");
+    localStorage.removeItem("survey_step");
+    localStorage.removeItem("survey-storage");
+
+    console.log("✅ All data cleared successfully");
+
+    // 4. Close modal
+    setShowExitModal(false);
+
+    // 5. Call onSkip if provided or redirect to overview
     if (onSkip) {
       onSkip();
+    } else {
+      router.push("/learning-path/overview");
     }
+  };
+
+  const handleCancelExit = () => {
+    console.log("User cancelled exit from quiz selection");
+    setShowExitModal(false);
   };
 
   // Create currentSeries for header (backward compatibility)
@@ -134,13 +176,13 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
   // Show loading state
   if (isLoading || !hasInitialized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <Spin
               indicator={
                 <LoadingOutlined
-                  style={{ fontSize: 24, color: "#3b82f6" }}
+                  style={{ fontSize: 24, color: "#49BBBD" }}
                   spin
                 />
               }
@@ -157,37 +199,13 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
     );
   }
 
-  // Show error state
+  // ✅ Throw HttpError để ErrorBoundary bắt (LearningPathErrorBoundary hoặc page-level boundary)
   if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="max-w-md mx-auto px-6 text-center">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-700">
-            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FiRefreshCcw className="w-8 h-8 text-red-500" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Không thể tải danh sách quiz
-            </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              {error}
-            </p>
-            <Button
-              type="primary"
-              onClick={() => loadQuizzes()}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 border-none hover:from-blue-700 hover:to-purple-700 px-6 py-2 h-auto font-semibold rounded-lg"
-              icon={<FiRefreshCcw className="w-4 h-4" />}
-            >
-              Thử lại
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
+    throwStoreError(error);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header Section */}
         <QuizSelectionHeader
@@ -213,8 +231,21 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
         onStart={handleStartSelected}
         disabled={selectedQuizIds.length === 0}
       />
+
+      {/* Exit Confirmation Modal */}
+      <LearningPathExitConfirmModal
+        open={showExitModal}
+        title="Xác nhận thoát đánh giá năng lực"
+        warningMessage="Tất cả dữ liệu khảo sát và tiến độ của bạn sẽ bị xóa. Bạn sẽ cần bắt đầu lại từ đầu nếu muốn tiếp tục lộ trình học tập."
+        confirmText="Thoát và xóa dữ liệu"
+        cancelText="Tiếp tục làm bài"
+        onConfirm={handleConfirmExit}
+        onCancel={handleCancelExit}
+        type="warning"
+      />
     </div>
   );
 };
 
+// Export directly - ErrorBoundary should be at page/layout level
 export default QuizSelectionScreen;

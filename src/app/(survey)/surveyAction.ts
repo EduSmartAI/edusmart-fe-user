@@ -236,6 +236,7 @@ export async function getSemesterAction(): Promise<{
     semesterNumber: number;
   }>;
   error?: string;
+  status?: number;
 }> {
   try {
     console.log("🔒 SERVER ACTION: Getting semesters via server");
@@ -256,12 +257,12 @@ export async function getSemesterAction(): Promise<{
 
     throw new Error(response.data?.message || "Failed to get semesters");
   } catch (error) {
-    console.error("Server Action - Get semesters error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to get semesters";
+    const nErr = await normalizeFetchError(error);
+    console.error("Server Action - Get semesters error:", nErr);
     return {
       ok: false,
-      error: errorMessage,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -278,6 +279,7 @@ export async function getMajorAction(): Promise<{
     parentMajorId?: string;
   }>;
   error?: string;
+  status?: number;
 }> {
   try {
     console.log("🔒 SERVER ACTION: Getting majors via server");
@@ -298,12 +300,12 @@ export async function getMajorAction(): Promise<{
 
     throw new Error(response.data?.message || "Failed to get majors");
   } catch (error) {
-    console.error("Server Action - Get majors error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to get majors";
+    const nErr = await normalizeFetchError(error);
+    console.error("Server Action - Get majors error:", nErr);
     return {
       ok: false,
-      error: errorMessage,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -319,6 +321,7 @@ export async function getLearningGoalAction(): Promise<{
     learningGoalType: number;
   }>;
   error?: string;
+  status?: number;
 }> {
   try {
     console.log("🔒 SERVER ACTION: Getting learning goals via server");
@@ -339,12 +342,12 @@ export async function getLearningGoalAction(): Promise<{
 
     throw new Error(response.data?.message || "Failed to get learning goals");
   } catch (error) {
-    console.error("Server Action - Get learning goals error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to get learning goals";
+    const nErr = await normalizeFetchError(error);
+    console.error("Server Action - Get learning goals error:", nErr);
     return {
       ok: false,
-      error: errorMessage,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -360,6 +363,7 @@ export async function getTechnologyAction(): Promise<{
     technologyType: number;
   }>;
   error?: string;
+  status?: number;
 }> {
   try {
     console.log("🔒 SERVER ACTION: Getting technologies via server");
@@ -380,12 +384,12 @@ export async function getTechnologyAction(): Promise<{
 
     throw new Error(response.data?.message || "Failed to get technologies");
   } catch (error) {
-    console.error("Server Action - Get technologies error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to get technologies";
+    const nErr = await normalizeFetchError(error);
+    console.error("Server Action - Get technologies error:", nErr);
     return {
       ok: false,
-      error: errorMessage,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -402,6 +406,7 @@ export async function getSurveyListAction(): Promise<{
     surveyCode: string;
   }>;
   error?: string;
+  status?: number;
 }> {
   try {
     console.log("🔒 SERVER ACTION: Getting survey list via server");
@@ -423,11 +428,12 @@ export async function getSurveyListAction(): Promise<{
 
     throw new Error(response.data?.message || "Failed to get survey list");
   } catch (error) {
-    console.error("Server Action - Get survey list error:", error);
+    const nErr = await normalizeFetchError(error);
+    console.error("Server Action - Get survey list error:", nErr);
     return {
       ok: false,
-      error:
-        error instanceof Error ? error.message : "Failed to get survey list",
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -458,6 +464,7 @@ export async function getSurveyDetailAction(
     }>;
   };
   error?: string;
+  status?: number;
 }> {
   try {
     console.log(
@@ -502,11 +509,12 @@ export async function getSurveyDetailAction(
 
     throw new Error(response.data?.message || "Failed to get survey detail");
   } catch (error) {
-    console.error("Server Action - Get survey detail error:", error);
+    const nErr = await normalizeFetchError(error);
+    console.error("Server Action - Get survey detail error:", nErr);
     return {
       ok: false,
-      error:
-        error instanceof Error ? error.message : "Failed to get survey detail",
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -533,6 +541,7 @@ export async function getSurveyByCodeAction(surveyCode: string): Promise<{
     }>;
   };
   error?: string;
+  status?: number;
 }> {
   try {
     console.log(
@@ -589,11 +598,12 @@ export async function getSurveyByCodeAction(surveyCode: string): Promise<{
 
     throw new Error(`Survey with code ${surveyCode} not found`);
   } catch (error) {
-    console.error("Server Action - Get survey by code error:", error);
+    const nErr = await normalizeFetchError(error);
+    console.error("Server Action - Get survey by code error:", nErr);
     return {
       ok: false,
-      error:
-        error instanceof Error ? error.message : "Failed to get survey by code",
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -609,6 +619,7 @@ export async function submitSurveyAction(surveyData: {
   ok: boolean;
   surveyId?: string;
   error?: string;
+  status?: number;
 }> {
   try {
     const { survey1Data, survey2Data, survey3Data } = surveyData;
@@ -807,7 +818,44 @@ export async function submitSurveyAction(surveyData: {
       };
     }
 
-    console.log("📋 Submitting survey with validated payload:", finalPayload);
+    // 🚀 DETAILED SURVEY SUBMISSION LOGGING
+    console.group("🔥 SURVEY SUBMISSION PAYLOAD DEBUG");
+    console.log(
+      "📋 Complete Survey Payload:",
+      JSON.stringify(finalPayload, null, 2),
+    );
+    console.log("🎓 Student Information:");
+    console.log("  - Major ID:", finalPayload.studentInformation.majorId);
+    console.log("  - Semester ID:", finalPayload.studentInformation.semesterId);
+    console.log(
+      "  - Technologies Count:",
+      finalPayload.studentInformation.technologies.length,
+    );
+    console.log(
+      "  - Learning Goal ID:",
+      finalPayload.studentInformation.learningGoal.learningGoalId,
+    );
+    console.log(
+      "  - Learning Goal Type:",
+      finalPayload.studentInformation.learningGoal.learningGoalType,
+    );
+
+    console.log("📝 Student Surveys:");
+    finalPayload.studentSurveys.forEach((survey, index) => {
+      console.log(`  📖 Survey ${index + 1}:`);
+      console.log(`    - Survey ID: ${survey.surveyId}`);
+      console.log(`    - Survey Code: ${survey.surveyCode}`);
+      console.log(`    - Answers Count: ${survey.answers.length}`);
+      survey.answers.forEach((answer, answerIndex) => {
+        console.log(
+          `      ${answerIndex + 1}. Question: ${answer.questionId} -> Answer: ${answer.answerId}`,
+        );
+      });
+    });
+
+    console.log("🔍 Payload Validation Status: PASSED ✅");
+    console.groupEnd();
+
     logPayloadStructure(finalPayload, "Final Submission Payload");
 
     // Submit to API with validated payload
@@ -816,7 +864,16 @@ export async function submitSurveyAction(surveyData: {
         finalPayload,
       );
 
-    console.log("📋 API Response:", response.data);
+    console.group("📤 SURVEY API RESPONSE DEBUG");
+    console.log("✅ API Response Status:", response.status);
+    console.log(
+      "📋 API Response Data:",
+      JSON.stringify(response.data, null, 2),
+    );
+    console.log("🎯 Success:", response.data?.success);
+    console.log("💬 Message:", response.data?.message);
+    console.log("🆔 Response ID:", response.data?.response);
+    console.groupEnd();
 
     if (response.data?.success) {
       return {
@@ -830,13 +887,12 @@ export async function submitSurveyAction(surveyData: {
       };
     }
   } catch (error: unknown) {
-    const fetchError = normalizeFetchError(error);
-    console.error("Submit survey error:", fetchError);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to submit survey";
+    const nErr = await normalizeFetchError(error);
+    console.error("Submit survey error:", nErr);
     return {
       ok: false,
-      error: errorMessage,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -845,24 +901,25 @@ export async function submitSurveyAction(surveyData: {
  * Get survey recommendations
  */
 export async function getSurveyRecommendationsAction(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   surveyId: string,
 ): Promise<{
   ok: boolean;
   data?: SurveyRecommendationResponse;
   error?: string;
+  status?: number;
 }> {
   try {
     // TODO: Implement actual API call when backend is ready
     // For now, return error to indicate API not implemented
     throw new Error("Survey recommendations API not implemented yet");
   } catch (error: unknown) {
-    const fetchError = normalizeFetchError(error);
-    console.error("Get recommendations error:", fetchError);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to get recommendations";
+    const nErr = await normalizeFetchError(error);
+    console.error("Get recommendations error:", nErr);
     return {
       ok: false,
-      error: errorMessage,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -871,6 +928,7 @@ export async function getSurveyRecommendationsAction(
  * Save survey draft
  */
 export async function saveSurveyDraftAction(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   surveyData: Partial<{
     survey1Data?: Survey1FormValues;
     survey2Data?: Survey2FormValues;
@@ -879,19 +937,19 @@ export async function saveSurveyDraftAction(
 ): Promise<{
   ok: boolean;
   error?: string;
+  status?: number;
 }> {
   try {
     // TODO: Implement actual API call when backend is ready
     // For now, return error to indicate API not implemented
     throw new Error("Save survey draft API not implemented yet");
   } catch (error: unknown) {
-    const fetchError = normalizeFetchError(error);
-    console.error("Save draft error:", fetchError);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to save draft";
+    const nErr = await normalizeFetchError(error);
+    console.error("Save draft error:", nErr);
     return {
       ok: false,
-      error: errorMessage,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -908,19 +966,19 @@ export async function loadSurveyDraftAction(): Promise<{
     lastStep: number;
   };
   error?: string;
+  status?: number;
 }> {
   try {
     // TODO: Implement actual API call when backend is ready
     // For now, return error to indicate API not implemented
     throw new Error("Load survey draft API not implemented yet");
   } catch (error: unknown) {
-    const fetchError = normalizeFetchError(error);
-    console.error("Load draft error:", fetchError);
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to load draft";
+    const nErr = await normalizeFetchError(error);
+    console.error("Load draft error:", nErr);
     return {
       ok: false,
-      error: errorMessage,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
     };
   }
 }
@@ -951,10 +1009,9 @@ export async function submitSurveyServerAction(submissionData: {
   error?: string;
 }> {
   try {
-    console.log(
-      "🔒 SERVER ACTION: Submitting survey securely via server",
-      submissionData,
-    );
+    console.group("🔒 SERVER ACTION: Survey Submission (Alternative Method)");
+    console.log("📋 Submission Data:", JSON.stringify(submissionData, null, 2));
+    console.groupEnd();
 
     // Prepare data for API call using the correct structure
     const apiPayload = {

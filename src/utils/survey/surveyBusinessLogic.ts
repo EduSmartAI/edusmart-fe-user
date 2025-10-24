@@ -49,11 +49,7 @@ export class SurveyBusinessLogic {
     const skillGap = this.identifySkillGaps(survey1, survey2);
     const difficultyLevel = this.determineDifficultyLevel(survey2);
     const studyTimeEstimate = this.calculateStudyTime(survey2, survey3);
-    const recommendedPath = this.generateLearningPath(
-      survey1,
-      survey2,
-      survey3,
-    );
+    const recommendedPath = this.generateLearningPath(survey1, survey2);
 
     return {
       careerMatchScore,
@@ -71,7 +67,8 @@ export class SurveyBusinessLogic {
     survey1: Survey1FormValues,
     survey2: Survey2FormValues,
   ): number {
-    const futureOrientation = survey1.futureOrientation || "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const futureOrientation = (survey1 as any).futureOrientation || "";
     const allTechnologies = [
       ...survey2.programmingLanguages,
       ...survey2.frameworks,
@@ -126,7 +123,8 @@ export class SurveyBusinessLogic {
     survey1: Survey1FormValues,
     survey2: Survey2FormValues,
   ): string[] {
-    const futureOrientation = survey1.futureOrientation || "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const futureOrientation = (survey1 as any).futureOrientation || "";
     const allTechnologies = [
       ...survey2.programmingLanguages,
       ...survey2.frameworks,
@@ -266,9 +264,9 @@ export class SurveyBusinessLogic {
   private static generateLearningPath(
     survey1: Survey1FormValues,
     survey2: Survey2FormValues,
-    survey3: Survey3FormValues,
   ): RecommendedLearningPath {
-    const futureOrientation = survey1.futureOrientation || "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const futureOrientation = (survey1 as any).futureOrientation || "";
     const difficulty = this.determineDifficultyLevel(survey2);
 
     // Generate phases based on career orientation and difficulty
@@ -284,7 +282,7 @@ export class SurveyBusinessLogic {
   }
 
   private static generateFrontendPath(
-    difficulty: string,
+    difficulty: "Beginner" | "Intermediate" | "Advanced",
   ): RecommendedLearningPath {
     if (difficulty === "Beginner") {
       return {
@@ -328,38 +326,46 @@ export class SurveyBusinessLogic {
   }
 
   private static generateBackendPath(
-    difficulty: string,
+    difficulty: "Beginner" | "Intermediate" | "Advanced",
   ): RecommendedLearningPath {
-    // Implementation for backend path
+    // Implementation cho backend có thể bổ sung sau
     return this.generateGenericPath(difficulty);
   }
 
   private static generateFullstackPath(
-    difficulty: string,
+    difficulty: "Beginner" | "Intermediate" | "Advanced",
   ): RecommendedLearningPath {
-    // Implementation for fullstack path
+    // Implementation cho fullstack có thể bổ sung sau
     return this.generateGenericPath(difficulty);
   }
 
   private static generateGenericPath(
-    _difficulty: string,
+    difficulty: "Beginner" | "Intermediate" | "Advanced",
   ): RecommendedLearningPath {
+    // Dùng difficulty để tinh chỉnh thời lượng mỗi phase
+    const [d1, d2, d3] =
+      difficulty === "Beginner"
+        ? [4, 6, 4]
+        : difficulty === "Intermediate"
+        ? [3, 5, 4]
+        : [2, 4, 4];
+
     return {
       phase1: {
-        title: "Foundation",
-        duration: 4,
+        title: `Foundation (${difficulty})`,
+        duration: d1,
         topics: ["Programming Basics", "Problem Solving", "Git & GitHub"],
         prerequisites: [],
       },
       phase2: {
         title: "Core Skills",
-        duration: 6,
+        duration: d2,
         topics: ["Main Technology Stack", "Database Basics", "API Development"],
         prerequisites: ["Programming Basics"],
       },
       phase3: {
         title: "Professional Skills",
-        duration: 4,
+        duration: d3,
         topics: ["Testing", "Deployment", "Code Quality", "Team Collaboration"],
         prerequisites: ["Core Skills"],
       },
@@ -367,11 +373,16 @@ export class SurveyBusinessLogic {
   }
 
   private static getStudyHoursFromHabits(
-    _studyHabits: StudyHabitAnswer[],
+    studyHabits: StudyHabitAnswer[],
   ): number {
-    // Parse study habits and estimate hours per week
-    // This is a simplified implementation
-    return 15; // Default 15 hours per week
+    // Heuristic đơn giản: càng chọn nhiều mục → giả định cam kết thời gian cao hơn
+    if (!studyHabits || studyHabits.length === 0) return 15;
+    const selections = studyHabits.reduce(
+      (sum, a) => sum + (a.selectedAnswers?.length ?? 0),
+      0,
+    );
+    // Giới hạn 12–22 giờ/tuần
+    return Math.max(12, Math.min(22, 12 + selections));
   }
 
   /**
@@ -387,9 +398,12 @@ export class SurveyBusinessLogic {
     if (!survey1) {
       missingFields.push("Thông tin cơ bản");
     } else {
-      if (!survey1.semester) missingFields.push("Kỳ học");
-      if (!survey1.learningGoal) missingFields.push("Mục tiêu học tập");
-      if (survey1.hasFutureOrientation === undefined)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!(survey1 as any).semester) missingFields.push("Kỳ học");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!(survey1 as any).learningGoal) missingFields.push("Mục tiêu học tập");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((survey1 as any).hasFutureOrientation === undefined)
         missingFields.push("Định hướng tương lai");
     }
 

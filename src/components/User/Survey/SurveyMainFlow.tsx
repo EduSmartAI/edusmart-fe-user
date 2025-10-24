@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useEffect } from "react";
 import { Layout, Steps, Card, message } from "antd";
@@ -11,6 +12,7 @@ import Survey1BasicInfo from "EduSmart/components/User/Survey/SurveySteps/Survey
 import Survey2TechKnowledge from "EduSmart/components/User/Survey/SurveySteps/Survey2TechKnowledge";
 import Survey3StudyHabits from "EduSmart/components/User/Survey/SurveySteps/Survey3StudyHabits";
 import { useSurvey } from "EduSmart/hooks/survey";
+import { throwStoreError } from "EduSmart/types/errors";
 
 const { Content } = Layout;
 
@@ -19,11 +21,22 @@ interface SurveyMainFlowProps {
   onBack?: (
     data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
   ) => void;
+  showProgress?: boolean; // Cho Learning Path
 }
 
-const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
+const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
+  onComplete,
+  onBack,
+  showProgress,
+}) => {
   // Sử dụng hook thay vì local state
   const survey = useSurvey();
+
+  // ✅ Throw error nếu có submitError từ store
+  if (survey.submitError) {
+    survey.setSubmitError(null); // Clear error state
+    throwStoreError(survey.submitError);
+  }
 
   // Khởi tạo dữ liệu API khi component mount
   useEffect(() => {
@@ -76,9 +89,6 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
       const hideLoading = message.loading("Đang xử lý khảo sát của bạn...", 0);
 
       try {
-        // onComplete?.();
-        // return;
-
         console.log("Submitting data:", {
           survey1: survey.survey1Data,
           survey2: survey.survey2Data,
@@ -88,31 +98,36 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
         const submitResult = await survey.submitSurvey();
         console.log("Submit result:", submitResult);
 
-        // Hide loading message
-        hideLoading();
-
         if (submitResult.success) {
           console.log("✅ Survey submitted successfully:", {
             surveyId: submitResult.surveyId,
           });
-          alert("✅ Survey submitted successfully:" + submitResult.surveyId);
 
-          // Show success message
+          // Hide loading message BEFORE redirect
+          hideLoading();
+
+          // Show success message (briefly visible)
           message.success({
-            content:
-              "🎉 Khảo sát đã được gửi thành công! Cảm ơn bạn đã tham gia.",
-            duration: 4,
+            content: "Khảo sát đã được gửi thành công!",
+            duration: 1,
           });
 
-          // Delay before calling onComplete to let user see the success message
+          // Clear survey data BEFORE redirecting to prevent flash of Survey1
+          // Use a small delay to ensure message is visible
           setTimeout(() => {
+            // Clear survey store data
+            survey.resetSurvey();
+
+            // Redirect to transition page
             if (onComplete) {
+              console.log("Redirecting to transition page...");
               onComplete();
             }
-          }, 1500);
+          }, 300);
         } else {
+          // Hide loading message
+          hideLoading();
           console.error("❌ Survey submission failed:", submitResult.error);
-          alert("❌ Survey submission failed:" + submitResult.error);
 
           // Show error message
           message.error({
@@ -139,6 +154,13 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
     step: number,
     data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
   ) => {
+    // Special case: If at step 1 and onBack prop is provided, call it (Exit to overview)
+    if (step === 1 && onBack) {
+      console.log("🚪 Step 1 - Calling parent onBack (Exit)");
+      onBack(data);
+      return;
+    }
+
     // Scroll to top before going back
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -175,7 +197,11 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
           <Survey1BasicInfo
             initialData={survey.survey1Data}
             onComplete={(data) => handleStepComplete(1, data)}
-            onBack={(data: Survey1FormValues) => handlePrevStep(1, data)}
+            onBack={
+              onBack
+                ? (data: Survey1FormValues) => handlePrevStep(1, data)
+                : undefined
+            }
             semesters={survey.semesters}
             majors={survey.majors}
             learningGoals={survey.learningGoals}
@@ -217,23 +243,13 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
     <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Content className="px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          {/* <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Khảo sát định hướng học tập
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
-              Giúp chúng tôi hiểu về bạn để đề xuất lộ trình học tập phù hợp
-            </p>
-          </div> */}
-
           {/* Steps */}
           <Card className="mb-6 shadow-sm">
             <Steps
               current={survey.currentStep - 1}
               items={stepItems}
               size="small"
-              className="mb-0"
+              className="mb-0 survey-steps"
             />
           </Card>
 
@@ -256,4 +272,5 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({ onComplete }) => {
   );
 };
 
+// Export directly - ErrorBoundary should be at page/layout level
 export default SurveyMainFlow;

@@ -280,11 +280,6 @@ export interface StudentAnswerRequest {
   answerId: string;
 }
 
-export interface StudentCourseQuizSelectQuery {
-  /** @format uuid */
-  studentQuizCourseId?: string;
-}
-
 export interface StudentCourseQuizSelectResponse {
   success?: boolean;
   messageId?: string;
@@ -330,6 +325,12 @@ export interface StudentQuizCourseAnswerDetailResponse {
 export interface StudentQuizCourseInsertCommand {
   /** @format uuid */
   quizId?: string;
+  /** @format uuid */
+  courseId?: string;
+  /** @format uuid */
+  moduleId?: string;
+  /** @format uuid */
+  lessonId?: string;
   studentQuizAnswers?: StudentQuizAnswerInsertRequest[];
 }
 
@@ -876,21 +877,23 @@ export class Api<
      * @description Cần cấp quyền Student cho API
      *
      * @tags CourseQuiz
-     * @name V1CourseQuizSelectStudentQuizCourseCreate
+     * @name V1CourseQuizSelectStudentQuizCourseList
      * @summary Hiển thị bài kiểm tra course cho sinh viên
-     * @request POST:/api/v1/CourseQuiz/SelectStudentQuizCourse
+     * @request GET:/api/v1/CourseQuiz/SelectStudentQuizCourse
      * @secure
      */
-    v1CourseQuizSelectStudentQuizCourseCreate: (
-      body: StudentCourseQuizSelectQuery,
+    v1CourseQuizSelectStudentQuizCourseList: (
+      query?: {
+        /** @format uuid */
+        StudentQuizCourseId?: string;
+      },
       params: RequestParams = {},
     ) =>
       this.request<StudentCourseQuizSelectResponse, any>({
         path: `/api/v1/CourseQuiz/SelectStudentQuizCourse`,
-        method: "POST",
-        body: body,
+        method: "GET",
+        query: query,
         secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),

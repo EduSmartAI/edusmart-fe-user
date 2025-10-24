@@ -46,6 +46,7 @@ import {
   type TestDetail,
   type StudentTestResult,
 } from "EduSmart/app/(quiz)/quizAction";
+import { StoreError, createStoreError } from "EduSmart/types/errors";
 
 // Helper types for better type safety
 
@@ -73,7 +74,7 @@ interface QuizStoreState {
 
   // ===== UI STATES =====
   isLoading: boolean;
-  error: string | null;
+  error: StoreError | null; // ✅ NEW: Typed error object with status
   isSubmitting: boolean;
 
   // ===== NAVIGATION RULES =====
@@ -100,7 +101,7 @@ interface QuizStoreActions {
     startedAt: string;
     quizIds: string[];
     answers: Array<{ questionId: string; answerId: string }>;
-  }) => Promise<{ ok: boolean; studentTestId?: string; error?: string }>; // Submit test
+  }) => Promise<{ ok: boolean; learningPathId?: string; error?: string }>; // Submit test
   loadTestResult: (studentTestId: string) => Promise<boolean>; // Load kết quả test
 
   // ===== SERIES MANAGEMENT =====
@@ -145,7 +146,7 @@ interface QuizStoreActions {
 
   // ===== UI UTILITIES =====
   setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+  setError: (error: StoreError | null) => void; // ✅ NEW: Accept StoreError
   setSubmitting: (submitting: boolean) => void;
 
   // ===== DATA ACCESS HELPERS =====
@@ -250,17 +251,23 @@ export const useQuizStore = create<QuizStore>()(
               return true;
             }
 
+            // ✅ NEW: Store typed error object
             set({
-              error: result.error || "Failed to load quizzes",
+              error: createStoreError({
+                error: result.error || "Failed to load quizzes",
+                status: result.status,
+              }),
               isLoading: false,
             });
             return false;
           } catch (error) {
             set({
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "Failed to load quizzes",
+              error: createStoreError({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Failed to load quizzes",
+              }),
               isLoading: false,
             });
             return false;
@@ -284,39 +291,96 @@ export const useQuizStore = create<QuizStore>()(
               };
             }
 
-            const errorMsg = result.error || "Failed to create test";
-            set({ error: errorMsg, isLoading: false });
-            return { ok: false, error: errorMsg };
+            // ✅ NEW: Create StoreError from action result
+            const storeError = createStoreError({
+              error: result.error || "Failed to create test",
+              status: result.status,
+            });
+            set({ error: storeError, isLoading: false });
+            return {
+              ok: false,
+              error: result.error || "Failed to create test",
+            };
           } catch (error) {
-            const errorMsg =
-              error instanceof Error ? error.message : "Failed to create test";
-            set({ error: errorMsg, isLoading: false });
-            return { ok: false, error: errorMsg };
+            // ✅ NEW: Create StoreError from exception
+            const storeError = createStoreError({
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Failed to create test",
+            });
+            set({ error: storeError, isLoading: false });
+            return { ok: false, error: storeError.message };
           }
         },
 
         submitTest: async (testData) => {
           try {
             set({ isSubmitting: true, error: null });
-            console.log("📤 Final payload:", testData);
+
+            // 🚀 DETAILED QUIZ STORE SUBMISSION LOGGING
+            console.group("🔥 QUIZ STORE SUBMISSION DEBUG");
+            console.log(
+              "📋 Test Data from Store:",
+              JSON.stringify(testData, null, 2),
+            );
+            console.log("🆔 Test ID:", testData.testId);
+            console.log("⏰ Started At:", testData.startedAt);
+            console.log("📚 Quiz IDs:", testData.quizIds);
+            console.log("📝 Answers Count:", testData.answers.length);
+            console.log("🎯 Answers Details:");
+            testData.answers.forEach((answer, index) => {
+              console.log(
+                `  ${index + 1}. Question: ${answer.questionId} -> Answer: ${answer.answerId}`,
+              );
+            });
+            console.groupEnd();
+
             const result = await submitStudentTestAction(testData);
+
+            // 📤 QUIZ STORE RESULT LOGGING
+            console.group("📤 QUIZ STORE RESULT DEBUG");
+            console.log("✅ Submission Result:", result);
+            console.log("🎯 Success:", result.ok);
+            if (result.ok) {
+              console.log(
+                "🆔 Learning Path ID:",
+                result.data?.response?.learningPathId,
+              );
+            } else {
+              console.log("❌ Error:", result.error);
+            }
+            console.groupEnd();
 
             if (result.ok) {
               set({ isSubmitting: false });
               return {
                 ok: true,
-                studentTestId: result.data.response?.studentTestId,
+                learningPathId: result.data.response?.learningPathId,
               };
             }
 
-            const errorMsg = result.error || "Failed to submit test";
-            set({ error: errorMsg, isSubmitting: false });
-            return { ok: false, error: errorMsg };
+            // ✅ NEW: Create StoreError from action result
+            const storeError = createStoreError({
+              error: result.error || "Failed to submit test",
+              status: result.status,
+            });
+            set({ error: storeError, isSubmitting: false });
+            return {
+              ok: false,
+              error: result.error || "Failed to submit test",
+            };
           } catch (error) {
-            const errorMsg =
-              error instanceof Error ? error.message : "Failed to submit test";
-            set({ error: errorMsg, isSubmitting: false });
-            return { ok: false, error: errorMsg };
+            console.error("💥 Quiz Store Submission Exception:", error);
+            // ✅ NEW: Create StoreError from exception
+            const storeError = createStoreError({
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Failed to submit test",
+            });
+            set({ error: storeError, isSubmitting: false });
+            return { ok: false, error: storeError.message };
           }
         },
 
@@ -333,17 +397,24 @@ export const useQuizStore = create<QuizStore>()(
               return true;
             }
 
+            // ✅ NEW: Create StoreError from action result
             set({
-              error: result.error || "Failed to load test result",
+              error: createStoreError({
+                error: result.error || "Failed to load test result",
+                status: result.status,
+              }),
               isLoading: false,
             });
             return false;
           } catch (error) {
+            // ✅ NEW: Create StoreError from exception
             set({
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "Failed to load test result",
+              error: createStoreError({
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : "Failed to load test result",
+              }),
               isLoading: false,
             });
             return false;
@@ -482,7 +553,10 @@ export const useQuizStore = create<QuizStore>()(
           if (state.selectedQuizIds.length === 0) {
             console.warn("No quizzes selected to start");
             set({
-              error: "Vui lòng chọn ít nhất một quiz để bắt đầu",
+              error: createStoreError({
+                error: "Vui lòng chọn ít nhất một quiz để bắt đầu",
+                status: 400, // ✅ Validation error = 400
+              }),
             });
             return;
           }
@@ -491,7 +565,10 @@ export const useQuizStore = create<QuizStore>()(
           if (!state.currentSeries) {
             console.warn("No current series available to start");
             set({
-              error: "Không tìm thấy bộ quiz để bắt đầu",
+              error: createStoreError({
+                error: "Không tìm thấy bộ quiz để bắt đầu",
+                status: 404, // ✅ Not Found = 404
+              }),
             });
             return;
           }
@@ -1105,7 +1182,7 @@ export const useQuizStore = create<QuizStore>()(
           set({ isLoading: loading });
         },
 
-        setError: (error: string | null) => {
+        setError: (error: StoreError | null) => {
           set({ error });
         },
 
