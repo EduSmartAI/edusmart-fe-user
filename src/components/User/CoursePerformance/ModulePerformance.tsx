@@ -1,23 +1,15 @@
 "use client";
 
 import React from "react";
-import { Card, Progress, Tag, Row, Col, Statistic, Divider } from "antd";
+import { Card, Progress } from "antd";
 import {
   FiLayers,
   FiPlay,
   FiFileText,
   FiClock,
-  FiCheckCircle,
   FiTrendingUp,
   FiTrendingDown,
-  FiTarget,
-  FiEye,
-  FiRotateCcw,
-  FiAward,
-  FiAlertTriangle,
   FiCpu,
-  FiActivity,
-  FiBookOpen,
 } from "react-icons/fi";
 
 interface ModulePerformanceProps {
@@ -87,19 +79,6 @@ const mockModulesData = [
   },
 ];
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "Completed":
-      return "success";
-    case "InProgress":
-      return "processing";
-    case "NotStarted":
-      return "default";
-    default:
-      return "default";
-  }
-};
-
 const getStatusLabel = (status: string) => {
   switch (status) {
     case "Completed":
@@ -114,7 +93,7 @@ const getStatusLabel = (status: string) => {
 };
 
 
-const ModulePerformance: React.FC<ModulePerformanceProps> = ({ courseId }) => {
+const ModulePerformance: React.FC<ModulePerformanceProps> = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -130,7 +109,7 @@ const ModulePerformance: React.FC<ModulePerformanceProps> = ({ courseId }) => {
 
       {/* Modules List - Linear Layout */}
       <div className="flex flex-col gap-6">
-        {mockModulesData.map((module, index) => (
+        {mockModulesData.map((module) => (
           <Card key={module.moduleId} className="border-0 shadow-sm">
             {/* Module Header */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-5 rounded-xl shadow-lg mb-6">

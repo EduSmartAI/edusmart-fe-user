@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Layout, Tabs, Card, Spin } from "antd";
+import { Layout, Tabs, Card } from "antd";
 import { 
   FiBarChart2, 
   FiLayers, 
@@ -13,7 +13,6 @@ import ModulePerformance from "./ModulePerformance";
 import VideoPerformance from "./VideoPerformance";
 
 const { Content } = Layout;
-const { TabPane } = Tabs;
 
 interface CoursePerformanceDashboardProps {
   courseId: string;
@@ -23,7 +22,6 @@ const CoursePerformanceDashboard: React.FC<CoursePerformanceDashboardProps> = ({
   courseId,
 }) => {
   const [activeTab, setActiveTab] = useState("overview");
-  const [isLoading, setIsLoading] = useState(false);
 
   const tabItems = [
     {
@@ -54,19 +52,9 @@ const CoursePerformanceDashboard: React.FC<CoursePerformanceDashboardProps> = ({
           <span>Hiệu suất Video</span>
         </span>
       ),
-      children: <VideoPerformance courseId={courseId} />,
+      children: <VideoPerformance />,
     },
   ];
-
-  if (isLoading) {
-    return (
-      <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Content className="p-6 flex items-center justify-center">
-          <Spin size="large" />
-        </Content>
-      </Layout>
-    );
-  }
 
   return (
     <Layout className="min-h-screen bg-gray-50 dark:bg-gray-900">

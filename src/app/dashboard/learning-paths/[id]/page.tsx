@@ -474,7 +474,6 @@ export default function LearningPathRecommendation() {
                     <div className="space-y-6">
                       {sortedInternalPath.map((path, index) => {
                         const isExpanded = expandedMajorId === path.majorId;
-                        const isFirst = index === 0;
 
                         return (
                           <React.Fragment key={path.majorId}>

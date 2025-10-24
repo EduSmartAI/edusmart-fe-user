@@ -1,36 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card, Tag, Row, Col, Progress, Collapse, Timeline, Statistic, Divider } from "antd";
+import React from "react";
+import { Card } from "antd";
 import { 
   FiPlay,
   FiClock,
-  FiCheckCircle,
-  FiPause,
-  FiRotateCcw,
-  FiEye,
-  FiSkipForward,
-  FiMessageCircle,
-  FiEdit3,
-  FiHelpCircle,
   FiTrendingUp,
   FiTrendingDown,
   FiCpu,
   FiAlertTriangle,
   FiTarget,
-  FiActivity,
-  FiBarChart2,
   FiCalendar,
-  FiLayers
+  FiLayers,
+  FiEye
 } from "react-icons/fi";
 
-const { Panel } = Collapse;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface VideoPerformanceProps {}
 
-interface VideoPerformanceProps {
-  courseId: string;
-}
-
-// Mock data cho video performance
 const mockVideoData = [
   {
     id: "video-1",
@@ -168,17 +155,7 @@ const mockVideoData = [
   }
 ];
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "Hoàn thành": return "success";
-    case "Dở dang": return "warning"; 
-    case "Xem lại": return "processing";
-    default: return "default";
-  }
-};
-
-const VideoPerformance: React.FC<VideoPerformanceProps> = ({ courseId }) => {
-  const [selectedModule, setSelectedModule] = useState<string>("all");
+const VideoPerformance: React.FC<VideoPerformanceProps> = () => {
 
   return (
     <div className="space-y-6">
@@ -194,7 +171,7 @@ const VideoPerformance: React.FC<VideoPerformanceProps> = ({ courseId }) => {
 
       {/* Videos List - Linear Layout */}
       <div className="flex flex-col gap-6">
-        {mockVideoData.map((video, index) => (
+        {mockVideoData.map((video) => (
           <Card 
             key={video.id}
             className="border-0 shadow-sm"

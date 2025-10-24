@@ -1,11 +1,9 @@
 "use client";
 
 import React from "react";
-import { Card, Progress, Tag, Avatar, Statistic, Row, Col } from "antd";
+import { Card, Progress, Tag, Row, Col } from "antd";
 import {
   FiUser,
-  FiClock,
-  FiCheckCircle,
   FiTrendingUp,
   FiTrendingDown,
   FiCalendar,
@@ -16,6 +14,7 @@ import {
   FiEye,
   FiRotateCcw,
   FiPause,
+  FiClock,
   FiSkipForward,
   FiActivity,
   FiAward,
@@ -102,7 +101,7 @@ const mockCourseData = {
   },
 };
 
-const CourseOverview: React.FC<CourseOverviewProps> = ({ courseId }) => {
+const CourseOverview: React.FC<CourseOverviewProps> = () => {
   const data = mockCourseData;
 
   return (

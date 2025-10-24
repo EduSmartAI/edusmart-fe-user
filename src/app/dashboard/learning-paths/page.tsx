@@ -12,7 +12,6 @@ import {
   FiX,
   FiArrowRight,
   FiSearch,
-  FiFilter,
 } from "react-icons/fi";
 import { getAllLearningPathsAction } from "EduSmart/app/(learning-path)/learningPathAction";
 
@@ -149,7 +148,7 @@ export default function LearningPathHistoryPage() {
     });
   };
 
-  const handlePathClick = (pathId: string, status: number) => {
+  const handlePathClick = (pathId: string) => {
     router.push(`/dashboard/learning-paths/${pathId}`);
   };
 
@@ -236,7 +235,7 @@ export default function LearningPathHistoryPage() {
                 return (
                   <div
                     key={path.pathId}
-                    onClick={() => handlePathClick(path.pathId, path.status)}
+                    onClick={() => handlePathClick(path.pathId)}
                     className={`group cursor-pointer rounded-2xl p-6 transition-all duration-300 border-2 hover:shadow-xl hover:-translate-y-2 ${
                       config.bgColor
                     } ${config.borderColor}`}
