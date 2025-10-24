@@ -824,30 +824,27 @@ export default function LearningPathRecommendation() {
 
         {/* Section 3: External Learning Path */}
         <div className="mb-16 relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/60 via-sky-25 to-transparent dark:from-blue-900/10 dark:via-sky-800/5 dark:to-transparent rounded-3xl -m-4"></div>
+          {/* <div className="absolute inset-0 bg-gradient-to-r from-teal-50/60 via-cyan-25 to-transparent dark:from-teal-900/10 dark:via-cyan-800/5 dark:to-transparent rounded-3xl -m-4"></div> */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/40 via-white/20 to-transparent dark:from-gray-900/20 dark:via-gray-800/10 dark:to-transparent rounded-3xl -m-4"></div>
           <div className="relative z-10">
             <div className="mb-8">
-              <div className="relative">
-                <div className="pl-6">
-                  <div className="inline-block">
-                    <h2 className="text-3xl font-black text-blue-600 dark:text-blue-400 mb-2 drop-shadow-lg">
-                      Đề xuất các khóa học bên ngoài
-                    </h2>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-300 text-lg">
-                    Các khóa học từ các nền tảng uy tín để nâng cao kỹ năng
-                    chuyên môn
-                  </p>
-                </div>
+              <div className="pl-6">
+                <h2 className="text-3xl font-black text-blue-600 dark:text-blue-400 mb-2">
+                  Đề xuất các khóa học bên ngoài
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                  Các khóa học từ các nền tảng uy tín để nâng cao kỹ năng chuyên
+                  môn
+                </p>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-xl border border-blue-200 dark:border-blue-700 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-36 h-36 bg-blue-100 dark:bg-blue-900/20 rounded-full transform translate-x-18 -translate-y-18"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-sky-50 dark:bg-sky-900/10 rounded-full transform -translate-x-16 translate-y-16"></div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border-2 border-blue-200 dark:border-blue-700/50 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gray-100 dark:bg-gray-700/20 rounded-full transform translate-x-20 -translate-y-20 opacity-50"></div>
+              <div className="absolute bottom-0 left-0 w-36 h-36 bg-gray-50 dark:bg-gray-800/20 rounded-full transform -translate-x-20 translate-y-20 opacity-50"></div>
               <div className="relative z-10">
-                {/* Compact Track Selector Pills */}
-                <div className="flex flex-wrap gap-3 mb-6 pb-6 border-b border-blue-200 dark:border-blue-700">
+                {/* Track Selector Pills */}
+                <div className="flex flex-wrap gap-3 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
                   {displayData.externalLearningPath.map((path, pathIndex) => (
                     <button
                       key={pathIndex}
@@ -855,15 +852,13 @@ export default function LearningPathRecommendation() {
                         setSelectedExternalPath(pathIndex);
                         setSelectedExternalStep(0);
                       }}
-                      className={`px-7 py-3 rounded-full text-sm font-semibold transition-colors duration-200 ${
+                      className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 ${
                         selectedExternalPath === pathIndex
                           ? "bg-gradient-to-r from-blue-500 to-sky-600 !text-white shadow-md"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400"
                       }`}
                     >
-                      <span className="flex items-center gap-2">
-                        {path.majorCode}
-                      </span>
+                      {path.majorCode}
                     </button>
                   ))}
                 </div>
@@ -871,8 +866,8 @@ export default function LearningPathRecommendation() {
                 {/* Selected Track Content */}
                 {displayData.externalLearningPath[selectedExternalPath] && (
                   <div>
-                    {/* Track Description Banner */}
-                    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-sky-100/50 dark:from-blue-900/20 dark:to-sky-900/10 rounded-xl border border-blue-200 dark:border-blue-700">
+                    {/* Track Description */}
+                    <div className="mb-6 p-4 bg-blue-100/50 dark:bg-gray-700/30 rounded-lg border border-blue-300/50 dark:border-blue-600">
                       <h4 className="font-bold text-gray-900 dark:text-white mb-1">
                         {
                           displayData.externalLearningPath[selectedExternalPath]
@@ -887,35 +882,35 @@ export default function LearningPathRecommendation() {
                       </p>
                     </div>
 
-                    {/* Horizontal Step Timeline */}
+                    {/* Step Timeline */}
                     <div className="mb-6">
-                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 !mb-4">
+                      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         Các bước học tập
                       </h4>
-                      <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-blue-300 dark:scrollbar-thumb-blue-700">
+                      <div className="flex items-center gap-2 overflow-x-auto pb-2">
                         {displayData.externalLearningPath[
                           selectedExternalPath
                         ].steps.map((step, stepIndex) => (
                           <React.Fragment key={stepIndex}>
                             <button
                               onClick={() => setSelectedExternalStep(stepIndex)}
-                              className={`flex-shrink-0 px-5 py-4 rounded-xl border-1 transition-all duration-300 ${
+                              className={`flex-shrink-0 px-4 py-3 rounded-lg border transition-all duration-200 ${
                                 selectedExternalStep === stepIndex
-                                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white border-blue-500 shadow-sm"
-                                  : "bg-gradient-to-br from-white via-blue-50/20 to-sky-50/10 dark:from-gray-700 dark:via-blue-900/10 dark:to-sky-900/5 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-blue-800 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-sm hover:from-blue-50/40 hover:via-sky-50/30 hover:to-blue-50/20"
+                                  ? "bg-gradient-to-r from-blue-500 to-sky-600 text-white border-blue-500 shadow-sm"
+                                  : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-600/50"
                               }`}
                             >
-                              <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex items-center gap-2 min-w-0">
                                 <div
-                                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all duration-300 ${
+                                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                                     selectedExternalStep === stepIndex
                                       ? "bg-white/25 text-white"
-                                      : "bg-gradient-to-br from-blue-100 to-sky-100 dark:from-blue-900/40 dark:to-sky-900/30 text-blue-600 dark:text-blue-400"
+                                      : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300"
                                   }`}
                                 >
                                   {stepIndex + 1}
                                 </div>
-                                <div className="text-left">
+                                <div className="text-left hidden sm:block">
                                   <div
                                     className={`text-sm font-semibold line-clamp-1 ${
                                       selectedExternalStep === stepIndex
@@ -925,15 +920,6 @@ export default function LearningPathRecommendation() {
                                   >
                                     {step.title}
                                   </div>
-                                  <div
-                                    className={`text-xs font-medium ${
-                                      selectedExternalStep === stepIndex
-                                        ? "text-white/80"
-                                        : "text-blue-600/70 dark:text-blue-400/70"
-                                    }`}
-                                  >
-                                    {step.suggested_Courses.length} khóa học
-                                  </div>
                                 </div>
                               </div>
                             </button>
@@ -942,7 +928,7 @@ export default function LearningPathRecommendation() {
                                 selectedExternalPath
                               ].steps.length -
                                 1 && (
-                              <FiChevronRight className="w-5 h-5 text-blue-400 dark:text-blue-600 flex-shrink-0" />
+                              <FiChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-600 flex-shrink-0" />
                             )}
                           </React.Fragment>
                         ))}
@@ -956,7 +942,7 @@ export default function LearningPathRecommendation() {
                       </h4>
                     </div>
 
-                    {/* Compact Course Cards - Single Column */}
+                    {/* Course Cards - Single Column */}
                     <div className="space-y-3">
                       {displayData.externalLearningPath[
                         selectedExternalPath
@@ -964,19 +950,19 @@ export default function LearningPathRecommendation() {
                         (course, courseIndex) => (
                           <div
                             key={courseIndex}
-                            className="group border border-blue-100 dark:border-blue-800/50 rounded-xl p-5 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 bg-gradient-to-br from-white via-blue-50/30 to-sky-50/20 dark:from-gray-800 dark:via-blue-900/10 dark:to-sky-900/5 hover:from-blue-50/50 hover:via-sky-50/40 hover:to-blue-50/30"
+                            className="group border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 bg-white dark:bg-gray-700/50"
                           >
                             {/* Course Header Row */}
                             <div className="flex items-start justify-between gap-3 mb-3">
                               <div className="flex-1 min-w-0">
                                 {/* Provider and Level Tags */}
                                 <div className="flex flex-wrap items-center gap-2">
-                                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/30 dark:to-sky-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+                                  <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                                     <FiStar className="w-3.5 h-3.5 mr-1.5" />
                                     {course.provider}
                                   </span>
                                   {course.level && (
-                                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/30 dark:to-sky-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+                                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                                       {course.level}
                                     </span>
                                   )}
@@ -986,14 +972,14 @@ export default function LearningPathRecommendation() {
                                 href={course.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex-shrink-0 w-9 h-9 rounded-lg bg-gradient-to-br from-blue-50 to-sky-100 dark:from-blue-900/20 dark:to-sky-900/10 text-blue-600 dark:text-blue-400  hover:text-white dark:hover:from-blue-600 dark:hover:to-blue-700 transition-all duration-200 flex items-center justify-center shadow-sm"
+                                className="flex-shrink-0 w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-200 flex items-center justify-center shadow-sm"
                               >
                                 <FiExternalLink className="w-4 h-4" />
                               </a>
                             </div>
 
                             {/* Reason Text */}
-                            <p className="text-blue-700/80 dark:text-blue-300/80 text-sm leading-relaxed line-clamp-2 mb-3 font-normal">
+                            <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-clamp-2 mb-3 font-normal">
                               {course.reason}
                             </p>
 
