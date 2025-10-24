@@ -174,8 +174,8 @@ export async function confirmLearningPathAction(
  * @returns Paginated learning paths
  */
 export async function getAllLearningPathsAction(
-  pageIndex: number = 1,
-  pageSize: number = 10,
+  pageIndex: number = 0,
+  pageSize: number = 1000,
 ): Promise<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   { ok: true; data: any } | { ok: false; error: string; status?: number }
