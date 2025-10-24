@@ -20,14 +20,14 @@ export default function DashboardPage() {
           Xem tất cả lộ trình học tập
         </Button>
         {/* Xem Course Performance (cấp độ module) */}
-        {/* <Button
+        <Button
           type="primary"
           onClick={() => {
-            router.push("/dashboard/course-performance");
+            router.push("/dashboard/course-performance-demo");
           }}
         >
-          Xem course progress (cấp độ module)
-        </Button> */}
+          Xem course progress (demo cấp độ module)
+        </Button>
       </div>
     </>
   );
