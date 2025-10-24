@@ -294,7 +294,7 @@ export default function LoginPage() {
 
   const backButton = () => {
     sessionStorage.removeItem("authMountOnce");
-    router.push("test/Navbar/home");
+    router.push("/home");
   };
 
   return (

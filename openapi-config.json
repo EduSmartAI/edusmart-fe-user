@@ -14,5 +14,9 @@
   {
     "key": "student-service",
     "url": "https://api.edusmart.pro.vn/student/swagger/v1/swagger.json"
+  },
+  {
+    "key": "ai-service",
+    "url": "https://api.edusmart.pro.vn/ai/swagger/v1/swagger.json"
   }
 ]
