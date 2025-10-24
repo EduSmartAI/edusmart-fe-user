@@ -11,9 +11,92 @@
  */
 
 /** @format int32 */
+export enum UserBehaviourTargetType {
+  Value1 = 1,
+  Value2 = 2,
+  Value4 = 4,
+  Value5 = 5,
+  Value6 = 6,
+  Value7 = 7,
+  Value8 = 8,
+  Value99 = 99,
+}
+
+/** @format int32 */
+export enum UserBehaviourActionType {
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+  Value4 = 4,
+  Value10 = 10,
+  Value11 = 11,
+  Value12 = 12,
+  Value13 = 13,
+  Value14 = 14,
+  Value15 = 15,
+  Value20 = 20,
+  Value21 = 21,
+  Value22 = 22,
+  Value23 = 23,
+  Value30 = 30,
+  Value31 = 31,
+  Value32 = 32,
+  Value33 = 33,
+  Value40 = 40,
+  Value41 = 41,
+  Value42 = 42,
+  Value50 = 50,
+  Value51 = 51,
+  Value52 = 52,
+  Value60 = 60,
+  Value61 = 61,
+  Value62 = 62,
+  Value63 = 63,
+  Value64 = 64,
+  Value65 = 65,
+  Value70 = 70,
+  Value71 = 71,
+  Value72 = 72,
+}
+
+/** @format int32 */
 export enum QuizScope {
   Value1 = 1,
   Value2 = 2,
+}
+
+/** @format int32 */
+export enum ModuleProgressStatus {
+  Value0 = 0,
+  Value1 = 1,
+  Value2 = 2,
+}
+
+/** @format int32 */
+export enum LearningGoalType {
+  Value0 = 0,
+  Value2 = 2,
+  Value3 = 3,
+  Value4 = 4,
+  Value5 = 5,
+  Value6 = 6,
+  Value7 = 7,
+  Value8 = 8,
+  Value9 = 9,
+  Value10 = 10,
+}
+
+export interface AcceptCourseSuggestionCommand {
+  /** @format uuid */
+  courseSuggestionId?: string;
+}
+
+export interface AcceptCourseSuggestionResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
 }
 
 export interface AiEvaluationUpsertEvent {
@@ -30,6 +113,8 @@ export interface AiEvaluationUpsertEvent {
   quizId?: string;
   /** @format int32 */
   score100?: number;
+  /** @format int32 */
+  score100Raw?: number;
   summary?: string;
   strengths?: string[];
   improvements?: string[];
@@ -101,6 +186,26 @@ export interface ExternalStepDto {
   suggested_Courses?: SuggestedCourseDto[];
 }
 
+export interface GetLatestModuleAiEvaluationsPayload {
+  modules?: ModuleAiEvaluationDto[];
+}
+
+export interface GetLatestModuleAiEvaluationsResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: GetLatestModuleAiEvaluationsPayload;
+}
+
+export interface GetModuleDashboardEventResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: ModuleDashboardContract;
+}
+
 export interface InternalLearningPathDto {
   majorId?: string;
   majorCode?: string;
@@ -113,12 +218,7 @@ export interface InternalLearningPathDto {
 export interface LearningGoalInsertCommand {
   goalName?: string;
   description?: string;
-  /**
-   * @format int32
-   * @min 1
-   * @max 4
-   */
-  learningGoalType?: number;
+  learningGoalType?: LearningGoalType;
 }
 
 export interface LearningGoalInsertResponse {
@@ -184,6 +284,100 @@ export interface LearningPathSelectResponse {
   response?: LearningPathSelectDto;
 }
 
+export interface ModuleAiEvaluationDto {
+  /** @format uuid */
+  moduleId?: string;
+  /** @format uuid */
+  quizId?: string;
+  /** @format int32 */
+  score100Raw?: number;
+  /** @format int32 */
+  score100?: number;
+  summary?: string;
+  strengths?: string[];
+  improvements?: string[];
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface ModuleDashboardContract {
+  /** @format uuid */
+  studentId?: string;
+  /** @format uuid */
+  courseId?: string;
+  modules?: ModuleDashboardItemContract[];
+  totals?: ModuleDashboardTotalsContract;
+}
+
+export interface ModuleDashboardItemContract {
+  /** @format uuid */
+  moduleId?: string;
+  moduleName?: string;
+  /** @format int32 */
+  positionIndex?: number;
+  /** @format int32 */
+  level?: number;
+  isCore?: boolean;
+  description?: string;
+  status?: ModuleProgressStatus;
+  /** @format int32 */
+  lessonsVideoTotal?: number;
+  /** @format int32 */
+  lessonsCompleted?: number;
+  /** @format double */
+  percentCompleted?: number;
+  /** @format int32 */
+  lessonsInProgress?: number;
+  /** @format int32 */
+  moduleDurationMinutes?: number;
+  /** @format int32 */
+  actualStudyMinutes?: number;
+  /** @format int32 */
+  moduleQuizCount?: number;
+  /** @format int32 */
+  lessonQuizCount?: number;
+  /** @format int32 */
+  totalQuizCount?: number;
+  /** @format double */
+  averageQuizScore?: number;
+  /** @format int32 */
+  aiScore?: number;
+  aiFeedbackSummary?: string;
+  aiStrengths?: string[];
+  aiImprovements?: string[];
+  /** @format date-time */
+  startedAtUtc?: string;
+  /** @format date-time */
+  completedAtUtc?: string;
+  /** @format date-time */
+  updatedAtUtc?: string;
+}
+
+export interface ModuleDashboardTotalsContract {
+  /** @format int32 */
+  modulesCount?: number;
+  /** @format int32 */
+  lessonsTotal?: number;
+  /** @format int32 */
+  lessonsCompleted?: number;
+  /** @format double */
+  percentCompleted?: number;
+  /** @format int32 */
+  totalModuleDurationMinutes?: number;
+  /** @format int32 */
+  totalActualStudyMinutes?: number;
+  /** @format int32 */
+  totalModuleQuizCount?: number;
+  /** @format int32 */
+  totalLessonQuizCount?: number;
+  /** @format int32 */
+  totalQuizCount?: number;
+  /** @format double */
+  averageQuizScore?: number;
+  /** @format int32 */
+  averageAiScore?: number;
+}
+
 export interface RecommendedAction {
   title?: string;
   kind?: string;
@@ -196,6 +390,14 @@ export interface SelectAllLearningPathResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: LearningPathSelectAllDtoPaginatedResult;
+}
+
+export interface SelectAllUserBehaviourResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: UserBehaviourDto[];
 }
 
 export interface SkillGap {
@@ -231,6 +433,19 @@ export interface TechnologyInsertResponse {
   response?: string;
 }
 
+export interface UpdateCourseStatusToSkippedCommand {
+  /** @format uuid */
+  learningPathCourseId: string;
+}
+
+export interface UpdateCourseStatusToSkippedResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
 export interface UpdateReadModelLearningPathCommand {
   /** @format uuid */
   learningPathId?: string;
@@ -258,12 +473,25 @@ export interface UpdateStatusLearningPathResponse {
   response?: string;
 }
 
-export interface UserBehaviourInsertCommand {
-  /** @minLength 1 */
-  actionType: string;
+export interface UserBehaviourDto {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  studentId?: string;
+  actionType?: string;
   /** @format uuid */
   targetId?: string;
   targetType?: string;
+  metadata?: string;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface UserBehaviourInsertCommand {
+  actionType: UserBehaviourActionType;
+  /** @format uuid */
+  targetId?: string;
+  targetType?: UserBehaviourTargetType;
   metadata?: string;
 }
 
@@ -561,6 +789,56 @@ export class Api<
       }),
 
     /**
+     * No description
+     *
+     * @tags AiQuizEvaluate
+     * @name AiQuizEvaluateList
+     * @request GET:/api/AiQuizEvaluate
+     * @secure
+     */
+    aiQuizEvaluateList: (
+      query?: {
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        CourseId?: string;
+        ModuleIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetLatestModuleAiEvaluationsResponse, any>({
+        path: `/api/AiQuizEvaluate`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API cho phép sinh viên chấp nhận đề xuất khóa học từ hệ thống. Sau khi chấp nhận, IsAccepted sẽ được đặt thành true.
+     *
+     * @tags CourseSuggestions
+     * @name V1CourseSuggestionsUpdateAcceptCourseSuggestionStatusUpdate
+     * @summary Chấp nhận đề xuất khóa học
+     * @request PUT:/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus
+     * @secure
+     */
+    v1CourseSuggestionsUpdateAcceptCourseSuggestionStatusUpdate: (
+      body: AcceptCourseSuggestionCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<AcceptCourseSuggestionResponse, any>({
+        path: `/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cần cấp quyền Admin
      *
      * @tags LearningGoal
@@ -705,6 +983,54 @@ export class Api<
       }),
 
     /**
+     * @description API cho phép sinh viên chấp nhận học vượt/bỏ qua khóa học trong lộ trình học tập
+     *
+     * @tags LearningPaths
+     * @name LearningPathsUpdateCourseStatusToSkippedUpdate
+     * @summary Cập nhật trạng thái khóa học sang Skipped
+     * @request PUT:/api/LearningPaths/UpdateCourseStatusToSkipped
+     * @secure
+     */
+    learningPathsUpdateCourseStatusToSkippedUpdate: (
+      body: UpdateCourseStatusToSkippedCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateCourseStatusToSkippedResponse, any>({
+        path: `/api/LearningPaths/UpdateCourseStatusToSkipped`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Trả về Module Dashboard theo tham số query. Cần xác thực Bearer.
+     *
+     * @tags StudentDashboards
+     * @name StudentDashboardsGetModuleDashboardResponseList
+     * @summary Lấy Module Dashboard
+     * @request GET:/api/StudentDashboards/GetModuleDashboardResponse
+     * @secure
+     */
+    studentDashboardsGetModuleDashboardResponseList: (
+      query?: {
+        /** @format uuid */
+        CourseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetModuleDashboardEventResponse, any>({
+        path: `/api/StudentDashboards/GetModuleDashboardResponse`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cần cấp quyền Admin
      *
      * @tags Technology
@@ -746,6 +1072,24 @@ export class Api<
         body: body,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API hỗ trợ phân trang và lọc theo ActionType, TargetType. Cần cấp quyền.
+     *
+     * @tags UserBehaviour
+     * @name V1UserBehaviourSelectUserBehavioursList
+     * @summary Lấy danh sách toàn bộ hành vi của người dùng hiện tại
+     * @request GET:/api/v1/UserBehaviour/SelectUserBehaviours
+     * @secure
+     */
+    v1UserBehaviourSelectUserBehavioursList: (params: RequestParams = {}) =>
+      this.request<SelectAllUserBehaviourResponse, any>({
+        path: `/api/v1/UserBehaviour/SelectUserBehaviours`,
+        method: "GET",
+        secure: true,
         format: "json",
         ...params,
       }),

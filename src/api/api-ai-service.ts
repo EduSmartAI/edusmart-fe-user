@@ -120,6 +120,8 @@ export interface ChatHistoryItem {
 
 export interface ChatRequestDto {
   message?: string;
+  /** @format uuid */
+  lessionId?: string;
   history?: ChatHistoryItem[];
 }
 

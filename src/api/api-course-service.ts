@@ -11,6 +11,13 @@
  */
 
 /** @format int32 */
+export enum ModuleProgressStatus {
+  Value0 = 0,
+  Value1 = 1,
+  Value2 = 2,
+}
+
+/** @format int32 */
 export enum CourseSortBy {
   Value1 = 1,
   Value2 = 2,
@@ -221,6 +228,75 @@ export interface CourseDtoPaginatedResult {
   totalPages?: number;
   hasPreviousPage?: boolean;
   hasNextPage?: boolean;
+}
+
+export interface CourseModuleDashboardContract {
+  /** @format uuid */
+  studentId?: string;
+  /** @format uuid */
+  courseId?: string;
+  modules?: CourseModuleDashboardItem[] | null;
+  totals?: CourseModuleDashboardTotals;
+}
+
+export interface CourseModuleDashboardItem {
+  /** @format uuid */
+  moduleId?: string;
+  moduleName?: string | null;
+  /** @format int32 */
+  positionIndex?: number;
+  /** @format int32 */
+  level?: number | null;
+  isCore?: boolean;
+  description?: string | null;
+  status?: ModuleProgressStatus;
+  /** @format int32 */
+  lessonsVideoTotal?: number;
+  /** @format int32 */
+  lessonsCompleted?: number;
+  /** @format double */
+  percentCompleted?: number;
+  /** @format int32 */
+  lessonsInProgress?: number;
+  /** @format int32 */
+  moduleDurationMinutes?: number;
+  /** @format int32 */
+  actualStudyMinutes?: number;
+  /** @format int32 */
+  moduleQuizCount?: number;
+  /** @format int32 */
+  lessonQuizCount?: number;
+  /** @format int32 */
+  totalQuizCount?: number;
+  /** @format double */
+  averageQuizScore?: number | null;
+  /** @format date-time */
+  startedAtUtc?: string | null;
+  /** @format date-time */
+  completedAtUtc?: string | null;
+  /** @format date-time */
+  updatedAtUtc?: string;
+}
+
+export interface CourseModuleDashboardTotals {
+  /** @format int32 */
+  modulesCount?: number;
+  /** @format int32 */
+  lessonsTotal?: number;
+  /** @format int32 */
+  lessonsCompleted?: number;
+  /** @format double */
+  percentCompleted?: number;
+  /** @format int32 */
+  totalModuleDurationMinutes?: number;
+  /** @format int32 */
+  totalActualStudyMinutes?: number;
+  /** @format int32 */
+  totalModuleQuizCount?: number;
+  /** @format int32 */
+  totalLessonQuizCount?: number;
+  /** @format int32 */
+  totalQuizCount?: number;
 }
 
 export interface CourseObjectiveDto {
@@ -498,6 +574,14 @@ export interface GetCourseBySlugForLectureResponse {
   modulesCount?: number;
   /** @format int32 */
   lessonsCount?: number;
+}
+
+export interface GetCourseModuleDashboardEventResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseModuleDashboardContract;
 }
 
 export interface GetCourseTagsResponse {
@@ -1636,6 +1720,33 @@ export class Api<
       this.request<GetDetailsProgressByCourseSlugForStudentResponse, any>({
         path: `/api/StudentLessonProgress/${courseSlug}`,
         method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve the module dashboard information for a specific student and course
+     *
+     * @tags Tests
+     * @name TestsList
+     * @summary Get course module dashboard for a student
+     * @request GET:/api/Tests
+     * @secure
+     */
+    testsList: (
+      query?: {
+        /** @format uuid */
+        studentId?: string;
+        /** @format uuid */
+        courseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetCourseModuleDashboardEventResponse, any>({
+        path: `/api/Tests`,
+        method: "GET",
+        query: query,
         secure: true,
         format: "json",
         ...params,

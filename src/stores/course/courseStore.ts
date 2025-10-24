@@ -4,6 +4,10 @@ import { create } from "zustand";
 import { useLoadingStore } from "../Loading/LoadingStore";
 import { StudentQuizCourseInsertResponse } from "EduSmart/api/api-quiz-service";
 import { UpsertUserLessonProgressResponse } from "EduSmart/api/api-course-service";
+import {
+  AIChatBotResponse,
+  ChatHistoryItem,
+} from "EduSmart/api/api-ai-service";
 
 interface SubmitAnswerDto {
   questionId: string;
@@ -24,6 +28,11 @@ interface CourseState {
     lastPositionSec?: number | null,
     watchedDeltaSec?: number | null,
   ) => Promise<UpsertUserLessonProgressResponse>;
+  aiChatBotsCreate: (
+    message?: string,
+    history?: ChatHistoryItem[],
+    lessonId?: string,
+  ) => Promise<AIChatBotResponse>;
 }
 
 export const useCourseStore = create<CourseState>(() => ({
@@ -74,13 +83,13 @@ export const useCourseStore = create<CourseState>(() => ({
             studentQuizAnswers: studentQuizAnswers,
           },
         );
-        console.log("Enrollment failed:", res.data);
+      console.log("Enrollment failed:", res.data);
       if (res.data?.success && res.data.response) {
         console.log("CheckCourseById - res:", res.data.response);
         console.log("CheckCourseById - res:", res.data.success);
         return res.data as StudentQuizCourseInsertResponse;
       }
-       return res.data as StudentQuizCourseInsertResponse;
+      return res.data as StudentQuizCourseInsertResponse;
     } catch (error) {
       console.error("Error fetching courses:", error);
       return {
@@ -94,24 +103,45 @@ export const useCourseStore = create<CourseState>(() => ({
     watchedDeltaSec,
   ) => {
     try {
-
-      const res =
-        await apiClient.courseService.api.studentLessonProgressUpdate(
-          {
-            lessonId: lessonId,
-            userLessonProgress: {
-              lastPositionSec: lastPositionSec,
-              watchedDeltaSec: watchedDeltaSec,
-            }
+      const res = await apiClient.courseService.api.studentLessonProgressUpdate(
+        {
+          lessonId: lessonId,
+          userLessonProgress: {
+            lastPositionSec: lastPositionSec,
+            watchedDeltaSec: watchedDeltaSec,
           },
-        );
-        console.log("Enrollment failed:", res.data);
+        },
+      );
+      console.log("Enrollment failed:", res.data);
       if (res.data?.success && res.data.response) {
         console.log("CheckCourseById - res:", res.data.response);
         console.log("CheckCourseById - res:", res.data.success);
         return res.data as StudentQuizCourseInsertResponse;
       }
-       return res.data as StudentQuizCourseInsertResponse;
+      return res.data as StudentQuizCourseInsertResponse;
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      return {
+        data: {},
+      };
+    }
+  },
+  aiChatBotsCreate: async (message, history, lessonId) => {
+    try {
+      const res = await apiClient.aiService.api.aiChatBotsCreate({
+        request: {
+          message: message ?? "",
+          lessionId: lessonId ?? "",
+          history: history,
+        },
+      });
+      console.log("Enrollment failed:", res.data);
+      if (res.data?.success && res.data.response) {
+        console.log("CheckCourseById - res:", res.data.response);
+        console.log("CheckCourseById - res:", res.data.success);
+        return res.data as AIChatBotResponse;
+      }
+      return res.data as AIChatBotResponse;
     } catch (error) {
       console.error("Error fetching courses:", error);
       return {

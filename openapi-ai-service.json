@@ -498,6 +498,10 @@
         "message": {
           "type": "string"
         },
+        "lessionId": {
+          "format": "uuid",
+          "type": "string"
+        },
         "history": {
           "type": "array",
           "items": {

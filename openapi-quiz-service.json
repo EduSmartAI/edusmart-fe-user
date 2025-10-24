@@ -180,11 +180,21 @@
     },
     "/api/v1/CourseQuiz/InsertStudentQuizCourse": {
       "post": {
-        "tags": ["CourseQuiz"],
+        "tags": [
+          "CourseQuiz"
+        ],
         "summary": "Lưu câu trả lời của sinh viên trong bài kiếm tra course",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -206,10 +216,16 @@
     },
     "/api/v1/CourseQuiz/SelectStudentQuizCourse": {
       "get": {
-        "tags": ["CourseQuiz"],
+        "tags": [
+          "CourseQuiz"
+        ],
         "summary": "Hiển thị bài kiểm tra course cho sinh viên",
         "description": "Cần cấp quyền Student cho API",
-        "produces": ["text/plain", "application/json", "text/json"],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "query",
@@ -259,6 +275,52 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/QuizCourseCheckAttemptResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/GetLatestModuleQuizScores": {
+      "get": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo module",
+        "description": "Cần cấp quyền Student cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "StudentId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "CourseId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "ModuleIds",
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetLatestModuleQuizScoresResponseEvent"
             }
           }
         }
@@ -805,6 +867,39 @@
       },
       "additionalProperties": false
     },
+    "AnswerRuleRequest": {
+      "type": "object",
+      "properties": {
+        "numericMin": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "numericMax": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "unit": {
+          "$ref": "#/definitions/AnswerRuleUnit"
+        },
+        "mappedField": {
+          "type": "string"
+        },
+        "formula": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AnswerRuleUnit": {
+      "format": "int32",
+      "enum": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "type": "integer"
+    },
     "AnswerSurveySelects": {
       "type": "object",
       "properties": {
@@ -870,6 +965,42 @@
         },
         "errorMessage": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetLatestModuleQuizScoresPayload": {
+      "type": "object",
+      "properties": {
+        "modules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModuleLatestQuizScore"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetLatestModuleQuizScoresResponseEvent": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/GetLatestModuleQuizScoresPayload"
         }
       },
       "additionalProperties": false
@@ -987,6 +1118,24 @@
         "parentMajorId": {
           "format": "uuid",
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ModuleLatestQuizScore": {
+      "type": "object",
+      "properties": {
+        "moduleId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "latestScore100": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "attemptCount": {
+          "format": "int32",
+          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -2019,9 +2168,37 @@
         "questionResults": {
           "type": "array",
           "items": {
-            "format": "uuid",
-            "type": "string"
+            "$ref": "#/definitions/QuestionsCourseResultSelectResponseEntity"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentInformation": {
+      "required": [
+        "learningGoal",
+        "majorId",
+        "semesterId",
+        "technologies"
+      ],
+      "type": "object",
+      "properties": {
+        "majorId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "semesterId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "technologies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Technology"
+          }
+        },
+        "learningGoal": {
+          "$ref": "#/definitions/LearningGoal"
         }
       },
       "additionalProperties": false
@@ -2109,14 +2286,32 @@
           }
         },
         "response": {
+          "$ref": "#/definitions/StudentQuizCourseInsertResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentQuizCourseInsertResponseEntity": {
+      "type": "object",
+      "properties": {
+        "studentQuizCourseId": {
           "format": "uuid",
           "type": "string"
+        },
+        "suggestedCourses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SuggestCourseEntity"
+          }
         }
       },
       "additionalProperties": false
     },
     "StudentSurveyInsertCommand": {
-      "required": ["studentInformation"],
+      "required": [
+        "studentInformation",
+        "studentSurveys"
+      ],
       "type": "object",
       "properties": {
         "studentInformation": {
@@ -2132,7 +2327,11 @@
       "additionalProperties": false
     },
     "StudentSurveyInsertRequest": {
-      "required": ["answers", "surveyId"],
+      "required": [
+        "answers",
+        "surveyCode",
+        "surveyId"
+      ],
       "type": "object",
       "properties": {
         "surveyId": {
@@ -2389,6 +2588,36 @@
       },
       "additionalProperties": false
     },
+    "SuggestCourseEntity": {
+      "type": "object",
+      "properties": {
+        "suggestCourseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "durationMinutes": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "level": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "courseImageUrl": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "SurveyAnswerRequest": {
       "required": [
         "answerText"
@@ -2498,7 +2727,12 @@
       "additionalProperties": false
     },
     "SurveyInsertCommand": {
-      "required": ["description", "questions", "title"],
+      "required": [
+        "description",
+        "questions",
+        "surveyCode",
+        "title"
+      ],
       "type": "object",
       "properties": {
         "title": {

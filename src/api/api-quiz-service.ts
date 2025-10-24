@@ -67,6 +67,18 @@ export interface DetailError {
   errorMessage?: string;
 }
 
+export interface GetLatestModuleQuizScoresPayload {
+  modules?: ModuleLatestQuizScore[];
+}
+
+export interface GetLatestModuleQuizScoresResponseEvent {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: GetLatestModuleQuizScoresPayload;
+}
+
 export interface InsertAnswers {
   answerText?: string;
   isCorrect?: boolean;
@@ -110,6 +122,15 @@ export interface MajorSelectsEventResponseEntity {
   majorCode?: string;
   /** @format uuid */
   parentMajorId?: string;
+}
+
+export interface ModuleLatestQuizScore {
+  /** @format uuid */
+  moduleId?: string;
+  /** @format int32 */
+  latestScore100?: number;
+  /** @format int32 */
+  attemptCount?: number;
 }
 
 export interface QuestionAddRequest {
@@ -535,8 +556,13 @@ export interface StudentQuizCourseInsertResponse {
   messageId?: string;
   message?: string;
   detailErrors?: DetailError[];
+  response?: StudentQuizCourseInsertResponseEntity;
+}
+
+export interface StudentQuizCourseInsertResponseEntity {
   /** @format uuid */
-  response?: string;
+  studentQuizCourseId?: string;
+  suggestedCourses?: SuggestCourseEntity[];
 }
 
 export interface StudentSurveyInsertCommand {
@@ -634,6 +660,19 @@ export interface StudentTestSelectResponseEntity {
   /** @format date-time */
   finishedAt?: string;
   quizResults?: QuizResultSelectResponseEntity[];
+}
+
+export interface SuggestCourseEntity {
+  /** @format uuid */
+  suggestCourseId?: string;
+  title?: string;
+  description?: string;
+  /** @format int32 */
+  durationMinutes?: number;
+  /** @format int32 */
+  level?: number;
+  courseImageUrl?: string;
+  reason?: string;
 }
 
 export interface SurveyAnswerRequest {
@@ -1230,6 +1269,34 @@ export class Api<
         body: body,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizGetLatestModuleQuizScoresList
+     * @summary Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo module
+     * @request GET:/api/v1/CourseQuiz/GetLatestModuleQuizScores
+     * @secure
+     */
+    v1CourseQuizGetLatestModuleQuizScoresList: (
+      query?: {
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        CourseId?: string;
+        ModuleIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetLatestModuleQuizScoresResponseEvent, any>({
+        path: `/api/v1/CourseQuiz/GetLatestModuleQuizScores`,
+        method: "GET",
+        query: query,
+        secure: true,
         format: "json",
         ...params,
       }),
