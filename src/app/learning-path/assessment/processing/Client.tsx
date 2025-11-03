@@ -170,7 +170,7 @@ export default function ProcessingClient() {
                 <div className="text-center mb-10">
                   {!isCompleted ? (
                     <h1 className="text-3xl md:text-4xl font-black mb-6 bg-gradient-to-r from-[#49BBBD] via-[#2DD4BF] to-[#06B6D4] bg-clip-text text-transparent animate-gradient">
-                      AI đang xử lý dữ liệu của bạn
+                      Hệ thống đang xử lý dữ liệu của bạn
                     </h1>
                   ) : (
                     <h1 className="text-3xl md:text-4xl font-black mb-6 bg-gradient-to-r from-[#10B981] via-[#059669] to-[#14B8A6] bg-clip-text text-transparent">
@@ -181,9 +181,9 @@ export default function ProcessingClient() {
                   <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
                     {!isCompleted ? (
                       <>
-                        Hệ thống AI đang phân tích khảo sát và kết quả đánh giá
-                        của bạn để tạo ra lộ trình học tập cá nhân hóa. Quá
-                        trình này có thể mất vài giây...
+                        Hệ thống đang phân tích khảo sát và kết quả đánh giá của
+                        bạn để tạo ra lộ trình học tập cá nhân hóa. Quá trình
+                        này có thể mất vài giây...
                       </>
                     ) : (
                       <>

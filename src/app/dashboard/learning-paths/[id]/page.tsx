@@ -486,7 +486,7 @@ export default function LearningPathRecommendation() {
           </div>
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed mb-6">
-            Dựa trên kết quả khảo sát và đánh giá năng lực của bạn, AI đã tạo ra
+            Dựa trên kết quả khảo sát và đánh giá năng lực của bạn, hệ thống đã tạo ra
             lộ trình học tập tối ưu để giúp bạn đạt được mục tiêu nghề nghiệp.
           </p>
 
@@ -504,7 +504,7 @@ export default function LearningPathRecommendation() {
           >
             <FiClock className="w-4 h-4 mr-2" />
             {displayData.status === 0
-              ? "AI đang tạo lộ trình"
+              ? "Hệ thống đang tạo lộ trình"
               : displayData.status === 1
               ? "Đang chờ xác nhận"
               : displayData.status === 2
@@ -608,7 +608,7 @@ export default function LearningPathRecommendation() {
                 <p className="text-gray-600 dark:text-gray-300 text-lg">
                   {displayData.status === 2
                     ? `Bạn đã chọn ${sortedInternalPath.length} chuyên ngành hẹp. Học theo thứ tự đã sắp xếp để hiệu quả nhất.`
-                    : "AI đề xuất các chuyên ngành hẹp phù hợp với năng lực và sở thích của bạn"}
+                    : "Hệ thống đề xuất các chuyên ngành hẹp phù hợp với năng lực và sở thích của bạn"}
                 </p>
               </div>
             </div>
