@@ -20,11 +20,13 @@ import {
   confirmLearningPathAction,
   type LearningPathData,
 } from "EduSmart/app/(learning-path)/learningPathAction";
+import { useSurvey } from "EduSmart/hooks/survey";
 
 export default function LearningPathRecommendation() {
   const router = useRouter();
   const params = useParams();
   const learningPathId = params.id as string;
+  const survey = useSurvey();
 
   // State management
   const [learningPathData, setLearningPathData] =
@@ -36,6 +38,53 @@ export default function LearningPathRecommendation() {
   const [majorOrder, setMajorOrder] = useState<string[]>([]);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [viewingMajorId, setViewingMajorId] = useState<string | null>(null);
+
+  // 🧹 Auto-cleanup assessment data after successful completion
+  useEffect(() => {
+    const cleanupAssessmentData = () => {
+      console.log("🧹 Cleaning up assessment data after dashboard load...");
+
+      try {
+        // 1. Clear survey data
+        survey.resetSurvey();
+        console.log("✅ Survey data cleared");
+
+        // 2. Clear quiz data from localStorage (quiz-store)
+        localStorage.removeItem("quiz-store");
+        console.log("✅ Quiz store cleared");
+
+        // 3. Clear learning path progress data
+        const learningPathKeys = [
+          "learning_path_current_step",
+          "learning_path_completed_steps",
+          "survey_completed",
+          "quiz_completed",
+          "learning_path_id",
+        ];
+        learningPathKeys.forEach((key) => {
+          localStorage.removeItem(key);
+        });
+        console.log("✅ Learning path progress cleared");
+
+        // 4. Clear survey-related localStorage keys
+        localStorage.removeItem("survey_data");
+        localStorage.removeItem("survey_step");
+        localStorage.removeItem("survey-storage");
+        console.log("✅ Survey localStorage keys cleared");
+
+        console.log(
+          "✅ All assessment data cleaned up successfully - ready for next learning path",
+        );
+      } catch (error) {
+        console.error("Error during cleanup:", error);
+      }
+    };
+
+    // Run cleanup after a short delay to ensure dashboard is fully loaded
+    const cleanupTimer = setTimeout(cleanupAssessmentData, 1000);
+
+    return () => clearTimeout(cleanupTimer);
+  }, [survey]);
 
   // Fetch learning path data on mount
   useEffect(() => {

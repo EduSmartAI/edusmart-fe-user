@@ -153,9 +153,9 @@ export function LearningPathGuard({
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <Spin size="large" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
+          <div className="mt-6 text-gray-600 dark:text-gray-400">
             Đang kiểm tra quyền truy cập...
-          </p>
+          </div>
         </div>
       </div>
     );
