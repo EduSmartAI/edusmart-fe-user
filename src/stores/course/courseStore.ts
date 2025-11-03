@@ -107,7 +107,7 @@ export const useCourseStore = create<CourseState>(() => ({
         {
           lessonId: lessonId,
           userLessonProgress: {
-            lastPositionSec: lastPositionSec,
+            lastSeenPositionSec: lastPositionSec,
             watchedDeltaSec: watchedDeltaSec,
           },
         },

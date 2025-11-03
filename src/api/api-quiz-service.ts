@@ -11,11 +11,153 @@
  */
 
 /** @format int32 */
+export enum TestType {
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+}
+
+/** @format int32 */
+export enum QuestionType {
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+}
+
+/** @format int32 */
 export enum AnswerRuleUnit {
   Value1 = 1,
   Value2 = 2,
   Value3 = 3,
   Value4 = 4,
+}
+
+export interface AdminQuizItem {
+  /** @format uuid */
+  quizId?: string;
+  /** @format int32 */
+  quizType?: number;
+  quizTypeName?: string;
+  title?: string;
+  description?: string;
+  /** @format uuid */
+  subjectCode?: string;
+  subjectCodeName?: string;
+  surveyCode?: string;
+  /** @format int32 */
+  totalQuestions?: number;
+  /** @format int32 */
+  totalStudentsTaken?: number;
+  isActive?: boolean;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface AdminQuizzesSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminQuizzesSelectResponseEntity;
+}
+
+export interface AdminQuizzesSelectResponseEntity {
+  quizzes?: AdminQuizItem[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+}
+
+export interface AdminStudentSurveyItem {
+  /** @format uuid */
+  studentQuizId?: string;
+  /** @format uuid */
+  studentId?: string;
+  studentName?: string;
+  studentEmail?: string;
+  /** @format uuid */
+  surveyId?: string;
+  surveyTitle?: string;
+  surveyCode?: string;
+  /** @format int32 */
+  totalQuestions?: number;
+  /** @format int32 */
+  totalAnswers?: number;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface AdminStudentSurveysSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminStudentSurveysSelectResponseEntity;
+}
+
+export interface AdminStudentSurveysSelectResponseEntity {
+  studentSurveys?: AdminStudentSurveyItem[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+}
+
+export interface AdminStudentTestItem {
+  /** @format uuid */
+  studentTestId?: string;
+  /** @format uuid */
+  studentId?: string;
+  studentName?: string;
+  studentEmail?: string;
+  /** @format uuid */
+  testId?: string;
+  testName?: string;
+  /** @format int32 */
+  totalQuizzes?: number;
+  /** @format int32 */
+  totalQuestions?: number;
+  /** @format int32 */
+  totalCorrectAnswers?: number;
+  /** @format int32 */
+  studentLevel?: number;
+  /** @format date-time */
+  startedAt?: string;
+  /** @format date-time */
+  finishedAt?: string;
+  /** @format date-span */
+  duration?: string;
+}
+
+export interface AdminStudentTestSelectDetailResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentTestSelectResponseEntity;
+}
+
+export interface AdminStudentTestsSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminStudentTestsSelectResponseEntity;
+}
+
+export interface AdminStudentTestsSelectResponseEntity {
+  studentTests?: AdminStudentTestItem[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
 }
 
 export interface AnswerAddRequest {
@@ -67,6 +209,18 @@ export interface DetailError {
   errorMessage?: string;
 }
 
+export interface GetLatestLessonQuizScoresPayload {
+  lessons?: LessonLatestQuizScore[];
+}
+
+export interface GetLatestLessonQuizScoresResponseEvent {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: GetLatestLessonQuizScoresPayload;
+}
+
 export interface GetLatestModuleQuizScoresPayload {
   modules?: ModuleLatestQuizScore[];
 }
@@ -105,6 +259,15 @@ export interface LearningGoalSelectsEventResponseEntity {
   learningGoalName?: string;
   /** @format int32 */
   learningGoalType?: number;
+}
+
+export interface LessonLatestQuizScore {
+  /** @format uuid */
+  lessonId?: string;
+  /** @format int32 */
+  latestScore100?: number;
+  /** @format int32 */
+  attemptCount?: number;
 }
 
 export interface MajorSelectsEventResponse {
@@ -593,6 +756,27 @@ export interface StudentSurveySelectAnswerResponseEntity {
   answerText?: string;
 }
 
+export interface StudentSurveySelectDetailResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentSurveySelectDetailResponseEntity;
+}
+
+export interface StudentSurveySelectDetailResponseEntity {
+  /** @format uuid */
+  studentSurveyId?: string;
+  /** @format uuid */
+  surveyId?: string;
+  surveyTitle?: string;
+  surveyDescription?: string;
+  surveyCode?: string;
+  /** @format date-time */
+  createdAt?: string;
+  questions?: SurveyQuestionDetailResponseEntity[];
+}
+
 export type StudentSurveySelectQuery = object;
 
 export interface StudentSurveySelectQuestionResponseEntity {
@@ -675,6 +859,13 @@ export interface SuggestCourseEntity {
   reason?: string;
 }
 
+export interface SurveyAnswerDetailResponse {
+  /** @format uuid */
+  answerId?: string;
+  selectedByStudent?: boolean;
+  answerText?: string;
+}
+
 export interface SurveyAnswerRequest {
   /** @minLength 1 */
   answerText: string;
@@ -731,11 +922,19 @@ export interface SurveyInsertResponse {
   response?: string;
 }
 
+export interface SurveyQuestionDetailResponseEntity {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  /** @format int32 */
+  questionType?: number;
+  answers?: SurveyAnswerDetailResponse[];
+}
+
 export interface SurveyQuestionRequest {
   /** @minLength 1 */
   questionText: string;
-  /** @format int32 */
-  questionType: number;
+  questionType: QuestionType;
   answers: SurveyAnswerRequest[];
 }
 
@@ -1086,6 +1285,170 @@ export class Api<
 > extends HttpClient<SecurityDataType> {
   api = {
     /**
+     * @description Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminInsertTestCreate
+     * @summary Tạo bài kiểm tra đầu vào mới
+     * @request POST:/api/v1/Admin/InsertTest
+     * @secure
+     */
+    v1AdminInsertTestCreate: (
+      body: TestInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<TestInsertResponse, any>({
+        path: `/api/v1/Admin/InsertTest`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo khảo sát mới với các câu hỏi và câu trả lời tương ứng
+     *
+     * @tags Admin
+     * @name V1AdminInsertSurveyCreate
+     * @summary Tạo khảo sát mới
+     * @request POST:/api/v1/Admin/InsertSurvey
+     * @secure
+     */
+    v1AdminInsertSurveyCreate: (
+      body: SurveyInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<SurveyInsertResponse, any>({
+        path: `/api/v1/Admin/InsertSurvey`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Hỗ trợ phân trang và lọc theo StudentId hoặc SurveyId
+     *
+     * @tags Admin
+     * @name V1AdminSelectStudentSurveysList
+     * @summary Lấy danh sách tất cả khảo sát của học sinh
+     * @request GET:/api/v1/Admin/SelectStudentSurveys
+     * @secure
+     */
+    v1AdminSelectStudentSurveysList: (
+      query?: {
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        SurveyId?: string;
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminStudentSurveysSelectResponse, any>({
+        path: `/api/v1/Admin/SelectStudentSurveys`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Hỗ trợ phân trang và lọc theo StudentId hoặc TestId
+     *
+     * @tags Admin
+     * @name V1AdminSelectStudentTestsList
+     * @summary Lấy danh sách tất cả bài kiểm tra của học sinh
+     * @request GET:/api/v1/Admin/SelectStudentTests
+     * @secure
+     */
+    v1AdminSelectStudentTestsList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        TestId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminStudentTestsSelectResponse, any>({
+        path: `/api/v1/Admin/SelectStudentTests`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Admin
+     * @name V1AdminSelectStudentTestDetailList
+     * @summary Chi tiết một bài kiểm tra đầu vào của sinh viên
+     * @request GET:/api/v1/Admin/SelectStudentTestDetail
+     * @secure
+     */
+    v1AdminSelectStudentTestDetailList: (
+      query: {
+        /** @format uuid */
+        StudentTestId: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminStudentTestSelectDetailResponse, any>({
+        path: `/api/v1/Admin/SelectStudentTestDetail`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Hỗ trợ phân trang và lọc theo QuizType, SubjectCode, SurveyCode
+     *
+     * @tags Admin
+     * @name V1AdminSelectQuizzesList
+     * @summary Lấy danh sách tất cả quiz/survey
+     * @request GET:/api/v1/Admin/SelectQuizzes
+     * @secure
+     */
+    v1AdminSelectQuizzesList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        QuizType?: any;
+        /** @format uuid */
+        SubjectCode?: string;
+        SurveyCode?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminQuizzesSelectResponse, any>({
+        path: `/api/v1/Admin/SelectQuizzes`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cần cấp quyền Teacher cho API. Chỉ cập nhật thông tin quiz settings và câu hỏi/câu trả lời hiện có
      *
      * @tags CourseQuiz
@@ -1294,6 +1657,34 @@ export class Api<
     ) =>
       this.request<GetLatestModuleQuizScoresResponseEvent, any>({
         path: `/api/v1/CourseQuiz/GetLatestModuleQuizScores`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizGetLatestLessonQuizScoresList
+     * @summary Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo lesson
+     * @request GET:/api/v1/CourseQuiz/GetLatestLessonQuizScores
+     * @secure
+     */
+    v1CourseQuizGetLatestLessonQuizScoresList: (
+      query?: {
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        CourseId?: string;
+        LessonIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetLatestLessonQuizScoresResponseEvent, any>({
+        path: `/api/v1/CourseQuiz/GetLatestLessonQuizScores`,
         method: "GET",
         query: query,
         secure: true,
@@ -1512,6 +1903,31 @@ export class Api<
     /**
      * @description Cần cấp quyền Student cho API
      *
+     * @tags StudentSurvey
+     * @name V1StudentSurveySelectStudentSurveyDetailList
+     * @summary Lấy chi tiết câu trả lời của học sinh trong bài khảo sát
+     * @request GET:/api/v1/StudentSurvey/SelectStudentSurveyDetail
+     * @secure
+     */
+    v1StudentSurveySelectStudentSurveyDetailList: (
+      query?: {
+        /** @format uuid */
+        studentSurveyId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentSurveySelectDetailResponse, any>({
+        path: `/api/v1/StudentSurvey/SelectStudentSurveyDetail`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
      * @tags StudentTest
      * @name V1StudentTestInsertStudentTestCreate
      * @summary Lưu câu trả lời của học sinh
@@ -1553,29 +1969,6 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Tạo khảo sát mới với các câu hỏi và câu trả lời tương ứng
-     *
-     * @tags Survey
-     * @name V1SurveyInsertSurveyCreate
-     * @summary Tạo khảo sát mới
-     * @request POST:/api/v1/Survey/InsertSurvey
-     * @secure
-     */
-    v1SurveyInsertSurveyCreate: (
-      body: SurveyInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<SurveyInsertResponse, any>({
-        path: `/api/v1/Survey/InsertSurvey`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1623,29 +2016,6 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin cho API
-     *
-     * @tags Test
-     * @name V1TestInsertTestCreate
-     * @summary Tạo bài kiểm tra mới
-     * @request POST:/api/v1/Test/InsertTest
-     * @secure
-     */
-    v1TestInsertTestCreate: (
-      body: TestInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<TestInsertResponse, any>({
-        path: `/api/v1/Test/InsertTest`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),

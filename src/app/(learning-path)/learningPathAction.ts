@@ -3,64 +3,76 @@
 
 import apiServer from "EduSmart/lib/apiServer";
 
-export interface LearningPathData {
-  status: number;
-  basicLearningPath: {
-    subjectName: string;
-    semester: string | null;
-    courses: CourseItem[];
-  };
-  internalLearningPath: InternalLearningPath[];
-  externalLearningPath: ExternalLearningPath[];
-}
-
 export interface CourseItem {
-  courseId: string;
-  semesterPosition: number;
-  subjectCode: string;
-  title: string;
-  shortDescription: string;
-  description: string;
-  slug: string;
-  courseImageUrl: string;
-  learnerCount: number;
-  durationMinutes: number;
-  durationHours: number;
-  level: number;
-  price: number;
-  dealPrice: number;
+  courseId?: string;
+  semesterPosition?: number;
+  subjectCode?: string;
+  title?: string;
+  shortDescription?: string;
+  description?: string;
+  slug?: string;
+  courseImageUrl?: string;
+  learnerCount?: number;
+  durationMinutes?: number;
+  durationHours?: number;
+  level?: number;
+  price?: number;
+  dealPrice?: number;
 }
 
-export interface InternalLearningPath {
-  majorId: string;
-  majorCode: string;
-  reason: string;
-  positionIndex: number | null;
-  majorCourse: CourseItem[];
+export interface CourseGroupDto {
+  subjectCode?: string;
+  status?: number; // int32
+  courses?: CourseItem[];
 }
 
-export interface ExternalLearningPath {
-  majorId: string;
-  majorCode: string;
-  reason: string;
-  steps: ExternalStep[];
+export interface BasicLearningPathDto {
+  courseGroups?: CourseGroupDto[];
 }
 
-export interface ExternalStep {
-  title: string;
-  duration_Weeks: number;
-  suggested_Courses: SuggestedCourse[];
+export interface InternalLearningPathDto {
+  majorId?: string;
+  majorCode?: string;
+  reason?: string;
+  positionIndex?: number | null;
+  majorCourseGroups?: CourseGroupDto[];
 }
 
 export interface SuggestedCourse {
-  title: string;
-  link: string;
-  provider: string;
-  reason: string;
-  level: string;
-  rating: string | null;
-  est_Duration_Weeks: number | null;
+  title?: string;
+  link?: string;
+  provider?: string;
+  reason?: string;
+  level?: string;
+  rating?: string | null;
+  est_Duration_Weeks?: number | null;
 }
+
+export interface ExternalStep {
+  title?: string;
+  duration_Weeks?: number;
+  suggested_Courses?: SuggestedCourse[];
+}
+
+export interface ExternalLearningPathDto {
+  majorId?: string;
+  majorCode?: string;
+  reason?: string;
+  steps?: ExternalStep[];
+}
+
+export interface LearningPathSelectDto {
+  status?: number;                // int32
+  pathName?: string;
+  completionPercent?: number;     // double
+  basicLearningPath?: BasicLearningPathDto;
+  internalLearningPath?: InternalLearningPathDto[];
+  externalLearningPath?: ExternalLearningPathDto[];
+}
+
+/** Export alias để component import như cũ */
+export type LearningPathData = LearningPathSelectDto;
+
 
 // Import shared error handler from quizAction
 import { normalizeFetchError } from "EduSmart/app/(quiz)/quizAction";
@@ -82,7 +94,6 @@ export async function getLearningPathAction(
     });
 
     if (!response.data?.success) {
-      console.error("❌ [Learning Path] Error:", response.data?.message);
       return {
         ok: false,
         error: response.data?.message || "Failed to fetch learning path",
@@ -96,7 +107,6 @@ export async function getLearningPathAction(
     };
   } catch (error) {
     const nErr = await normalizeFetchError(error);
-    console.error("❌ [Learning Path] Exception:", nErr.message);
     return {
       ok: false,
       error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
@@ -106,10 +116,7 @@ export async function getLearningPathAction(
 }
 
 /**
- * Confirm learning path with selected majors
- * @param learningPathId - UUID of the learning path
- * @param selectedMajorIds - Array of selected major IDs in order
- * @returns Success status with updated learning path data
+ * Confirm learning path giữ nguyên (trả về lại getLearningPathAction)
  */
 export async function confirmLearningPathAction(
   learningPathId: string,
@@ -127,10 +134,6 @@ export async function confirmLearningPathAction(
     );
 
     if (!response.data?.success) {
-      console.error(
-        "❌ [Learning Path] Confirm error:",
-        response.data?.message,
-      );
       return {
         ok: false,
         error: response.data?.message || "Failed to confirm learning path",
@@ -138,27 +141,22 @@ export async function confirmLearningPathAction(
       };
     }
 
-    // Fetch updated learning path to get new status
-    const updatedPath = await getLearningPathAction(learningPathId);
-
-    if (!updatedPath.ok || !updatedPath.data) {
-      console.error("❌ [Learning Path] Failed to fetch updated status");
+    const updated = await getLearningPathAction(learningPathId);
+    if (!updated.ok) {
       return {
         ok: false,
         error: "Confirmed but failed to fetch updated status",
       };
     }
 
-    console.log("✅ [Learning Path] New status:", updatedPath.data.status);
     return {
       ok: true,
       message: response.data.message || "Learning path confirmed successfully",
-      status: updatedPath.data.status,
-      data: updatedPath.data,
+      status: updated.data.status ?? 0,
+      data: updated.data,
     };
   } catch (error) {
     const nErr = await normalizeFetchError(error);
-    console.error("❌ [Learning Path] Confirm exception:", nErr.message);
     return {
       ok: false,
       error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,

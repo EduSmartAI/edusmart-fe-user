@@ -40,6 +40,40 @@
         }
       }
     },
+    "/api/AIChatBots/ai-search-assignment": {
+      "post": {
+        "tags": [
+          "AIChatBots"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AiSearchChatBotRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AiSearchResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/AiQuizEvaluate/evaluate": {
       "post": {
         "tags": [
@@ -171,6 +205,40 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/AiSearchResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/AiSummarys/feedback-course": {
+      "post": {
+        "tags": [
+          "AiSummarys"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AiSummaryRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AiSummaryResponse"
             }
           }
         }
@@ -416,6 +484,19 @@
       },
       "additionalProperties": false
     },
+    "AiSearchChatBotRequest": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
     "AiSearchRequest": {
       "type": "object",
       "properties": {
@@ -426,6 +507,44 @@
       "additionalProperties": false
     },
     "AiSearchResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiSummaryRequest": {
+      "type": "object",
+      "properties": {
+        "studentId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiSummaryResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -783,7 +902,8 @@
       "format": "int32",
       "enum": [
         1,
-        2
+        2,
+        3
       ],
       "type": "integer"
     },

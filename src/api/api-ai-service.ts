@@ -14,6 +14,7 @@
 export enum QuizScope {
   Value1 = 1,
   Value2 = 2,
+  Value3 = 3,
 }
 
 export interface AIChatBotRequest {
@@ -88,11 +89,32 @@ export interface AiExternalCourseResponse {
   response?: AskResponse;
 }
 
+export interface AiSearchChatBotRequest {
+  topic?: string;
+  /** @format int32 */
+  difficultyLevel?: number;
+}
+
 export interface AiSearchRequest {
   topic?: string;
 }
 
 export interface AiSearchResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface AiSummaryRequest {
+  /** @format uuid */
+  studentId?: string;
+  /** @format uuid */
+  courseId?: string;
+}
+
+export interface AiSummaryResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
@@ -580,6 +602,28 @@ export class Api<
     /**
      * No description
      *
+     * @tags AIChatBots
+     * @name AiChatBotsAiSearchAssignmentCreate
+     * @request POST:/api/AIChatBots/ai-search-assignment
+     * @secure
+     */
+    aiChatBotsAiSearchAssignmentCreate: (
+      body: AiSearchChatBotRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<AiSearchResponse, any>({
+        path: `/api/AIChatBots/ai-search-assignment`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
      * @tags AiQuizEvaluate
      * @name AiQuizEvaluateEvaluateCreate
      * @request POST:/api/AiQuizEvaluate/evaluate
@@ -657,6 +701,28 @@ export class Api<
     ) =>
       this.request<AiSearchResponse, any>({
         path: `/api/v1/AiRecommend/improvement-search-ai`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AiSummarys
+     * @name AiSummarysFeedbackCourseCreate
+     * @request POST:/api/AiSummarys/feedback-course
+     * @secure
+     */
+    aiSummarysFeedbackCourseCreate: (
+      body: AiSummaryRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<AiSummaryResponse, any>({
+        path: `/api/AiSummarys/feedback-course`,
         method: "POST",
         body: body,
         secure: true,

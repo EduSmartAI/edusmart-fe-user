@@ -1,8 +1,8 @@
 // (auth)/action.ts
 "use server";
 
-import { DetailError, StudentInsertCommand, TokenVerifyResponse } from "EduSmart/api/api-auth-service";
-import { destroySession, exchangePassword, getAccessTokenFromCookie, getSidFromCookie, hasRefreshToken, refreshTokens, revokeRefreshLocal } from "EduSmart/lib/authServer";
+import { DetailError, AccountInsertCommand, TokenVerifyResponse } from "EduSmart/api/api-auth-service";
+import { destroySession, exchangePassword, getAccessTokenFromCookie, getSidFromCookie, hasRefreshToken, readSidCookiePayload, refreshTokens, revokeRefreshLocal } from "EduSmart/lib/authServer";
 const BACKEND = process.env.NEXT_PUBLIC_API_URL;
 export async function loginAction({
   email,
@@ -14,13 +14,14 @@ export async function loginAction({
   if (!email || !password) return { ok: false, error: "Thiếu email/password" };
   try {
     console.log("start")
-    const result = await exchangePassword(email, password);
+    await exchangePassword(email, password);
     console.log("end")
     const accessToken = await getAccessTokenFromCookie();
-    console.warn("result", result)
-    if(accessToken) return { ok: true, accessToken: accessToken};
-    // console.log("Bearer Access", accessToken)
-    return { ok: false, accessToken: null};
+    const payload = await readSidCookiePayload();
+    const user = payload?.user ?? null;
+    console.log("User info", user)
+    if(accessToken) return { ok: true, accessToken: accessToken, user: user };
+    return { ok: false, accessToken: null, user: null,};
   } catch (e: unknown) {
     console.error("lỗi")
     const errorMessage = typeof e === "object" && e !== null && "message" in e ? (e as { message?: string }).message : undefined;
@@ -30,13 +31,10 @@ export async function loginAction({
 
 export async function refreshAction() {
   try {
-    console.log("vao serverrrrrrrrrrrrrr")
     const sid = await getSidFromCookie();
-    console.log("sid", sid)
     if (!sid) return { ok: false, error: "No session" };
-    await refreshTokens(sid);                              // 👈 truyền sid vào đây
+    await refreshTokens(sid);
     const accessToken = await getAccessTokenFromCookie();  // lấy access mới
-    console.log("new accessToken", accessToken)
     return { ok: true, accessToken };
   } catch (e: unknown) {
     const msg =
@@ -49,6 +47,7 @@ export async function refreshAction() {
 
 export async function logoutAction() {
   const sid = await getSidFromCookie();
+  console.log("logout action sid", sid)
   if (sid) {
     await destroySession(sid);  // xóa session + cookie sid
   }
@@ -83,12 +82,12 @@ type ApiError = {
 
 /** Server action: Insert Student (public, no bearer, no any) */
 export async function insertStudentAction(
-  payload: StudentInsertCommand
+  payload: AccountInsertCommand
 ): Promise<
   | { ok: true; data: TokenVerifyResponse }
   | { ok: false; status?: number; error: string; detailErrors?: DetailError[] | null }
 > {
-  const resp = await postJsonPublic("/auth/api/v1/Account/insert-student", payload);
+  const resp = await postJsonPublic("/auth/api/v1/Account/insert-account", payload);
   console.log("response", resp)
   const raw = await resp.text();
   const data = parseJson<TokenVerifyResponse>(raw);
@@ -119,4 +118,22 @@ export async function getAuthen(): Promise<boolean> {
 
 export async function logout() {
   return await revokeRefreshLocal();
+}
+
+export async function cleanupAction() {
+  const payload = await readSidCookiePayload();
+  if (!payload) return { ok: true, reason: "no-cookie" };
+
+  if (Date.now() > payload.expAt - 5000) {
+    await destroySession(payload.sid);
+    return { ok: true, cleared: "expired" };
+  }
+
+  try {
+    await refreshTokens(payload.sid);
+    return { ok: true, refreshed: true };
+  } catch {
+    await destroySession(payload.sid);
+    return { ok: true, cleared: "refresh-failed" };
+  }
 }

@@ -60,13 +60,27 @@ export enum UserBehaviourActionType {
 }
 
 /** @format int32 */
-export enum QuizScope {
+export enum TechnologyType {
   Value1 = 1,
   Value2 = 2,
 }
 
 /** @format int32 */
+export enum QuizScope {
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+}
+
+/** @format int32 */
 export enum ModuleProgressStatus {
+  Value0 = 0,
+  Value1 = 1,
+  Value2 = 2,
+}
+
+/** @format int32 */
+export enum LessonStatus {
   Value0 = 0,
   Value1 = 1,
   Value2 = 2,
@@ -99,6 +113,73 @@ export interface AcceptCourseSuggestionResponse {
   response?: string;
 }
 
+export interface AdminLearningGoalItem {
+  /** @format uuid */
+  goalId?: string;
+  goalName?: string;
+  description?: string;
+  /** @format int32 */
+  learningGoalType?: number;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface AdminLearningGoalItemPagedResult {
+  items?: AdminLearningGoalItem[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
+}
+
+export interface AdminLearningGoalsSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminLearningGoalItemPagedResult;
+}
+
+export interface AdminTechnologiesSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminTechnologyItemPagedResult;
+}
+
+export interface AdminTechnologyItem {
+  /** @format uuid */
+  technologyId?: string;
+  technologyName?: string;
+  description?: string;
+  /** @format int32 */
+  technologyType?: number;
+  technologyTypeName?: string;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface AdminTechnologyItemPagedResult {
+  items?: AdminTechnologyItem[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
+}
+
 export interface AiEvaluationUpsertEvent {
   /** @format uuid */
   attemptId?: string;
@@ -128,9 +209,28 @@ export interface AiEvaluationUpsertEvent {
   createdAtUtc?: string;
 }
 
+export interface AiImprovementDto {
+  /** @format uuid */
+  improvementId?: string;
+  /** @format int32 */
+  positionIndex?: number;
+  improvementText?: string;
+  contentMarkdown?: string;
+  slug?: string;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string;
+}
+
 export interface BasicLearningPathDto {
-  subjectName?: string;
-  semester?: string;
+  courseGroups?: CourseGroupDto[];
+}
+
+export interface CourseGroupDto {
+  subjectCode?: string;
+  /** @format int32 */
+  status?: number;
   courses?: CourseItemDto[];
 }
 
@@ -139,6 +239,8 @@ export interface CourseItemDto {
   /** @format int32 */
   semesterPosition?: number;
   subjectCode?: string;
+  /** @format int32 */
+  status?: number;
   title?: string;
   shortDescription?: string;
   description?: string;
@@ -186,6 +288,18 @@ export interface ExternalStepDto {
   suggested_Courses?: SuggestedCourseDto[];
 }
 
+export interface GetLatestLessonAiEvaluationsPayload {
+  lessons?: LessonAiEvaluationDto[];
+}
+
+export interface GetLatestLessonAiEvaluationsResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: GetLatestLessonAiEvaluationsPayload;
+}
+
 export interface GetLatestModuleAiEvaluationsPayload {
   modules?: ModuleAiEvaluationDto[];
 }
@@ -196,6 +310,14 @@ export interface GetLatestModuleAiEvaluationsResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: GetLatestModuleAiEvaluationsPayload;
+}
+
+export interface GetLessonDashboardEventResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: LessonDashboardContract;
 }
 
 export interface GetModuleDashboardEventResponse {
@@ -212,7 +334,15 @@ export interface InternalLearningPathDto {
   reason?: string;
   /** @format int32 */
   positionIndex?: number;
-  majorCourse?: CourseItemDto[];
+  majorCourseGroups?: CourseGroupDto[];
+}
+
+export interface LearningGoalDeleteResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
 }
 
 export interface LearningGoalInsertCommand {
@@ -222,6 +352,23 @@ export interface LearningGoalInsertCommand {
 }
 
 export interface LearningGoalInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface LearningGoalUpdateCommand {
+  /** @format uuid */
+  goalId: string;
+  /** @minLength 1 */
+  goalName: string;
+  description?: string;
+  learningGoalType: LearningGoalType;
+}
+
+export interface LearningGoalUpdateResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
@@ -271,6 +418,9 @@ export interface LearningPathSelectAllDtoPaginatedResult {
 export interface LearningPathSelectDto {
   /** @format int32 */
   status?: number;
+  pathName?: string;
+  /** @format double */
+  completionPercent?: number;
   basicLearningPath?: BasicLearningPathDto;
   internalLearningPath?: InternalLearningPathDto[];
   externalLearningPath?: ExternalLearningPathDto[];
@@ -284,6 +434,95 @@ export interface LearningPathSelectResponse {
   response?: LearningPathSelectDto;
 }
 
+export interface LessonAiEvaluationDto {
+  /** @format uuid */
+  lessonId?: string;
+  /** @format uuid */
+  quizId?: string;
+  /** @format int32 */
+  score100Raw?: number;
+  /** @format int32 */
+  score100?: number;
+  summary?: string;
+  strengths?: string[];
+  improvementResources?: AiImprovementDto[];
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface LessonDashboardContract {
+  /** @format uuid */
+  studentId?: string;
+  /** @format uuid */
+  courseId?: string;
+  modules?: LessonDashboardModuleGroup[];
+  totals?: LessonDashboardTotals;
+}
+
+export interface LessonDashboardItem {
+  /** @format uuid */
+  lessonId?: string;
+  title?: string;
+  /** @format int32 */
+  positionIndex?: number;
+  isActive?: boolean;
+  videoUrl?: string;
+  status?: LessonStatus;
+  /** @format int32 */
+  currentSecond?: number;
+  /** @format int32 */
+  videoDurationSeconds?: number;
+  /** @format int32 */
+  actualStudyMinutes?: number;
+  /** @format double */
+  percentWatched?: number;
+  /** @format int32 */
+  lessonQuizCount?: number;
+  /** @format double */
+  averageQuizScore?: number;
+  /** @format int32 */
+  aiScore?: number;
+  /** @format int32 */
+  aiScoreRaw?: number;
+  aiFeedbackSummary?: string;
+  aiStrengths?: string[];
+  aiImprovementResources?: AiImprovementDto[];
+  /** @format date-time */
+  startedAtUtc?: string;
+  /** @format date-time */
+  completedAtUtc?: string;
+  /** @format date-time */
+  updatedAtUtc?: string;
+  /** @format date-time */
+  aiEvaluatedAtUtc?: string;
+}
+
+export interface LessonDashboardModuleGroup {
+  /** @format uuid */
+  moduleId?: string;
+  moduleName?: string;
+  /** @format int32 */
+  positionIndex?: number;
+  lessons?: LessonDashboardItem[];
+}
+
+export interface LessonDashboardTotals {
+  /** @format int32 */
+  modulesCount?: number;
+  /** @format int32 */
+  lessonsCount?: number;
+  /** @format int32 */
+  totalVideoDurationMinutes?: number;
+  /** @format int32 */
+  totalActualStudyMinutes?: number;
+  /** @format int32 */
+  totalLessonQuizCount?: number;
+  /** @format double */
+  averageQuizScore?: number;
+  /** @format int32 */
+  averageAiScore?: number;
+}
+
 export interface ModuleAiEvaluationDto {
   /** @format uuid */
   moduleId?: string;
@@ -295,7 +534,7 @@ export interface ModuleAiEvaluationDto {
   score100?: number;
   summary?: string;
   strengths?: string[];
-  improvements?: string[];
+  improvementResources?: AiImprovementDto[];
   /** @format date-time */
   createdAt?: string;
 }
@@ -344,7 +583,7 @@ export interface ModuleDashboardItemContract {
   aiScore?: number;
   aiFeedbackSummary?: string;
   aiStrengths?: string[];
-  aiImprovements?: string[];
+  improvementResources?: AiImprovementDto[];
   /** @format date-time */
   startedAtUtc?: string;
   /** @format date-time */
@@ -407,6 +646,98 @@ export interface SkillGap {
   evidence?: string;
 }
 
+export interface StudentLearningGoalItem {
+  /** @format uuid */
+  goalId?: string;
+  goalName?: string;
+  /** @format int32 */
+  learningGoalType?: number;
+  learningGoalTypeName?: string;
+}
+
+export interface StudentProfileSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentProfileSelectResponseEntity;
+}
+
+export interface StudentProfileSelectResponseEntity {
+  /** @format uuid */
+  studentId?: string;
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+  /** @format date */
+  dateOfBirth?: string;
+  phoneNumber?: string;
+  /** @format int32 */
+  gender?: number;
+  avatarUrl?: string;
+  address?: string;
+  bio?: string;
+  /** @format uuid */
+  majorId?: string;
+  majorName?: string;
+  /** @format uuid */
+  semesterId?: string;
+  semesterName?: string;
+  technologies?: StudentTechnologyItem[];
+  learningGoals?: StudentLearningGoalItem[];
+}
+
+export interface StudentProfileUpdateResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface StudentTechnologyItem {
+  /** @format uuid */
+  technologyId?: string;
+  technologyName?: string;
+  /** @format int32 */
+  technologyType?: number;
+  technologyTypeName?: string;
+}
+
+export interface StudentTranscriptInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface StudentTranscriptSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentTranscriptSelectResponseEntity;
+}
+
+export interface StudentTranscriptSelectResponseEntity {
+  /** @format uuid */
+  studentTranscriptId?: string;
+  semester?: string;
+  /** @format int32 */
+  semesterNumber?: number;
+  subjectCode?: string;
+  prerequisite?: string;
+  subjectName?: string;
+  /** @format int32 */
+  credit?: number;
+  /** @format double */
+  grade?: number;
+  status?: string;
+  /** @format date-time */
+  createdAt?: string;
+}
+
 export interface SuggestedCourseDto {
   title?: string;
   link?: string;
@@ -418,14 +749,38 @@ export interface SuggestedCourseDto {
   est_Duration_Weeks?: number;
 }
 
+export interface TechnologyDeleteResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
 export interface TechnologyInsertCommand {
   technologyName?: string;
   description?: string;
-  /** @format int32 */
-  technologyType?: number;
+  technologyType?: TechnologyType;
 }
 
 export interface TechnologyInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface TechnologyUpdateCommand {
+  /** @format uuid */
+  technologyId: string;
+  /** @minLength 1 */
+  technologyName: string;
+  description?: string;
+  technologyType: TechnologyType;
+}
+
+export interface TechnologyUpdateResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
@@ -767,6 +1122,208 @@ export class Api<
 > extends HttpClient<SecurityDataType> {
   api = {
     /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminInsertTechnologyCreate
+     * @summary Thêm ngôn ngữ/ framework mới
+     * @request POST:/api/v1/Admin/InsertTechnology
+     * @secure
+     */
+    v1AdminInsertTechnologyCreate: (
+      body: TechnologyInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<TechnologyInsertResponse, any>({
+        path: `/api/v1/Admin/InsertTechnology`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminUpdateTechnologyUpdate
+     * @summary Cập nhật ngôn ngữ/ framework
+     * @request PUT:/api/v1/Admin/UpdateTechnology
+     * @secure
+     */
+    v1AdminUpdateTechnologyUpdate: (
+      body: TechnologyUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<TechnologyUpdateResponse, any>({
+        path: `/api/v1/Admin/UpdateTechnology`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin - Xóa logic
+     *
+     * @tags Admin
+     * @name V1AdminDeleteTechnologyDelete
+     * @summary Xóa ngôn ngữ/ framework
+     * @request DELETE:/api/v1/Admin/DeleteTechnology
+     * @secure
+     */
+    v1AdminDeleteTechnologyDelete: (
+      query?: {
+        /** @format uuid */
+        technologyId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<TechnologyDeleteResponse, any>({
+        path: `/api/v1/Admin/DeleteTechnology`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminInsertLearningGoalCreate
+     * @summary Tạo mục tiêu học tập mới
+     * @request POST:/api/v1/Admin/InsertLearningGoal
+     * @secure
+     */
+    v1AdminInsertLearningGoalCreate: (
+      body: LearningGoalInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<LearningGoalInsertResponse, any>({
+        path: `/api/v1/Admin/InsertLearningGoal`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminUpdateLearningGoalUpdate
+     * @summary Cập nhật mục tiêu học tập
+     * @request PUT:/api/v1/Admin/UpdateLearningGoal
+     * @secure
+     */
+    v1AdminUpdateLearningGoalUpdate: (
+      body: LearningGoalUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<LearningGoalUpdateResponse, any>({
+        path: `/api/v1/Admin/UpdateLearningGoal`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin - Xóa logic
+     *
+     * @tags Admin
+     * @name V1AdminDeleteLearningGoalDelete
+     * @summary Xóa mục tiêu học tập
+     * @request DELETE:/api/v1/Admin/DeleteLearningGoal
+     * @secure
+     */
+    v1AdminDeleteLearningGoalDelete: (
+      query: {
+        /** @format uuid */
+        GoalId: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<LearningGoalDeleteResponse, any>({
+        path: `/api/v1/Admin/DeleteLearningGoal`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminSelectTechnologiesList
+     * @summary Lấy danh sách công nghệ (phân trang, tìm kiếm, lọc)
+     * @request GET:/api/v1/Admin/SelectTechnologies
+     * @secure
+     */
+    v1AdminSelectTechnologiesList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        SearchTerm?: string;
+        /** @format int32 */
+        TechnologyType?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminTechnologiesSelectResponse, any>({
+        path: `/api/v1/Admin/SelectTechnologies`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminSelectLearningGoalsList
+     * @summary Lấy danh sách mục tiêu học tập (phân trang, tìm kiếm, lọc)
+     * @request GET:/api/v1/Admin/SelectLearningGoals
+     * @secure
+     */
+    v1AdminSelectLearningGoalsList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        SearchTerm?: string;
+        /** @format int32 */
+        LearningGoalType?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminLearningGoalsSelectResponse, any>({
+        path: `/api/v1/Admin/SelectLearningGoals`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * No description
      *
      * @tags AiQuizEvaluate
@@ -816,6 +1373,33 @@ export class Api<
       }),
 
     /**
+     * No description
+     *
+     * @tags AiQuizEvaluate
+     * @name AiQuizEvaluateGetLatestLessonAiEvaluationsList
+     * @request GET:/api/AiQuizEvaluate/GetLatestLessonAiEvaluations
+     * @secure
+     */
+    aiQuizEvaluateGetLatestLessonAiEvaluationsList: (
+      query?: {
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        CourseId?: string;
+        LessonIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetLatestLessonAiEvaluationsResponse, any>({
+        path: `/api/AiQuizEvaluate/GetLatestLessonAiEvaluations`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description API cho phép sinh viên chấp nhận đề xuất khóa học từ hệ thống. Sau khi chấp nhận, IsAccepted sẽ được đặt thành true.
      *
      * @tags CourseSuggestions
@@ -831,29 +1415,6 @@ export class Api<
       this.request<AcceptCourseSuggestionResponse, any>({
         path: `/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus`,
         method: "PUT",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin
-     *
-     * @tags LearningGoal
-     * @name V1LearningGoalCreate
-     * @summary Tạo mục tiêu học tập mới
-     * @request POST:/api/v1/LearningGoal
-     * @secure
-     */
-    v1LearningGoalCreate: (
-      body: LearningGoalInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<LearningGoalInsertResponse, any>({
-        path: `/api/v1/LearningGoal`,
-        method: "POST",
         body: body,
         secure: true,
         type: ContentType.Json,
@@ -1006,15 +1567,144 @@ export class Api<
       }),
 
     /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentUpdateStudentProfileUpdate
+     * @summary Cập nhật thông tin học sinh
+     * @request PUT:/api/v1/Student/UpdateStudentProfile
+     * @secure
+     */
+    v1StudentUpdateStudentProfileUpdate: (
+      data: {
+        /**
+         * @minLength 0
+         * @maxLength 50
+         */
+        FirstName?: string;
+        /**
+         * @minLength 0
+         * @maxLength 50
+         */
+        LastName?: string;
+        /** @format date */
+        DateOfBirth?: string;
+        /**
+         * @minLength 0
+         * @maxLength 15
+         */
+        PhoneNumber?: string;
+        /**
+         * @format int32
+         * @min 1
+         * @max 3
+         */
+        Gender?: number;
+        /** @format binary */
+        Avatar?: File;
+        /**
+         * @minLength 0
+         * @maxLength 200
+         */
+        Address?: string;
+        /**
+         * @minLength 0
+         * @maxLength 500
+         */
+        Bio?: string;
+        /** @format uuid */
+        MajorId?: string;
+        /** @format uuid */
+        SemesterId?: string;
+        /** @minItems 1 */
+        Technologies?: string[];
+        /** @minItems 1 */
+        LearningGoals?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentProfileUpdateResponse, any>({
+        path: `/api/v1/Student/UpdateStudentProfile`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentSelectStudentProfileList
+     * @summary Hiển thị profile học sinh
+     * @request GET:/api/v1/Student/SelectStudentProfile
+     * @secure
+     */
+    v1StudentSelectStudentProfileList: (params: RequestParams = {}) =>
+      this.request<StudentProfileSelectResponse, any>({
+        path: `/api/v1/Student/SelectStudentProfile`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentInsertStudentTranscriptCreate
+     * @summary Import bảng điểm từ FAP cho sinh viên
+     * @request POST:/api/v1/Student/InsertStudentTranscript
+     * @secure
+     */
+    v1StudentInsertStudentTranscriptCreate: (
+      data: {
+        /** @format binary */
+        TranscriptFile?: File;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentTranscriptInsertResponse, any>({
+        path: `/api/v1/Student/InsertStudentTranscript`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentSelectStudentTranscriptList
+     * @summary Hiển thị bảng điểm được import từ FAP của sinh viên
+     * @request GET:/api/v1/Student/SelectStudentTranscript
+     * @secure
+     */
+    v1StudentSelectStudentTranscriptList: (params: RequestParams = {}) =>
+      this.request<StudentTranscriptSelectResponse, any>({
+        path: `/api/v1/Student/SelectStudentTranscript`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Trả về Module Dashboard theo tham số query. Cần xác thực Bearer.
      *
      * @tags StudentDashboards
-     * @name StudentDashboardsGetModuleDashboardResponseList
+     * @name StudentDashboardsGetModuleDashboardProcessList
      * @summary Lấy Module Dashboard
-     * @request GET:/api/StudentDashboards/GetModuleDashboardResponse
+     * @request GET:/api/StudentDashboards/GetModuleDashboardProcess
      * @secure
      */
-    studentDashboardsGetModuleDashboardResponseList: (
+    studentDashboardsGetModuleDashboardProcessList: (
       query?: {
         /** @format uuid */
         CourseId?: string;
@@ -1022,7 +1712,7 @@ export class Api<
       params: RequestParams = {},
     ) =>
       this.request<GetModuleDashboardEventResponse, any>({
-        path: `/api/StudentDashboards/GetModuleDashboardResponse`,
+        path: `/api/StudentDashboards/GetModuleDashboardProcess`,
         method: "GET",
         query: query,
         secure: true,
@@ -1031,24 +1721,26 @@ export class Api<
       }),
 
     /**
-     * @description Cần cấp quyền Admin
+     * @description Trả về Module Dashboard theo tham số query. Cần xác thực Bearer.
      *
-     * @tags Technology
-     * @name V1TechnologyInsertTechnologyCreate
-     * @summary Thêm ngôn ngữ/ framework/ tool/ platform mới
-     * @request POST:/api/v1/Technology/InsertTechnology
+     * @tags StudentDashboards
+     * @name StudentDashboardsGetLessonDashboardProcessList
+     * @summary Lấy Module Dashboard
+     * @request GET:/api/StudentDashboards/GetLessonDashboardProcess
      * @secure
      */
-    v1TechnologyInsertTechnologyCreate: (
-      body: TechnologyInsertCommand,
+    studentDashboardsGetLessonDashboardProcessList: (
+      query?: {
+        /** @format uuid */
+        CourseId?: string;
+      },
       params: RequestParams = {},
     ) =>
-      this.request<TechnologyInsertResponse, any>({
-        path: `/api/v1/Technology/InsertTechnology`,
-        method: "POST",
-        body: body,
+      this.request<GetLessonDashboardEventResponse, any>({
+        path: `/api/StudentDashboards/GetLessonDashboardProcess`,
+        method: "GET",
+        query: query,
         secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),

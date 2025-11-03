@@ -6,12 +6,14 @@ import Loading from "EduSmart/components/Loading/Loading";
 
 interface BaseScreenProps {
   children: ReactNode;
+  title?: string;
+  completionPercent?: string;
 }
 
-const BaseScreenStudyLayout: FC<BaseScreenProps> = ({ children }) => {
+const BaseScreenStudyLayout: FC<BaseScreenProps> = ({ children, title, completionPercent }) => {
   return (
     <div className="flex flex-col min-h-screen overflow-x-clip md:scroll-smooth">
-      <CourseNavigationbar />
+      <CourseNavigationbar title={title} completionPercent={completionPercent} />
       <main className="relative isolate flex-grow pt-[5rem] text-slate-900 dark:text-slate-100 overflow-x-clip">
         <Loading />
         {/* BASE */}

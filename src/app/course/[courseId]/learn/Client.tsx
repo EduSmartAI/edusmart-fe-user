@@ -19,6 +19,7 @@ import {
   Empty,
   Divider,
   Dropdown,
+  Progress,
 } from "antd";
 import {
   PlayCircleOutlined,
@@ -521,7 +522,10 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
   });
 
   return (
-    <BaseScreenStudyLayout>
+    <BaseScreenStudyLayout
+      title={course.title ?? "Không có tên"}
+      completionPercent={course.progress?.percentCompleted?.toString()}
+    >
       <div className="mx-8 mb-8">
         <div className="grid grid-cols-12 gap-4 lg:gap-6">
           {/* ========= LEFT ========= */}
@@ -590,7 +594,13 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                           : "text-neutral-700 hover:text-violet-700 dark:text-neutral-300 dark:hover:text-white"
                       }`}
                   >
-                    <span className={rightTab === "content" ? "inline-flex items-center gap-1.5 font-bold text-white" : "inline-flex items-center gap-1.5 font-bold text-black dark:text-white"}>
+                    <span
+                      className={
+                        rightTab === "content"
+                          ? "inline-flex items-center gap-1.5 font-bold text-white"
+                          : "inline-flex items-center gap-1.5 font-bold text-black dark:text-white"
+                      }
+                    >
                       <BookOutlined /> Content
                     </span>
                   </button>
@@ -606,7 +616,13 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                           : "text-neutral-700 hover:text-violet-700 dark:text-neutral-300 dark:hover:text-white"
                       }`}
                   >
-                    <span className={rightTab === "ai" ? "inline-flex items-center gap-1.5 font-bold text-white" : "inline-flex items-center gap-1.5 font-bold text-black dark:text-white"}>
+                    <span
+                      className={
+                        rightTab === "ai"
+                          ? "inline-flex items-center gap-1.5 font-bold text-white"
+                          : "inline-flex items-center gap-1.5 font-bold text-black dark:text-white"
+                      }
+                    >
                       <RobotOutlined />
                       <span>AI Assistant</span>
                       <span className="text-[10px] leading-none px-1.5 py-0.5 rounded-full bg-white/20 dark:bg-white/10">
@@ -660,28 +676,111 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                               const materials = m.moduleMaterialDetails ?? [];
                               const materialsCount = materials.length;
 
+                              const moduleProgress = m.progress;
+                              const percent = Math.round(
+                                moduleProgress?.percentCompleted ?? 0,
+                              );
+                              const lessonsCompleted =
+                                moduleProgress?.lessonsCompleted ?? 0;
+                              const lessonsTotal =
+                                moduleProgress?.lessonsTotal ?? lessons.length;
+
                               return {
                                 key: m.moduleId ?? `m-${i}`,
                                 label: (
                                   <div className="w-full">
-                                    <div className="min-w-0 flex items-center justify-between gap-2">
-                                      <span className="font-medium truncate min-w-0">
-                                        {m.moduleName}
-                                      </span>
+                                    <div className="flex items-start justify-between gap-3">
+                                      {/* BÊN TRÁI: tên module + info */}
+                                      <div className="min-w-0 flex-1">
+                                        <div className="font-medium leading-snug break-words">
+                                          {m.moduleName}
+                                        </div>
 
-                                      {materialsCount > 0 &&
-                                        (materialsCount === 1 ? (
-                                          <a
-                                            href={materials[0].fileUrl ?? "#"}
-                                            download
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            onClick={(e) => e.stopPropagation()}
-                                            className="shrink-0"
-                                          >
-                                            <Tag className="m-0 cursor-pointer inline-flex items-center gap-1">
-                                              <FileOutlined /> 1 file
-                                            </Tag>
+                                        <div className="mt-0.5 text-xs text-neutral-500 flex items-center gap-2 flex-wrap">
+                                          <span className="whitespace-nowrap">
+                                            {lessons.length} lectures •{" "}
+                                            {totalMinutes}m
+                                          </span>
+
+                                          {moduleProgress && (
+                                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600">
+                                              <CheckCircleOutlined className="text-emerald-500" />
+                                              {lessonsCompleted}/{lessonsTotal}{" "}
+                                              lessons
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* BÊN PHẢI: file + quiz (hàng trên) và vòng tròn % (hàng dưới) */}
+                                      <div className="flex flex-col items-end gap-1 shrink-0">
+                                        {(materialsCount > 0 ||
+                                          m.moduleQuiz) && (
+                                          <div className="flex items-center gap-2">
+                                            {materialsCount > 0 &&
+                                              (materialsCount === 1 ? (
+                                                <a
+                                                  href={
+                                                    materials[0].fileUrl ?? "#"
+                                                  }
+                                                  download
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                  onClick={(e) =>
+                                                    e.stopPropagation()
+                                                  }
+                                                  className="shrink-0"
+                                                >
+                                                  <Tag className="m-0 cursor-pointer inline-flex items-center gap-1">
+                                                    <FileOutlined /> 1 file
+                                                  </Tag>
+                                                </a>
+                                              ) : (
+                                                <Dropdown
+                                                  trigger={["click"]}
+                                                  menu={{
+                                                    items: materials.map(
+                                                      (mat, idx) => ({
+                                                        key:
+                                                          mat.materialId ??
+                                                          String(idx),
+                                                        label: (
+                                                          <a
+                                                            href={
+                                                              mat.fileUrl ?? "#"
+                                                            }
+                                                            download
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            onClick={(e) =>
+                                                              e.stopPropagation()
+                                                            }
+                                                          >
+                                                            <div className="flex items-center gap-2">
+                                                              <DownloadOutlined />
+                                                              <span>
+                                                                {mat.title ??
+                                                                  `Tài liệu ${idx + 1}`}
+                                                              </span>
+                                                            </div>
+                                                          </a>
+                                                        ),
+                                                      }),
+                                                    ),
+                                                  }}
+                                                >
+                                                  <Tag
+                                                    className="m-0 cursor-pointer inline-flex items-center gap-1 shrink-0"
+                                                    onClick={(e) =>
+                                                      e.stopPropagation()
+                                                    }
+                                                  >
+                                                    <FileOutlined />{" "}
+                                                    {materialsCount} files
+                                                  </Tag>
+                                                </Dropdown>
+                                              ))}
+
                                             {m.moduleQuiz && (
                                               <Tag
                                                 className="m-0 cursor-pointer inline-flex items-center gap-1 shrink-0"
@@ -710,57 +809,34 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                                                 )}
                                               </Tag>
                                             )}
-                                          </a>
-                                        ) : (
-                                          <Dropdown
-                                            trigger={["click"]}
-                                            menu={{
-                                              items: materials.map(
-                                                (mat, idx) => ({
-                                                  key:
-                                                    mat.materialId ??
-                                                    String(idx),
-                                                  label: (
-                                                    <a
-                                                      href={mat.fileUrl ?? "#"}
-                                                      download
-                                                      target="_blank"
-                                                      rel="noreferrer"
-                                                      onClick={(e) =>
-                                                        e.stopPropagation()
-                                                      }
-                                                    >
-                                                      <div className="flex items-center gap-2">
-                                                        <DownloadOutlined />
-                                                        <span>
-                                                          {mat.title ??
-                                                            `Tài liệu ${idx + 1}`}
-                                                        </span>
-                                                      </div>
-                                                    </a>
-                                                  ),
-                                                }),
-                                              ),
-                                            }}
-                                          >
-                                            <Tag
-                                              className="m-0 cursor-pointer inline-flex items-center gap-1 shrink-0"
-                                              onClick={(e) =>
-                                                e.stopPropagation()
-                                              }
-                                            >
-                                              <FileOutlined /> {materialsCount}{" "}
-                                              files
-                                            </Tag>
-                                          </Dropdown>
-                                        ))}
-                                    </div>
+                                          </div>
+                                        )}
 
-                                    <div className="mt-0.5 text-xs text-neutral-500">
-                                      <span className="whitespace-nowrap">
-                                        {lessons.length} lectures •{" "}
-                                        {totalMinutes}m
-                                      </span>
+                                        <div className="w-11 h-11 flex items-center justify-center">
+                                          <Progress
+                                            type="circle"
+                                            percent={percent}
+                                            status="normal"
+                                            size={30}
+                                            strokeWidth={10}
+                                            className="!m-0"
+                                            strokeColor={
+                                              percent >= 100
+                                                ? "#22c55e"
+                                                : {
+                                                    "0%": "#a855f7",
+                                                    "100%": "#6366f1",
+                                                  }
+                                            }
+                                            trailColor="rgba(148,163,184,0.35)"
+                                            format={(p) => (
+                                              <span className="text-[9px] font-semibold text-slate-900 dark:text-slate-50">
+                                                {p ?? 0}%
+                                              </span>
+                                            )}
+                                          />
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
                                 ),
