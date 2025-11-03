@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
 
 const PROTECTED_PREFIXES = [
   "/User",
+  "/dashboard"
 ];
 
 /** Kiểm tra xem pathname có nằm trong PUBLIC_PATHS không */
