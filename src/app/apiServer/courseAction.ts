@@ -12,7 +12,8 @@ export type Course = {
   title: string;
   descriptionLines: Array<string>;
   instructor: string;
-  price: string;
+  price?: number;
+  dealPrice?: number | null;
   routerPush: string;
 };
 
@@ -33,9 +34,8 @@ export async function GetAllCourses() {
           courseDto.description || "",
         ].filter((line) => line.length > 0),
         instructor: "Instructor Name",
-        price: courseDto.dealPrice
-          ? `$${courseDto.dealPrice} (was $${courseDto.price})`
-          : `$${courseDto.price}`,
+        price: courseDto.price ?? undefined,
+        dealPrice: courseDto.dealPrice ?? null, 
         // routerPush: `/courses/${courseDto.slug || courseDto.courseId}`,
         routerPush: `/course/${courseDto.courseId}`,
       }));
@@ -72,9 +72,8 @@ export async function fetchCourseByQuery(
           courseDto.description || "",
         ].filter((line: string) => line.length > 0),
         instructor: "Instructor Name",
-        price: courseDto.dealPrice
-          ? `$${courseDto.dealPrice} (was $${courseDto.price})`
-          : `$${courseDto.price}`,
+        price: courseDto.price ?? undefined,
+        dealPrice: courseDto.dealPrice ?? null,
         routerPush: `/course/${courseDto.courseId}`,
       }));
       return {
@@ -112,9 +111,8 @@ export async function fetchCourseByQueryForSlug(
           courseDto.description || "",
         ].filter((line: string) => line.length > 0),
         instructor: "Instructor Name",
-        price: courseDto.dealPrice
-          ? `$${courseDto.dealPrice} (was $${courseDto.price})`
-          : `$${courseDto.price}`,
+        price: courseDto.price ?? undefined,
+        dealPrice: courseDto.dealPrice ?? null,
         routerPush: `/course/${courseDto.slug || courseDto.courseId}`,
       }));
       return {

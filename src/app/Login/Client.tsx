@@ -9,7 +9,7 @@ import bgQuestion from "EduSmart/assets/FPT_Logo_Background.jpg";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { isAxiosError } from "axios";
 import BubbleBackground from "EduSmart/components/Bubble/BubbleBackground";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import Loading from "EduSmart/components/Loading/Loading";
 import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
@@ -41,6 +41,10 @@ export default function LoginPage() {
   const [showWipe, setShowWipe] = useState(false);
   const [wipeStyles, wipeApi] = useSpring<{ y: number }>(() => ({ y: 100 }));
   const didRunRef = useRef(false);
+  const searchParams = useSearchParams();
+  const rawRedirect = searchParams.get("redirect") || "";
+  const redirect =
+    rawRedirect && rawRedirect.startsWith("/") ? decodeURIComponent(rawRedirect) : "";
 
   useEffect(() => {
     const SetForm = async () => {
@@ -107,9 +111,11 @@ export default function LoginPage() {
     try {
       useLoadingStore.getState().showLoading();
       const isOK = await login(values.email, values.password);
+      const target = redirect || "/";
+      console.log("Redirecting to:", target);
       if (isOK) {
         messageApi.success("Đăng nhập thành công!");
-        router.push("/");
+        router.push(target);
         useLoadingStore.getState().hideLoading();
         return;
       }
@@ -294,7 +300,7 @@ export default function LoginPage() {
 
   const backButton = () => {
     sessionStorage.removeItem("authMountOnce");
-    router.push("test/Navbar/home");
+    router.push("/home");
   };
 
   return (

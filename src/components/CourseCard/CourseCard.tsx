@@ -1,6 +1,14 @@
 "use client";
-import React from "react";
-import { Card, Button, Typography, Progress, Popover, Image, ImageProps } from "antd";
+import React, { useEffect } from "react";
+import {
+  Card,
+  Button,
+  Typography,
+  Progress,
+  Popover,
+  Image,
+  ImageProps,
+} from "antd";
 import { useRouter } from "next/navigation";
 import "EduSmart/components/CourseCard/styles/component.card.css";
 const { Title, Paragraph, Text } = Typography;
@@ -10,7 +18,8 @@ interface CourseCardProps {
   title: string;
   descriptionLines?: string[];
   instructor: string;
-  price?: string;
+  price?: number;
+  dealPrice?: number | null;
   isShowProgress?: boolean;
   progress?: number;
   currentLesson?: number;
@@ -25,6 +34,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
   descriptionLines = [],
   instructor,
   price,
+  dealPrice,
   isShowProgress = false,
   progress = 0,
   currentLesson = 0,
@@ -33,6 +43,13 @@ const CourseCard: React.FC<CourseCardProps> = ({
   routerPush,
 }) => {
   const router = useRouter();
+
+  useEffect(() => {
+    if (routerPush) {
+      router.prefetch(routerPush);
+    }
+  }, [routerPush, router])
+
   const handleClick = () => {
     if (routerPush) router.push(routerPush);
   };
@@ -70,6 +87,21 @@ const CourseCard: React.FC<CourseCardProps> = ({
     </div>
   );
 
+  const formatMoneyVND = (value?: number | null) => {
+    if (typeof value !== "number" || !isFinite(value)) return "";
+    try {
+      return new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+        minimumFractionDigits: 0,
+      }).format(value);
+    } catch {
+      return `${value.toLocaleString("vi-VN")} ₫`;
+    }
+  };
+
+  const hasDeal = dealPrice !== null && dealPrice !== undefined;
+
   return (
     <Popover
       content={popContent}
@@ -83,7 +115,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
         onClick={handleClick}
         className="
           w-[22rem]
-          max-w-[26rem] min-w-[16rem] h-[26rem]
+          max-w-[26rem] min-w-[16rem] h-[28rem]
           cursor-pointer rounded-lg overflow-hidden !border !border-slate-200/80 dark:!border-slate-700/60
         hover:!border-slate-300 dark:hover:!border-slate-600 !shadow-sm hover:!shadow-md !transition focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-emerald-400
         "
@@ -98,11 +130,11 @@ const CourseCard: React.FC<CourseCardProps> = ({
               preview={false}
               alt={title}
               loading="lazy"
-              style={{ 
+              style={{
                 objectFit: "cover",
                 objectPosition: "center center",
                 width: "100%",
-                height: "100%"
+                height: "100%",
               }}
             />
           </div>
@@ -156,16 +188,59 @@ const CourseCard: React.FC<CourseCardProps> = ({
                   >
                     Giảng viên: {instructor}
                   </Paragraph>
-                  <div className="mt-4">
-                    {price && (
-                      <Text strong style={{ fontSize: 20, color: "#20C997" }}>
-                        {price}
-                      </Text>
-                    )}
-                    <div className="mt-6">
-                      <Button style={{ marginRight: 8 }}>Chọn</Button>
-                      <Button type="primary">Xem ngay</Button>
+                  {(typeof price === "number" || hasDeal) && (
+                    <div className="mt-4">
+                      <div className="flex flex-col" style={{ minHeight: 56 }}>
+                        {dealPrice !== null && dealPrice !== undefined ? (
+                          <>
+                            <Text
+                              strong
+                              style={{ fontSize: 20, color: "#20C997" }}
+                            >
+                              {formatMoneyVND(dealPrice)}
+                            </Text>
+                            {typeof price === "number" ? (
+                              <Text
+                                type="secondary"
+                                delete
+                                style={{ marginTop: 4 }}
+                              >
+                                {formatMoneyVND(price)}
+                              </Text>
+                            ) : (
+                              // giữ chỗ cho dòng thứ 2 để các card cao bằng nhau
+                              <span
+                                style={{ marginTop: 4, visibility: "hidden" }}
+                              >
+                                .
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {typeof price === "number" && (
+                              <Text
+                                strong
+                                style={{ fontSize: 20, color: "#20C997" }}
+                              >
+                                {formatMoneyVND(price)}
+                              </Text>
+                            )}
+                            {/* placeholder dòng thứ 2 */}
+                            <span
+                              style={{ marginTop: 4, visibility: "hidden" }}
+                            >
+                              .
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
+                  )}
+
+                  <div className="mt-6">
+                    <Button style={{ marginRight: 8 }}>Chọn</Button>
+                    <Button type="primary">Xem ngay</Button>
                   </div>
                 </>
               )}

@@ -290,7 +290,7 @@ export default function RegisterPage() {
 
   const backButton = () => {
     sessionStorage.removeItem("authMountOnce");
-    router.push("test/Navbar/home");
+    router.push("/home");
   };
 
   return (

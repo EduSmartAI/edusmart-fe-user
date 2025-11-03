@@ -15,7 +15,12 @@ import { ThemeSwitch } from "../Themes/Theme";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useRouter } from "next/navigation";
 
-const UserMenu = () => {
+interface UserMenuProps {
+  email?: string;
+  name: string;
+}
+
+const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
   const [open, setOpen] = useState(false);
   const { logout } = useAuthStore();
   const router = useRouter();
@@ -111,8 +116,8 @@ const UserMenu = () => {
         >
           <Avatar size={48} src="https://i.pravatar.cc/150?img=3" />
           <div style={{ marginLeft: 12 }}>
-            <div style={{ fontWeight: 600 }}>Duy Anh Trần</div>
-            <div style={{ fontSize: 13, color: "#aaa" }}>@duyanh15104</div>
+            <div style={{ fontWeight: 600 }}>{name}</div>
+            <div style={{ fontSize: 13, color: "#aaa" }}>{email}</div>
             <a href="#" style={{ fontSize: 12, color: "#1890ff" }}>
               Xem kênh của bạn
             </a>
@@ -170,13 +175,13 @@ const UserMenu = () => {
         items,
         onClick: async ({ key }) => {
           setOpen(false); // đóng menu trước
-      if (key === "logout") {
-        try {
-          await logout();           // gọi store logout
-        } finally {
-          router.push("/Login"); // điều hướng
-        }
-      }
+          if (key === "logout") {
+            try {
+              await logout(); // gọi store logout
+            } finally {
+              router.push("/Login"); // điều hướng
+            }
+          }
         },
         className: "user-menu", // tuỳ style thêm nếu cần
       }}
@@ -185,9 +190,9 @@ const UserMenu = () => {
       trigger={["click"]}
       placement="bottomRight"
       getPopupContainer={() => document.documentElement}
-      popupRender={(
-        menu,
-      ) => <div style={{ borderRadius: 8, overflow: "hidden" }}>{menu}</div>}
+      popupRender={(menu) => (
+        <div style={{ borderRadius: 8, overflow: "hidden" }}>{menu}</div>
+      )}
     >
       <Avatar
         size={40}

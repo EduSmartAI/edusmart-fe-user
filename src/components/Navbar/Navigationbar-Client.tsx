@@ -22,6 +22,7 @@ type Props = { isAuthed: boolean };
 export default function NavigationbarClient({ isAuthed }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const { logout } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   // const isAuthed = Boolean(token);
 
   // Temp
@@ -34,10 +35,11 @@ export default function NavigationbarClient({ isAuthed }: Props) {
   const router = useRouter();
 
   const menuItems = [
-    { key: "home", label: "Trang chủ", href: "/test/Navbar/home" },
+    { key: "home", label: "Trang chủ", href: "/home" },
     { key: "jobs", label: "Khóa học", href: "/course" },
     { key: "contact", label: "Liên hệ chúng tôi", href: "/contact" },
     { key: "learningPath", label: "Đề xuất lộ trình học tập", href: "/learning-path" },
+    { key: "dashboard", label: "Dashboard", href: "/dashboard" },
     { key: "quiz", label: "Quiz", href: "/quiz" },
     { key: "login", label: "Đăng nhập", button: true, type: "link" },
     { key: "signup", label: "Đăng Ký", button: true, type: "primary" },
@@ -228,7 +230,7 @@ export default function NavigationbarClient({ isAuthed }: Props) {
           </div>
           {isAuthed ? (
             <div className="hidden xl:block">
-              <UserMenu />
+              <UserMenu name={user ? user.name : ""} email={user ? user.email : ""} />
             </div>
           ) : (
             <div className="hidden md:flex items-center space-x-3 ml-8">

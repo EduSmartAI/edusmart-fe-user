@@ -6,7 +6,7 @@
   },
   "basePath": "/auth",
   "paths": {
-    "/api/v1/Account/insert-student": {
+    "/api/v1/Account/insert-account": {
       "post": {
         "tags": [
           "Account"
@@ -26,7 +26,7 @@
             "in": "body",
             "name": "body",
             "schema": {
-              "$ref": "#/definitions/StudentInsertCommand"
+              "$ref": "#/definitions/AccountInsertCommand"
             }
           }
         ],
@@ -34,7 +34,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/StudentInsertResponse"
+              "$ref": "#/definitions/AccountInsertResponse"
             }
           }
         }
@@ -120,6 +120,69 @@
     }
   },
   "definitions": {
+    "AccountInsertCommand": {
+      "required": [
+        "email",
+        "firstName",
+        "lastName",
+        "password"
+      ],
+      "type": "object",
+      "properties": {
+        "email": {
+          "format": "email",
+          "default": "edusmartAI@gmail.com",
+          "maxLength": 255,
+          "minLength": 0,
+          "type": "string"
+        },
+        "password": {
+          "default": "Edusmart@123",
+          "maxLength": 100,
+          "minLength": 6,
+          "type": "string"
+        },
+        "firstName": {
+          "default": "Edu",
+          "maxLength": 50,
+          "minLength": 2,
+          "pattern": "^[\\p{L}\\s]+$",
+          "type": "string"
+        },
+        "lastName": {
+          "default": "Smart",
+          "maxLength": 50,
+          "minLength": 2,
+          "pattern": "^[\\p{L}\\s]+$",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AccountInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "AccountVerifyCommand": {
       "required": [
         "key"
@@ -167,69 +230,6 @@
           "type": "string"
         },
         "errorMessage": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "StudentInsertCommand": {
-      "required": [
-        "email",
-        "firstName",
-        "lastName",
-        "password"
-      ],
-      "type": "object",
-      "properties": {
-        "email": {
-          "format": "email",
-          "default": "edusmartAI@gmail.com",
-          "maxLength": 255,
-          "minLength": 0,
-          "type": "string"
-        },
-        "password": {
-          "default": "Edusmart@123",
-          "maxLength": 100,
-          "minLength": 6,
-          "type": "string"
-        },
-        "firstName": {
-          "default": "Edu",
-          "maxLength": 50,
-          "minLength": 2,
-          "pattern": "^[\\p{L}\\s]+$",
-          "type": "string"
-        },
-        "lastName": {
-          "default": "Smárt",
-          "maxLength": 50,
-          "minLength": 2,
-          "pattern": "^[\\p{L}\\s]+$",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "StudentInsertResponse": {
-      "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        },
-        "messageId": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "detailErrors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DetailError"
-          }
-        },
-        "response": {
           "type": "string"
         }
       },
