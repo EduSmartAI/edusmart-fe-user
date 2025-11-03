@@ -21,7 +21,7 @@ export default function Navigationbar() {
   const [isOpen, setIsOpen] = useState(false);
   const isAuthed = useAuthStore((s) => s.isAuthen);
   const getAuthen = useAuthStore((s) => s.getAuthen);
-
+  const user = useAuthStore((state) => state.user);
   const [authReady, setAuthReady] = useState(false);
   useEffect(() => {
     let mounted = true;
@@ -273,7 +273,7 @@ export default function Navigationbar() {
           ) : isAuthed ? (
             <div className="hidden xl:block">
               {" "}
-              <UserMenu />{" "}
+              <UserMenu name={user ? user.name : ""} email={user ? user.email : ""} />{" "}
             </div>
           ) : (
             <div className="hidden md:flex items-center space-x-3 ml-8">

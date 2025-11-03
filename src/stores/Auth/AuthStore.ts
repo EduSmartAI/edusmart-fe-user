@@ -11,9 +11,11 @@ import {
   refreshAction,
 } from "EduSmart/app/(auth)/action";
 import { TokenVerifyResponse } from "EduSmart/api/api-auth-service";
+import { BasicUser } from "EduSmart/lib/authServer";
 
 export interface AuthState {
   token: string | null;
+  user: BasicUser | null;
   isAuthen: boolean;
   refreshTokenValue: string | null;
   login: (email: string, password: string) => Promise<boolean>;
@@ -44,6 +46,7 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       token: null,
+      user: null,
       isAuthen: false,
       refreshTokenValue: null,
 
@@ -75,7 +78,8 @@ export const useAuthStore = create<AuthState>()(
           if (resp.ok) {
             await getAuthen();
             const token = resp.accessToken;
-            set({ token });
+            const user: BasicUser = resp.user ?? { name: "", email: "", role: "" };
+            set({ token, user });
             apiClient.authEduService.setSecurityData({ token });
             return true
           }
@@ -114,6 +118,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (s) => ({
         token: s.token,
         refreshTokenValue: s.refreshTokenValue,
+        user: s.user,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

@@ -26,7 +26,46 @@ type CookiePayload = {
   access: string;
   refresh: string;
   expAt: number; // epoch ms
+  user?: BasicUser;
 };
+
+export type BasicUser = { name: string; email: string; role: string };
+
+function decodeJwt<T = unknown>(jwt: string): T | null {
+  const parts = jwt.split(".");
+  if (parts.length !== 3) return null;
+  try {
+    const payload = Buffer.from(parts[1], "base64url").toString("utf8");
+    return JSON.parse(payload) as T;
+  } catch {
+    return null;
+  }
+}
+
+function extractUserFromIdToken(idt: string): BasicUser | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const c = decodeJwt<any>(idt);
+  if (!c) return null;
+
+  const name =
+    (c.name ??
+      [c.given_name, c.family_name].filter(Boolean).join(" ").trim() ??
+      c.preferred_username ??
+      "") || "";
+
+  const email = c.email ?? "";
+
+  const roleCandidate =
+    c.role ??
+    (Array.isArray(c.roles) ? c.roles[0] : c.roles) ??
+    c["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ??
+    "";
+
+  const role =
+    (Array.isArray(roleCandidate) ? roleCandidate[0] : roleCandidate) || "Student";
+
+  return { name, email, role };
+}
 
 function b64url(s: string) {
   return Buffer.from(s, "utf8").toString("base64url");
@@ -48,12 +87,25 @@ function safeJson<T>(t: string): T | null {
 function isCookiePayload(x: unknown): x is CookiePayload {
   if (!x || typeof x !== "object") return false;
   const o = x as Record<string, unknown>;
-  return (
+  const baseOk =
     typeof o.sid === "string" &&
     typeof o.access === "string" &&
     typeof o.refresh === "string" &&
-    typeof o.expAt === "number"
-  );
+    typeof o.expAt === "number";
+  if (!baseOk) return false;
+
+  if (o.user !== undefined) {
+    const u = o.user as Record<string, unknown>;
+    if (
+      !u ||
+      typeof u.name !== "string" ||
+      typeof u.email !== "string" ||
+      typeof u.role !== "string"
+    ) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /** Ghi cookie: giá trị là base64url(JSON payload) */
@@ -93,13 +145,16 @@ type TokenResponse = {
   refreshToken?: string;
   expires_in?: number | string;
   expiresIn?: number | string;
+  id_token?: string;   // NEW
+  idToken?: string;   // NEW
 };
 
 function pickTokens(data: TokenResponse) {
   const access = data?.access_token ?? data?.accessToken ?? data?.token ?? null;
   const refresh = data?.refresh_token ?? data?.refreshToken ?? null;
-  const expSec = Number(data?.expires_in ?? data?.expiresIn ?? 600); // fallback 10'
-  return { access, refresh, expSec };
+  const expSec = Number(data?.expires_in ?? data?.expiresIn ?? 600);
+  const idToken = data?.id_token ?? data?.idToken ?? null; // NEW
+  return { access, refresh, expSec, idToken };              // CHANGED
 }
 
 /** ===== Flows ===== */
@@ -135,18 +190,19 @@ export async function exchangePassword(email: string, password: string) {
   if (!resp.ok)
     throw new Error((data as unknown as { error?: string })?.error || `Đăng nhập thất bại (HTTP ${resp.status})`);
 
-  const picked = data ? pickTokens(data) : { access: null, refresh: null, expSec: 600 };
-  const { access, refresh, expSec } = picked;
+  const picked = data ? pickTokens(data) : { access: null, refresh: null, expSec: 600, idToken: null };
+  const { access, refresh, expSec, idToken } = picked;
   if (!access || !refresh) throw new Error("Thiếu token từ backend");
 
   const sid = randomUUID();
   const expAt = Date.now() + Math.max(30, expSec) * 1000;
 
+  const user = idToken ? extractUserFromIdToken(idToken) ?? undefined : undefined;
   // Lưu in-memory
   await saveTokens(sid, { access, refresh, expAt });
 
   // Ghi cookie duy nhất kèm payload
-  await setSidCookie({ sid, access, refresh, expAt });
+  await setSidCookie({ sid, access, refresh, expAt, user });
 
   return { sid };
 }
@@ -160,6 +216,7 @@ export async function refreshTokens(sid: string) {
     const payload = await readSidCookiePayload();
     if (payload && payload.sid === sid) {
       bundle = { access: payload.access, refresh: payload.refresh, expAt: payload.expAt };
+      console.log("Refesh tokens fallback from cookie:", bundle);
       await saveTokens(sid, bundle);
     }
   }
@@ -180,19 +237,23 @@ export async function refreshTokens(sid: string) {
 
   const data: TokenResponse | unknown = await resp.json().catch(() => ({}));
   if (!resp.ok) {
+    console.error("Refresh token failed:", data);
     const errMsg = (data as { error?: string })?.error || "Refresh failed";
     throw new Error(errMsg);
   }
 
-  const { access, refresh, expSec } = pickTokens(data as TokenResponse);
-  console.log("refresh-token", refresh);
+  const { access, refresh, expSec, idToken } = pickTokens(data as TokenResponse);
+  console.log("refresh-token-after-call-api", refresh);
   if (!access || !refresh) throw new Error("Refresh response invalid");
 
   const newExpAt = Date.now() + Math.max(30, expSec) * 1000;
-
   await updateTokens(sid, { access, refresh, expAt: newExpAt });
   // Đồng bộ cookie duy nhất
-  await setSidCookie({ sid, access, refresh, expAt: newExpAt });
+  const oldPayload = await readSidCookiePayload();
+  const newUser =
+    idToken ? extractUserFromIdToken(idToken) ?? oldPayload?.user : oldPayload?.user;
+
+  await setSidCookie({ sid, access, refresh, expAt: newExpAt, user: newUser });
   return true;
 }
 
@@ -274,7 +335,8 @@ export async function hasRefreshToken(sid?: string): Promise<boolean> {
     const payload = await readSidCookiePayload();
     const realSid = sid ?? payload?.sid ?? null;
     if (!realSid) return false;
-
+    
+    // Đồng bộ in-mem từ cookie nếu có
     if (payload) {
       await saveTokens(payload.sid, {
         access: payload.access,
@@ -282,9 +344,18 @@ export async function hasRefreshToken(sid?: string): Promise<boolean> {
         expAt: payload.expAt,
       });
     }
+    console.log("hasRefreshToken check sid", realSid);
 
     const bundle = await loadTokens(realSid);
-    return typeof bundle?.refresh === "string" && bundle.refresh.trim().length > 0;
+    if (!bundle || !bundle.refresh?.trim()) return false;
+    if (Date.now() < bundle.expAt - 5_000) return true;
+    try {
+      await refreshTokens(realSid);  // sẽ throw nếu RT hết hạn/hỏng
+      return true;
+    } catch {
+      await destroySession(realSid);
+      return false;
+    }
   } catch {
     return false;
   }
@@ -292,28 +363,10 @@ export async function hasRefreshToken(sid?: string): Promise<boolean> {
 
 /** Thu hồi token local: xoá refresh, rút ngắn access ~5s, đồng bộ cookie */
 export async function revokeRefreshLocal(sid?: string): Promise<boolean> {
-  const payload = await readSidCookiePayload();
+  console.log("revokeRefreshLocal called with");
+  const payload = await readSidCookiePayload().catch(() => null);
   const realSid = sid ?? payload?.sid ?? null;
-  if (!realSid) return false;
-
-  const bundle = await loadTokens(realSid);
-  if (!bundle) return false;
-
-  const newExpAt = Math.min(bundle.expAt ?? Date.now(), Date.now() + 5_000);
-
-  await updateTokens(realSid, {
-    access: bundle.access, // cho phép tiếp tục vài giây
-    refresh: "",
-    expAt: newExpAt,
-  });
-
-  // Đồng bộ cookie duy nhất
-  await setSidCookie({
-    sid: realSid,
-    access: bundle.access,
-    refresh: "",
-    expAt: newExpAt,
-  });
-
+  await clearSidCookie();
+  if (realSid) await deleteSession(realSid);
   return true;
 }

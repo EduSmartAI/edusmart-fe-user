@@ -34,11 +34,15 @@ const kaushan = Kaushan_Script({
 type Props = {
   /** Tiêu đề khoá học hiển thị trên thanh (nếu không truyền sẽ dùng mặc định) */
   title?: string;
+  completionPercent?: string;
 };
 
-export default function CourseNavigationbar({ title }: Props) {
+export default function CourseNavigationbar({
+  title,
+  completionPercent,
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
-
+  const user = useAuthStore((state) => state.user);
   // Auth
   const isAuthed = useAuthStore((s) => s.isAuthen);
   const getAuthen = useAuthStore((s) => s.getAuthen);
@@ -69,6 +73,7 @@ export default function CourseNavigationbar({ title }: Props) {
 
   const navRef = useRef<HTMLElement>(null);
   const router = useRouter();
+
   // ---------- UI Actions (right) ----------
   const copyLink = async () => {
     try {
@@ -90,13 +95,25 @@ export default function CourseNavigationbar({ title }: Props) {
       key: "fb",
       icon: <FacebookFilled />,
       label: <span>Chia sẻ Facebook</span>,
-      onClick: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, "_blank"),
+      onClick: () =>
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+            window.location.href,
+          )}`,
+          "_blank",
+        ),
     },
     {
       key: "tw",
       icon: <TwitterSquareFilled />,
       label: <span>Chia sẻ Twitter/X</span>,
-      onClick: () => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`, "_blank"),
+      onClick: () =>
+        window.open(
+          `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+            window.location.href,
+          )}`,
+          "_blank",
+        ),
     },
     {
       key: "open",
@@ -110,7 +127,7 @@ export default function CourseNavigationbar({ title }: Props) {
     {
       key: "p1",
       icon: <CheckCircleTwoTone twoToneColor="#52c41a" />,
-      label: <span>Tiến độ của bạn: 0%</span>,
+      label: <span>Tiến độ của bạn: {completionPercent ?? "0"}%</span>,
       disabled: true,
     },
     { type: "divider" },
@@ -142,16 +159,17 @@ export default function CourseNavigationbar({ title }: Props) {
       ].join(" ")}
     >
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-baseline h-14 sm:h-16">
+        {/* Hàng chính: logo + title + actions */}
+        <div className="flex items-center justify-between h-16 lg:h-18 gap-4">
           {/* Left: Logo | Course title */}
           <div className="min-w-0 flex items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-2">
               <Image
                 src="https://rubicmarketing.com/wp-content/uploads/2022/07/y-nghia-logo-fpt-lan-3.jpg"
                 alt="Logo"
-                width={24}
-                height={24}
-                className="!w-auto !h-auto"
+                width={28}
+                height={28}
+                className="rounded-sm"
               />
               <span
                 className={`${kaushan.className} text-2xl sm:text-3xl cursor-pointer dark:text-white`}
@@ -162,18 +180,18 @@ export default function CourseNavigationbar({ title }: Props) {
             </div>
 
             {/* Divider */}
-            <span className="hidden sm:block h-5 w-px bg-slate-500/30" />
+            <span className="hidden sm:block h-6 w-px bg-slate-400/30" />
 
             {/* Course title (truncate) */}
             <Tooltip title={courseTitle}>
-              <div className="min-w-0 max-w-[52vw] sm:max-w-[60vw] text-sm sm:text-[15px] text-slate-900 dark:text-slate-100 truncate">
+              <div className="min-w-0 max-w-[52vw] sm:max-w-[60vw] text-sm sm:text-[15px] text-slate-900 dark:text-slate-100 truncate font-semibold">
                 {courseTitle}
               </div>
             </Tooltip>
           </div>
 
           {/* Right: Actions + Auth */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
             {/* Your progress */}
             <Dropdown
               menu={{ items: progressMenu }}
@@ -183,10 +201,11 @@ export default function CourseNavigationbar({ title }: Props) {
               <Button
                 size="middle"
                 type="default"
-                className="hidden md:inline-flex items-center"
+                className="hidden md:inline-flex items-center rounded-full px-3"
                 icon={<TrophyOutlined />}
               >
-                Your progress <DownOutlined style={{ marginLeft: 6, fontSize: 10 }} />
+                <span className="ml-1">Your progress</span>
+                <DownOutlined style={{ marginLeft: 6, fontSize: 10 }} />
               </Button>
             </Dropdown>
 
@@ -195,10 +214,10 @@ export default function CourseNavigationbar({ title }: Props) {
               <Button
                 size="middle"
                 type="default"
-                className="hidden sm:inline-flex items-center"
+                className="hidden sm:inline-flex items-center rounded-full px-3"
                 icon={<ShareAltOutlined />}
               >
-                Share
+                <span className="ml-1">Share</span>
               </Button>
             </Dropdown>
 
@@ -211,12 +230,12 @@ export default function CourseNavigationbar({ title }: Props) {
               <Button
                 size="middle"
                 type="default"
-                className="inline-flex items-center"
+                className="inline-flex items-center rounded-full px-2"
                 icon={<EllipsisOutlined />}
               />
             </Dropdown>
 
-            {/* Theme (giữ nguyên) */}
+            {/* Theme */}
             <div className="hidden md:block">
               <ThemeSwitch />
             </div>
@@ -228,10 +247,13 @@ export default function CourseNavigationbar({ title }: Props) {
               </div>
             ) : isAuthed ? (
               <div className="hidden xl:block">
-                <UserMenu />
+                <UserMenu
+                  name={user ? user.name : ""}
+                  email={user ? user.email : ""}
+                />
               </div>
             ) : (
-              <div className="hidden lg:flex items-center space-x-2 ml-2">
+              <div className="hidden lg:flex items-center space-x-2 ml-1">
                 <Button type="link" onClick={() => router.push("/Login")}>
                   Đăng nhập
                 </Button>
@@ -252,12 +274,32 @@ export default function CourseNavigationbar({ title }: Props) {
               className="xl:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-600 dark:text-gray-300 hover:text-white hover:bg-gray-700"
             >
               {isOpen ? (
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               ) : (
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className="h-6 w-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               )}
             </button>
@@ -269,7 +311,7 @@ export default function CourseNavigationbar({ title }: Props) {
       {isOpen && (
         <div className="xl:hidden px-3 py-3">
           <div className="rounded-2xl border shadow-xl backdrop-blur-md bg-white/80 dark:bg-slate-900/80 border-slate-200/70 dark:border-slate-700/60">
-            <div className="flex items-center justify-between p-3">
+            <div className="flex items-center justify-between p-3 gap-3">
               <div className="rounded-lg px-2 py-1 ring-1 bg-slate-100 dark:bg-slate-800 ring-slate-200 dark:ring-slate-700">
                 <ThemeSwitch />
               </div>
@@ -297,15 +339,30 @@ export default function CourseNavigationbar({ title }: Props) {
                 <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />
               ) : isAuthed ? (
                 <div className="flex justify-end">
-                  <UserMenu />
+                  <UserMenu
+                    name={user ? user.name : ""}
+                    email={user ? user.email : ""}
+                  />
                 </div>
               ) : (
                 <div className="flex items-center justify-end gap-2">
-                  <Button type="link" onClick={() => { setIsOpen(false); router.push("/Login"); }}>
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      setIsOpen(false);
+                      router.push("/Login");
+                    }}
+                  >
                     Đăng nhập
                   </Button>
-                  <Button type="primary" className="bg-emerald-500 hover:!bg-emerald-600"
-                    onClick={() => { setIsOpen(false); router.push("/Signup"); }}>
+                  <Button
+                    type="primary"
+                    className="bg-emerald-500 hover:!bg-emerald-600"
+                    onClick={() => {
+                      setIsOpen(false);
+                      router.push("/Signup");
+                    }}
+                  >
                     Đăng Ký
                   </Button>
                 </div>

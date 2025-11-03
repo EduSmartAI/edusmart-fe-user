@@ -10,26 +10,7 @@
  * ---------------------------------------------------------------
  */
 
-export interface AccountVerifyCommand {
-  /** @minLength 1 */
-  key: string;
-}
-
-export interface AccountVerifyResponse {
-  success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: string;
-}
-
-export interface DetailError {
-  field?: string;
-  messageId?: string;
-  errorMessage?: string;
-}
-
-export interface StudentInsertCommand {
+export interface AccountInsertCommand {
   /**
    * @format email
    * @minLength 0
@@ -53,18 +34,37 @@ export interface StudentInsertCommand {
   /**
    * @minLength 2
    * @maxLength 50
-   * @default "Smárt"
+   * @default "Smart"
    * @pattern ^[\p{L}\s]+$
    */
   lastName: string;
 }
 
-export interface StudentInsertResponse {
+export interface AccountInsertResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
   detailErrors?: DetailError[];
   response?: string;
+}
+
+export interface AccountVerifyCommand {
+  /** @minLength 1 */
+  key: string;
+}
+
+export interface AccountVerifyResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface DetailError {
+  field?: string;
+  messageId?: string;
+  errorMessage?: string;
 }
 
 export interface TokenVerifyResponse {
@@ -350,16 +350,16 @@ export class Api<
      * No description
      *
      * @tags Account
-     * @name V1AccountInsertStudentCreate
-     * @request POST:/api/v1/Account/insert-student
+     * @name V1AccountInsertAccountCreate
+     * @request POST:/api/v1/Account/insert-account
      * @secure
      */
-    v1AccountInsertStudentCreate: (
-      body: StudentInsertCommand,
+    v1AccountInsertAccountCreate: (
+      body: AccountInsertCommand,
       params: RequestParams = {},
     ) =>
-      this.request<StudentInsertResponse, any>({
-        path: `/api/v1/Account/insert-student`,
+      this.request<AccountInsertResponse, any>({
+        path: `/api/v1/Account/insert-account`,
         method: "POST",
         body: body,
         secure: true,

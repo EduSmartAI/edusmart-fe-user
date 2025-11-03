@@ -15,9 +15,7 @@ const { Header, Content, Footer } = Layout;
 interface BaseScreenAdminProps {
   children: ReactNode;
   menuItems?: React.ComponentProps<typeof AdminSidebar>["menuItems"];
-  defaultSelectedKeys?: React.ComponentProps<
-    typeof AdminSidebar
-  >["defaultSelectedKeys"];
+  defaultSelectedKeys?: React.ComponentProps<typeof AdminSidebar>["defaultSelectedKeys"];
   breadcrumbItems?: { title: string }[];
 }
 
@@ -27,7 +25,6 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
   defaultSelectedKeys,
   breadcrumbItems = [],
 }) => {
-  // 1️⃣ collapsed được quản lý ở đây
   const [mounted, setMounted] = useState(false);
   const invalid = useValidateStore.getState().inValid;
   const collapsed = useSidebarStore((s) => s.collapsed);
@@ -42,9 +39,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  if (invalid) {
-    return <NotFound />;
-  }
+  if (invalid) return <NotFound />;
 
   if (!mounted) {
     return (
@@ -61,9 +56,10 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
       </div>
     );
   }
+
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      {/* 2️⃣ Truyền collapsed & onCollapse xuống Sidebar */}
+    // Body khóa theo viewport, không cho body scroll
+    <Layout style={{ height: "100vh", overflow: "hidden" }}>
       <AdminSidebar
         collapsed={collapsed}
         onCollapse={setCollapsed}
@@ -71,8 +67,16 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
         defaultSelectedKeys={defaultSelectedKeys}
       />
 
-      <Layout>
-        {/* 3️⃣ Nút thu/vô nằm trong Header */}
+      {/* Cột phải: flex column */}
+      <Layout
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100vh",
+          minHeight: 0, // cho phép con co lại -> cần để scroll hoạt động
+          overflow: "hidden",
+        }}
+      >
         <Header
           style={{
             background: colorBgContainer,
@@ -80,6 +84,10 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
             display: "flex",
             alignItems: "center",
             boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+            flex: "0 0 auto",
           }}
         >
           {collapsed ? (
@@ -94,38 +102,44 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
             />
           )}
           {breadcrumbItems.length === 0 ? (
-            <h3 style={{ margin: 0 }}>EduSmart Admin</h3>
+            <h3 style={{ margin: 0 }}>EduSmart Trang Cho Sinh Viên</h3>
           ) : (
             <Breadcrumb
-              items={breadcrumbItems.map((item) => ({
-                title: item.title,
-              }))}
-              style={{
-                margin: 0,
-                fontSize: "18px",
-                fontWeight: 700,
-              }}
+              items={breadcrumbItems.map((item) => ({ title: item.title }))}
+              style={{ margin: 0, fontSize: 18, fontWeight: 700 }}
             />
           )}
         </Header>
 
         <Loading />
-        <FadeInUp>
-          <Content style={{ margin: "16px 24px" }}>
-            <div
-              className="p-6 min-h-[360px] h-full rounded-lg"
-              style={{
-                background: colorBgContainer,
-                borderRadius: borderRadiusLG,
-              }}
-            >
-              {children}
-            </div>
-          </Content>
-        </FadeInUp>
 
-        <Footer style={{ textAlign: "center" }}>
-          EmoEasse ©{new Date().getFullYear()} Created by SOLTECH
+        {/* VÙNG CUỘN: wrapper này mới là scroll container */}
+        <div
+          style={{
+            flex: "1 1 0%",
+            minHeight: 0,
+            overflow: "auto",                // <— đổi từ hidden -> auto
+            padding: "16px 24px",
+            scrollbarGutter: "stable both-edges",
+          }}
+        >
+          <Content style={{ padding: 0 }}>
+            <FadeInUp>
+              <div
+                className="p-6 rounded-lg"
+                style={{
+                  background: colorBgContainer,
+                  borderRadius: borderRadiusLG,
+                }}
+              >
+                {children}
+              </div>
+            </FadeInUp>
+          </Content>
+        </div>
+
+        <Footer style={{ textAlign: "center", flex: "0 0 auto" }}>
+          Edusmart ©{new Date().getFullYear()} được tạo bởi Nhóm Sinh viên FPT
         </Footer>
       </Layout>
     </Layout>

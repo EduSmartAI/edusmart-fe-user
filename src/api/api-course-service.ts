@@ -18,6 +18,13 @@ export enum ModuleProgressStatus {
 }
 
 /** @format int32 */
+export enum LessonStatus {
+  Value0 = 0,
+  Value1 = 1,
+  Value2 = 2,
+}
+
+/** @format int32 */
 export enum CourseSortBy {
   Value1 = 1,
   Value2 = 2,
@@ -230,6 +237,68 @@ export interface CourseDtoPaginatedResult {
   hasNextPage?: boolean;
 }
 
+export interface CourseLessonDashboardContract {
+  /** @format uuid */
+  studentId?: string;
+  /** @format uuid */
+  courseId?: string;
+  modules?: CourseLessonModuleGroup[] | null;
+  totals?: CourseLessonTotals;
+}
+
+export interface CourseLessonItem {
+  /** @format uuid */
+  lessonId?: string;
+  title?: string | null;
+  /** @format int32 */
+  positionIndex?: number;
+  isActive?: boolean;
+  videoUrl?: string | null;
+  status?: LessonStatus;
+  /** @format int32 */
+  currentSecond?: number | null;
+  /** @format int32 */
+  videoDurationSeconds?: number;
+  /** @format int32 */
+  actualStudyMinutes?: number;
+  /** @format double */
+  percentWatched?: number;
+  /** @format int32 */
+  lessonQuizCount?: number;
+  /** @format double */
+  averageQuizScore?: number | null;
+  /** @format date-time */
+  startedAtUtc?: string | null;
+  /** @format date-time */
+  completedAtUtc?: string | null;
+  /** @format date-time */
+  updatedAtUtc?: string | null;
+}
+
+export interface CourseLessonModuleGroup {
+  /** @format uuid */
+  moduleId?: string;
+  moduleName?: string | null;
+  /** @format int32 */
+  positionIndex?: number;
+  lessons?: CourseLessonItem[] | null;
+}
+
+export interface CourseLessonTotals {
+  /** @format int32 */
+  modulesCount?: number;
+  /** @format int32 */
+  lessonsCount?: number;
+  /** @format int32 */
+  totalVideoDurationMinutes?: number;
+  /** @format int32 */
+  totalActualStudyMinutes?: number;
+  /** @format int32 */
+  totalLessonQuizCount?: number;
+  /** @format double */
+  averageQuizScore?: number | null;
+}
+
 export interface CourseModuleDashboardContract {
   /** @format uuid */
   studentId?: string;
@@ -355,29 +424,6 @@ export interface CourseTagDto {
   tagName?: string | null;
 }
 
-export interface CoursesSelectEvent {
-  majorCodes?: string[] | null;
-  /** @format uuid */
-  semesterId?: string;
-  /** @format int32 */
-  limitTime?: number;
-  /** @format int32 */
-  studentLevel?: number;
-}
-
-export interface CoursesSelectEventResponse {
-  success?: boolean;
-  messageId?: string | null;
-  message?: string | null;
-  detailErrors?: DetailError[] | null;
-  response?: CoursesSelectEventResponseEntity[] | null;
-}
-
-export interface CoursesSelectEventResponseEntity {
-  majorCode?: string | null;
-  courseCodeIds?: string[] | null;
-}
-
 export interface CreateCourseAudienceDto {
   content?: string | null;
   /** @format int32 */
@@ -450,6 +496,26 @@ export interface CreateLessonDto {
   positionIndex?: number;
   isActive?: boolean;
   lessonQuiz?: CreateQuizDto;
+}
+
+export interface CreateLessonTranscriptCommand {
+  /** @format uuid */
+  lessonId?: string;
+  language?: string | null;
+  /** @format int32 */
+  status?: number;
+  textFull?: string | null;
+  vttUrl?: string | null;
+  vttPublicId?: string | null;
+  error?: string | null;
+}
+
+export interface CreateLessonTranscriptResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: string | null;
 }
 
 export interface CreateModuleDiscussionDto {
@@ -574,6 +640,14 @@ export interface GetCourseBySlugForLectureResponse {
   modulesCount?: number;
   /** @format int32 */
   lessonsCount?: number;
+}
+
+export interface GetCourseLessonDashboardEventResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseLessonDashboardContract;
 }
 
 export interface GetCourseModuleDashboardEventResponse {
@@ -823,7 +897,7 @@ export interface StudentLessonDetailDto {
   isActive?: boolean;
   isCompleted?: boolean;
   /** @format int32 */
-  lastPositionSec?: number;
+  lastSeenPositionSec?: number;
   canAttempt?: boolean;
   /** @format uuid */
   studentQuizResultId?: string | null;
@@ -1039,7 +1113,7 @@ export interface UpsertUserLessonProgressCommand {
 
 export interface UpsertUserLessonProgressDto {
   /** @format int32 */
-  lastPositionSec?: number | null;
+  lastSeenPositionSec?: number | null;
   /** @format int32 */
   watchedDeltaSec?: number | null;
 }
@@ -1573,17 +1647,17 @@ export class Api<
     /**
      * No description
      *
-     * @tags Courses
-     * @name V1CoursesEventCoursesTestCreate
-     * @request POST:/api/v1/Courses/event/courses/test
+     * @tags Lesson
+     * @name LessonCreate
+     * @request POST:/api/Lesson
      * @secure
      */
-    v1CoursesEventCoursesTestCreate: (
-      data: CoursesSelectEvent,
+    lessonCreate: (
+      data: CreateLessonTranscriptCommand,
       params: RequestParams = {},
     ) =>
-      this.request<CoursesSelectEventResponse, any>({
-        path: `/api/v1/Courses/event/courses/test`,
+      this.request<CreateLessonTranscriptResponse, any>({
+        path: `/api/Lesson`,
         method: "POST",
         body: data,
         secure: true,
@@ -1686,7 +1760,7 @@ export class Api<
      *
      * @tags StudentLessonProgress
      * @name StudentLessonProgressDetail
-     * @summary Get course details by ID for students
+     * @summary Get course progress details by ID for students
      * @request GET:/api/StudentLessonProgress/{courseId}
      * @secure
      */
@@ -1707,7 +1781,7 @@ export class Api<
      *
      * @tags StudentLessonProgress
      * @name StudentLessonProgressDetail2
-     * @summary Get course details by slug for students
+     * @summary Get course progress details by slug for students
      * @request GET:/api/StudentLessonProgress/{courseSlug}
      * @originalName studentLessonProgressDetail
      * @duplicate
@@ -1745,6 +1819,32 @@ export class Api<
     ) =>
       this.request<GetCourseModuleDashboardEventResponse, any>({
         path: `/api/Tests`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Tests
+     * @name TestsProcessGetCourseLessonDashboardList
+     * @request GET:/api/Tests/ProcessGetCourseLessonDashboard
+     * @secure
+     */
+    testsProcessGetCourseLessonDashboardList: (
+      query?: {
+        /** @format uuid */
+        studentId?: string;
+        /** @format uuid */
+        courseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetCourseLessonDashboardEventResponse, any>({
+        path: `/api/Tests/ProcessGetCourseLessonDashboard`,
         method: "GET",
         query: query,
         secure: true,
