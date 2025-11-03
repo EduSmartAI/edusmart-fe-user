@@ -30,7 +30,7 @@ const statusConfig = {
     borderColor: "border-blue-200 dark:border-blue-800",
     textColor: "text-blue-700 dark:text-blue-300",
     icon: <FiLoader className="w-5 h-5 animate-spin" />,
-    description: "AI đang tạo lộ trình học tập cho bạn",
+    description: "Hệ thống đang tạo lộ trình học tập cho bạn",
   },
   1: {
     label: "Chờ xác nhận",

@@ -176,7 +176,7 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
   // Show loading state
   if (isLoading || !hasInitialized) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="text-center">
           <div className="w-16 h-16 bg-teal-100 dark:bg-teal-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <Spin
@@ -197,6 +197,16 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
         </div>
       </div>
     );
+    // return (
+    //   <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+    //     <div className="text-center">
+    //       <Spin size="large" />
+    //       <p className="mt-10 text-gray-600 dark:text-gray-400">
+    //         Đang tải danh sách quiz
+    //       </p>
+    //     </div>
+    //   </div>
+    // );
   }
 
   // ✅ Throw HttpError để ErrorBoundary bắt (LearningPathErrorBoundary hoặc page-level boundary)
@@ -205,32 +215,40 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header Section */}
-        <QuizSelectionHeader
-          currentSeries={currentSeries}
-          selectedFilter={selectedFilter}
-          onFilterChange={setSelectedFilter}
-        />
+    <div className="w-full flex-1 flex flex-col bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+          {/* Header Section */}
+          <QuizSelectionHeader
+            currentSeries={currentSeries}
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+          />
 
-        {/* Quiz List */}
-        <QuizSelectionList
-          quizzes={filteredQuizzes}
-          selectedQuizIds={selectedQuizIds}
-          isLoading={isLoading || !hasInitialized}
-          onQuizSelect={handleQuizSelect}
-          onQuizStart={handleQuizStart}
-        />
+          {/* Quiz List */}
+          <QuizSelectionList
+            quizzes={filteredQuizzes}
+            selectedQuizIds={selectedQuizIds}
+            isLoading={isLoading || !hasInitialized}
+            onQuizSelect={handleQuizSelect}
+            onQuizStart={handleQuizStart}
+          />
+
+          {/* Spacer to avoid content hidden under fixed buttons */}
+          <div className="h-20 sm:h-24" />
+        </div>
       </div>
 
-      {/* Action Buttons */}
-      <ActionButtons
-        selectedCount={selectedQuizIds.length}
-        onSkip={handleSkip}
-        onStart={handleStartSelected}
-        disabled={selectedQuizIds.length === 0}
-      />
+      {/* Fixed Action Buttons at Bottom */}
+      <div className="flex-shrink-0 sticky bottom-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-2xl">
+        <ActionButtons
+          selectedCount={selectedQuizIds.length}
+          onSkip={handleSkip}
+          onStart={handleStartSelected}
+          disabled={selectedQuizIds.length === 0}
+        />
+      </div>
 
       {/* Exit Confirmation Modal */}
       <LearningPathExitConfirmModal

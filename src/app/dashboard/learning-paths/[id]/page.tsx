@@ -24,11 +24,13 @@ import {
   confirmLearningPathAction,
   type LearningPathData,
 } from "EduSmart/app/(learning-path)/learningPathAction";
+import { useSurvey } from "EduSmart/hooks/survey";
 
 export default function LearningPathRecommendation() {
   const router = useRouter();
   const params = useParams();
   const learningPathId = params.id as string;
+  const survey = useSurvey();
 
   // State management
   const [learningPathData, setLearningPathData] =
@@ -210,6 +212,53 @@ export default function LearningPathRecommendation() {
       </div>
     );
   };
+
+  // 🧹 Auto-cleanup assessment data after successful completion
+  useEffect(() => {
+    const cleanupAssessmentData = () => {
+      console.log("🧹 Cleaning up assessment data after dashboard load...");
+
+      try {
+        // 1. Clear survey data
+        survey.resetSurvey();
+        console.log("✅ Survey data cleared");
+
+        // 2. Clear quiz data from localStorage (quiz-store)
+        localStorage.removeItem("quiz-store");
+        console.log("✅ Quiz store cleared");
+
+        // 3. Clear learning path progress data
+        const learningPathKeys = [
+          "learning_path_current_step",
+          "learning_path_completed_steps",
+          "survey_completed",
+          "quiz_completed",
+          "learning_path_id",
+        ];
+        learningPathKeys.forEach((key) => {
+          localStorage.removeItem(key);
+        });
+        console.log("✅ Learning path progress cleared");
+
+        // 4. Clear survey-related localStorage keys
+        localStorage.removeItem("survey_data");
+        localStorage.removeItem("survey_step");
+        localStorage.removeItem("survey-storage");
+        console.log("✅ Survey localStorage keys cleared");
+
+        console.log(
+          "✅ All assessment data cleaned up successfully - ready for next learning path",
+        );
+      } catch (error) {
+        console.error("Error during cleanup:", error);
+      }
+    };
+
+    // Run cleanup after a short delay to ensure dashboard is fully loaded
+    const cleanupTimer = setTimeout(cleanupAssessmentData, 1000);
+
+    return () => clearTimeout(cleanupTimer);
+  }, [survey]);
 
   // Fetch learning path data on mount
   useEffect(() => {
@@ -437,7 +486,7 @@ export default function LearningPathRecommendation() {
           </div>
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed mb-6">
-            Dựa trên kết quả khảo sát và đánh giá năng lực của bạn, AI đã tạo ra
+            Dựa trên kết quả khảo sát và đánh giá năng lực của bạn, hệ thống đã tạo ra
             lộ trình học tập tối ưu để giúp bạn đạt được mục tiêu nghề nghiệp.
           </p>
 
@@ -455,7 +504,7 @@ export default function LearningPathRecommendation() {
           >
             <FiClock className="w-4 h-4 mr-2" />
             {displayData.status === 0
-              ? "AI đang tạo lộ trình"
+              ? "Hệ thống đang tạo lộ trình"
               : displayData.status === 1
               ? "Đang chờ xác nhận"
               : displayData.status === 2
@@ -559,7 +608,7 @@ export default function LearningPathRecommendation() {
                 <p className="text-gray-600 dark:text-gray-300 text-lg">
                   {displayData.status === 2
                     ? `Bạn đã chọn ${sortedInternalPath.length} chuyên ngành hẹp. Học theo thứ tự đã sắp xếp để hiệu quả nhất.`
-                    : "AI đề xuất các chuyên ngành hẹp phù hợp với năng lực và sở thích của bạn"}
+                    : "Hệ thống đề xuất các chuyên ngành hẹp phù hợp với năng lực và sở thích của bạn"}
                 </p>
               </div>
             </div>

@@ -1,6 +1,6 @@
 // components/User/Quiz/QuizTaking/QuizTakingScreenNew.tsx
 "use client";
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Layout,
@@ -16,6 +16,7 @@ import {
   Row,
   Col,
   Spin,
+  message,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -45,18 +46,78 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
 }) => {
   const router = useRouter();
   const { state, actions } = useQuizTaking();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitTest = useCallback(async () => {
-    const learningPathId = await actions.submitTest();
-    if (learningPathId) {
-      // Mark step 2 as completed BEFORE redirecting
-      learningPathProgress.completeStep(2);
-      learningPathProgress.setLearningPathId(learningPathId);
+    console.log("🚀 Submitting quiz...");
 
-      // Redirect to new processing page with learningPathId for AI processing
-      router.push(
-        `/learning-path/assessment/processing?learningPathId=${learningPathId}`,
-      );
+    // Set submitting state to show blur overlay with Spin
+    setIsSubmitting(true);
+
+    // Show loading message
+    const hideLoading = message.loading(
+      "Đang xử lý bài kiểm tra của bạn...",
+      0,
+    );
+
+    try {
+      const learningPathId = await actions.submitTest();
+      console.log("Submit result:", { learningPathId });
+
+      if (learningPathId) {
+        console.log("✅ Quiz submitted successfully:", { learningPathId });
+
+        // Hide loading message BEFORE redirect
+        hideLoading();
+
+        // Show success message (briefly visible)
+        message.success({
+          content: "Bài kiểm tra đã được nộp thành công!",
+          duration: 1,
+        });
+
+        // Mark step 2 as completed BEFORE redirecting
+        learningPathProgress.completeStep(2);
+        learningPathProgress.setLearningPathId(learningPathId);
+
+        // Use a small delay to ensure message is visible
+        setTimeout(() => {
+          // Redirect to new processing page with learningPathId for AI processing
+          router.push(
+            `/learning-path/assessment/processing?learningPathId=${learningPathId}`,
+          );
+        }, 300);
+      } else {
+        // Hide loading message
+        hideLoading();
+
+        console.error(
+          "❌ Quiz submission failed: No learning path ID returned",
+        );
+
+        // Show error message
+        message.error({
+          content: "❌ Nộp bài kiểm tra thất bại. Vui lòng thử lại sau.",
+          duration: 6,
+        });
+
+        // Reset submitting state on error to allow retry
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error("❌ Quiz submission error:", error);
+
+      // Hide loading message
+      hideLoading();
+
+      // Show error message
+      message.error({
+        content: "❌ Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.",
+        duration: 6,
+      });
+
+      // Reset submitting state on error to allow retry
+      setIsSubmitting(false);
     }
   }, [actions, router]);
 
@@ -198,226 +259,228 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   };
 
   return (
-    <Layout className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
-      <Content className="p-4 h-screen overflow-hidden">
-        <Row gutter={16} className="w-full mx-auto h-full">
-          {/* Left Sidebar - Quiz Navigation */}
-          <Col span={8} className="h-full">
-            <Card
-              title="Danh sách bài kiểm tra"
-              className="h-full"
-              styles={{
-                body: {
-                  padding: "16px",
-                  height: "calc(100% - 57px)",
-                  overflowY: "auto",
-                },
-              }}
-            >
-              <div className="space-y-4">
-                {state.testDetail.quizzes.map((quiz, quizIndex) => (
-                  <div
-                    key={quiz.quizId}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all duration-300 ${
-                      quizIndex === state.currentQuizIndex
-                        ? "bg-teal-50 border-teal-200 shadow-sm"
-                        : "bg-white border-gray-200 hover:bg-gray-50 hover:border-teal-100"
-                    }`}
-                    onClick={() => actions.goToQuiz(quizIndex)}
-                  >
+    <Spin spinning={isSubmitting}>
+      <Layout className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50">
+        <Content className="p-4 h-screen overflow-hidden">
+          <Row gutter={16} className="w-full mx-auto h-full">
+            {/* Left Sidebar - Quiz Navigation */}
+            <Col span={8} className="h-full">
+              <Card
+                title="Danh sách bài kiểm tra"
+                className="h-full"
+                styles={{
+                  body: {
+                    padding: "16px",
+                    height: "calc(100% - 57px)",
+                    overflowY: "auto",
+                  },
+                }}
+              >
+                <div className="space-y-4">
+                  {state.testDetail.quizzes.map((quiz, quizIndex) => (
                     <div
-                      className={`font-medium text-sm ${
+                      key={quiz.quizId}
+                      className={`p-3 rounded-lg border cursor-pointer transition-all duration-300 ${
                         quizIndex === state.currentQuizIndex
-                          ? "text-[#49BBBD]"
-                          : "text-gray-900"
+                          ? "bg-teal-50 border-teal-200 shadow-sm"
+                          : "bg-white border-gray-200 hover:bg-gray-50 hover:border-teal-100"
                       }`}
+                      onClick={() => actions.goToQuiz(quizIndex)}
                     >
-                      {quiz.title}
-                    </div>
-                    {quiz.description && (
-                      <div className="text-xs text-gray-400 mt-1">
-                        {quiz.description}
+                      <div
+                        className={`font-medium text-sm ${
+                          quizIndex === state.currentQuizIndex
+                            ? "text-[#49BBBD]"
+                            : "text-gray-900"
+                        }`}
+                      >
+                        {quiz.title}
                       </div>
-                    )}
-                    <div className="mt-2">
-                      <Progress
-                        percent={
-                          (quiz.questions.filter(
-                            (q) =>
-                              state.answers[q.questionId] &&
-                              state.answers[q.questionId].length > 0,
-                          ).length /
-                            quiz.questions.length) *
-                          100
-                        }
-                        size="small"
-                        showInfo={false}
-                        strokeColor={{
-                          "0%": "#49BBBD",
-                          "100%": "#06b6d4",
-                        }}
-                      />
-                      <Text className="text-xs text-gray-500">
-                        {
-                          quiz.questions.filter(
-                            (q) =>
-                              state.answers[q.questionId] &&
-                              state.answers[q.questionId].length > 0,
-                          ).length
-                        }
-                        /{quiz.questions.length} câu
-                      </Text>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </Col>
-
-          {/* Right Content - Quiz Taking */}
-          <Col span={16} className="h-full">
-            <div className="space-y-6 h-full flex flex-col">
-              {/* Header with Progress */}
-              <Card className="flex-shrink-0">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <Title level={3} className="!mb-1">
-                      {currentQuiz.title}
-                    </Title>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <Progress
-                      type="circle"
-                      size={60}
-                      percent={
-                        ((state.currentQuestionIndex + 1) /
-                          currentQuiz.questions.length) *
-                        100
-                      }
-                      strokeColor={{
-                        "0%": "#49BBBD",
-                        "100%": "#06b6d4",
-                      }}
-                      format={() => (
-                        <span style={{ color: "#49BBBD", fontWeight: "500" }}>
-                          {state.currentQuestionIndex + 1}/
-                          {currentQuiz.questions.length}
-                        </span>
+                      {quiz.description && (
+                        <div className="text-xs text-gray-400 mt-1">
+                          {quiz.description}
+                        </div>
                       )}
-                    />
-                  </div>
-                </div>
-              </Card>
-
-              {/* Question Card */}
-              <Card className="flex-1 overflow-auto">
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-x-2 mb-3">
-                      <Tag color="cyan">
-                        {isMultipleChoice
-                          ? "Chọn nhiều đáp án"
-                          : "Chọn 1 đáp án"}
-                      </Tag>
-                      <Tag color="orange">Độ khó: {difficultyLevel}</Tag>
-                    </div>
-                    <Text className="text-sm text-gray-500">
-                      Đã trả lời: {getAnsweredCountForCurrentQuiz()}/
-                      {currentQuiz.questions.length}
-                    </Text>
-                  </div>
-
-                  <Title level={4} className="!mb-4">
-                    {currentQuestion.questionText}
-                  </Title>
-                </div>
-
-                <div className="">
-                  {currentQuestion.answers?.map((answer) => (
-                    <div key={answer.answerId} className="w-full">
-                      {isMultipleChoice ? (
-                        <Checkbox
-                          checked={selectedAnswers.includes(answer.answerId)}
-                          onChange={() => handleAnswerChange(answer.answerId)}
-                          className="w-full"
-                        >
-                          <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                            {answer.answerText}
-                          </div>
-                        </Checkbox>
-                      ) : (
-                        <Radio
-                          checked={selectedAnswers.includes(answer.answerId)}
-                          onChange={() => handleAnswerChange(answer.answerId)}
-                          className="w-full"
-                        >
-                          <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                            {answer.answerText}
-                          </div>
-                        </Radio>
-                      )}
+                      <div className="mt-2">
+                        <Progress
+                          percent={
+                            (quiz.questions.filter(
+                              (q) =>
+                                state.answers[q.questionId] &&
+                                state.answers[q.questionId].length > 0,
+                            ).length /
+                              quiz.questions.length) *
+                            100
+                          }
+                          size="small"
+                          showInfo={false}
+                          strokeColor={{
+                            "0%": "#49BBBD",
+                            "100%": "#06b6d4",
+                          }}
+                        />
+                        <Text className="text-xs text-gray-500">
+                          {
+                            quiz.questions.filter(
+                              (q) =>
+                                state.answers[q.questionId] &&
+                                state.answers[q.questionId].length > 0,
+                            ).length
+                          }
+                          /{quiz.questions.length} câu
+                        </Text>
+                      </div>
                     </div>
                   ))}
                 </div>
               </Card>
+            </Col>
 
-              {/* Navigation */}
-              <Card className="flex-shrink-0">
-                <div className="flex justify-between items-center">
-                  <Button
-                    icon={<ArrowLeftOutlined />}
-                    onClick={actions.previousQuestion}
-                    disabled={!canGoPrevious()}
-                    size="large"
-                    className="hover:border-teal-400 hover:text-[#49BBBD]"
-                  >
-                    Câu trước
-                  </Button>
+            {/* Right Content - Quiz Taking */}
+            <Col span={16} className="h-full">
+              <div className="space-y-6 h-full flex flex-col">
+                {/* Header with Progress */}
+                <Card className="flex-shrink-0">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <Title level={3} className="!mb-1">
+                        {currentQuiz.title}
+                      </Title>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <Progress
+                        type="circle"
+                        size={60}
+                        percent={
+                          ((state.currentQuestionIndex + 1) /
+                            currentQuiz.questions.length) *
+                          100
+                        }
+                        strokeColor={{
+                          "0%": "#49BBBD",
+                          "100%": "#06b6d4",
+                        }}
+                        format={() => (
+                          <span style={{ color: "#49BBBD", fontWeight: "500" }}>
+                            {state.currentQuestionIndex + 1}/
+                            {currentQuiz.questions.length}
+                          </span>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </Card>
 
-                  <Space>
-                    <Button onClick={onExit} size="large">
-                      Thoát
+                {/* Question Card */}
+                <Card className="flex-1 overflow-auto">
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-x-2 mb-3">
+                        <Tag color="cyan">
+                          {isMultipleChoice
+                            ? "Chọn nhiều đáp án"
+                            : "Chọn 1 đáp án"}
+                        </Tag>
+                        <Tag color="orange">Độ khó: {difficultyLevel}</Tag>
+                      </div>
+                      <Text className="text-sm text-gray-500">
+                        Đã trả lời: {getAnsweredCountForCurrentQuiz()}/
+                        {currentQuiz.questions.length}
+                      </Text>
+                    </div>
+
+                    <Title level={4} className="!mb-4">
+                      {currentQuestion.questionText}
+                    </Title>
+                  </div>
+
+                  <div className="">
+                    {currentQuestion.answers?.map((answer) => (
+                      <div key={answer.answerId} className="w-full">
+                        {isMultipleChoice ? (
+                          <Checkbox
+                            checked={selectedAnswers.includes(answer.answerId)}
+                            onChange={() => handleAnswerChange(answer.answerId)}
+                            className="w-full"
+                          >
+                            <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                              {answer.answerText}
+                            </div>
+                          </Checkbox>
+                        ) : (
+                          <Radio
+                            checked={selectedAnswers.includes(answer.answerId)}
+                            onChange={() => handleAnswerChange(answer.answerId)}
+                            className="w-full"
+                          >
+                            <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                              {answer.answerText}
+                            </div>
+                          </Radio>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+
+                {/* Navigation */}
+                <Card className="flex-shrink-0">
+                  <div className="flex justify-between items-center">
+                    <Button
+                      icon={<ArrowLeftOutlined />}
+                      onClick={actions.previousQuestion}
+                      disabled={!canGoPrevious()}
+                      size="large"
+                      className="hover:border-teal-400 hover:text-[#49BBBD]"
+                    >
+                      Câu trước
                     </Button>
 
-                    {isLastQuestion() ? (
-                      <div className="text-center">
+                    <Space>
+                      <Button onClick={onExit} size="large">
+                        Thoát
+                      </Button>
+
+                      {isLastQuestion() ? (
+                        <div className="text-center">
+                          <Button
+                            type="primary"
+                            icon={<CheckCircleOutlined />}
+                            onClick={handleSubmitTest}
+                            size="large"
+                            loading={state.isLoading}
+                            disabled={!areAllQuestionsAnswered()}
+                            className="!bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 hover:shadow-lg"
+                            title={
+                              !areAllQuestionsAnswered()
+                                ? "Vui lòng hoàn thành tất cả câu hỏi trước khi nộp bài"
+                                : "Nộp bài kiểm tra"
+                            }
+                          >
+                            Nộp bài
+                          </Button>
+                        </div>
+                      ) : (
                         <Button
                           type="primary"
-                          icon={<CheckCircleOutlined />}
-                          onClick={handleSubmitTest}
+                          icon={<ArrowRightOutlined />}
+                          onClick={actions.nextQuestion}
+                          disabled={!canGoNext()}
                           size="large"
-                          loading={state.isLoading}
-                          disabled={!areAllQuestionsAnswered()}
                           className="!bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 hover:shadow-lg"
-                          title={
-                            !areAllQuestionsAnswered()
-                              ? "Vui lòng hoàn thành tất cả câu hỏi trước khi nộp bài"
-                              : "Nộp bài kiểm tra"
-                          }
                         >
-                          Nộp bài
+                          Câu tiếp
                         </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        type="primary"
-                        icon={<ArrowRightOutlined />}
-                        onClick={actions.nextQuestion}
-                        disabled={!canGoNext()}
-                        size="large"
-                        className="!bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 hover:shadow-lg"
-                      >
-                        Câu tiếp
-                      </Button>
-                    )}
-                  </Space>
-                </div>
-              </Card>
-            </div>
-          </Col>
-        </Row>
-      </Content>
-    </Layout>
+                      )}
+                    </Space>
+                  </div>
+                </Card>
+              </div>
+            </Col>
+          </Row>
+        </Content>
+      </Layout>
+    </Spin>
   );
 };
 

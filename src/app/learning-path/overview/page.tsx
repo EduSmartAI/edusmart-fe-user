@@ -18,6 +18,7 @@ import { MdMoreTime } from "react-icons/md";
 import { Button, Collapse, message } from "antd";
 import { learningPathProgress } from "EduSmart/components/LearningPath";
 import { useSessionAuthStore } from "EduSmart/stores/Auth/SessionAuthStore";
+import { useSurvey } from "EduSmart/hooks/survey";
 
 const steps = [
   {
@@ -152,6 +153,7 @@ export default function LearningPathOverview() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const { session, fetchSession } = useSessionAuthStore();
+  const survey = useSurvey();
 
   useEffect(() => {
     // Fetch session to check authentication
@@ -174,7 +176,49 @@ export default function LearningPathOverview() {
       }, 500);
       return;
     }
-    learningPathProgress.clearProgress();
+
+    console.log("🔄 Starting assessment flow - cleaning up previous data...");
+
+    try {
+      // 1. Clear all learning path progress
+      learningPathProgress.clearProgress();
+      console.log("✅ Learning path progress cleared");
+
+      // 2. Reset survey store (clears survey1Data, survey2Data, survey3Data, etc.)
+      survey.resetSurvey();
+      console.log("✅ Survey store reset");
+
+      // 3. Clear quiz data from localStorage
+      localStorage.removeItem("quiz-store");
+      console.log("✅ Quiz store cleared");
+
+      // 4. Clear learning path progress keys
+      const learningPathKeys = [
+        "learning_path_current_step",
+        "learning_path_completed_steps",
+        "survey_completed",
+        "quiz_completed",
+        "learning_path_id",
+      ];
+      learningPathKeys.forEach((key) => {
+        localStorage.removeItem(key);
+      });
+      console.log("✅ Learning path keys cleared");
+
+      // 5. Clear survey-related localStorage keys
+      localStorage.removeItem("survey_data");
+      localStorage.removeItem("survey_step");
+      localStorage.removeItem("survey-storage");
+      console.log("✅ Survey localStorage keys cleared");
+
+      console.log(
+        "✅ All previous data cleaned up successfully - ready for fresh assessment",
+      );
+    } catch (error) {
+      console.error("Error during cleanup:", error);
+    }
+
+    // Navigate to survey assessment page
     router.push("/learning-path/assessment/survey");
   };
 

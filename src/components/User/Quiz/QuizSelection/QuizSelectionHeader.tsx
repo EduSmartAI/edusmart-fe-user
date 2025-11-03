@@ -32,7 +32,7 @@ const QuizSelectionHeader: React.FC<QuizSelectionHeaderProps> = ({}) => {
         {/* Description */}
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
           Chọn các bài kiểm tra phù hợp để đánh giá kiến thức và kỹ năng của
-          bạn. Kết quả sẽ giúp AI đề xuất lộ trình học tập cá nhân hóa tốt nhất.
+          bạn. Kết quả sẽ giúp hệ thống đề xuất lộ trình học tập cá nhân hóa tốt nhất.
         </p>
 
         {/* Info Box */}
