@@ -95,6 +95,7 @@ const getStatusTag = (status: string | number) => {
 export default function CoursePerformancePage() {
   const [activeTab, setActiveTab] = useState<string>("module");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expandedLessonKeys, setExpandedLessonKeys] = useState<string[]>([]);
 
   // Mock markdown content for improvement details
   const mockImprovementContent = `## Tổng quan
@@ -164,6 +165,8 @@ export default function CoursePerformancePage() {
 - Tìm kiếm tài liệu học tập trực tuyến về phân tích và đánh giá thông tin.
 - Tham gia các khóa học kỹ năng giao tiếp.
 - Luyện tập qua các bài tập thực hành hàng ngày.`;
+
+  const test = `# Cần phát triển thêm kỹ năng phân tích và đánh giá thông tin\n\nKhông tìm thấy kết quả phù hợp. Hãy mô tả cụ thể hơn hoặc đổi chủ đề.`;
 
   // Helper function to get level label
   const getLevelLabel = (level: number) => {
@@ -364,14 +367,14 @@ export default function CoursePerformancePage() {
                   <div className="bg-gray-50 dark:bg-gray-800/30 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                        Bài kiểm tra
+                        Bài kiểm tra đã làm
                       </div>
                     </div>
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {module.totalQuizCount}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      tổng số
+                      / tổng số
                     </div>
                   </div>
 
@@ -385,7 +388,7 @@ export default function CoursePerformancePage() {
                       {module.aiScore !== null ? module.aiScore : "N/A"}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      / tổng số bài kiểm tra
+                      / tổng số bài kiểm đã làm
                     </div>
                   </div>
                 </div>
@@ -518,149 +521,280 @@ export default function CoursePerformancePage() {
 
   // Lesson Performance Component
   const LessonPerformance = () => {
-    const collapseItems = mockLessonData.response.modules.map(
+    const moduleCollapseItems = mockLessonData.response.modules.map(
       (module: ModuleWithLessons) => ({
         key: module.moduleId,
         label: (
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400 shrink-0">
               Chương {module.positionIndex}
             </span>
-            <span className="text-base font-semibold text-gray-900 dark:text-white">
+            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
               {module.moduleName}
             </span>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              ({module.lessons.length} bài học)
+            <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto shrink-0">
+              {module.lessons.length} bài học{" "}
             </span>
           </div>
         ),
         children: (
-          <div className="space-y-3">
-            {module.lessons.map((lesson: Lesson) => (
-              <Card
-                key={lesson.lessonId}
-                className="hover:shadow-md transition-shadow"
-              >
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          <div className="space-y-2">
+            {/* Nested Collapse for Lessons */}
+            <Collapse
+              activeKey={expandedLessonKeys}
+              onChange={(keys) => setExpandedLessonKeys(keys as string[])}
+              items={module.lessons.map((lesson: Lesson) => {
+                const isNotStarted = lesson.status === 0;
+
+                return {
+                  key: lesson.lessonId,
+                  label: (
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 shrink-0">
                           Bài {lesson.positionIndex}
                         </span>
-                        {getStatusTag(lesson.status)}
-                      </div>
-                      <h4 className="text-base font-semibold text-gray-900 dark:text-white">
-                        {lesson.title}
-                      </h4>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 border-y border-gray-200 dark:border-gray-700">
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                        Đã xem
-                      </div>
-                      <div className="text-base font-semibold text-gray-900 dark:text-white">
-                        {lesson.percentWatched.toFixed(1)}%
+                        <span className="text-xs font-medium text-gray-900 dark:text-white truncate">
+                          {lesson.title}
+                        </span>
+                        <span className="text-xs">
+                          {getStatusTag(lesson.status)}
+                        </span>
                       </div>
                     </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                        Thời gian học
-                      </div>
-                      <div className="text-base font-semibold text-gray-900 dark:text-white">
-                        {lesson.actualStudyMinutes} phút
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                        Bài kiểm tra
-                      </div>
-                      <div className="text-base font-semibold text-gray-900 dark:text-white">
-                        {lesson.lessonQuizCount}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                        Điểm AI
-                      </div>
-                      <div className="text-base font-semibold text-gray-900 dark:text-white">
-                        {lesson.aiScore !== null ? lesson.aiScore : "N/A"}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Progress
-                      percent={lesson.percentWatched}
-                      strokeColor="#49BBBD"
-                      trailColor="#e5e7eb"
-                      showInfo={false}
-                    />
-                  </div>
-
-                  {lesson.aiFeedbackSummary && (
-                    <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <div>
-                        <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                          Đánh giá của AI
-                        </h5>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          {lesson.aiFeedbackSummary}
-                        </p>
-                      </div>
-
-                      {lesson.aiStrengths && lesson.aiStrengths.length > 0 && (
-                        <div>
-                          <h6 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                            Điểm mạnh
-                          </h6>
-                          <ul className="space-y-1">
-                            {lesson.aiStrengths.map(
-                              (strength: string, index: number) => (
-                                <li
-                                  key={index}
-                                  className="text-sm text-gray-700 dark:text-gray-300 pl-4 relative before:content-['•'] before:absolute before:left-0"
-                                >
-                                  {strength}
-                                </li>
-                              ),
-                            )}
-                          </ul>
+                  ),
+                  children: (
+                    <div className={isNotStarted ? "" : "pt-2"}>
+                      {isNotStarted ? (
+                        <div className="text-center py-6 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-1 border-dashed border-gray-300 dark:border-gray-700">
+                          <div className="text-gray-400 dark:text-gray-500 mb-2">
+                            <svg
+                              className="w-16 h-16 mx-auto mb-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                              />
+                            </svg>
+                          </div>
+                          <div className="mb-2">
+                            {" "}
+                            <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                              Chưa có dữ liệu học tập{" "}
+                            </h5>
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Bạn chưa bắt đầu học bài này. Hãy bắt đầu để xem
+                            phân tích hiệu suất!{" "}
+                          </p>
+                          <div className="inline-flex items-center mt-1 gap-2 px-4 py-2 bg-[#49BBBD]/10 text-[#49BBBD] rounded-lg text-sm font-medium">
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 7l5 5m0 0l-5 5m5-5H6"
+                              />
+                            </svg>
+                            Bắt đầu học ngay
+                          </div>
                         </div>
-                      )}
+                      ) : (
+                        // Has Data State
+                        <div className="space-y-4">
+                          {/* Metrics Grid */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="bg-gray-50 dark:bg-gray-800/30 rounded-lg p-3">
+                              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                Đã xem
+                              </div>
+                              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                                {lesson.percentWatched.toFixed(1)}%
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {Math.floor(
+                                  (lesson.videoDurationSeconds *
+                                    lesson.percentWatched) /
+                                    100,
+                                )}
+                                /{lesson.videoDurationSeconds}s
+                              </div>
+                            </div>
 
-                      {lesson.aiImprovementResources &&
-                        lesson.aiImprovementResources.length > 0 && (
-                          <div>
-                            <h6 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                              Gợi ý cải thiện
-                            </h6>
-                            <div className="space-y-2">
-                              {lesson.aiImprovementResources.map(
-                                (resource: ImprovementResource) => (
-                                  <div
-                                    key={resource.improvementId}
-                                    className="text-sm text-gray-700 dark:text-gray-300 pl-4 relative before:content-['•'] before:absolute before:left-0"
-                                  >
-                                    {resource.improvementText}
-                                    {resource.contentMarkdown && (
-                                      <button className="ml-2 text-xs text-[#49BBBD] hover:underline">
-                                        Xem thêm
-                                      </button>
-                                    )}
-                                  </div>
-                                ),
-                              )}
+                            <div className="bg-gray-50 dark:bg-gray-800/30 rounded-lg p-3">
+                              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                Thời gian học thực tế
+                              </div>
+                              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                                {lesson.actualStudyMinutes}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                phút
+                              </div>
+                            </div>
+
+                            <div className="bg-gray-50 dark:bg-gray-800/30 rounded-lg p-3">
+                              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                Bài kiểm tra đã làm
+                              </div>
+                              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                                {lesson.lessonQuizCount}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                bài
+                              </div>
+                            </div>
+
+                            <div className="bg-gray-50 dark:bg-gray-800/30 rounded-lg p-3">
+                              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                Điểm trung bình
+                              </div>
+                              <div className="text-lg font-bold text-gray-900 dark:text-white">
+                                {lesson.averageQuizScore !== null
+                                  ? lesson.averageQuizScore
+                                  : "N/A"}
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                / tổng số bài kiểm đã làm
+                              </div>
                             </div>
                           </div>
-                        )}
+
+                          {/* AI Feedback Section */}
+                          {lesson.aiFeedbackSummary && (
+                            <div
+                              className="p-4 bg-gray-50/60 dark:bg-gray-800/50 rounded-lg border border-gray-200/80 dark:border-gray-900"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {/* Header */}
+                              <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-300/50 dark:border-gray-800">
+                                <h5 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                  Phân tích từ AI
+                                </h5>
+                                {lesson.aiScore !== null && (
+                                  <div className="flex items-center gap-2 px-3 py-1.5 bg-teal-100 dark:bg-teal-900/30 rounded-md">
+                                    <span className="text-xs dark:text-teal-400 font-medium">
+                                      Điểm AI
+                                    </span>
+                                    <span className="text-sm font-bold dark:text-teal-300">
+                                      {lesson.aiScore}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Summary */}
+                              <div className="mb-3">
+                                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                  {lesson.aiFeedbackSummary}
+                                </p>
+                              </div>
+
+                              {/* Strengths and Improvements */}
+                              <div
+                                className="grid md:grid-cols-1"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {lesson.aiStrengths &&
+                                  lesson.aiStrengths.length > 0 && (
+                                    <div
+                                      className="rounded-lg"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <h6 className="text-sm dark:text-green-400 font-semibold mb-2">
+                                        Điểm mạnh
+                                      </h6>
+                                      <ul
+                                        className="space-y-1.5"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        {lesson.aiStrengths.map(
+                                          (strength: string, index: number) => (
+                                            <li
+                                              key={index}
+                                              className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
+                                            >
+                                              <span className="text-green-500 mt-0.5 shrink-0">
+                                                ✓
+                                              </span>
+                                              <span className="flex-1">
+                                                {strength}
+                                              </span>
+                                            </li>
+                                          ),
+                                        )}
+                                      </ul>
+                                    </div>
+                                  )}
+
+                                {lesson.aiImprovementResources &&
+                                  lesson.aiImprovementResources.length > 0 && (
+                                    <div
+                                      className="rounded-lg mt-3"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <h6 className="text-sm font-semibold dark:text-orange-400 mb-2">
+                                        Gợi ý cải thiện
+                                      </h6>
+                                      <ul
+                                        className="space-y-1.5"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        {lesson.aiImprovementResources.map(
+                                          (resource: ImprovementResource) => (
+                                            <li
+                                              key={resource.improvementId}
+                                              className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
+                                              onClick={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                            >
+                                              <span className="text-orange-500 mt-0.5 shrink-0">
+                                                →
+                                              </span>
+                                              <div className="flex-1">
+                                                <span>
+                                                  {resource.improvementText}
+                                                </span>
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setIsModalOpen(true);
+                                                  }}
+                                                  className="ml-1.5 text-xs text-[#49BBBD] hover:underline font-medium inline-flex items-center gap-0.5"
+                                                >
+                                                  <span className="ml-1.5 text-xs text-orange-500 hover:underline font-medium inline-flex items-center gap-0.5">
+                                                    Xem chi tiết
+                                                  </span>
+                                                </button>
+                                              </div>
+                                            </li>
+                                          ),
+                                        )}
+                                      </ul>
+                                    </div>
+                                  )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </Card>
-            ))}
+                  ),
+                };
+              })}
+              className="lesson-collapse"
+            />
           </div>
         ),
       }),
@@ -668,7 +802,7 @@ export default function CoursePerformancePage() {
 
     return (
       <Collapse
-        items={collapseItems}
+        items={moduleCollapseItems}
         defaultActiveKey={[mockLessonData.response.modules[0]?.moduleId]}
       />
     );
