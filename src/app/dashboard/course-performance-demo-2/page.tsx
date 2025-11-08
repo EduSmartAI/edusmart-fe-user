@@ -74,6 +74,48 @@ interface ModuleWithLessons {
   lessons: Lesson[];
 }
 
+interface OverallPerformance {
+  courseName: string;
+  instructorName: string;
+  username: string;
+  durationText: string;
+  totalVideos: number;
+  totalQuizzes: number;
+  startDate: string;
+  level: number;
+  progress: {
+    completedPercent: number;
+    lessonsCompleted: number;
+    lessonsTotal: number;
+    quizTotal: number;
+    averageScore: number;
+    averageAiScore: number;
+    totalLearningTime: string;
+  };
+  aiEvaluationMarkdown: string;
+  performance: {
+    avgMinutesPerLesson: number;
+    rank: number;
+    fasterCount: number;
+    slowerCount: number;
+    analysis: string;
+  };
+  learningBehavior: {
+    lastAccessed: string;
+    mostActiveSlot: string;
+    totalPauseCount: number;
+    scrollVideoCount: number;
+    rewindTimes: number;
+    averageRewatchPerLesson: number;
+    averagePausePerLesson: number;
+    streaks: Array<{
+      startDate: string;
+      endDate: string;
+      days: number;
+    }>;
+  };
+}
+
 // Helper function to get status tag
 const getStatusTag = (status: string | number) => {
   const statusMap: Record<string, { label: string; color: string }> = {
@@ -93,9 +135,123 @@ const getStatusTag = (status: string | number) => {
 };
 
 export default function CoursePerformancePage() {
-  const [activeTab, setActiveTab] = useState<string>("module");
+  const [activeTab, setActiveTab] = useState<string>("overall");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedLessonKeys, setExpandedLessonKeys] = useState<string[]>([]);
+  const [expandedModuleKeys, setExpandedModuleKeys] = useState<string[]>([]);
+
+  // Mock data for overall performance
+  const mockOverallData: OverallPerformance = {
+    courseName: "Programming Fundamentals with C",
+    instructorName: "",
+    username: "Trần Anh",
+    durationText: "11h 10m",
+    totalVideos: 6,
+    totalQuizzes: 9,
+    startDate: "2025-10-21T22:57:09.833783Z",
+    level: 1,
+    progress: {
+      completedPercent: 33.33,
+      lessonsCompleted: 2,
+      lessonsTotal: 6,
+      quizTotal: 9,
+      averageScore: 29.41,
+      averageAiScore: 29.41,
+      totalLearningTime: "01:58:57",
+    },
+    aiEvaluationMarkdown: `## Tổng quan
+- Số bài đã chấm là 4 với **điểm do AI chấm** là 0. Điểm trung bình cho thấy học viên chưa đạt yêu cầu trong các bài kiểm tra. 
+- Mức hiệu chỉnh trung bình là 0.
+
+### Bảng tổng quan
+| Chỉ số | Giá trị |
+|---|---|
+| Số đánh giá | 4 |
+| Điểm AI trung bình | 0 |
+| Điểm thô trung bình | — |
+| Mức hiệu chỉnh trung bình | 0 |
+| Số bài theo scope | Lesson: 4 · Module: 0 |
+| Ghi chú | Điểm hiện tại là 'điểm do AI chấm'. Khống hiển thị điểm gốc. |
+
+### Nhận xét tổng quan
+- Kết quả học tập cho thấy học viên gặp khó khăn trong việc nắm bắt kiến thức cần thiết. Xu hướng điểm cho thấy cần có sự cải thiện đáng kể để đạt yêu cầu.
+
+## Điểm mạnh nổi bật
+- Không có điểm mạnh nào được ghi nhận trong các bài kiểm tra.
+
+## Vấn đề & Khoảng trống kỹ năng
+- Cần cải thiện hiểu biết về các phạm vi dịch vụ.
+- Thiếu kiến thức về attribute [ApiController] và vai trò của nó trong ASP.NET.
+- Cần tìm hiểu về NuGet và quản lý package trong .NET.
+
+## Phân tầng chất lượng
+- Tất cả các bài kiểm tra đều nằm trong ngưỡng "Nguy cơ" (< 50). 
+- Dựa trên các mẫu gần nhất, có thể thấy rằng học viên cần tập trung vào việc củng cố kiến thức cơ bản, vì không có bài nào đạt yêu cầu tối thiểu.
+
+## Ưu tiên hành động (1–2 tuần)
+- Ôn tập kiến thức về Dependency Injection, mỗi ngày 2–3 bài ngắn.
+- Luyện tập hiểu biết về Controllers 101, mỗi ngày 2–3 bài ngắn.
+- Làm bài tập về Dev Environment Setup, mỗi ngày 2–3 bài ngắn.
+
+## Nhóm rủi ro cao
+
+### 🔹 Lesson có điểm thấp
+| Lesson | Module liên quan | Điểm AI TB | Số bài | Đánh giá ngắn |
+|---|---|---|---|---|
+| Dependency Injection | Web API Basics | 0 | 1 | Cần cải thiện hiểu biết về các phạm vi dịch vụ. |
+| Controllers 101 | Web API Basics | 0 | 1 | Cần tìm hiểu về attribute [ApiController]. |
+| Dev Environment Setup | Introduction | 0 | 1 | Cần cải thiện kiến thức về quản lý package trong .NET. |
+
+**Phân tích nhanh (Lesson)**
+- Có 3 lesson rủi ro với điểm trung bình từ 0 đến 0.
+- Chủ đề lặp lại đáng chú ý: Web API Basics: 2 lesson.
+- Vấn đề phổ biến: thiếu hiểu biết về các phạm vi dịch vụ và attribute [ApiController].
+- Gợi ý trọng tâm: Tập trung vào việc cải thiện kiến thức về các phạm vi dịch vụ.
+
+## Nguyên nhân gốc
+- Thiếu nền tảng khái niệm về các phạm vi dịch vụ.
+- Đọc hiểu đề yếu, dẫn đến việc không nắm bắt được yêu cầu bài kiểm tra.
+- Thời gian luyện tập không đều, không đủ để củng cố kiến thức.
+
+## Gợi ý học tập nhanh
+- Tìm kiếm tài liệu học tập về ASP.NET Core và Web API.
+- Thực hành qua các bài tập ngắn liên quan đến Dependency Injection và quản lý package trong .NET.
+- Tham gia các khóa học trực tuyến để củng cố kiến thức cơ bản.`,
+    performance: {
+      avgMinutesPerLesson: 59.475,
+      rank: 1,
+      fasterCount: 0,
+      slowerCount: 0,
+      analysis:
+        "Tốc độ học của bạn đang tương đương mức trung bình, nhanh hơn khoảng 0% số học viên trong khoá (xếp hạng 1/13).",
+    },
+    learningBehavior: {
+      lastAccessed: "2025-11-07T00:00:00",
+      mostActiveSlot: "morning",
+      totalPauseCount: 10,
+      scrollVideoCount: 1,
+      rewindTimes: 5,
+      averageRewatchPerLesson: 2.5,
+      averagePausePerLesson: 5,
+      streaks: [
+        {
+          startDate: "2025-11-07T00:00:00",
+          endDate: "2025-11-07T00:00:00",
+          days: 1,
+        },
+        {
+          startDate: "2025-10-07T00:00:00",
+          endDate: "2025-10-08T00:00:00",
+          days: 2,
+        },
+        {
+          startDate: "2025-10-01T00:00:00",
+          endDate: "2025-10-03T00:00:00",
+          days: 3,
+        },
+      ],
+    },
+  };
 
   // Mock markdown content for improvement details
   const mockImprovementContent = `## Tổng quan
@@ -252,6 +408,244 @@ export default function CoursePerformancePage() {
       </div>
     </div>
   );
+
+  // Overall Performance Component
+  const OverallPerformance = () => {
+    const data = mockOverallData;
+
+    // Helper to format date
+    const formatDate = (dateString: string) => {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    };
+
+    // Helper to get time slot label
+    const getTimeSlotLabel = (slot: string) => {
+      const slotMap: Record<string, string> = {
+        morning: "Buổi sáng",
+        afternoon: "Buổi chiều",
+        evening: "Buổi tối",
+        night: "Buổi đêm",
+      };
+      return slotMap[slot] || slot;
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Progress Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Completed Percent */}
+          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 rounded-lg p-4 border border-teal-200/50 dark:border-teal-800/50">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Tiến độ hoàn thành
+              </h3>
+             
+            </div>
+            <div className="text-3xl font-bold text-teal-600 dark:text-teal-400 mb-1">
+              {data.progress.completedPercent.toFixed(1)}%
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              {data.progress.lessonsCompleted}/{data.progress.lessonsTotal} bài
+              học
+            </div>
+            <Progress
+              percent={data.progress.completedPercent}
+              strokeColor="#49BBBD"
+              showInfo={false}
+              className="mt-2"
+            />
+          </div>
+
+          {/* Learning Time */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200/50 dark:border-blue-800/50">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Thời gian học thực tế
+              </h3>
+              
+            </div>
+            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+              {data.progress.totalLearningTime}
+            </div>
+          
+          </div>
+
+          {/* Average Score */}
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg p-4 border border-amber-200/50 dark:border-amber-800/50">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Điểm trung bình
+              </h3>
+            </div>
+            <div className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1">
+              {data.progress.averageScore.toFixed(1)}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Điểm AI: {data.progress.averageAiScore.toFixed(1)}
+            </div>
+          </div>
+
+          {/* Quiz Count */}
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-4 border border-purple-200/50 dark:border-purple-800/50">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Bài kiểm tra
+              </h3>
+              <svg
+                className="w-5 h-5 text-purple-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                />
+              </svg>
+            </div>
+            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
+              {data.progress.quizTotal}
+            </div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">
+              Tổng số bài kiểm tra
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Analysis */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-4">
+            
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+              Phân tích thành tích
+            </h3>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Tốc độ học trung bình
+                </span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {data.performance.avgMinutesPerLesson.toFixed(1)} phút/bài
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Xếp hạng
+                </span>
+                <span className="text-sm font-semibold text-teal-600 dark:text-teal-400">
+                  #{data.performance.rank}
+                </span>
+              </div>
+            </div>
+            <div className="p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg border border-teal-200/50 dark:border-teal-800/50">
+              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                {data.performance.analysis}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Learning Behavior */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-4">
+           
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+              Thói quen học tập
+            </h3>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4 mb-4">
+            <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Lần truy cập gần nhất
+              </div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                {formatDate(data.learningBehavior.lastAccessed)}
+              </div>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Thời gian học hiệu quả
+              </div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                {getTimeSlotLabel(data.learningBehavior.mostActiveSlot)}
+              </div>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                Chuỗi học dài nhất
+              </div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                {Math.max(...data.learningBehavior.streaks.map((s) => s.days))}{" "}
+                ngày
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                {data.learningBehavior.totalPauseCount}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Số lần dừng
+              </div>
+            </div>
+            <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                {data.learningBehavior.rewindTimes}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Số lần xem lại
+              </div>
+            </div>
+            <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {data.learningBehavior.averagePausePerLesson.toFixed(1)}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                TB dừng/bài
+              </div>
+            </div>
+            <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                {data.learningBehavior.averageRewatchPerLesson.toFixed(1)}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                TB xem lại/bài
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI Evaluation */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2 mb-4">
+            
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+              Đánh giá từ AI
+            </h3>
+          </div>
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <MarkdownView
+              content={data.aiEvaluationMarkdown}
+              collapsible
+              collapsedHeight={300}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // Module Performance Component
   const ModulePerformance = () => {
@@ -803,7 +1197,8 @@ export default function CoursePerformancePage() {
     return (
       <Collapse
         items={moduleCollapseItems}
-        defaultActiveKey={[mockLessonData.response.modules[0]?.moduleId]}
+        activeKey={expandedModuleKeys}
+        onChange={(keys) => setExpandedModuleKeys(keys as string[])}
       />
     );
   };
@@ -820,6 +1215,11 @@ export default function CoursePerformancePage() {
             activeKey={activeTab}
             onChange={setActiveTab}
             items={[
+              {
+                key: "overall",
+                label: "Hiệu suất Tổng Quan",
+                children: <OverallPerformance />,
+              },
               {
                 key: "module",
                 label: "Hiệu suất theo Chương",
