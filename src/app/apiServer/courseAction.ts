@@ -271,3 +271,139 @@ export async function GetStudentCourseProgressByCourseSlug(
   }
 }
 
+/**
+ * Fetch module performance data for a course
+ * @param courseId - Course ID
+ * @returns Module performance data with modules, totals, etc.
+ */
+export async function fetchModulePerformance(courseId: string) {
+  try {
+    console.log("fetchModulePerformance - courseId:", courseId);
+    const res = await apiServer.student.api.studentDashboardsGetModuleDashboardProcessList({ CourseId: courseId });
+    console.log("fetchModulePerformance - res:", res);
+    
+    if (res.data?.success && res.data.response) {
+      return {
+        success: true,
+        data: res.data.response,
+      };
+    }
+    
+    return {
+      success: false,
+      data: null,
+      error: "Failed to fetch module performance",
+    };
+  } catch (error) {
+    console.error("Error fetching module performance:", error);
+    return {
+      success: false,
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Fetch lesson performance data for a course
+ * @param courseId - Course ID
+ * @returns Lesson performance data with modules, lessons, totals, etc.
+ */
+export async function fetchLessonPerformance(courseId: string) {
+  try {
+    console.log("fetchLessonPerformance - courseId:", courseId);
+    const res = await apiServer.student.api.studentDashboardsGetLessonDashboardProcessList({ CourseId: courseId });
+    console.log("fetchLessonPerformance - res:", res);
+    
+    if (res.data?.success && res.data.response) {
+      return {
+        success: true,
+        data: res.data.response,
+      };
+    }
+    
+    return {
+      success: false,
+      data: null,
+      error: "Failed to fetch lesson performance",
+    };
+  } catch (error) {
+    console.error("Error fetching lesson performance:", error);
+    return {
+      success: false,
+      data: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Fetch all performance data for a course (module + lesson) in parallel
+ * @param courseId - Course ID
+ * @returns Combined performance data
+ */
+export async function fetchAllCoursePerformance(courseId: string) {
+  try {
+    console.log("fetchAllCoursePerformance - courseId:", courseId);
+    
+    // Call both APIs in parallel
+    const [modulePerf, lessonPerf] = await Promise.all([
+      fetchModulePerformance(courseId),
+      fetchLessonPerformance(courseId),
+    ]);
+    
+    return {
+      success: modulePerf.success && lessonPerf.success,
+      modulePerformance: modulePerf.data,
+      lessonPerformance: lessonPerf.data,
+      errors: {
+        module: modulePerf.error,
+        lesson: lessonPerf.error,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching all course performance:", error);
+    return {
+      success: false,
+      modulePerformance: null,
+      lessonPerformance: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Generate and fetch improvement content from AI
+ * @param improvementId - Improvement ID to generate content for
+ * @returns Generated markdown content
+ */
+export async function fetchImprovementContent(improvementId: string) {
+  try {
+    console.log("fetchImprovementContent - improvementId:", improvementId);
+    const res = await apiServer.student.api.studentDashboardsGenAndInsertImprovementByAiCreate({
+      ImprovementId: improvementId,
+    });
+    console.log("fetchImprovementContent - res:", res);
+
+    if (res.data?.success && res.data.response) {
+      return {
+        success: true,
+        content: res.data.response,
+      };
+    }
+
+    return {
+      success: false,
+      content: null,
+      error: "Failed to generate improvement content",
+    };
+  } catch (error) {
+    console.error("Error fetching improvement content:", error);
+    return {
+      success: false,
+      content: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+

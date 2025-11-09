@@ -134,6 +134,77 @@ const getStatusTag = (status: string | number) => {
   return <Tag color={statusInfo.color}>{statusInfo.label}</Tag>;
 };
 
+// Mock markdown content for improvement details
+export const mockImprovementContent = `## Tổng quan
+- Khóa học đã có 3 bài được chấm với **điểm do AI chấm** trung bình là 33.33. 
+- Mức hiệu chỉnh trung bình là 0.
+
+### Bảng tổng quan
+| Chỉ số | Giá trị |
+|---|---|
+| Số đánh giá | 3 |
+| Điểm AI trung bình | 33.33 |
+| Điểm thô trung bình | 33.33 |
+| Mức hiệu chỉnh trung bình | 0 |
+| Số bài theo scope | Lesson: 3 · Module: 0 |
+| Ghi chú | Điểm hiện tại là 'điểm do AI chấm'. Khống hiển thị điểm gốc. |
+
+### Nhận xét tổng quan
+- Kết quả học tập cho thấy điểm số thấp, cho thấy học viên cần cải thiện kỹ năng trong các bài học. Xu hướng điểm hiện tại cho thấy sự cần thiết phải củng cố kiến thức và kỹ năng.
+
+## Điểm mạnh nổi bật
+- Có kiến thức cơ bản về hình ảnh chuyên nghiệp.
+- Giảng viên chia sẻ kiến thức thực tế.
+- Hiểu rõ về khái niệm đánh giá đầu vào và ứng dụng trong thực tế.
+
+## Vấn đề & Khoảng trống kỹ năng
+- Cần cải thiện khả năng phân tích và đánh giá thông tin.
+- Cần tìm hiểu thêm về các phương pháp học nhanh và hiệu quả.
+- Cần củng cố kỹ năng giao tiếp và tạo niềm tin cho học viên.
+
+## Phân tầng chất lượng
+- Dựa trên các mẫu gần nhất, tỷ trọng ước lượng cho thấy không có học viên nào đạt mức xuất sắc, một số học viên có thể ở mức cần củng cố, trong khi đa số đang ở mức nguy cơ. Hạn chế dữ liệu từ số mẫu ít (3 mẫu) có thể ảnh hưởng đến độ chính xác của phân tích.
+
+## Ưu tiên hành động (1–2 tuần)
+- Ôn lại kiến thức về phân tích và đánh giá thông tin mỗi ngày 2–3 bài ngắn.
+- Luyện tập kỹ năng giao tiếp thông qua các buổi thảo luận nhóm.
+- Làm bài tập thực hành về tạo niềm tin cho học viên.
+- Viết nhật ký học tập để theo dõi tiến bộ cá nhân.
+
+## Nhóm rủi ro cao
+### 🔹 Lesson có điểm thấp
+| Lesson | Module liên quan | Điểm AI TB | Số bài | Đánh giá ngắn |
+|---|---|---|---|---|
+| Giữ hình ảnh chuyên nghiệp trước học viên | Củng cố hình ảnh chuyên nghiệp | 0 | 1 | Cần cải thiện kỹ năng và kiến thức. |
+| Tạo sự tin tưởng với học viên | Tạo sự tin tưởng ban đầu | 0 | 1 | Cần củng cố kỹ năng giao tiếp. |
+
+**Phân tích nhanh (Lesson)**
+- Có 2 lesson rủi ro với điểm trung bình từ 0 đến 0.
+- Chủ đề lặp lại đáng chú ý: Củng cố hình ảnh chuyên nghiệp: 1 lesson, Tạo sự tin tưởng ban đầu: 1 lesson.
+- Vấn đề phổ biến: Thiếu kỹ năng phân tích và đánh giá thông tin, kỹ năng giao tiếp yếu.
+- Gợi ý trọng tâm: Cần cải thiện kỹ năng giao tiếp và tạo niềm tin cho học viên.
+
+### 🔸 Module có điểm thấp
+- Không có module nào ở mức rủi ro.
+
+**Phân tích nhanh (Module)**
+- —
+
+## Nguyên nhân gốc
+- Thiếu nền tảng khái niệm trong các bài học.
+- Kỹ năng giao tiếp và tạo niềm tin cho học viên chưa được phát triển.
+- Thời gian luyện tập không đều và không đủ.
+
+## Xu hướng theo thời gian
+- — 
+
+## Gợi ý học tập nhanh
+- Tìm kiếm tài liệu học tập trực tuyến về phân tích và đánh giá thông tin.
+- Tham gia các khóa học kỹ năng giao tiếp.
+- Luyện tập qua các bài tập thực hành hàng ngày.`;
+
+export const test = `# Cần phát triển thêm kỹ năng phân tích và đánh giá thông tin\n\nKhông tìm thấy kết quả phù hợp. Hãy mô tả cụ thể hơn hoặc đổi chủ đề.`;
+
 export default function CoursePerformancePage() {
   const [activeTab, setActiveTab] = useState<string>("overall");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -252,77 +323,6 @@ export default function CoursePerformancePage() {
       ],
     },
   };
-
-  // Mock markdown content for improvement details
-  const mockImprovementContent = `## Tổng quan
-- Khóa học đã có 3 bài được chấm với **điểm do AI chấm** trung bình là 33.33. 
-- Mức hiệu chỉnh trung bình là 0.
-
-### Bảng tổng quan
-| Chỉ số | Giá trị |
-|---|---|
-| Số đánh giá | 3 |
-| Điểm AI trung bình | 33.33 |
-| Điểm thô trung bình | 33.33 |
-| Mức hiệu chỉnh trung bình | 0 |
-| Số bài theo scope | Lesson: 3 · Module: 0 |
-| Ghi chú | Điểm hiện tại là 'điểm do AI chấm'. Khống hiển thị điểm gốc. |
-
-### Nhận xét tổng quan
-- Kết quả học tập cho thấy điểm số thấp, cho thấy học viên cần cải thiện kỹ năng trong các bài học. Xu hướng điểm hiện tại cho thấy sự cần thiết phải củng cố kiến thức và kỹ năng.
-
-## Điểm mạnh nổi bật
-- Có kiến thức cơ bản về hình ảnh chuyên nghiệp.
-- Giảng viên chia sẻ kiến thức thực tế.
-- Hiểu rõ về khái niệm đánh giá đầu vào và ứng dụng trong thực tế.
-
-## Vấn đề & Khoảng trống kỹ năng
-- Cần cải thiện khả năng phân tích và đánh giá thông tin.
-- Cần tìm hiểu thêm về các phương pháp học nhanh và hiệu quả.
-- Cần củng cố kỹ năng giao tiếp và tạo niềm tin cho học viên.
-
-## Phân tầng chất lượng
-- Dựa trên các mẫu gần nhất, tỷ trọng ước lượng cho thấy không có học viên nào đạt mức xuất sắc, một số học viên có thể ở mức cần củng cố, trong khi đa số đang ở mức nguy cơ. Hạn chế dữ liệu từ số mẫu ít (3 mẫu) có thể ảnh hưởng đến độ chính xác của phân tích.
-
-## Ưu tiên hành động (1–2 tuần)
-- Ôn lại kiến thức về phân tích và đánh giá thông tin mỗi ngày 2–3 bài ngắn.
-- Luyện tập kỹ năng giao tiếp thông qua các buổi thảo luận nhóm.
-- Làm bài tập thực hành về tạo niềm tin cho học viên.
-- Viết nhật ký học tập để theo dõi tiến bộ cá nhân.
-
-## Nhóm rủi ro cao
-### 🔹 Lesson có điểm thấp
-| Lesson | Module liên quan | Điểm AI TB | Số bài | Đánh giá ngắn |
-|---|---|---|---|---|
-| Giữ hình ảnh chuyên nghiệp trước học viên | Củng cố hình ảnh chuyên nghiệp | 0 | 1 | Cần cải thiện kỹ năng và kiến thức. |
-| Tạo sự tin tưởng với học viên | Tạo sự tin tưởng ban đầu | 0 | 1 | Cần củng cố kỹ năng giao tiếp. |
-
-**Phân tích nhanh (Lesson)**
-- Có 2 lesson rủi ro với điểm trung bình từ 0 đến 0.
-- Chủ đề lặp lại đáng chú ý: Củng cố hình ảnh chuyên nghiệp: 1 lesson, Tạo sự tin tưởng ban đầu: 1 lesson.
-- Vấn đề phổ biến: Thiếu kỹ năng phân tích và đánh giá thông tin, kỹ năng giao tiếp yếu.
-- Gợi ý trọng tâm: Cần cải thiện kỹ năng giao tiếp và tạo niềm tin cho học viên.
-
-### 🔸 Module có điểm thấp
-- Không có module nào ở mức rủi ro.
-
-**Phân tích nhanh (Module)**
-- —
-
-## Nguyên nhân gốc
-- Thiếu nền tảng khái niệm trong các bài học.
-- Kỹ năng giao tiếp và tạo niềm tin cho học viên chưa được phát triển.
-- Thời gian luyện tập không đều và không đủ.
-
-## Xu hướng theo thời gian
-- — 
-
-## Gợi ý học tập nhanh
-- Tìm kiếm tài liệu học tập trực tuyến về phân tích và đánh giá thông tin.
-- Tham gia các khóa học kỹ năng giao tiếp.
-- Luyện tập qua các bài tập thực hành hàng ngày.`;
-
-  const test = `# Cần phát triển thêm kỹ năng phân tích và đánh giá thông tin\n\nKhông tìm thấy kết quả phù hợp. Hãy mô tả cụ thể hơn hoặc đổi chủ đề.`;
 
   // Helper function to get level label
   const getLevelLabel = (level: number) => {
@@ -444,7 +444,6 @@ export default function CoursePerformancePage() {
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Tiến độ hoàn thành
               </h3>
-             
             </div>
             <div className="text-3xl font-bold text-teal-600 dark:text-teal-400 mb-1">
               {data.progress.completedPercent.toFixed(1)}%
@@ -467,12 +466,10 @@ export default function CoursePerformancePage() {
               <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Thời gian học thực tế
               </h3>
-              
             </div>
             <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
               {data.progress.totalLearningTime}
             </div>
-          
           </div>
 
           {/* Average Score */}
@@ -522,7 +519,6 @@ export default function CoursePerformancePage() {
         {/* Performance Analysis */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-4">
-            
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Phân tích thành tích
             </h3>
@@ -557,7 +553,6 @@ export default function CoursePerformancePage() {
         {/* Learning Behavior */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-4">
-           
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Thói quen học tập
             </h3>
@@ -630,7 +625,6 @@ export default function CoursePerformancePage() {
         {/* AI Evaluation */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-4">
-            
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Đánh giá từ AI
             </h3>

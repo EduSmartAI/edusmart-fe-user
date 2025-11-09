@@ -518,6 +518,24 @@ export interface CreateLessonTranscriptResponse {
   response?: string | null;
 }
 
+export interface CreateMajorCommand {
+  createMajorDto?: CreateMajorDto;
+}
+
+export interface CreateMajorDto {
+  majorCode?: string | null;
+  majorName?: string | null;
+  description?: string | null;
+}
+
+export interface CreateMajorResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface CreateModuleDiscussionDto {
   title?: string | null;
   description?: string | null;
@@ -570,6 +588,23 @@ export interface CreateQuizSettingsDto {
   shuffleQuestions?: boolean;
   showResultsImmediately?: boolean;
   allowRetake?: boolean;
+}
+
+export interface CreateSubjectCommand {
+  createSubjectDto?: CreateSubjectDto;
+}
+
+export interface CreateSubjectDto {
+  subjectCode?: string | null;
+  subjectName?: string | null;
+}
+
+export interface CreateSubjectResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
 }
 
 export interface DeleteCourseResponse {
@@ -706,6 +741,14 @@ export interface GetDetailsProgressByCourseSlugForStudentResponse {
   lessonsCount?: number;
 }
 
+export interface GetInProgressCourseByStudentIdResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: InProgressCourseDto[] | null;
+}
+
 export interface GuestLessonDetailDto {
   /** @format uuid */
   lessonId?: string;
@@ -732,6 +775,18 @@ export interface GuestLessonDetailDtoModuleDetailDto {
   level?: number | null;
   objectives?: ModuleObjectiveDto[] | null;
   lessons?: GuestLessonDetailDto[] | null;
+}
+
+export interface InProgressCourseDto {
+  /** @format uuid */
+  courseId?: string;
+  title?: string | null;
+  shortDescription?: string | null;
+  courseImageUrl?: string | null;
+  /** @format double */
+  durationHours?: number | null;
+  /** @format date-time */
+  startedAt?: string;
 }
 
 export interface LectureLessonDetailDto {
@@ -1645,6 +1700,24 @@ export class Api<
       }),
 
     /**
+     * @description Retrieve a list of courses that are currently in progress for a specific student.
+     *
+     * @tags Courses
+     * @name V1CoursesGetInProgressCourseByStudentIdList
+     * @summary Get in-progress courses by student ID
+     * @request GET:/api/v1/Courses/GetInProgressCourseByStudentId
+     * @secure
+     */
+    v1CoursesGetInProgressCourseByStudentIdList: (params: RequestParams = {}) =>
+      this.request<GetInProgressCourseByStudentIdResponse, any>({
+        path: `/api/v1/Courses/GetInProgressCourseByStudentId`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * No description
      *
      * @tags Lesson
@@ -1795,6 +1868,52 @@ export class Api<
         path: `/api/StudentLessonProgress/${courseSlug}`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo mới chuyên ngành. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusCreateMajorProcessCreate
+     * @summary Tạo mới chuyên ngành
+     * @request POST:/api/Syllabus/CreateMajorProcess
+     * @secure
+     */
+    syllabusCreateMajorProcessCreate: (
+      data: CreateMajorCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateMajorResponse, any>({
+        path: `/api/Syllabus/CreateMajorProcess`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo mới môn học. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusCreateSubjectProcessCreate
+     * @summary Tạo mới môn học
+     * @request POST:/api/Syllabus/CreateSubjectProcess
+     * @secure
+     */
+    syllabusCreateSubjectProcessCreate: (
+      data: CreateSubjectCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateSubjectResponse, any>({
+        path: `/api/Syllabus/CreateSubjectProcess`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
