@@ -1,10 +1,44 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, Tabs, Tag, Collapse, Modal, Spin } from "antd";
+import {
+  Card,
+  Tabs,
+  Tag,
+  Collapse,
+  Modal,
+  Spin,
+  Progress,
+  Row,
+  Col,
+} from "antd";
 import { MarkdownView } from "EduSmart/components/MarkDown/MarkdownView";
 import type { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
+import type { OverviewCourseContract } from "EduSmart/api/api-student-service";
 import { fetchImprovementContentClient } from "EduSmart/hooks/api-client/courseApiClient";
+import {
+  FiBarChart2,
+  FiLayers,
+  FiPlay,
+  FiTrendingUp,
+  FiTarget,
+  FiCpu,
+  FiActivity,
+  FiCalendar,
+  FiClock,
+  FiEye,
+  FiRotateCcw,
+  FiPause,
+  FiSkipForward,
+  FiAward,
+  FiTrendingDown,
+  FiUser,
+  FiFileText,
+  FiArrowRight,
+  FiInfo,
+} from "react-icons/fi";
+import { GiProgression } from "react-icons/gi";
+import { TbBrandGoogleAnalytics } from "react-icons/tb";
 
 // Type definitions
 interface ImprovementResource {
@@ -141,6 +175,7 @@ interface CoursePerformanceClientProps {
   lessonsCount: number;
   modulePerformance?: any;
   lessonPerformance?: any;
+  overallPerformance?: OverviewCourseContract | null;
 }
 
 export default function CoursePerformanceClient({
@@ -149,6 +184,7 @@ export default function CoursePerformanceClient({
   lessonsCount,
   modulePerformance,
   lessonPerformance,
+  overallPerformance,
 }: CoursePerformanceClientProps) {
   const [activeTab, setActiveTab] = useState<string>("overall");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -160,8 +196,8 @@ export default function CoursePerformanceClient({
     Record<string, string>
   >({});
 
-  console.log("modulePerformance", modulePerformance);
-  console.log("lessonPerformance", lessonPerformance);
+  const test =
+    "## Tổng quan\n- Khóa học đã có 3 bài được chấm với **điểm do AI chấm** trung bình là 33.33. \n- Mức hiệu chỉnh trung bình là 0.\n\n### Bảng tổng quan\n| Chỉ số | Giá trị |\n|---|---|\n| Số đánh giá | 3 |\n| Điểm AI trung bình | 33.33 |\n| Điểm thô trung bình | 33.33 |\n| Mức hiệu chỉnh trung bình | 0 |\n| Số bài theo scope | Lesson: 3 · Module: 0 |\n| Ghi chú | Điểm hiện tại là 'điểm do AI chấm'. Khống hiển thị điểm gốc. |\n\n### Nhận xét tổng quan\n- Kết quả học tập cho thấy điểm số thấp, cho thấy học viên cần cải thiện kỹ năng trong các bài học. Xu hướng điểm hiện tại cho thấy sự cần thiết phải củng cố kiến thức và kỹ năng.\n\n## Điểm mạnh nổi bật\n- Có kiến thức cơ bản về hình ảnh chuyên nghiệp.\n- Giảng viên chia sẻ kiến thức thực tế.\n- Hiểu rõ về khái niệm đánh giá đầu vào và ứng dụng trong thực tế.\n\n## Vấn đề & Khoảng trống kỹ năng\n- Cần cải thiện khả năng phân tích và đánh giá thông tin.\n- Cần tìm hiểu thêm về các phương pháp học nhanh và hiệu quả.\n- Cần củng cố kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n## Phân tầng chất lượng\n- Dựa trên các mẫu gần nhất, tỷ trọng ước lượng cho thấy không có học viên nào đạt mức xuất sắc, một số học viên có thể ở mức cần củng cố, trong khi đa số đang ở mức nguy cơ. Hạn chế dữ liệu từ số mẫu ít (3 mẫu) có thể ảnh hưởng đến độ chính xác của phân tích.\n\n## Ưu tiên hành động (1–2 tuần)\n- Ôn lại kiến thức về phân tích và đánh giá thông tin mỗi ngày 2–3 bài ngắn.\n- Luyện tập kỹ năng giao tiếp thông qua các buổi thảo luận nhóm.\n- Làm bài tập thực hành về tạo niềm tin cho học viên.\n- Viết nhật ký học tập để theo dõi tiến bộ cá nhân.\n\n## Nhóm rủi ro cao\n### 🔹 Lesson có điểm thấp\n| Lesson | Module liên quan | Điểm AI TB | Số bài | Đánh giá ngắn |\n|---|---|---|---|---|\n| Giữ hình ảnh chuyên nghiệp trước học viên | Củng cố hình ảnh chuyên nghiệp | 0 | 1 | Cần cải thiện kỹ năng và kiến thức. |\n| Tạo sự tin tưởng với học viên | Tạo sự tin tưởng ban đầu | 0 | 1 | Cần củng cố kỹ năng giao tiếp. |\n\n**Phân tích nhanh (Lesson)**\n- Có 2 lesson rủi ro với điểm trung bình từ 0 đến 0.\n- Chủ đề lặp lại đáng chú ý: Củng cố hình ảnh chuyên nghiệp: 1 lesson, Tạo sự tin tưởng ban đầu: 1 lesson.\n- Vấn đề phổ biến: Thiếu kỹ năng phân tích và đánh giá thông tin, kỹ năng giao tiếp yếu.\n- Gợi ý trọng tâm: Cần cải thiện kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n### 🔸 Module có điểm thấp\n- Không có module nào ở mức rủi ro.\n\n**Phân tích nhanh (Module)**\n- —\n\n## Nguyên nhân gốc\n- Thiếu nền tảng khái niệm trong các bài học.\n- Kỹ năng giao tiếp và tạo niềm tin cho học viên chưa được phát triển.\n- Thời gian luyện tập không đều và không đủ.\n\n## Xu hướng theo thời gian\n- — \n\n## Gợi ý học tập nhanh\n- Tìm kiếm tài liệu học tập trực tuyến về phân tích và đánh giá thông tin.\n- Tham gia các khóa học kỹ năng giao tiếp.\n- Luyện tập qua các bài tập thực hành hàng ngày.";
 
   /**
    * Handle viewing improvement details
@@ -224,7 +260,7 @@ export default function CoursePerformanceClient({
 
   // Course Information Component
   const CourseInformation = () => (
-    <div className="bg-[#49BBBD] rounded-lg p-6 shadow-lg">
+    <div className="bg-[#49BBBD]/90 rounded-lg p-6 shadow-lg">
       <div className="space-y-5">
         {/* Course Header */}
         <div className="space-y-3">
@@ -371,7 +407,7 @@ export default function CoursePerformanceClient({
             // Has Data State
             <>
               {/* Description */}
-              <div className="mb-4">
+              <div className="mb-6 mt-2">
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   {module.description}
                 </p>
@@ -439,7 +475,7 @@ export default function CoursePerformanceClient({
               {module.aiFeedbackSummary && (
                 <div className="mt-4 p-5 bg-gray-50/60 dark:bg-gray-800/50  from-cyan-100/50 to-teal-100/50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-lg border border-gray-200/80 dark:border-gray-900">
                   {/* Header with AI Score */}
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-300/50 dark:border-gray-800">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200/80 dark:border-gray-800">
                     <h4 className="text-base font-semibold! text-gray-900 dark:text-white flex items-center gap-2">
                       Phân tích từ AI
                     </h4>
@@ -679,7 +715,7 @@ export default function CoursePerformanceClient({
 
                             <div className="bg-gray-50 dark:bg-gray-800/30 rounded-lg p-3">
                               <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                Thời gian học thực tế
+                                Thời gian học
                               </div>
                               <div className="text-lg font-bold text-gray-900 dark:text-white">
                                 {lesson.actualStudyMinutes}
@@ -719,12 +755,12 @@ export default function CoursePerformanceClient({
                           {/* AI Feedback Section */}
                           {lesson.aiFeedbackSummary && (
                             <div
-                              className="p-4 bg-gray-50/60 dark:bg-gray-800/50 rounded-lg border border-gray-200/80 dark:border-gray-900"
+                              className="p-5 bg-gray-50/60 dark:bg-gray-800/50 rounded-lg border border-gray-200/80 dark:border-gray-900"
                               onClick={(e) => e.stopPropagation()}
                             >
                               {/* Header */}
                               <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-300/50 dark:border-gray-800">
-                                <h5 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                <h5 className="text-sm font-semibold! text-gray-900 dark:text-white">
                                   Phân tích từ AI
                                 </h5>
                                 {lesson.aiScore !== null && (
@@ -857,35 +893,374 @@ export default function CoursePerformanceClient({
     );
   };
 
-  // Overall Performance Component (placeholder)
+  // Helper function to get time slot label
+  const getTimeSlotLabel = (slot: string | undefined) => {
+    const slotMap: Record<string, string> = {
+      morning: "Buổi sáng",
+      afternoon: "Buổi chiều",
+      evening: "Buổi tối",
+      night: "Buổi đêm",
+    };
+    return slotMap[slot || ""] || "Chưa xác định";
+  };
+
+  // Overall Performance Component
   const OverallPerformance = () => {
-    return (
-      <div className="text-center py-12 px-4">
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Dữ liệu hiệu suất tổng quan đang được cập nhật
-        </p>
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#49BBBD]/10 text-[#49BBBD] rounded-lg text-sm font-medium">
-          <svg
-            className="w-5 h-5 animate-spin"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          Đang tải...
+    if (!overallPerformance) {
+      return (
+        <div className="text-center py-12 px-4">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Dữ liệu hiệu suất tổng quan đang được cập nhật
+          </p>
+          <Spin size="large" />
         </div>
+      );
+    }
+
+    const {
+      progress,
+      performance,
+      learningBehavior,
+      aiEvaluationMarkdown,
+      startDate,
+    } = overallPerformance;
+
+    return (
+      <div className="flex flex-col gap-10 my-3">
+        {/* ===== SECTION 1: TIẾN ĐỘ & TỐC ĐỘ HỌC TẬP ===== */}
+        <Card
+          title={
+            <div className="flex items-center space-x-2">
+              <GiProgression className="w-5 h-5 text-[#49BBBD]" />
+              <span className="text-[#49BBBD] dark:text-cyan-400 font-semibold">
+                Tiến độ học tập
+              </span>
+            </div>
+          }
+          className="border-0 shadow-md"
+          style={{ borderRadius: "8px" }}
+        >
+          {/* Progress Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {/* Progress Card */}
+            <div className="bg-gradient-to-br from-[#49BBBD]/10 to-cyan-50 dark:from-[#49BBBD]/20 dark:to-cyan-900/20 border border-[#49BBBD]/10 dark:border-[#49BBBD]/40 p-4 rounded-lg">
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                Tỷ lệ hoàn thành
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400">
+                  {progress?.completedPercent?.toFixed(1) || 0}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  %
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {progress?.lessonsCompleted || 0}/{progress?.lessonsTotal || 0}{" "}
+                bài học
+              </div>
+            </div>
+
+            {/* Learning Time Card */}
+            <div className="bg-gradient-to-br from-[#49BBBD]/10 to-cyan-50 dark:from-[#49BBBD]/20 dark:to-cyan-900/20 border border-[#49BBBD]/10 dark:border-[#49BBBD]/40 p-4 rounded-lg">
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                Tổng thời gian học
+              </div>
+              <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
+                {progress?.totalLearningTime || "0h"}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Bắt đầu:{" "}
+                {startDate
+                  ? new Date(startDate).toLocaleDateString("vi-VN")
+                  : "N/A"}
+              </div>
+            </div>
+
+            {/* Quiz Card */}
+            <div className="bg-gradient-to-br from-[#49BBBD]/10 to-cyan-50 dark:from-[#49BBBD]/20 dark:to-cyan-900/20 border border-[#49BBBD]/10 dark:border-[#49BBBD]/40 p-4 rounded-lg">
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                Bài kiểm tra
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
+                  {progress?.lessonsCompleted || 0}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  /{progress?.quizTotal || 0}
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Số bài đã làm
+              </div>
+            </div>
+
+            {/* Average Score Card */}
+            <div className="bg-gradient-to-br from-[#49BBBD]/10 to-cyan-50 dark:from-[#49BBBD]/20 dark:to-cyan-900/20 border border-[#49BBBD]/10 dark:border-[#49BBBD]/40 p-4 rounded-lg">
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+                Điểm trung bình
+              </div>
+              <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
+                {progress?.averageScore?.toFixed(1) || 0}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Điểm AI: {progress?.averageAiScore?.toFixed(1) || 0}
+              </div>
+            </div>
+          </div>
+
+          {/* Speed & Rank Section - Connected Layout */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-800/30 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-2 mb-4">
+              <FiTrendingUp className="w-4 h-4 text-[#49BBBD]" />
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                Phân tích tốc độ học tập
+              </h3>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Speed Metric */}
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <FiClock className="w-4 h-4 text-gray-600" />
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    Tốc độ học TB
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  {performance?.avgMinutesPerLesson?.toFixed(1) || 0}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  phút/bài học
+                </div>
+              </div>
+
+              {/* Arrow Connector */}
+              <div className="hidden md:flex items-center justify-center">
+                <div className="text-center">
+                  <FiArrowRight className="w-6 h-6 text-[#49BBBD] mx-auto mb-2" />
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    dẫn đến
+                  </div>
+                </div>
+              </div>
+
+              {/* Rank Metric */}
+              <div className="bg-gradient-to-br from-[#49BBBD]/10 to-cyan-50 dark:from-[#49BBBD]/20 dark:to-cyan-900/20 p-4 rounded-lg border border-[#49BBBD]/30 dark:border-[#49BBBD]/40 text-center">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <FiAward className="w-4 h-4 text-[#49BBBD]" />
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    Xếp hạng của bạn
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
+                  #{performance?.rank || "N/A"}
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  trong khóa học
+                </div>
+              </div>
+            </div>
+
+            {/* Analysis */}
+            {performance?.analysis && (
+              <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div className="flex items-start space-x-2">
+                  <FiInfo className="w-4 h-4 text-[#49BBBD] mt-0.5 flex-shrink-0" />
+                  <div>
+                    <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      Giải thích:
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                      {performance.analysis}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* ===== SECTION 2: THÓI QUEN & HÀNH VI HỌC TẬP ===== */}
+        <Card
+          title={
+            <div className="flex items-center space-x-2">
+              <FiActivity className="w-5 h-5 text-[#49BBBD]" />
+              <span className="text-[#49BBBD] dark:text-cyan-400 font-semibold">
+                {/* Thói quen & Hành vi học tập */}
+                Hoạt động học tập
+              </span>
+            </div>
+          }
+          className="border-0 shadow-md"
+          style={{ borderRadius: "8px" }}
+        >
+          {/* Behavior Metrics - Row/Col Layout like Demo */}
+          <Row gutter={[24, 24]}>
+            <Col xs={24} lg={12}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <FiCalendar className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      Lần truy cập gần nhất
+                    </span>
+                  </div>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {learningBehavior?.lastAccessed
+                      ? new Date(
+                          learningBehavior.lastAccessed,
+                        ).toLocaleDateString("vi-VN")
+                      : "Chưa có dữ liệu"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <FiClock className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      Thời gian học hiệu quả
+                    </span>
+                  </div>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {getTimeSlotLabel(learningBehavior?.mostActiveSlot)}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <FiEye className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      Tần suất xem lại
+                    </span>
+                  </div>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {learningBehavior?.rewindTimes || 0} lần
+                  </span>
+                </div>
+              </div>
+            </Col>
+
+            <Col xs={24} lg={12}>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <FiPause className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      Tần suất dừng
+                    </span>
+                  </div>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {learningBehavior?.totalPauseCount || 0} lần
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <FiSkipForward className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      Tần suất tua video
+                    </span>
+                  </div>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {learningBehavior?.scrollVideoCount || 0} lần
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <FiRotateCcw className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      TB xem lại/bài
+                    </span>
+                  </div>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {learningBehavior?.averageRewatchPerLesson?.toFixed(1) || 0}
+                    x
+                  </span>
+                </div>
+              </div>
+            </Col>
+          </Row>
+
+          {/* Charts Placeholder */}
+          <div className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/30 dark:to-gray-800/50 rounded-lg p-6 border border-dashed border-gray-300 dark:border-gray-700">
+            <div className="text-center text-gray-500 dark:text-gray-400">
+              <div className="text-sm font-medium mb-2">
+                Biểu đồ thời gian học tập
+              </div>
+              <div className="text-xs">
+                Gauge Chart • Horizontal Bar Chart • Calendar Heatmap
+              </div>
+              <div className="text-xs mt-1 text-gray-400 dark:text-gray-500">
+                (Sẽ được triển khai sau)
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Behavior Metrics - Compact Grid */}
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                {learningBehavior?.averagePausePerLesson?.toFixed(1) || 0}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                TB dừng/bài
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                {learningBehavior?.averageRewatchPerLesson?.toFixed(1) || 0}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                TB xem lại/bài
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center">
+              <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                {(
+                  (learningBehavior?.totalPauseCount || 0) /
+                  (progress?.lessonsCompleted || 1)
+                ).toFixed(1)}
+              </div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">
+                Tỷ lệ tương tác
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* ===== SECTION 3: ĐÁNH GIÁ TỪ AI ===== */}
+        {aiEvaluationMarkdown && (
+          <Card
+            title={
+              <div className="flex items-center space-x-2">
+                <TbBrandGoogleAnalytics className="w-5 h-5 text-[#49BBBD]" />
+                <span className="text-[#49BBBD] dark:text-cyan-400 font-semibold">
+                  Hệ thống đánh giá
+                </span>
+              </div>
+            }
+            className="border-0 shadow-md"
+            style={{ borderRadius: "8px" }}
+          >
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <MarkdownView
+                content={aiEvaluationMarkdown}
+                collapsible
+                collapsedHeight={400}
+              />
+            </div>
+          </Card>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen dark:bg-gray-900 p-4 md:p-6">
+    <div className="min-h-screen dark:bg-gray-900 p-4">
       <div className="max-w-7xl mx-auto">
         {/* Course Information */}
         <div className="mb-6">
@@ -896,20 +1271,37 @@ export default function CoursePerformanceClient({
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
+          size="middle"
+          className=""
           items={[
             {
               key: "overall",
-              label: "Hiệu suất Tổng Quan",
+              label: (
+                <span className="flex items-center space-x-2">
+                  {/* <FiTrendingUp className="w-4 h-4" /> */}
+                  <span>Hiệu suất Tổng Quan</span>
+                </span>
+              ),
               children: <OverallPerformance />,
             },
             {
               key: "modules",
-              label: "Hiệu suất theo Chương",
+              label: (
+                <span className="flex items-center space-x-2">
+                  {/* <FiLayers className="w-4 h-4" /> */}
+                  <span>Hiệu suất theo Chương</span>
+                </span>
+              ),
               children: <ModulePerformance />,
             },
             {
               key: "lessons",
-              label: "Hiệu suất theo Bài học",
+              label: (
+                <span className="flex items-center space-x-2">
+                  {/* <FiPlay className="w-4 h-4" /> */}
+                  <span>Hiệu suất theo Bài Học</span>
+                </span>
+              ),
               children: <LessonPerformance />,
             },
           ]}

@@ -163,32 +163,38 @@ export async function fetchCourseById(
 
 
 export async function fetchCourseBySlug(
-  id: string,
+  slug: string,
 ): Promise<{
   data: GetCourseBySlugForGuestResponse;
   modulesCount: number;
   lessonsCount: number;
 }> {
   try {
-    console.log("fetchCourseById - id:", id);
-    const res = await apiServer.course.api.v1CoursesSlugDetail(id);
-    console.log("fetchCourseById - res:", res);
-    if (res.data?.success && res.data.response) {
+    console.log("fetchCourseBySlug - slug:", slug);
+    const res = await apiServer.course.api.v1CoursesSlugDetail(slug);
+    console.log("fetchCourseBySlug - res:", res);
+    if (res.data) {
       return {
-        data: res.data ?? {},
+        data: res.data,
         lessonsCount: res.data.lessonsCount ?? 0,
         modulesCount: res.data.modulesCount ?? 0,
       };
     }
     return {
-      data: {},
+      data: {
+        success: false,
+        response: {} as CourseDetailForGuestDto,
+      } as GetCourseBySlugForGuestResponse,
       lessonsCount: 0,
       modulesCount: 0,
     };
   } catch (error) {
-    console.error("Error fetching courses:", error);
+    console.error("Error fetching course by slug:", error);
     return {
-      data: {},
+      data: {
+        success: false,
+        response: {} as CourseDetailForGuestDto,
+      } as GetCourseBySlugForGuestResponse,
       lessonsCount: 0,
       modulesCount: 0,
     };
@@ -367,6 +373,39 @@ export async function fetchAllCoursePerformance(courseId: string) {
       success: false,
       modulePerformance: null,
       lessonPerformance: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Fetch overall performance data for a course
+ * @param courseId - Course ID
+ * @returns Overall performance data with progress, AI evaluation, performance metrics, and learning behavior
+ */
+export async function fetchOverallPerformance(courseId: string) {
+  try {
+    console.log("fetchOverallPerformance - courseId:", courseId);
+    const res = await apiServer.student.api.studentDashboardsGetOverviewCourseDashboardProcessList({ CourseId: courseId });
+    console.log("fetchOverallPerformance - res:", res);
+    
+    if (res.data?.success && res.data.response) {
+      return {
+        success: true,
+        data: res.data.response,
+      };
+    }
+    
+    return {
+      success: false,
+      data: null,
+      error: "Failed to fetch overall performance",
+    };
+  } catch (error) {
+    console.error("Error fetching overall performance:", error);
+    return {
+      success: false,
+      data: null,
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }

@@ -1204,7 +1204,7 @@ export default function CoursePerformancePage() {
           <CourseInformation />
         </div>
 
-        <Card>
+        
           <Tabs
             activeKey={activeTab}
             onChange={setActiveTab}
@@ -1226,7 +1226,7 @@ export default function CoursePerformancePage() {
               },
             ]}
           />
-        </Card>
+        
       </div>
 
       {/* Modal for Improvement Details */}
