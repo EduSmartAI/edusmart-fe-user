@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
 import {
   Tabs,
-  Statistic,
   Progress,
   Card,
   Collapse,
@@ -14,10 +14,6 @@ import {
   Typography,
   Divider,
 } from "antd";
-import {
-  ClockCircleOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -32,7 +28,6 @@ interface CoursePerformanceDashboardV2Props {
   courseId: string;
   courseInfo?: CourseInfo;
 }
-
 
 const CoursePerformanceDashboardV2: React.FC<
   CoursePerformanceDashboardV2Props

@@ -1,28 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
-import {
-  Card,
-  Tabs,
-  Tag,
-  Collapse,
-  Modal,
-  Spin,
-  Progress,
-  Row,
-  Col,
-} from "antd";
+import { Card, Tabs, Tag, Collapse, Modal, Spin, Row, Col } from "antd";
 import { MarkdownView } from "EduSmart/components/MarkDown/MarkdownView";
 import type { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 import type { OverviewCourseContract } from "EduSmart/api/api-student-service";
 import { fetchImprovementContentClient } from "EduSmart/hooks/api-client/courseApiClient";
 import {
-  FiBarChart2,
-  FiLayers,
-  FiPlay,
   FiTrendingUp,
-  FiTarget,
-  FiCpu,
   FiActivity,
   FiCalendar,
   FiClock,
@@ -31,9 +17,6 @@ import {
   FiPause,
   FiSkipForward,
   FiAward,
-  FiTrendingDown,
-  FiUser,
-  FiFileText,
   FiArrowRight,
   FiInfo,
 } from "react-icons/fi";
@@ -108,7 +91,7 @@ interface ModuleWithLessons {
   positionIndex: number;
   lessons: Lesson[];
 }
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface OverallPerformance {
   courseName: string;
   instructorName: string;
@@ -196,8 +179,8 @@ export default function CoursePerformanceClient({
     Record<string, string>
   >({});
 
-  const test =
-    "## Tổng quan\n- Khóa học đã có 3 bài được chấm với **điểm do AI chấm** trung bình là 33.33. \n- Mức hiệu chỉnh trung bình là 0.\n\n### Bảng tổng quan\n| Chỉ số | Giá trị |\n|---|---|\n| Số đánh giá | 3 |\n| Điểm AI trung bình | 33.33 |\n| Điểm thô trung bình | 33.33 |\n| Mức hiệu chỉnh trung bình | 0 |\n| Số bài theo scope | Lesson: 3 · Module: 0 |\n| Ghi chú | Điểm hiện tại là 'điểm do AI chấm'. Khống hiển thị điểm gốc. |\n\n### Nhận xét tổng quan\n- Kết quả học tập cho thấy điểm số thấp, cho thấy học viên cần cải thiện kỹ năng trong các bài học. Xu hướng điểm hiện tại cho thấy sự cần thiết phải củng cố kiến thức và kỹ năng.\n\n## Điểm mạnh nổi bật\n- Có kiến thức cơ bản về hình ảnh chuyên nghiệp.\n- Giảng viên chia sẻ kiến thức thực tế.\n- Hiểu rõ về khái niệm đánh giá đầu vào và ứng dụng trong thực tế.\n\n## Vấn đề & Khoảng trống kỹ năng\n- Cần cải thiện khả năng phân tích và đánh giá thông tin.\n- Cần tìm hiểu thêm về các phương pháp học nhanh và hiệu quả.\n- Cần củng cố kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n## Phân tầng chất lượng\n- Dựa trên các mẫu gần nhất, tỷ trọng ước lượng cho thấy không có học viên nào đạt mức xuất sắc, một số học viên có thể ở mức cần củng cố, trong khi đa số đang ở mức nguy cơ. Hạn chế dữ liệu từ số mẫu ít (3 mẫu) có thể ảnh hưởng đến độ chính xác của phân tích.\n\n## Ưu tiên hành động (1–2 tuần)\n- Ôn lại kiến thức về phân tích và đánh giá thông tin mỗi ngày 2–3 bài ngắn.\n- Luyện tập kỹ năng giao tiếp thông qua các buổi thảo luận nhóm.\n- Làm bài tập thực hành về tạo niềm tin cho học viên.\n- Viết nhật ký học tập để theo dõi tiến bộ cá nhân.\n\n## Nhóm rủi ro cao\n### 🔹 Lesson có điểm thấp\n| Lesson | Module liên quan | Điểm AI TB | Số bài | Đánh giá ngắn |\n|---|---|---|---|---|\n| Giữ hình ảnh chuyên nghiệp trước học viên | Củng cố hình ảnh chuyên nghiệp | 0 | 1 | Cần cải thiện kỹ năng và kiến thức. |\n| Tạo sự tin tưởng với học viên | Tạo sự tin tưởng ban đầu | 0 | 1 | Cần củng cố kỹ năng giao tiếp. |\n\n**Phân tích nhanh (Lesson)**\n- Có 2 lesson rủi ro với điểm trung bình từ 0 đến 0.\n- Chủ đề lặp lại đáng chú ý: Củng cố hình ảnh chuyên nghiệp: 1 lesson, Tạo sự tin tưởng ban đầu: 1 lesson.\n- Vấn đề phổ biến: Thiếu kỹ năng phân tích và đánh giá thông tin, kỹ năng giao tiếp yếu.\n- Gợi ý trọng tâm: Cần cải thiện kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n### 🔸 Module có điểm thấp\n- Không có module nào ở mức rủi ro.\n\n**Phân tích nhanh (Module)**\n- —\n\n## Nguyên nhân gốc\n- Thiếu nền tảng khái niệm trong các bài học.\n- Kỹ năng giao tiếp và tạo niềm tin cho học viên chưa được phát triển.\n- Thời gian luyện tập không đều và không đủ.\n\n## Xu hướng theo thời gian\n- — \n\n## Gợi ý học tập nhanh\n- Tìm kiếm tài liệu học tập trực tuyến về phân tích và đánh giá thông tin.\n- Tham gia các khóa học kỹ năng giao tiếp.\n- Luyện tập qua các bài tập thực hành hàng ngày.";
+  // const test =
+  //   "## Tổng quan\n- Khóa học đã có 3 bài được chấm với **điểm do AI chấm** trung bình là 33.33. \n- Mức hiệu chỉnh trung bình là 0.\n\n### Bảng tổng quan\n| Chỉ số | Giá trị |\n|---|---|\n| Số đánh giá | 3 |\n| Điểm AI trung bình | 33.33 |\n| Điểm thô trung bình | 33.33 |\n| Mức hiệu chỉnh trung bình | 0 |\n| Số bài theo scope | Lesson: 3 · Module: 0 |\n| Ghi chú | Điểm hiện tại là 'điểm do AI chấm'. Khống hiển thị điểm gốc. |\n\n### Nhận xét tổng quan\n- Kết quả học tập cho thấy điểm số thấp, cho thấy học viên cần cải thiện kỹ năng trong các bài học. Xu hướng điểm hiện tại cho thấy sự cần thiết phải củng cố kiến thức và kỹ năng.\n\n## Điểm mạnh nổi bật\n- Có kiến thức cơ bản về hình ảnh chuyên nghiệp.\n- Giảng viên chia sẻ kiến thức thực tế.\n- Hiểu rõ về khái niệm đánh giá đầu vào và ứng dụng trong thực tế.\n\n## Vấn đề & Khoảng trống kỹ năng\n- Cần cải thiện khả năng phân tích và đánh giá thông tin.\n- Cần tìm hiểu thêm về các phương pháp học nhanh và hiệu quả.\n- Cần củng cố kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n## Phân tầng chất lượng\n- Dựa trên các mẫu gần nhất, tỷ trọng ước lượng cho thấy không có học viên nào đạt mức xuất sắc, một số học viên có thể ở mức cần củng cố, trong khi đa số đang ở mức nguy cơ. Hạn chế dữ liệu từ số mẫu ít (3 mẫu) có thể ảnh hưởng đến độ chính xác của phân tích.\n\n## Ưu tiên hành động (1–2 tuần)\n- Ôn lại kiến thức về phân tích và đánh giá thông tin mỗi ngày 2–3 bài ngắn.\n- Luyện tập kỹ năng giao tiếp thông qua các buổi thảo luận nhóm.\n- Làm bài tập thực hành về tạo niềm tin cho học viên.\n- Viết nhật ký học tập để theo dõi tiến bộ cá nhân.\n\n## Nhóm rủi ro cao\n### 🔹 Lesson có điểm thấp\n| Lesson | Module liên quan | Điểm AI TB | Số bài | Đánh giá ngắn |\n|---|---|---|---|---|\n| Giữ hình ảnh chuyên nghiệp trước học viên | Củng cố hình ảnh chuyên nghiệp | 0 | 1 | Cần cải thiện kỹ năng và kiến thức. |\n| Tạo sự tin tưởng với học viên | Tạo sự tin tưởng ban đầu | 0 | 1 | Cần củng cố kỹ năng giao tiếp. |\n\n**Phân tích nhanh (Lesson)**\n- Có 2 lesson rủi ro với điểm trung bình từ 0 đến 0.\n- Chủ đề lặp lại đáng chú ý: Củng cố hình ảnh chuyên nghiệp: 1 lesson, Tạo sự tin tưởng ban đầu: 1 lesson.\n- Vấn đề phổ biến: Thiếu kỹ năng phân tích và đánh giá thông tin, kỹ năng giao tiếp yếu.\n- Gợi ý trọng tâm: Cần cải thiện kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n### 🔸 Module có điểm thấp\n- Không có module nào ở mức rủi ro.\n\n**Phân tích nhanh (Module)**\n- —\n\n## Nguyên nhân gốc\n- Thiếu nền tảng khái niệm trong các bài học.\n- Kỹ năng giao tiếp và tạo niềm tin cho học viên chưa được phát triển.\n- Thời gian luyện tập không đều và không đủ.\n\n## Xu hướng theo thời gian\n- — \n\n## Gợi ý học tập nhanh\n- Tìm kiếm tài liệu học tập trực tuyến về phân tích và đánh giá thông tin.\n- Tham gia các khóa học kỹ năng giao tiếp.\n- Luyện tập qua các bài tập thực hành hàng ngày.";
 
   /**
    * Handle viewing improvement details

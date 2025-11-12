@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Layout, Tabs, Card } from "antd";
-import { FiBarChart2, FiLayers, FiPlay, FiTrendingUp } from "react-icons/fi";
+import { FiLayers, FiPlay, FiTrendingUp } from "react-icons/fi";
 import CourseOverview from "./CourseOverview";
 import ModulePerformance from "./ModulePerformance";
 import VideoPerformance from "./VideoPerformance";

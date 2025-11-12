@@ -3,7 +3,6 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import type { Metadata } from "next";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { Button, Spin, message } from "antd";
 import {
@@ -259,7 +258,7 @@ export default function LearningPathRecommendation() {
     const cleanupTimer = setTimeout(cleanupAssessmentData, 1000);
 
     return () => clearTimeout(cleanupTimer);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch learning path data on mount
   useEffect(() => {

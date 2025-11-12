@@ -72,7 +72,7 @@ export default function DashboardLayout({
       }, 500);
       return;
     }
-  }, [isChecking, session, router]);
+  }, [isChecking, session, router, pathname]);
 
   // Show loading while checking auth
   if (isChecking || isLoading) {

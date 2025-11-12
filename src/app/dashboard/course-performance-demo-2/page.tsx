@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, Tabs, Progress, Tag, Collapse, Modal } from "antd";
+import { Tabs, Progress, Tag, Collapse, Modal } from "antd";
 import { mockCourseData, mockModuleData, mockLessonData } from "./mockData";
 import { MarkdownView } from "EduSmart/components/MarkDown/MarkdownView";
 
@@ -135,7 +135,7 @@ const getStatusTag = (status: string | number) => {
 };
 
 // Mock markdown content for improvement details
-export const mockImprovementContent = `## Tổng quan
+const mockImprovementContent = `## Tổng quan
 - Khóa học đã có 3 bài được chấm với **điểm do AI chấm** trung bình là 33.33. 
 - Mức hiệu chỉnh trung bình là 0.
 
@@ -203,7 +203,7 @@ export const mockImprovementContent = `## Tổng quan
 - Tham gia các khóa học kỹ năng giao tiếp.
 - Luyện tập qua các bài tập thực hành hàng ngày.`;
 
-export const test = `# Cần phát triển thêm kỹ năng phân tích và đánh giá thông tin\n\nKhông tìm thấy kết quả phù hợp. Hãy mô tả cụ thể hơn hoặc đổi chủ đề.`;
+// const test = `# Cần phát triển thêm kỹ năng phân tích và đánh giá thông tin\n\nKhông tìm thấy kết quả phù hợp. Hãy mô tả cụ thể hơn hoặc đổi chủ đề.`;
 
 export default function CoursePerformancePage() {
   const [activeTab, setActiveTab] = useState<string>("overall");
