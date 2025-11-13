@@ -2,12 +2,7 @@
 
 import React, { useState } from "react";
 import { Layout, Tabs, Card } from "antd";
-import { 
-  FiBarChart2, 
-  FiLayers, 
-  FiPlay,
-  FiTrendingUp
-} from "react-icons/fi";
+import { FiLayers, FiPlay, FiTrendingUp } from "react-icons/fi";
 import CourseOverview from "./CourseOverview";
 import ModulePerformance from "./ModulePerformance";
 import VideoPerformance from "./VideoPerformance";
@@ -63,12 +58,9 @@ const CoursePerformanceDashboard: React.FC<CoursePerformanceDashboardProps> = ({
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-2">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <FiBarChart2 className="w-5 h-5 text-white" />
-              </div>
               <div>
                 <h1 className="text-3xl font-black text-gray-900 dark:text-white">
-                  Dashboard Hiệu suất học tập
+                  Hiệu suất học tập
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
                   Phân tích chi tiết hiệu suất học tập được hỗ trợ bởi AI

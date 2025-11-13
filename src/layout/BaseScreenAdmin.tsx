@@ -15,7 +15,9 @@ const { Header, Content, Footer } = Layout;
 interface BaseScreenAdminProps {
   children: ReactNode;
   menuItems?: React.ComponentProps<typeof AdminSidebar>["menuItems"];
-  defaultSelectedKeys?: React.ComponentProps<typeof AdminSidebar>["defaultSelectedKeys"];
+  defaultSelectedKeys?: React.ComponentProps<
+    typeof AdminSidebar
+  >["defaultSelectedKeys"];
   breadcrumbItems?: { title: string }[];
 }
 
@@ -118,7 +120,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
           style={{
             flex: "1 1 0%",
             minHeight: 0,
-            overflow: "auto",                // <— đổi từ hidden -> auto
+            overflow: "auto", // <— đổi từ hidden -> auto
             padding: "16px 24px",
             scrollbarGutter: "stable both-edges",
           }}

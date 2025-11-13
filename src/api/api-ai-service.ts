@@ -107,6 +107,23 @@ export interface AiSearchResponse {
   response?: string;
 }
 
+export interface AiSummaryFeedbackModuleRequest {
+  /** @format uuid */
+  studentId?: string;
+  /** @format uuid */
+  courseId?: string;
+  /** @format uuid */
+  moduleId?: string;
+}
+
+export interface AiSummaryFeedbackModuleResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
 export interface AiSummaryRequest {
   /** @format uuid */
   studentId?: string;
@@ -723,6 +740,29 @@ export class Api<
     ) =>
       this.request<AiSummaryResponse, any>({
         path: `/api/AiSummarys/feedback-course`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Generates an AI-powered summary feedback module based on the provided request data. Requires authentication.
+     *
+     * @tags AiSummarys
+     * @name AiSummarysFeedbackModuleCreate
+     * @summary Generate AI summary feedback module
+     * @request POST:/api/AiSummarys/feedback-module
+     * @secure
+     */
+    aiSummarysFeedbackModuleCreate: (
+      body: AiSummaryFeedbackModuleRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<AiSummaryFeedbackModuleResponse, any>({
+        path: `/api/AiSummarys/feedback-module`,
         method: "POST",
         body: body,
         secure: true,

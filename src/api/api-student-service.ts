@@ -34,10 +34,12 @@ export enum UserBehaviourActionType {
   Value13 = 13,
   Value14 = 14,
   Value15 = 15,
+  Value16 = 16,
   Value20 = 20,
   Value21 = 21,
   Value22 = 22,
   Value23 = 23,
+  Value24 = 24,
   Value30 = 30,
   Value31 = 31,
   Value32 = 32,
@@ -328,6 +330,14 @@ export interface GetModuleDashboardEventResponse {
   response?: ModuleDashboardContract;
 }
 
+export interface GetOverviewCourseDashboardResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: OverviewCourseContract;
+}
+
 export interface InternalLearningPathDto {
   majorId?: string;
   majorCode?: string;
@@ -335,6 +345,23 @@ export interface InternalLearningPathDto {
   /** @format int32 */
   positionIndex?: number;
   majorCourseGroups?: CourseGroupDto[];
+}
+
+export interface LearningBehaviorSection {
+  /** @format date-time */
+  lastAccessed?: string;
+  mostActiveSlot?: string;
+  /** @format int64 */
+  totalPauseCount?: number;
+  /** @format int64 */
+  scrollVideoCount?: number;
+  /** @format int32 */
+  rewindTimes?: number;
+  /** @format double */
+  averageRewatchPerLesson?: number;
+  /** @format double */
+  averagePausePerLesson?: number;
+  streaks?: LearningStreakItem[];
 }
 
 export interface LearningGoalDeleteResponse {
@@ -432,6 +459,15 @@ export interface LearningPathSelectResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: LearningPathSelectDto;
+}
+
+export interface LearningStreakItem {
+  /** @format date-time */
+  startDate?: string;
+  /** @format date-time */
+  endDate?: string;
+  /** @format int32 */
+  days?: number;
 }
 
 export interface LessonAiEvaluationDto {
@@ -617,10 +653,66 @@ export interface ModuleDashboardTotalsContract {
   averageAiScore?: number;
 }
 
+export interface OverviewCourseContract {
+  courseName?: string;
+  instructorName?: string;
+  username?: string;
+  durationText?: string;
+  /** @format int32 */
+  totalVideos?: number;
+  /** @format int32 */
+  totalQuizzes?: number;
+  /** @format date-time */
+  startDate?: string;
+  /** @format int32 */
+  level?: number;
+  progress?: ProgressSection;
+  aiEvaluationMarkdown?: string;
+  performance?: PerformanceSection;
+  learningBehavior?: LearningBehaviorSection;
+}
+
+export interface PerformanceSection {
+  /** @format double */
+  avgMinutesPerLesson?: number;
+  /** @format int32 */
+  rank?: number;
+  /** @format int32 */
+  fasterCount?: number;
+  /** @format int32 */
+  slowerCount?: number;
+  analysis?: string;
+}
+
+export interface ProgressSection {
+  /** @format double */
+  completedPercent?: number;
+  /** @format int32 */
+  lessonsCompleted?: number;
+  /** @format int32 */
+  lessonsTotal?: number;
+  /** @format int32 */
+  quizTotal?: number;
+  /** @format double */
+  averageScore?: number;
+  /** @format double */
+  averageAiScore?: number;
+  /** @format date-span */
+  totalLearningTime?: string;
+}
+
 export interface RecommendedAction {
   title?: string;
   kind?: string;
   targetUrl?: string;
+}
+
+export interface SearchAiRecommendResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
 }
 
 export interface SelectAllLearningPathResponse {
@@ -717,7 +809,7 @@ export interface StudentTranscriptSelectResponse {
   messageId?: string;
   message?: string;
   detailErrors?: DetailError[];
-  response?: StudentTranscriptSelectResponseEntity;
+  response?: StudentTranscriptSelectResponseEntity[];
 }
 
 export interface StudentTranscriptSelectResponseEntity {
@@ -847,6 +939,8 @@ export interface UserBehaviourInsertCommand {
   /** @format uuid */
   targetId?: string;
   targetType?: UserBehaviourTargetType;
+  /** @format uuid */
+  parentTargetId?: string;
   metadata?: string;
 }
 
@@ -1721,11 +1815,11 @@ export class Api<
       }),
 
     /**
-     * @description Trả về Module Dashboard theo tham số query. Cần xác thực Bearer.
+     * @description Trả về Lesson Dashboard theo tham số query. Cần xác thực Bearer.
      *
      * @tags StudentDashboards
      * @name StudentDashboardsGetLessonDashboardProcessList
-     * @summary Lấy Module Dashboard
+     * @summary Lấy Lesson Dashboard
      * @request GET:/api/StudentDashboards/GetLessonDashboardProcess
      * @secure
      */
@@ -1739,6 +1833,56 @@ export class Api<
       this.request<GetLessonDashboardEventResponse, any>({
         path: `/api/StudentDashboards/GetLessonDashboardProcess`,
         method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Trả về Overview Dashboard theo tham số query. Cần xác thực Bearer.
+     *
+     * @tags StudentDashboards
+     * @name StudentDashboardsGetOverviewCourseDashboardProcessList
+     * @summary Lấy Overview Dashboard
+     * @request GET:/api/StudentDashboards/GetOverviewCourseDashboardProcess
+     * @secure
+     */
+    studentDashboardsGetOverviewCourseDashboardProcessList: (
+      query?: {
+        /** @format uuid */
+        CourseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetOverviewCourseDashboardResponse, any>({
+        path: `/api/StudentDashboards/GetOverviewCourseDashboardProcess`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Trả về tài liệu dạng markdown. Cần xác thực Bearer.
+     *
+     * @tags StudentDashboards
+     * @name StudentDashboardsGenAndInsertImprovementByAiCreate
+     * @summary Tìm tài liệu improvement
+     * @request POST:/api/StudentDashboards/GenAndInsertImprovementByAI
+     * @secure
+     */
+    studentDashboardsGenAndInsertImprovementByAiCreate: (
+      query?: {
+        /** @format uuid */
+        ImprovementId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<SearchAiRecommendResponse, any>({
+        path: `/api/StudentDashboards/GenAndInsertImprovementByAI`,
+        method: "POST",
         query: query,
         secure: true,
         format: "json",

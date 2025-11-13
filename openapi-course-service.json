@@ -12,9 +12,7 @@
   "paths": {
     "/api/v1/Courses": {
       "get": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Get list of courses with pagination and optional filtering",
         "description": "Retrieve a paginated list of courses with optional filtering by title, category, or instructor.",
         "parameters": [
@@ -95,9 +93,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Create a new course",
         "description": "Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.",
         "requestBody": {
@@ -145,9 +141,7 @@
     },
     "/api/v1/Courses/lecture": {
       "get": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Get list of courses for lecture",
         "description": "Retrieve a paginated list of courses created by a specific teacher with optional filtering.",
         "parameters": [
@@ -230,9 +224,7 @@
     },
     "/api/v1/Courses/{id}": {
       "get": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Get course details by ID for guest users",
         "description": "Retrieve detailed information about a specific course by its ID, including modules and lessons, accessible to guest users.",
         "parameters": [
@@ -270,9 +262,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Update an existing course",
         "description": "Update an existing course (only course details, not modules or lessons)",
         "parameters": [
@@ -331,9 +321,7 @@
     },
     "/api/v1/Courses/auth/{id}": {
       "get": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Get course details by ID for lectures",
         "description": "Retrieve detailed information about a specific course by its ID, including modules and lessons, accessible to lectures.",
         "parameters": [
@@ -373,9 +361,7 @@
     },
     "/api/v1/Courses/slug/{slug}": {
       "get": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Get course details by slug for guest users",
         "description": "Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to guest users.",
         "parameters": [
@@ -414,9 +400,7 @@
     },
     "/api/v1/Courses/auth/slug/{slug}": {
       "get": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Get course details by slug for lectures",
         "description": "Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to lectures.",
         "parameters": [
@@ -455,9 +439,7 @@
     },
     "/api/v1/Courses/{courseId}/modules": {
       "put": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Update multiple modules in a course",
         "description": "Update multiple modules in a course with its Objectives and Lessons",
         "parameters": [
@@ -516,9 +498,7 @@
     },
     "/api/v1/Courses/{courseId}": {
       "delete": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Delete a course by ID",
         "description": "Delete a specific course by its ID. Only the lecturer who created the course can delete it.",
         "parameters": [
@@ -558,9 +538,7 @@
     },
     "/api/v1/Courses/tags": {
       "get": {
-        "tags": [
-          "Courses"
-        ],
+        "tags": ["Courses"],
         "summary": "Get all course tags",
         "description": "Retrieve all available course tags",
         "responses": {
@@ -587,11 +565,38 @@
         }
       }
     },
+    "/api/v1/Courses/GetInProgressCourseByStudentId": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get in-progress courses by student ID",
+        "description": "Retrieve a list of courses that are currently in progress for a specific student.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetInProgressCourseByStudentIdResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetInProgressCourseByStudentIdResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetInProgressCourseByStudentIdResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Lesson": {
       "post": {
-        "tags": [
-          "Lesson"
-        ],
+        "tags": ["Lesson"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -637,9 +642,7 @@
     },
     "/api/Modules/{id}": {
       "put": {
-        "tags": [
-          "Modules"
-        ],
+        "tags": ["Modules"],
         "summary": "Update a module within a course",
         "description": "Update a module within a course, including its objectives and lessons",
         "parameters": [
@@ -698,9 +701,7 @@
     },
     "/api/StudentLessonProgress/{courseId}/enrollment": {
       "get": {
-        "tags": [
-          "StudentLessonProgress"
-        ],
+        "tags": ["StudentLessonProgress"],
         "summary": "Check if current user is enrolled in a course",
         "description": "Check if the authenticated user is enrolled in the specified course",
         "parameters": [
@@ -738,9 +739,7 @@
         }
       },
       "post": {
-        "tags": [
-          "StudentLessonProgress"
-        ],
+        "tags": ["StudentLessonProgress"],
         "summary": "Enroll the current user in a course",
         "description": "Enroll the authenticated user in the specified course",
         "parameters": [
@@ -780,9 +779,7 @@
     },
     "/api/StudentLessonProgress": {
       "put": {
-        "tags": [
-          "StudentLessonProgress"
-        ],
+        "tags": ["StudentLessonProgress"],
         "summary": "Upsert user lesson progress",
         "description": "Create or update the progress of a user in a specific lesson",
         "requestBody": {
@@ -830,9 +827,7 @@
     },
     "/api/StudentLessonProgress/{courseId}": {
       "get": {
-        "tags": [
-          "StudentLessonProgress"
-        ],
+        "tags": ["StudentLessonProgress"],
         "summary": "Get course progress details by ID for students",
         "description": "Retrieve detailed information about a specific course by its ID, including modules and lessons, accessible to students.",
         "parameters": [
@@ -872,9 +867,7 @@
     },
     "/api/StudentLessonProgress/{courseSlug}": {
       "get": {
-        "tags": [
-          "StudentLessonProgress"
-        ],
+        "tags": ["StudentLessonProgress"],
         "summary": "Get course progress details by slug for students",
         "description": "Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to students.",
         "parameters": [
@@ -911,11 +904,105 @@
         }
       }
     },
+    "/api/Syllabus/CreateMajorProcess": {
+      "post": {
+        "tags": ["Syllabus"],
+        "summary": "Tạo mới chuyên ngành",
+        "description": "Tạo mới chuyên ngành. Cần xác thực Bearer.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMajorCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMajorCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMajorCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateMajorResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateMajorResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateMajorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/CreateSubjectProcess": {
+      "post": {
+        "tags": ["Syllabus"],
+        "summary": "Tạo mới môn học",
+        "description": "Tạo mới môn học. Cần xác thực Bearer.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubjectCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubjectCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubjectCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubjectResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubjectResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSubjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Tests": {
       "get": {
-        "tags": [
-          "Tests"
-        ],
+        "tags": ["Tests"],
         "summary": "Get course module dashboard for a student",
         "description": "Retrieve the module dashboard information for a specific student and course",
         "parameters": [
@@ -962,9 +1049,7 @@
     },
     "/api/Tests/ProcessGetCourseLessonDashboard": {
       "get": {
-        "tags": [
-          "Tests"
-        ],
+        "tags": ["Tests"],
         "parameters": [
           {
             "name": "studentId",
@@ -2023,12 +2108,7 @@
         "additionalProperties": false
       },
       "CourseSortBy": {
-        "enum": [
-          1,
-          2,
-          3,
-          4
-        ],
+        "enum": [1, 2, 3, 4],
         "type": "integer",
         "format": "int32"
       },
@@ -2340,6 +2420,60 @@
         },
         "additionalProperties": false
       },
+      "CreateMajorCommand": {
+        "type": "object",
+        "properties": {
+          "createMajorDto": {
+            "$ref": "#/components/schemas/CreateMajorDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateMajorDto": {
+        "type": "object",
+        "properties": {
+          "majorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "majorName": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateMajorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateModuleDiscussionDto": {
         "type": "object",
         "properties": {
@@ -2498,6 +2632,56 @@
             "type": "boolean"
           },
           "allowRetake": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSubjectCommand": {
+        "type": "object",
+        "properties": {
+          "createSubjectDto": {
+            "$ref": "#/components/schemas/CreateSubjectDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSubjectDto": {
+        "type": "object",
+        "properties": {
+          "subjectCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "subjectName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSubjectResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
             "type": "boolean"
           }
         },
@@ -2925,6 +3109,37 @@
         },
         "additionalProperties": false
       },
+      "GetInProgressCourseByStudentIdResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InProgressCourseDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "GuestLessonDetailDto": {
         "type": "object",
         "properties": {
@@ -3003,6 +3218,37 @@
         },
         "additionalProperties": false
       },
+      "InProgressCourseDto": {
+        "type": "object",
+        "properties": {
+          "courseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "shortDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "courseImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "durationHours": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "LectureLessonDetailDto": {
         "type": "object",
         "properties": {
@@ -3037,11 +3283,7 @@
         "additionalProperties": false
       },
       "LessonStatus": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
+        "enum": [0, 1, 2],
         "type": "integer",
         "format": "int32"
       },
@@ -3319,11 +3561,7 @@
         "additionalProperties": false
       },
       "ModuleProgressStatus": {
-        "enum": [
-          0,
-          1,
-          2
-        ],
+        "enum": [0, 1, 2],
         "type": "integer",
         "format": "int32"
       },
@@ -4173,7 +4411,7 @@
   },
   "security": [
     {
-      "JWT_Token": [ ]
+      "JWT_Token": []
     }
   ]
 }

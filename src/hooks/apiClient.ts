@@ -9,6 +9,7 @@ import { Api as AuthEduClientApi } from "EduSmart/api/api-auth-service";
 import { Api as CourseClientApi } from "EduSmart/api/api-course-service";
 import { Api as QuizClientApi } from "EduSmart/api/api-quiz-service";
 import { Api as AIClientApi } from "EduSmart/api/api-ai-service";
+import { Api as StudentClientApi } from "EduSmart/api/api-student-service";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useValidateStore } from "EduSmart/stores/Validate/ValidateStore";
 
@@ -23,14 +24,14 @@ interface RetryConfig extends AxiosRequestConfig {
 
 axiosInstance.interceptors.request.use((cfg) => {
   const h = axios.AxiosHeaders.from(cfg.headers);
-  const base = cfg.baseURL ?? process.env.NEXT_PUBLIC_API_URL ?? '';
-  const url = cfg.url ?? '';
-  if (base.includes('ngrok') || url.includes('ngrok')) {
-    h.set('ngrok-skip-browser-warning', 'true');
+  const base = cfg.baseURL ?? process.env.NEXT_PUBLIC_API_URL ?? "";
+  const url = cfg.url ?? "";
+  if (base.includes("ngrok") || url.includes("ngrok")) {
+    h.set("ngrok-skip-browser-warning", "true");
   }
   const { token } = useAuthStore.getState();
   if (token) {
-    h.set('Authorization', `Bearer ${token}`);
+    h.set("Authorization", `Bearer ${token}`);
   }
   cfg.headers = h;
   return cfg;
@@ -47,9 +48,11 @@ axiosInstance.interceptors.response.use(
         await useAuthStore.getState().refreshToken();
         const newToken = useAuthStore.getState().token;
         if (newToken) {
-          originalRequest.headers = axios.AxiosHeaders.from(originalRequest.headers);
-          (originalRequest.headers).set('Authorization', `Bearer ${newToken}`);
-          (originalRequest.headers).set('ngrok-skip-browser-warning', "true");
+          originalRequest.headers = axios.AxiosHeaders.from(
+            originalRequest.headers,
+          );
+          originalRequest.headers.set("Authorization", `Bearer ${newToken}`);
+          originalRequest.headers.set("ngrok-skip-browser-warning", "true");
         }
         return axiosInstance(originalRequest);
       } catch {
@@ -129,11 +132,17 @@ export const AIClient = new AIClientApi({
   customFetch: axiosFetch,
 });
 
+export const StudentClient = new StudentClientApi({
+  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/student`,
+  customFetch: axiosFetch,
+});
+
 const apiClient = {
   authEduService: AuthEduClient,
   courseService: CourseClient,
   quizService: QuizClient,
   aiService: AIClient,
+  studentService: StudentClient,
 };
 
 export default apiClient;
