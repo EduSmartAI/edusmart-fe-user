@@ -348,7 +348,7 @@ export default function Navigationbar() {
                 <div className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
                     <Image
-                      src="https://i.pravatar.cc/100?img=3"
+                      src={user?.avatarUrl || "https://i.pravatar.cc/100?img=3"}
                       alt="Avatar"
                       width={40}
                       height={40}
@@ -356,10 +356,10 @@ export default function Navigationbar() {
                     />
                     <div className="leading-tight">
                       <div className="text-slate-900 dark:text-white font-semibold">
-                        Duy Anh Trần
+                        {user?.name}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        @duyanh15104
+                        {user?.email}
                       </div>
                     </div>
                   </div>
