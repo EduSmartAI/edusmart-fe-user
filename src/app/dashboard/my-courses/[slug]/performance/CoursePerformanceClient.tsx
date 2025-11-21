@@ -369,7 +369,7 @@ export default function CoursePerformanceClient({
                 Bạn chưa có dữ liệu học tập cho chương này. Hãy bắt đầu học để
                 xem phân tích hiệu suất chi tiết!
               </p>
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#49BBBD]/10 text-[#49BBBD] rounded-lg text-sm font-medium">
+              {/* <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#49BBBD]/10 text-[#49BBBD] rounded-lg text-sm font-medium">
                 <svg
                   className="w-5 h-5"
                   fill="none"
@@ -384,7 +384,7 @@ export default function CoursePerformanceClient({
                   />
                 </svg>
                 Bắt đầu học ngay
-              </div>
+              </div> */}
             </div>
           ) : (
             // Has Data State
@@ -657,7 +657,7 @@ export default function CoursePerformanceClient({
                             Bạn chưa bắt đầu học bài này. Hãy bắt đầu để xem
                             phân tích hiệu suất!{" "}
                           </p>
-                          <div className="inline-flex items-center mt-1 gap-2 px-4 py-2 bg-[#49BBBD]/10 text-[#49BBBD] rounded-lg text-sm font-medium">
+                          {/* <div className="inline-flex items-center mt-1 gap-2 px-4 py-2 bg-[#49BBBD]/10 text-[#49BBBD] rounded-lg text-sm font-medium">
                             <svg
                               className="w-5 h-5"
                               fill="none"
@@ -672,7 +672,7 @@ export default function CoursePerformanceClient({
                               />
                             </svg>
                             Bắt đầu học ngay
-                          </div>
+                          </div> */}
                         </div>
                       ) : (
                         // Has Data State
@@ -877,12 +877,17 @@ export default function CoursePerformanceClient({
   };
 
   // Helper function to get time slot label
-  const getTimeSlotLabel = (slot: string | undefined) => {
-    const slotMap: Record<string, string> = {
+  const getTimeSlotLabel = (slot: string | number | undefined) => {
+    const slotMap: Record<string | number, string> = {
       morning: "Buổi sáng",
       afternoon: "Buổi chiều",
       evening: "Buổi tối",
       night: "Buổi đêm",
+      0: "Không xác định",
+      1: "Buổi sáng",
+      2: "Buổi chiều",
+      3: "Buổi tối",
+      4: "Buổi đêm",
     };
     return slotMap[slot || ""] || "Chưa xác định";
   };
