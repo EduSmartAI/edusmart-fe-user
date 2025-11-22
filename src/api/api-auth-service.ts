@@ -81,6 +81,7 @@ export interface TokenVerifyResponseEntity {
   name?: string;
   email?: string;
   role?: string;
+  avatarUrl?: string;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -395,13 +396,13 @@ export class Api<
      * No description
      *
      * @tags Auth
-     * @name TokenCreate
-     * @request POST:/connect/token
+     * @name LogoutCreate
+     * @request POST:/connect/logout
      * @secure
      */
-    tokenCreate: (params: RequestParams = {}) =>
+    logoutCreate: (params: RequestParams = {}) =>
       this.request<void, any>({
-        path: `/connect/token`,
+        path: `/connect/logout`,
         method: "POST",
         secure: true,
         ...params,
@@ -411,13 +412,13 @@ export class Api<
      * No description
      *
      * @tags Auth
-     * @name LogoutCreate
-     * @request POST:/connect/logout
+     * @name TokenCreate
+     * @request POST:/connect/token
      * @secure
      */
-    logoutCreate: (params: RequestParams = {}) =>
+    tokenCreate: (params: RequestParams = {}) =>
       this.request<void, any>({
-        path: `/connect/logout`,
+        path: `/connect/token`,
         method: "POST",
         secure: true,
         ...params,

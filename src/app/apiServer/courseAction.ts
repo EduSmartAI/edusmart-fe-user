@@ -8,9 +8,12 @@ import {
 import apiServer from "EduSmart/lib/apiServer";
 
 export type Course = {
+  id: string;
   imageUrl: string;
   title: string;
   descriptionLines: Array<string>;
+  isWishList?: boolean;
+  isEnroll?: boolean;
   instructor: string;
   price?: number;
   dealPrice?: number | null;
@@ -27,6 +30,9 @@ export async function GetAllCourses() {
     // Xử lý response data
     if (res.data?.success && res.data.response?.data) {
       const courses: Course[] = res.data.response.data.map((courseDto) => ({
+        id: courseDto.courseId ?? "",
+        isEnroll: courseDto.isEnrolled,
+        isWishList: courseDto.isWishlist ?? false,
         imageUrl: courseDto.courseImageUrl || "/default-course-image.jpg",
         title: courseDto.title || "Untitled Course",
         descriptionLines: [
@@ -65,6 +71,9 @@ export async function fetchCourseByQuery(
 
     if (res.data?.success && res.data.response?.data) {
       const courses: Course[] = res.data.response.data.map((courseDto) => ({
+        id: courseDto.courseId ?? "",
+        isEnroll: courseDto.isEnrolled,
+        isWishList: courseDto.isWishlist ?? false,
         imageUrl: courseDto.courseImageUrl || "/default-course-image.jpg",
         title: courseDto.title || "Untitled Course",
         descriptionLines: [
@@ -104,6 +113,9 @@ export async function fetchCourseByQueryForSlug(
 
     if (res.data?.success && res.data.response?.data) {
       const courses: Course[] = res.data.response.data.map((courseDto) => ({
+        id: courseDto.courseId ?? "",
+        isEnroll: courseDto.isEnrolled,
+        isWishList: courseDto.isWishlist ?? false,
         imageUrl: courseDto.courseImageUrl || "/default-course-image.jpg",
         title: courseDto.title || "Untitled Course",
         descriptionLines: [
@@ -136,9 +148,7 @@ export async function fetchCourseById(
   lessonsCount: number;
 }> {
   try {
-    console.log("fetchCourseById - id:", id);
     const res = await apiServer.course.api.v1CoursesDetail(id);
-    console.log("fetchCourseById - res:", res);
     if (res.data?.success && res.data.response) {
       return {
         data: res.data.response ?? {},

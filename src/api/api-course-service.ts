@@ -32,6 +32,21 @@ export enum CourseSortBy {
   Value4 = 4,
 }
 
+/** @format int32 */
+export enum CourseProgressStatus {
+  Value0 = 0,
+  Value1 = 1,
+  Value2 = 2,
+}
+
+export interface AddToWishlistResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface Answers {
   text?: string | null;
   isCorrect?: boolean;
@@ -52,6 +67,38 @@ export interface CourseAudienceDto {
   /** @format int32 */
   positionIndex?: number;
   isActive?: boolean;
+}
+
+export interface CourseCommentDetailsDto {
+  /** @format uuid */
+  commentId?: string;
+  /** @format uuid */
+  courseId?: string;
+  /** @format uuid */
+  userId?: string;
+  userDisplayName?: string | null;
+  content?: string | null;
+  /** @format uuid */
+  parentCommentId?: string | null;
+  isActive?: boolean;
+  /** @format int32 */
+  replyCount?: number;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface CourseCommentDetailsDtoPagedResult {
+  items?: CourseCommentDetailsDto[] | null;
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
 }
 
 export interface CourseCommentDto {
@@ -107,6 +154,8 @@ export interface CourseDetailForGuestDto {
   ratingsCount?: number;
   /** @format double */
   ratingsAverage?: number;
+  isWishlist?: boolean;
+  isEnrolled?: boolean;
 }
 
 export interface CourseDetailForLectureDto {
@@ -221,6 +270,8 @@ export interface CourseDto {
   /** @format date-time */
   updatedAt?: string;
   tags?: CourseTagDto[] | null;
+  isWishlist?: boolean;
+  isEnrolled?: boolean;
 }
 
 export interface CourseDtoPaginatedResult {
@@ -424,6 +475,18 @@ export interface CourseTagDto {
   tagName?: string | null;
 }
 
+export interface CreateCommentBody {
+  content?: string | null;
+}
+
+export interface CreateCommentResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseCommentDetailsDto;
+}
+
 export interface CreateCourseAudienceDto {
   content?: string | null;
   /** @format int32 */
@@ -536,6 +599,24 @@ export interface CreateMajorResponse {
   response?: boolean;
 }
 
+export interface CreateMajorCommand {
+  createMajorDto?: CreateMajorDto;
+}
+
+export interface CreateMajorDto {
+  majorCode?: string | null;
+  majorName?: string | null;
+  description?: string | null;
+}
+
+export interface CreateMajorResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface CreateModuleDiscussionDto {
   title?: string | null;
   description?: string | null;
@@ -575,6 +656,20 @@ export interface CreateModuleObjectiveDto {
   isActive?: boolean;
 }
 
+export interface CreateNoteDto {
+  /** @format int32 */
+  timeSeconds?: number;
+  content?: string | null;
+}
+
+export interface CreateNoteResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface CreateQuizDto {
   quizSettings?: CreateQuizSettingsDto;
   questions?: Questions[] | null;
@@ -607,7 +702,32 @@ export interface CreateSubjectResponse {
   response?: boolean;
 }
 
+export interface CreateSubjectCommand {
+  createSubjectDto?: CreateSubjectDto;
+}
+
+export interface CreateSubjectDto {
+  subjectCode?: string | null;
+  subjectName?: string | null;
+}
+
+export interface CreateSubjectResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface DeleteCourseResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface DeleteNoteResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
@@ -619,6 +739,36 @@ export interface DetailError {
   field?: string | null;
   messageId?: string | null;
   errorMessage?: string | null;
+}
+
+export interface DiscussionCommentDto {
+  /** @format uuid */
+  commentId?: string;
+  /** @format uuid */
+  parentCommentId?: string | null;
+  /** @format uuid */
+  discussionId?: string;
+  /** @format uuid */
+  userId?: string;
+  userDisplayName?: string | null;
+  content?: string | null;
+  /** @format date-time */
+  createdAt?: string;
+  replies?: DiscussionCommentDto[] | null;
+}
+
+export interface DiscussionCommentDtoPagedResult {
+  items?: DiscussionCommentDto[] | null;
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
 }
 
 export interface EnrollInCourseResponse {
@@ -675,6 +825,14 @@ export interface GetCourseBySlugForLectureResponse {
   modulesCount?: number;
   /** @format int32 */
   lessonsCount?: number;
+}
+
+export interface GetCourseCommentsResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseCommentDetailsDtoPagedResult;
 }
 
 export interface GetCourseLessonDashboardEventResponse {
@@ -741,12 +899,44 @@ export interface GetDetailsProgressByCourseSlugForStudentResponse {
   lessonsCount?: number;
 }
 
+export interface GetDiscussionThreadResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: DiscussionCommentDtoPagedResult;
+}
+
 export interface GetInProgressCourseByStudentIdResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: InProgressCourseDto[] | null;
+}
+
+export interface GetLessonNotesResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: LessonNoteDtoPagedResult;
+}
+
+export interface GetMyLearningCoursesResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: MyLearningCourseItemDtoPaginatedResult;
+}
+
+export interface GetMyWishlistResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: WishlistItemDtoPagedResult;
 }
 
 export interface GuestLessonDetailDto {
@@ -789,6 +979,18 @@ export interface InProgressCourseDto {
   startedAt?: string;
 }
 
+export interface InProgressCourseDto {
+  /** @format uuid */
+  courseId?: string;
+  title?: string | null;
+  shortDescription?: string | null;
+  courseImageUrl?: string | null;
+  /** @format double */
+  durationHours?: number | null;
+  /** @format date-time */
+  startedAt?: string;
+}
+
 export interface LectureLessonDetailDto {
   /** @format uuid */
   lessonId?: string;
@@ -800,6 +1002,34 @@ export interface LectureLessonDetailDto {
   positionIndex?: number;
   isActive?: boolean;
   lessonQuiz?: QuizOutDto;
+}
+
+export interface LessonNoteDto {
+  /** @format uuid */
+  noteId?: string;
+  /** @format uuid */
+  lessonId?: string;
+  /** @format int32 */
+  timeSeconds?: number;
+  content?: string | null;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updateddAt?: string;
+}
+
+export interface LessonNoteDtoPagedResult {
+  items?: LessonNoteDto[] | null;
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
 }
 
 export interface ModuleDetailForLectureDto {
@@ -898,6 +1128,53 @@ export interface ModuleProgressDto {
   completedAt?: string | null;
 }
 
+export interface MyLearningCourseItemDto {
+  /** @format uuid */
+  courseId?: string;
+  title?: string | null;
+  slug?: string | null;
+  imageUrl?: string | null;
+  /** @format double */
+  percentCompleted?: number;
+  /** @format int32 */
+  lessonsTotal?: number;
+  /** @format int32 */
+  lessonsCompleted?: number;
+  /** @format date-time */
+  startedAt?: string | null;
+  /** @format date-time */
+  completedAt?: string | null;
+  /** @format date-time */
+  lastUpdatedAt?: string;
+  status?: CourseProgressStatus;
+}
+
+export interface MyLearningCourseItemDtoPaginatedResult {
+  /** @format int32 */
+  pageIndex?: number | null;
+  /** @format int32 */
+  pageSize?: number | null;
+  /** @format int64 */
+  totalCount?: number;
+  data?: MyLearningCourseItemDto[] | null;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
+}
+
+export interface PostCommentRequest {
+  content?: string | null;
+}
+
+export interface PostDiscussionCommentResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface Questions {
   /** @format int32 */
   questionType?: number;
@@ -938,6 +1215,34 @@ export interface QuizSettingsOutDto {
   shuffleQuestions?: boolean;
   showResultsImmediately?: boolean;
   allowRetake?: boolean;
+}
+
+export interface RemoveFromWishlistResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: string | null;
+}
+
+export interface ReplyCommentRequest {
+  content?: string | null;
+}
+
+export interface ReplyDiscussionCommentResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface ReplyToCommentResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseCommentDetailsDto;
 }
 
 export interface StudentLessonDetailDto {
@@ -1160,6 +1465,18 @@ export interface UpdateModuleResponse {
   response?: string | null;
 }
 
+export interface UpdateNoteDto {
+  content?: string | null;
+}
+
+export interface UpdateNoteResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface UpsertUserLessonProgressCommand {
   /** @format uuid */
   lessonId?: string;
@@ -1192,6 +1509,41 @@ export interface UserLessonProgressEntity {
   durationWatchedSec?: number;
   /** @format date-time */
   completedAt?: string | null;
+}
+
+export interface WishlistItemDto {
+  /** @format uuid */
+  wishlistId?: string;
+  /** @format uuid */
+  courseId?: string;
+  courseTitle?: string | null;
+  courseDescription?: string | null;
+  courseShortDescription?: string | null;
+  courseImageUrl?: string | null;
+  /** @format int32 */
+  courseLevel?: number | null;
+  /** @format double */
+  coursePrice?: number;
+  /** @format double */
+  courseDealPrice?: number | null;
+  courseSlug?: string | null;
+  isActive?: boolean;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface WishlistItemDtoPagedResult {
+  items?: WishlistItemDto[] | null;
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -1458,6 +1810,412 @@ export class Api<
 > extends HttpClient<SecurityDataType> {
   api = {
     /**
+     * No description
+     *
+     * @tags CourseComments
+     * @name CourseCommentsCreate
+     * @summary Create a comment (root)
+     * @request POST:/api/CourseComments
+     * @secure
+     */
+    courseCommentsCreate: (
+      data: CreateCommentBody,
+      query?: {
+        /** @format uuid */
+        courseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateCommentResponse, any>({
+        path: `/api/CourseComments`,
+        method: "POST",
+        query: query,
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseComments
+     * @name CourseCommentsList
+     * @summary List comments
+     * @request GET:/api/CourseComments
+     * @secure
+     */
+    courseCommentsList: (
+      query?: {
+        /** @format uuid */
+        courseId?: string;
+        /** @format int32 */
+        page?: number;
+        /** @format int32 */
+        size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetCourseCommentsResponse, any>({
+        path: `/api/CourseComments`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseComments
+     * @name CourseCommentsRepliesCreate
+     * @summary Reply to a comment
+     * @request POST:/api/CourseComments/{parentCommentId}/replies
+     * @secure
+     */
+    courseCommentsRepliesCreate: (
+      parentCommentId: string,
+      data: CreateCommentBody,
+      query?: {
+        /** @format uuid */
+        courseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ReplyToCommentResponse, any>({
+        path: `/api/CourseComments/${parentCommentId}/replies`,
+        method: "POST",
+        query: query,
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseWishlist
+     * @name CourseWishlistCreate
+     * @summary Add course to my wishlist
+     * @request POST:/api/CourseWishlist
+     * @secure
+     */
+    courseWishlistCreate: (
+      query?: {
+        /** @format uuid */
+        courseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AddToWishlistResponse, any>({
+        path: `/api/CourseWishlist`,
+        method: "POST",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseWishlist
+     * @name CourseWishlistList
+     * @summary Get my wishlist
+     * @request GET:/api/CourseWishlist
+     * @secure
+     */
+    courseWishlistList: (
+      query?: {
+        /**
+         * @format int32
+         * @default 1
+         */
+        Page?: number;
+        /**
+         * @format int32
+         * @default 10
+         */
+        Size?: number;
+        Search?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetMyWishlistResponse, any>({
+        path: `/api/CourseWishlist`,
+        method: "GET",
+        query: query,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseWishlist
+     * @name CourseWishlistDelete
+     * @summary Remove course from my wishlist
+     * @request DELETE:/api/CourseWishlist
+     * @secure
+     */
+    courseWishlistDelete: (
+      query?: {
+        /** @format uuid */
+        courseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<RemoveFromWishlistResponse, any>({
+        path: `/api/CourseWishlist`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Lesson
+     * @name LessonCreate
+     * @request POST:/api/Lesson
+     * @secure
+     */
+    lessonCreate: (
+      data: CreateLessonTranscriptCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateLessonTranscriptResponse, any>({
+        path: `/api/Lesson`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a lesson note at a specific time in the lesson
+     *
+     * @tags LessonNotes
+     * @name LessonNotesCreate
+     * @summary Create a lesson note
+     * @request POST:/api/LessonNotes
+     * @secure
+     */
+    lessonNotesCreate: (
+      data: CreateNoteDto,
+      query?: {
+        /** @format uuid */
+        lessonId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateNoteResponse, any>({
+        path: `/api/LessonNotes`,
+        method: "POST",
+        query: query,
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get lesson notes by lesson id with pagination
+     *
+     * @tags LessonNotes
+     * @name LessonNotesList
+     * @summary Get lesson notes by lesson id - Not implemented yet
+     * @request GET:/api/LessonNotes
+     * @secure
+     */
+    lessonNotesList: (
+      query?: {
+        /** @format uuid */
+        lessonId?: string;
+        /** @format int32 */
+        page?: number;
+        /** @format int32 */
+        size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetLessonNotesResponse, any>({
+        path: `/api/LessonNotes`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags ModuleDiscussionComments
+     * @name ModuleDiscussionCommentsCreate
+     * @request POST:/api/ModuleDiscussionComments/{moduleId}
+     * @secure
+     */
+    moduleDiscussionCommentsCreate: (
+      moduleId: string,
+      data: PostCommentRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<PostDiscussionCommentResponse, any>({
+        path: `/api/ModuleDiscussionComments/${moduleId}`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags ModuleDiscussionComments
+     * @name ModuleDiscussionCommentsReplyCreate
+     * @request POST:/api/ModuleDiscussionComments/{moduleId}/{parentId}/reply
+     * @secure
+     */
+    moduleDiscussionCommentsReplyCreate: (
+      moduleId: string,
+      parentId: string,
+      data: ReplyCommentRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ReplyDiscussionCommentResponse, any>({
+        path: `/api/ModuleDiscussionComments/${moduleId}/${parentId}/reply`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Enroll the authenticated user in the specified course
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressEnrollmentCreate
+     * @summary Enroll the current user in a course
+     * @request POST:/api/StudentLessonProgress/{courseId}/enrollment
+     * @secure
+     */
+    studentLessonProgressEnrollmentCreate: (
+      courseId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<EnrollInCourseResponse, any>({
+        path: `/api/StudentLessonProgress/${courseId}/enrollment`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Check if the authenticated user is enrolled in the specified course
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressEnrollmentList
+     * @summary Check if current user is enrolled in a course
+     * @request GET:/api/StudentLessonProgress/{courseId}/enrollment
+     * @secure
+     */
+    studentLessonProgressEnrollmentList: (
+      courseId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<CheckEnrollmentResponse, any>({
+        path: `/api/StudentLessonProgress/${courseId}/enrollment`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo mới chuyên ngành. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusCreateMajorProcessCreate
+     * @summary Tạo mới chuyên ngành
+     * @request POST:/api/Syllabus/CreateMajorProcess
+     * @secure
+     */
+    syllabusCreateMajorProcessCreate: (
+      data: CreateMajorCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateMajorResponse, any>({
+        path: `/api/Syllabus/CreateMajorProcess`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo mới môn học. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusCreateSubjectProcessCreate
+     * @summary Tạo mới môn học
+     * @request POST:/api/Syllabus/CreateSubjectProcess
+     * @secure
+     */
+    syllabusCreateSubjectProcessCreate: (
+      data: CreateSubjectCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateSubjectResponse, any>({
+        path: `/api/Syllabus/CreateSubjectProcess`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.
+     *
+     * @tags Courses
+     * @name V1CoursesCreate
+     * @summary Create a new course
+     * @request POST:/api/v1/Courses
+     * @secure
+     */
+    v1CoursesCreate: (data: CreateCourseCommand, params: RequestParams = {}) =>
+      this.request<CreateCourseResponse, any>({
+        path: `/api/v1/Courses`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Retrieve a paginated list of courses with optional filtering by title, category, or instructor.
      *
      * @tags Courses
@@ -1491,51 +2249,157 @@ export class Api<
       }),
 
     /**
-     * @description Create a new course with its modules, lessons, and tags. Course tags are optional and can be used to categorize courses.
+     * No description
      *
-     * @tags Courses
-     * @name V1CoursesCreate
-     * @summary Create a new course
-     * @request POST:/api/v1/Courses
+     * @tags ModuleDiscussionComments
+     * @name ModulesDiscussionThreadList
+     * @summary Not implemented yet
+     * @request GET:/api/modules/{moduleId}/discussion/thread
      * @secure
      */
-    v1CoursesCreate: (data: CreateCourseCommand, params: RequestParams = {}) =>
-      this.request<CreateCourseResponse, any>({
-        path: `/api/v1/Courses`,
-        method: "POST",
-        body: data,
+    modulesDiscussionThreadList: (
+      moduleId: string,
+      query?: {
+        /** @format int32 */
+        page?: number;
+        /** @format int32 */
+        size?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetDiscussionThreadResponse, any>({
+        path: `/api/modules/${moduleId}/discussion/thread`,
+        method: "GET",
+        query: query,
         secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
     /**
-     * @description Retrieve a paginated list of courses created by a specific teacher with optional filtering.
+     * @description Retrieve detailed information about a specific course by its ID, including modules and lessons, accessible to students.
      *
-     * @tags Courses
-     * @name V1CoursesLectureList
-     * @summary Get list of courses for lecture
-     * @request GET:/api/v1/Courses/lecture
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressDetail
+     * @summary Get course progress details by ID for students
+     * @request GET:/api/StudentLessonProgress/{courseId}
      * @secure
      */
-    v1CoursesLectureList: (
+    studentLessonProgressDetail: (
+      courseId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetDetailsProgressByCourseIdForStudentResponse, any>({
+        path: `/api/StudentLessonProgress/${courseId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to students.
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressDetail2
+     * @summary Get course progress details by slug for students
+     * @request GET:/api/StudentLessonProgress/{courseSlug}
+     * @originalName studentLessonProgressDetail
+     * @duplicate
+     * @secure
+     */
+    studentLessonProgressDetail2: (
+      courseSlug: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetDetailsProgressByCourseSlugForStudentResponse, any>({
+        path: `/api/StudentLessonProgress/${courseSlug}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve a list of courses that the authenticated student is currently learning.
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressInProgressCoursesList
+     * @summary Get my learning courses
+     * @request GET:/api/StudentLessonProgress/in-progress-courses
+     * @secure
+     */
+    studentLessonProgressInProgressCoursesList: (
       query?: {
-        /** @format int32 */
-        "Pagination.PageIndex"?: number;
-        /** @format int32 */
-        "Pagination.PageSize"?: number;
-        "Filter.Search"?: string;
-        "Filter.SubjectCode"?: string;
-        "Filter.IsActive"?: boolean;
-        /** @format uuid */
-        "Filter.LectureId"?: string;
-        "Filter.SortBy"?: CourseSortBy;
+        /**
+         * @format int32
+         * @default 1
+         */
+        Page?: number;
+        /**
+         * @format int32
+         * @default 10
+         */
+        Size?: number;
+        Search?: string;
       },
       params: RequestParams = {},
     ) =>
-      this.request<GetCoursesByTeacherIdResponse, any>({
-        path: `/api/v1/Courses/lecture`,
+      this.request<GetMyLearningCoursesResponse, any>({
+        path: `/api/StudentLessonProgress/in-progress-courses`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve the module dashboard information for a specific student and course
+     *
+     * @tags Tests
+     * @name TestsList
+     * @summary Get course module dashboard for a student
+     * @request GET:/api/Tests
+     * @secure
+     */
+    testsList: (
+      query?: {
+        /** @format uuid */
+        studentId?: string;
+        /** @format uuid */
+        courseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetCourseModuleDashboardEventResponse, any>({
+        path: `/api/Tests`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Tests
+     * @name TestsProcessGetCourseLessonDashboardList
+     * @request GET:/api/Tests/ProcessGetCourseLessonDashboard
+     * @secure
+     */
+    testsProcessGetCourseLessonDashboardList: (
+      query?: {
+        /** @format uuid */
+        studentId?: string;
+        /** @format uuid */
+        courseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetCourseLessonDashboardEventResponse, any>({
+        path: `/api/Tests/ProcessGetCourseLessonDashboard`,
         method: "GET",
         query: query,
         secure: true,
@@ -1604,6 +2468,75 @@ export class Api<
       }),
 
     /**
+     * @description Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to lectures.
+     *
+     * @tags Courses
+     * @name V1CoursesAuthSlugDetail
+     * @summary Get course details by slug for lectures
+     * @request GET:/api/v1/Courses/auth/slug/{slug}
+     * @secure
+     */
+    v1CoursesAuthSlugDetail: (slug: string, params: RequestParams = {}) =>
+      this.request<GetCourseBySlugForLectureResponse, any>({
+        path: `/api/v1/Courses/auth/slug/${slug}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve a list of courses that are currently in progress for a specific student.
+     *
+     * @tags Courses
+     * @name V1CoursesGetInProgressCourseByStudentIdList
+     * @summary Get in-progress courses by student ID
+     * @request GET:/api/v1/Courses/GetInProgressCourseByStudentId
+     * @secure
+     */
+    v1CoursesGetInProgressCourseByStudentIdList: (params: RequestParams = {}) =>
+      this.request<GetInProgressCourseByStudentIdResponse, any>({
+        path: `/api/v1/Courses/GetInProgressCourseByStudentId`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve a paginated list of courses created by a specific teacher with optional filtering.
+     *
+     * @tags Courses
+     * @name V1CoursesLectureList
+     * @summary Get list of courses for lecture
+     * @request GET:/api/v1/Courses/lecture
+     * @secure
+     */
+    v1CoursesLectureList: (
+      query?: {
+        /** @format int32 */
+        "Pagination.PageIndex"?: number;
+        /** @format int32 */
+        "Pagination.PageSize"?: number;
+        "Filter.Search"?: string;
+        "Filter.SubjectCode"?: string;
+        "Filter.IsActive"?: boolean;
+        /** @format uuid */
+        "Filter.LectureId"?: string;
+        "Filter.SortBy"?: CourseSortBy;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetCoursesByTeacherIdResponse, any>({
+        path: `/api/v1/Courses/lecture`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to guest users.
      *
      * @tags Courses
@@ -1622,19 +2555,121 @@ export class Api<
       }),
 
     /**
-     * @description Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to lectures.
+     * @description Retrieve all available course tags
      *
      * @tags Courses
-     * @name V1CoursesAuthSlugDetail
-     * @summary Get course details by slug for lectures
-     * @request GET:/api/v1/Courses/auth/slug/{slug}
+     * @name V1CoursesTagsList
+     * @summary Get all course tags
+     * @request GET:/api/v1/Courses/tags
      * @secure
      */
-    v1CoursesAuthSlugDetail: (slug: string, params: RequestParams = {}) =>
-      this.request<GetCourseBySlugForLectureResponse, any>({
-        path: `/api/v1/Courses/auth/slug/${slug}`,
+    v1CoursesTagsList: (params: RequestParams = {}) =>
+      this.request<GetCourseTagsResponse, any>({
+        path: `/api/v1/Courses/tags`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update the content of a lesson note
+     *
+     * @tags LessonNotes
+     * @name LessonNotesUpdate
+     * @summary Update a lesson note
+     * @request PUT:/api/LessonNotes/{noteId}
+     * @secure
+     */
+    lessonNotesUpdate: (
+      noteId: string,
+      data: UpdateNoteDto,
+      query?: {
+        /** @format uuid */
+        lessonId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateNoteResponse, any>({
+        path: `/api/LessonNotes/${noteId}`,
+        method: "PUT",
+        query: query,
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Delete a lesson note by its id
+     *
+     * @tags LessonNotes
+     * @name LessonNotesDelete
+     * @summary Delete a lesson note
+     * @request DELETE:/api/LessonNotes/{noteId}
+     * @secure
+     */
+    lessonNotesDelete: (
+      noteId: string,
+      query?: {
+        /** @format uuid */
+        lessonId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DeleteNoteResponse, any>({
+        path: `/api/LessonNotes/${noteId}`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update a module within a course, including its objectives and lessons
+     *
+     * @tags Modules
+     * @name ModulesUpdate
+     * @summary Update a module within a course
+     * @request PUT:/api/Modules/{id}
+     * @secure
+     */
+    modulesUpdate: (
+      id: string,
+      data: UpdateModuleCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateModuleResponse, any>({
+        path: `/api/Modules/${id}`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create or update the progress of a user in a specific lesson
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressUpdate
+     * @summary Upsert user lesson progress
+     * @request PUT:/api/StudentLessonProgress
+     * @secure
+     */
+    studentLessonProgressUpdate: (
+      data: UpsertUserLessonProgressCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpsertUserLessonProgressResponse, any>({
+        path: `/api/StudentLessonProgress`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1676,296 +2711,6 @@ export class Api<
       this.request<DeleteCourseResponse, any>({
         path: `/api/v1/Courses/${courseId}`,
         method: "DELETE",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Retrieve all available course tags
-     *
-     * @tags Courses
-     * @name V1CoursesTagsList
-     * @summary Get all course tags
-     * @request GET:/api/v1/Courses/tags
-     * @secure
-     */
-    v1CoursesTagsList: (params: RequestParams = {}) =>
-      this.request<GetCourseTagsResponse, any>({
-        path: `/api/v1/Courses/tags`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Retrieve a list of courses that are currently in progress for a specific student.
-     *
-     * @tags Courses
-     * @name V1CoursesGetInProgressCourseByStudentIdList
-     * @summary Get in-progress courses by student ID
-     * @request GET:/api/v1/Courses/GetInProgressCourseByStudentId
-     * @secure
-     */
-    v1CoursesGetInProgressCourseByStudentIdList: (params: RequestParams = {}) =>
-      this.request<GetInProgressCourseByStudentIdResponse, any>({
-        path: `/api/v1/Courses/GetInProgressCourseByStudentId`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Lesson
-     * @name LessonCreate
-     * @request POST:/api/Lesson
-     * @secure
-     */
-    lessonCreate: (
-      data: CreateLessonTranscriptCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<CreateLessonTranscriptResponse, any>({
-        path: `/api/Lesson`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update a module within a course, including its objectives and lessons
-     *
-     * @tags Modules
-     * @name ModulesUpdate
-     * @summary Update a module within a course
-     * @request PUT:/api/Modules/{id}
-     * @secure
-     */
-    modulesUpdate: (
-      id: string,
-      data: UpdateModuleCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<UpdateModuleResponse, any>({
-        path: `/api/Modules/${id}`,
-        method: "PUT",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Check if the authenticated user is enrolled in the specified course
-     *
-     * @tags StudentLessonProgress
-     * @name StudentLessonProgressEnrollmentList
-     * @summary Check if current user is enrolled in a course
-     * @request GET:/api/StudentLessonProgress/{courseId}/enrollment
-     * @secure
-     */
-    studentLessonProgressEnrollmentList: (
-      courseId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<CheckEnrollmentResponse, any>({
-        path: `/api/StudentLessonProgress/${courseId}/enrollment`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Enroll the authenticated user in the specified course
-     *
-     * @tags StudentLessonProgress
-     * @name StudentLessonProgressEnrollmentCreate
-     * @summary Enroll the current user in a course
-     * @request POST:/api/StudentLessonProgress/{courseId}/enrollment
-     * @secure
-     */
-    studentLessonProgressEnrollmentCreate: (
-      courseId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<EnrollInCourseResponse, any>({
-        path: `/api/StudentLessonProgress/${courseId}/enrollment`,
-        method: "POST",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Create or update the progress of a user in a specific lesson
-     *
-     * @tags StudentLessonProgress
-     * @name StudentLessonProgressUpdate
-     * @summary Upsert user lesson progress
-     * @request PUT:/api/StudentLessonProgress
-     * @secure
-     */
-    studentLessonProgressUpdate: (
-      data: UpsertUserLessonProgressCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<UpsertUserLessonProgressResponse, any>({
-        path: `/api/StudentLessonProgress`,
-        method: "PUT",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Retrieve detailed information about a specific course by its ID, including modules and lessons, accessible to students.
-     *
-     * @tags StudentLessonProgress
-     * @name StudentLessonProgressDetail
-     * @summary Get course progress details by ID for students
-     * @request GET:/api/StudentLessonProgress/{courseId}
-     * @secure
-     */
-    studentLessonProgressDetail: (
-      courseId: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<GetDetailsProgressByCourseIdForStudentResponse, any>({
-        path: `/api/StudentLessonProgress/${courseId}`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Retrieve detailed information about a specific course by its slug, including modules and lessons, accessible to students.
-     *
-     * @tags StudentLessonProgress
-     * @name StudentLessonProgressDetail2
-     * @summary Get course progress details by slug for students
-     * @request GET:/api/StudentLessonProgress/{courseSlug}
-     * @originalName studentLessonProgressDetail
-     * @duplicate
-     * @secure
-     */
-    studentLessonProgressDetail2: (
-      courseSlug: string,
-      params: RequestParams = {},
-    ) =>
-      this.request<GetDetailsProgressByCourseSlugForStudentResponse, any>({
-        path: `/api/StudentLessonProgress/${courseSlug}`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Tạo mới chuyên ngành. Cần xác thực Bearer.
-     *
-     * @tags Syllabus
-     * @name SyllabusCreateMajorProcessCreate
-     * @summary Tạo mới chuyên ngành
-     * @request POST:/api/Syllabus/CreateMajorProcess
-     * @secure
-     */
-    syllabusCreateMajorProcessCreate: (
-      data: CreateMajorCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<CreateMajorResponse, any>({
-        path: `/api/Syllabus/CreateMajorProcess`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Tạo mới môn học. Cần xác thực Bearer.
-     *
-     * @tags Syllabus
-     * @name SyllabusCreateSubjectProcessCreate
-     * @summary Tạo mới môn học
-     * @request POST:/api/Syllabus/CreateSubjectProcess
-     * @secure
-     */
-    syllabusCreateSubjectProcessCreate: (
-      data: CreateSubjectCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<CreateSubjectResponse, any>({
-        path: `/api/Syllabus/CreateSubjectProcess`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Retrieve the module dashboard information for a specific student and course
-     *
-     * @tags Tests
-     * @name TestsList
-     * @summary Get course module dashboard for a student
-     * @request GET:/api/Tests
-     * @secure
-     */
-    testsList: (
-      query?: {
-        /** @format uuid */
-        studentId?: string;
-        /** @format uuid */
-        courseId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<GetCourseModuleDashboardEventResponse, any>({
-        path: `/api/Tests`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Tests
-     * @name TestsProcessGetCourseLessonDashboardList
-     * @request GET:/api/Tests/ProcessGetCourseLessonDashboard
-     * @secure
-     */
-    testsProcessGetCourseLessonDashboardList: (
-      query?: {
-        /** @format uuid */
-        studentId?: string;
-        /** @format uuid */
-        courseId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<GetCourseLessonDashboardEventResponse, any>({
-        path: `/api/Tests/ProcessGetCourseLessonDashboard`,
-        method: "GET",
-        query: query,
         secure: true,
         format: "json",
         ...params,

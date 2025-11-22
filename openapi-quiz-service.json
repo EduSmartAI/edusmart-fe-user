@@ -6,12 +6,34 @@
   },
   "basePath": "/quiz",
   "paths": {
-    "/api/v1/Admin/InsertTest": {
+    "/api/v1/Admin/InsertPracticeLanguage": {
       "post": {
         "tags": [
           "Admin"
         ],
-        "summary": "Tạo bài kiểm tra đầu vào mới",
+        "summary": "Đồng bộ ngôn ngữ lập trình từ Judge0 (Không spam API này)",
+        "description": "Lấy danh sách ngôn ngữ lập trình từ Judge0 API và thêm các ngôn ngữ mới vào hệ thống. Các ngôn ngữ đã tồn tại sẽ được bỏ qua. (Không spam API này). Cần cấp quyền Admin cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminLanguageInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/InsertPracticeTest": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Tạo bài tập thực hành mới",
         "description": "Cần cấp quyền Admin cho API",
         "consumes": [
           "application/json",
@@ -28,7 +50,7 @@
             "in": "body",
             "name": "body",
             "schema": {
-              "$ref": "#/definitions/TestInsertCommand"
+              "$ref": "#/definitions/PracticeTestAdminInsertRequest"
             }
           }
         ],
@@ -36,7 +58,115 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/TestInsertResponse"
+              "$ref": "#/definitions/PracticeTestAdminInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/InsertPracticeTestExamples": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Thêm ví dụ vào bài tập thực hành",
+        "description": "Thêm các ví dụ minh họa input/output vào bài tập thực hành đã tồn tại. Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminExamplesInsertRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminExamplesInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/InsertPracticeTestTemplates": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Thêm code templates vào bài tập thực hành",
+        "description": "Thêm code templates cho các ngôn ngữ lập trình vào bài tập thực hành đã tồn tại. Mỗi ngôn ngữ chỉ có thể có 1 template. Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminTemplatesInsertRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminTemplatesInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/InsertPracticeTestTestcases": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Thêm test cases vào bài tập thực hành",
+        "description": "Thêm public và private test cases vào bài tập thực hành đã tồn tại. Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminTestcasesInsertRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminTestcasesInsertResponse"
             }
           }
         }
@@ -78,225 +208,13 @@
         }
       }
     },
-    "/api/v1/Admin/SelectStudentSurveys": {
-      "get": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Lấy danh sách tất cả khảo sát của học sinh",
-        "description": "Hỗ trợ phân trang và lọc theo StudentId hoặc SurveyId",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "StudentId",
-            "type": "string",
-            "format": "uuid"
-          },
-          {
-            "in": "query",
-            "name": "SurveyId",
-            "type": "string",
-            "format": "uuid"
-          },
-          {
-            "in": "query",
-            "name": "PageNumber",
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "in": "query",
-            "name": "PageSize",
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/AdminStudentSurveysSelectResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/Admin/SelectStudentTests": {
-      "get": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Lấy danh sách tất cả bài kiểm tra của học sinh",
-        "description": "Hỗ trợ phân trang và lọc theo StudentId hoặc TestId",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "PageNumber",
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "in": "query",
-            "name": "PageSize",
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "in": "query",
-            "name": "StudentId",
-            "type": "string",
-            "format": "uuid"
-          },
-          {
-            "in": "query",
-            "name": "TestId",
-            "type": "string",
-            "format": "uuid"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/AdminStudentTestsSelectResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/Admin/SelectStudentTestDetail": {
-      "get": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Chi tiết một bài kiểm tra đầu vào của sinh viên",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "StudentTestId",
-            "required": true,
-            "type": "string",
-            "format": "uuid"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/AdminStudentTestSelectDetailResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/Admin/SelectQuizzes": {
-      "get": {
-        "tags": [
-          "Admin"
-        ],
-        "summary": "Lấy danh sách tất cả quiz/survey",
-        "description": "Hỗ trợ phân trang và lọc theo QuizType, SubjectCode, SurveyCode",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "PageNumber",
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "in": "query",
-            "name": "PageSize",
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "in": "query",
-            "name": "QuizType"
-          },
-          {
-            "in": "query",
-            "name": "SubjectCode",
-            "type": "string",
-            "format": "uuid"
-          },
-          {
-            "in": "query",
-            "name": "SurveyCode",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/AdminQuizzesSelectResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/CourseQuiz/UpdateQuizCourse": {
-      "put": {
-        "tags": [
-          "CourseQuiz"
-        ],
-        "summary": "Cập nhật bài kiểm tra cho khoá học",
-        "description": "Cần cấp quyền Teacher cho API. Chỉ cập nhật thông tin quiz settings và câu hỏi/câu trả lời hiện có",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/QuizCourseUpdateCommand"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/QuizCourseUpdateResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/CourseQuiz/InsertQuizCourse": {
+    "/api/v1/Admin/InsertTest": {
       "post": {
         "tags": [
-          "CourseQuiz"
+          "Admin"
         ],
-        "summary": "API dùng để test thêm mới bài kiểm tra cho khoá học",
+        "summary": "Tạo bài kiểm tra đầu vào mới",
+        "description": "Cần cấp quyền Admin cho API",
         "consumes": [
           "application/json",
           "text/json",
@@ -312,7 +230,7 @@
             "in": "body",
             "name": "body",
             "schema": {
-              "$ref": "#/definitions/QuizCourseInsertCommand"
+              "$ref": "#/definitions/TestInsertCommand"
             }
           }
         ],
@@ -320,174 +238,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/QuizCourseInsertResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/CourseQuiz/SelectQuizCourse": {
-      "get": {
-        "tags": [
-          "CourseQuiz"
-        ],
-        "summary": "API dùng để test lấy bài kiểm tra cho khoá học",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "QuizId",
-            "type": "string",
-            "format": "uuid"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/QuizCourseSelectQueryResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/CourseQuiz/InsertQuestionsToQuizCourse": {
-      "post": {
-        "tags": [
-          "CourseQuiz"
-        ],
-        "summary": "Thêm câu hỏi mới vào bài kiểm tra",
-        "description": "Cần cấp quyền Teacher cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/QuizCourseAddQuestionsCommand"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/QuizCourseAddQuestionsResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse": {
-      "delete": {
-        "tags": [
-          "CourseQuiz"
-        ],
-        "summary": "Xóa câu hỏi khỏi bài kiểm tra",
-        "description": "Cần cấp quyền Teacher cho API. Xóa mềm (soft delete) - set IsActive = false",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/QuizCourseDeleteQuestionsCommand"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/QuizCourseDeleteQuestionsResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/CourseQuiz/InsertStudentQuizCourse": {
-      "post": {
-        "tags": [
-          "CourseQuiz"
-        ],
-        "summary": "Lưu câu trả lời của sinh viên trong bài kiếm tra course",
-        "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/StudentQuizCourseInsertCommand"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/StudentQuizCourseInsertResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/CourseQuiz/SelectStudentQuizCourse": {
-      "get": {
-        "tags": [
-          "CourseQuiz"
-        ],
-        "summary": "Hiển thị bài kiểm tra course cho sinh viên",
-        "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "StudentQuizCourseId",
-            "type": "string",
-            "format": "uuid"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/StudentCourseQuizSelectResponse"
+              "$ref": "#/definitions/TestInsertResponse"
             }
           }
         }
@@ -529,13 +280,18 @@
         }
       }
     },
-    "/api/v1/CourseQuiz/GetLatestModuleQuizScores": {
-      "get": {
+    "/api/v1/CourseQuiz/InsertQuestionsToQuizCourse": {
+      "post": {
         "tags": [
           "CourseQuiz"
         ],
-        "summary": "Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo module",
-        "description": "Cần cấp quyền Student cho API",
+        "summary": "Thêm câu hỏi mới vào bài kiểm tra",
+        "description": "Cần cấp quyền Teacher cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
         "produces": [
           "text/plain",
           "application/json",
@@ -543,45 +299,34 @@
         ],
         "parameters": [
           {
-            "in": "query",
-            "name": "StudentId",
-            "type": "string",
-            "format": "uuid"
-          },
-          {
-            "in": "query",
-            "name": "CourseId",
-            "type": "string",
-            "format": "uuid"
-          },
-          {
-            "in": "query",
-            "name": "ModuleIds",
-            "type": "array",
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "collectionFormat": "multi"
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseAddQuestionsCommand"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/GetLatestModuleQuizScoresResponseEvent"
+              "$ref": "#/definitions/QuizCourseAddQuestionsResponse"
             }
           }
         }
       }
     },
-    "/api/v1/CourseQuiz/GetLatestLessonQuizScores": {
-      "get": {
+    "/api/v1/CourseQuiz/InsertQuizCourse": {
+      "post": {
         "tags": [
           "CourseQuiz"
         ],
-        "summary": "Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo lesson",
-        "description": "Cần cấp quyền Student cho API",
+        "summary": "API dùng để test thêm mới bài kiểm tra cho khoá học",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
         "produces": [
           "text/plain",
           "application/json",
@@ -589,127 +334,166 @@
         ],
         "parameters": [
           {
-            "in": "query",
-            "name": "StudentId",
-            "type": "string",
-            "format": "uuid"
-          },
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/InsertStudentQuizCourse": {
+      "post": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Lưu câu trả lời của sinh viên trong bài kiếm tra course",
+        "description": "Cần cấp quyền Student cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
           {
-            "in": "query",
-            "name": "CourseId",
-            "type": "string",
-            "format": "uuid"
-          },
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/StudentQuizCourseInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentQuizCourseInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/CheckPracticeTestCode": {
+      "post": {
+        "tags": [
+          "PracticeTest"
+        ],
+        "summary": "Kiểm tra code với nhiều input tự nhập mà không lưu vào database",
+        "description": "API này cho phép student kiểm tra code của mình với nhiều test cases (inputs) cùng lúc để xem kết quả thực thi trước khi nộp bài chính thức. Student có thể gửi 1 hoặc nhiều inputs trong một request. Kết quả trả về bao gồm status, output, lỗi (nếu có), thời gian thực thi và memory cho từng test case mà không lưu vào database. Cần cấp quyền cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
           {
-            "in": "query",
-            "name": "LessonIds",
-            "type": "array",
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "collectionFormat": "multi"
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestCodeCheckRequest"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/GetLatestLessonQuizScoresResponseEvent"
+              "$ref": "#/definitions/PracticeTestCodeCheckResponse"
             }
           }
         }
       }
     },
-    "/api/v1/ExternalQuiz/SelectSemesters": {
-      "get": {
+    "/api/v1/PracticeTest/SubmitPracticeTest": {
+      "post": {
         "tags": [
-          "ExternalQuiz"
+          "PracticeTest"
         ],
-        "summary": "Lấy danh sách tất cả các học kỳ",
+        "summary": "Nộp bài tập thực hành",
         "description": "Cần cấp quyền cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
         "produces": [
           "text/plain",
           "application/json",
           "text/json"
         ],
-        "responses": {
-          "200": {
-            "description": "OK",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
             "schema": {
-              "$ref": "#/definitions/SemesterSelectsEventResponse"
+              "$ref": "#/definitions/PracticeTestSubmitInsertRequest"
             }
           }
-        }
-      }
-    },
-    "/api/v1/ExternalQuiz/SelectMajors": {
-      "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
-        "summary": "Lấy danh sách tất cả các chuyên ngành trong trường",
-        "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
         ],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/MajorSelectsEventResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/ExternalQuiz/SelectTechnologies": {
-      "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
-        "summary": "Lấy danh sách tất cả các ngôn ngữ lập trình/ framework",
-        "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/TechnologySelectsEventResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/ExternalQuiz/SelectLearningGoals": {
-      "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
-        "summary": "Lấy danh sách tất cả các mục tiêu học tập đang có",
-        "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/LearningGoalSelectsEventResponse"
+              "$ref": "#/definitions/PracticeTestSubmitInsertResponse"
             }
           }
         }
       }
     },
     "/api/v1/Question": {
+      "post": {
+        "tags": [
+          "Question"
+        ],
+        "summary": "Thêm câu hỏi và câu trả lời vào quiz",
+        "description": "Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuestionInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuestionInsertResponse"
+            }
+          }
+        }
+      },
       "put": {
         "tags": [
           "Question"
@@ -771,62 +555,6 @@
             }
           }
         }
-      },
-      "post": {
-        "tags": [
-          "Question"
-        ],
-        "summary": "Thêm câu hỏi và câu trả lời vào quiz",
-        "description": "Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/QuestionInsertCommand"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/QuestionInsertResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/Quiz/SelectQuizzes": {
-      "get": {
-        "tags": [
-          "Quiz"
-        ],
-        "summary": "Lấy danh sách quiz của một bài kiểm tra",
-        "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/QuizSelectsResponse"
-            }
-          }
-        }
       }
     },
     "/api/v1/StudentSurvey/InsertStudentSurvey": {
@@ -860,6 +588,670 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/StudentSurveyInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/StudentTest/InsertStudentTest": {
+      "post": {
+        "tags": [
+          "StudentTest"
+        ],
+        "summary": "Lưu câu trả lời của học sinh",
+        "description": "Cần cấp quyền Student cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/StudentTestInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentTestInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/SelectPracticeTest": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Chi tiết một bài kiểm tra thực hành",
+        "description": "Lấy toàn bộ thông tin chi tiết bao gồm test cases, templates, examples. Cần cấp quyền Admin cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ProblemId",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdminPracticeTestSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/SelectPracticeTests": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Lấy danh sách tất cả bài kiểm tra thực hành",
+        "description": "Hỗ trợ phân trang và lọc theo độ khó, tìm kiếm theo tiêu đề. Cần cấp quyền Admin cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "Difficulty",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "SearchTitle",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdminPracticeTestsSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/SelectQuizzes": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Lấy danh sách tất cả quiz/survey",
+        "description": "Hỗ trợ phân trang và lọc theo QuizType, SubjectCode, SurveyCode",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "QuizType"
+          },
+          {
+            "in": "query",
+            "name": "SubjectCode",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "SurveyCode",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdminQuizzesSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/SelectStudentSurveys": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Lấy danh sách tất cả khảo sát của học sinh",
+        "description": "Hỗ trợ phân trang và lọc theo StudentId hoặc SurveyId",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "StudentId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "SurveyId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdminStudentSurveysSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/SelectStudentTestDetail": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Chi tiết một bài kiểm tra đầu vào của sinh viên",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "StudentTestId",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdminStudentTestSelectDetailResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/SelectStudentTests": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Lấy danh sách tất cả bài kiểm tra của học sinh",
+        "description": "Hỗ trợ phân trang và lọc theo StudentId hoặc TestId",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "StudentId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "TestId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdminStudentTestsSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/GetLatestLessonQuizScores": {
+      "get": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo lesson",
+        "description": "Cần cấp quyền Student cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "StudentId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "CourseId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "LessonIds",
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetLatestLessonQuizScoresResponseEvent"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/GetLatestModuleQuizScores": {
+      "get": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo module",
+        "description": "Cần cấp quyền Student cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "StudentId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "CourseId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "ModuleIds",
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetLatestModuleQuizScoresResponseEvent"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/SelectQuizCourse": {
+      "get": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "API dùng để test lấy bài kiểm tra cho khoá học",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "QuizId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseSelectQueryResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/SelectStudentQuizCourse": {
+      "get": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Hiển thị bài kiểm tra course cho sinh viên",
+        "description": "Cần cấp quyền Student cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "StudentQuizCourseId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentCourseQuizSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectLearningGoals": {
+      "get": {
+        "tags": [
+          "ExternalQuiz"
+        ],
+        "summary": "Lấy danh sách tất cả các mục tiêu học tập đang có",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/LearningGoalSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectMajors": {
+      "get": {
+        "tags": [
+          "ExternalQuiz"
+        ],
+        "summary": "Lấy danh sách tất cả các chuyên ngành trong trường",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/MajorSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectSemesters": {
+      "get": {
+        "tags": [
+          "ExternalQuiz"
+        ],
+        "summary": "Lấy danh sách tất cả các học kỳ",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SemesterSelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ExternalQuiz/SelectTechnologies": {
+      "get": {
+        "tags": [
+          "ExternalQuiz"
+        ],
+        "summary": "Lấy danh sách tất cả các ngôn ngữ lập trình/ framework",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TechnologySelectsEventResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/SelectCodeLanguages": {
+      "get": {
+        "tags": [
+          "PracticeTest"
+        ],
+        "summary": "Lấy danh sách các ngôn ngữ lập trình hỗ trợ cho bài tập thực hành",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestLanguageSelectsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/SelectPracticeTestDetail": {
+      "get": {
+        "tags": [
+          "PracticeTest"
+        ],
+        "summary": "Lấy danh sách bài tập thực hành",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ProblemId",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/SelectPracticeTests": {
+      "get": {
+        "tags": [
+          "PracticeTest"
+        ],
+        "summary": "Lấy 3 bài tập thực hành ngẫu nhiên",
+        "description": "Lấy 3 bài tập thực hành ngẫu nhiên có đủ 3 level: Dễ (Easy), Trung bình (Medium), Khó (Hard). Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestSelectsResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/SelectUserTemplateCode": {
+      "get": {
+        "tags": [
+          "PracticeTest"
+        ],
+        "summary": "Lấy source code mẫu cho user tương ứng với problem và ngôn ngữ lập trình tương ứng",
+        "description": "API này trả về hàm mẫu dành cho người dùng, dựa trên bài tập (problem) và ngôn ngữ lập trình được chọn. Người dùng có thể sử dụng mã nguồn này để code phần bài tập thực hành của mình.",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ProblemId",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "LanguageId",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestUserTemplateCodeSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Quiz/SelectQuizzes": {
+      "get": {
+        "tags": [
+          "Quiz"
+        ],
+        "summary": "Lấy danh sách quiz của một bài kiểm tra",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizSelectsResponse"
             }
           }
         }
@@ -918,42 +1310,6 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/StudentSurveySelectDetailResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/StudentTest/InsertStudentTest": {
-      "post": {
-        "tags": [
-          "StudentTest"
-        ],
-        "summary": "Lưu câu trả lời của học sinh",
-        "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/StudentTestInsertCommand"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/StudentTestInsertResponse"
             }
           }
         }
@@ -1087,9 +1443,373 @@
           }
         }
       }
+    },
+    "/api/v1/Admin/UpdatePracticeTest": {
+      "put": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Cập nhật bài kiểm tra thực hành",
+        "description": "Cập nhật thông tin bài kiểm tra thực hành bao gồm: tiêu đề, mô tả, độ khó, test cases, templates và examples. Chỉ cập nhật/xóa items có ID trong request. Items không có trong request sẽ bị xoá. Phải giữ ít nhất 1 test case và 1 example. Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminUpdateRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminUpdateResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/UpdateQuizCourse": {
+      "put": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Cập nhật bài kiểm tra cho khoá học",
+        "description": "Cần cấp quyền Teacher cho API. Chỉ cập nhật thông tin quiz settings và câu hỏi/câu trả lời hiện có",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseUpdateCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseUpdateResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/DeletePracticeTest": {
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Xóa bài tập thực hành",
+        "description": "Xóa bài tập thực hành. Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminDeleteRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PracticeTestAdminDeleteResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse": {
+      "delete": {
+        "tags": [
+          "CourseQuiz"
+        ],
+        "summary": "Xóa câu hỏi khỏi bài kiểm tra",
+        "description": "Cần cấp quyền Teacher cho API. Xóa mềm (soft delete) - set IsActive = false",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseDeleteQuestionsCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QuizCourseDeleteQuestionsResponse"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
+    "AdminPracticeTestExample": {
+      "type": "object",
+      "properties": {
+        "exampleId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "exampleOrder": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "outputData": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminPracticeTestItem": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "difficulty": {
+          "type": "string"
+        },
+        "totalTestCases": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalExamples": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalTemplates": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalSubmissions": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminPracticeTestSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/AdminPracticeTestSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminPracticeTestSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "difficulty": {
+          "type": "string"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminPracticeTestExample"
+          }
+        },
+        "testCases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminPracticeTestTestCase"
+          }
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminPracticeTestTemplate"
+          }
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminPracticeTestTemplate": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "languageName": {
+          "type": "string"
+        },
+        "templatePrefix": {
+          "type": "string"
+        },
+        "templateSuffix": {
+          "type": "string"
+        },
+        "userStubCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminPracticeTestTestCase": {
+      "type": "object",
+      "properties": {
+        "testcaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminPracticeTestsSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/AdminPracticeTestsSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminPracticeTestsSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "practiceTests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminPracticeTestItem"
+          }
+        },
+        "totalCount": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageNumber": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
     "AdminQuizItem": {
       "type": "object",
       "properties": {
@@ -1759,6 +2479,984 @@
         }
       },
       "additionalProperties": false
+    },
+    "PracticeTestAdminDeleteRequest": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminDeleteResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminExamplesInsertRequest": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestExampleAddRequestEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminExamplesInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminInsertRequest": {
+      "required": [
+        "examples",
+        "problem",
+        "templates",
+        "testcases"
+      ],
+      "type": "object",
+      "properties": {
+        "problem": {
+          "$ref": "#/definitions/PracticeTestAdminProblemInsertRequest"
+        },
+        "testcases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminProblemTestcaseInsertRequest"
+          }
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminProblemTemplateInsertRequest"
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminProblemExampleInsertRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminLanguageInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/PracticeTestAdminLanguageInsertResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminLanguageInsertResponseEntity": {
+      "type": "object",
+      "properties": {
+        "totalLanguagesFromJudge0": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "existingLanguages": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "newLanguagesInserted": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemExampleInsertRequest": {
+      "type": "object",
+      "properties": {
+        "exampleOrder": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "outputData": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemExampleUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "exampleId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "exampleOrder": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "outputData": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemInsertRequest": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "difficulty": {
+          "$ref": "#/definitions/ProblemDifficultyLevel"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemTemplateInsertRequest": {
+      "type": "object",
+      "properties": {
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "userTemplatePrefix": {
+          "type": "string"
+        },
+        "userTemplateSuffix": {
+          "type": "string"
+        },
+        "userStubCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemTemplateUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "userTemplatePrefix": {
+          "type": "string"
+        },
+        "userTemplateSuffix": {
+          "type": "string"
+        },
+        "userStubCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemTestcaseInsertRequest": {
+      "type": "object",
+      "properties": {
+        "publicTestcases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminProblemTestcasePublicInsertRequest"
+          }
+        },
+        "privateTestcases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminProblemTestcasePrivateInsertRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemTestcasePrivateInsertRequest": {
+      "type": "object",
+      "properties": {
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemTestcasePublicInsertRequest": {
+      "type": "object",
+      "properties": {
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemTestcaseUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "testcaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminProblemUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "difficulty": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminTemplatesInsertRequest": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestTemplateAddRequestEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminTemplatesInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminTestcasesInsertRequest": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "publicTestcases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestTestcaseAddRequestEntity"
+          }
+        },
+        "privateTestcases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestTestcaseAddRequestEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminTestcasesInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problem": {
+          "$ref": "#/definitions/PracticeTestAdminProblemUpdateRequest"
+        },
+        "testcases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminProblemTestcaseUpdateRequest"
+          }
+        },
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminProblemTemplateUpdateRequest"
+          }
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminProblemExampleUpdateRequest"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestCodeCheckRequest": {
+      "required": [
+        "inputs",
+        "languageId",
+        "problemId",
+        "sourceCode"
+      ],
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "sourceCode": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "inputs": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestCodeCheckResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/PracticeTestCodeCheckResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestCodeCheckResponseEntity": {
+      "type": "object",
+      "properties": {
+        "overallStatus": {
+          "type": "string"
+        },
+        "totalTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "passedTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "testCaseResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TestCaseExecutionResult"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestExampleAddRequestEntity": {
+      "type": "object",
+      "properties": {
+        "exampleOrder": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "outputData": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestLanguageSelectsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestLanguageSelectsResponseEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestLanguageSelectsResponseEntity": {
+      "type": "object",
+      "properties": {
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestProblemExample": {
+      "type": "object",
+      "properties": {
+        "exampleId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "exampleOrder": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "outputData": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/PracticeTestSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "difficulty": {
+          "type": "string"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestProblemExample"
+          }
+        },
+        "testCases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestSelectTestCaseResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSelectTestCaseResponse": {
+      "type": "object",
+      "properties": {
+        "testcaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSelectsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/PracticeTestSelectsResponseEntityPagedResult"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSelectsResponseEntity": {
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "difficulty": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSelectsResponseEntityPagedResult": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestSelectsResponseEntity"
+          }
+        },
+        "totalCount": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageNumber": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalPages": {
+          "format": "int32",
+          "type": "integer",
+          "readOnly": true
+        },
+        "hasPreviousPage": {
+          "type": "boolean",
+          "readOnly": true
+        },
+        "hasNextPage": {
+          "type": "boolean",
+          "readOnly": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestStudentAnswerRequest": {
+      "required": [
+        "codeSubmission",
+        "languageId",
+        "problemId"
+      ],
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "codeSubmission": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSubmitInsertRequest": {
+      "required": [
+        "languageId",
+        "problemId",
+        "sourceCode"
+      ],
+      "type": "object",
+      "properties": {
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "sourceCode": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSubmitInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/PracticeTestSubmitInsertResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestSubmitInsertResponseEntity": {
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "passedTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "averageTimeMs": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "testResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubmissionTestResultResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestTemplateAddRequestEntity": {
+      "type": "object",
+      "properties": {
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "userTemplatePrefix": {
+          "type": "string"
+        },
+        "userTemplateSuffix": {
+          "type": "string"
+        },
+        "userStubCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestTestcaseAddRequestEntity": {
+      "type": "object",
+      "properties": {
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestUserTemplateCodeSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/PracticeTestUserTemplateCodeSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestUserTemplateCodeSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "userTemplateCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProblemDifficultyLevel": {
+      "format": "int32",
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "type": "integer"
     },
     "QuestionAddRequest": {
       "required": [
@@ -3187,6 +4885,12 @@
           "items": {
             "$ref": "#/definitions/StudentAnswerRequest"
           }
+        },
+        "practiceTestAnswers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestStudentAnswerRequest"
+          }
         }
       },
       "additionalProperties": false
@@ -3270,6 +4974,34 @@
           "items": {
             "$ref": "#/definitions/QuizResultSelectResponseEntity"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubmissionTestResultResponse": {
+      "type": "object",
+      "properties": {
+        "testCaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "actualOutput": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -3632,6 +5364,39 @@
           "type": "string"
         },
         "technologyType": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestCaseExecutionResult": {
+      "type": "object",
+      "properties": {
+        "testCaseNumber": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "input": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "output": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "executionTime": {
+          "format": "double",
+          "type": "number"
+        },
+        "memory": {
           "format": "int32",
           "type": "integer"
         }

@@ -25,11 +25,104 @@ export enum QuestionType {
 }
 
 /** @format int32 */
+export enum ProblemDifficultyLevel {
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+}
+
+/** @format int32 */
 export enum AnswerRuleUnit {
   Value1 = 1,
   Value2 = 2,
   Value3 = 3,
   Value4 = 4,
+}
+
+export interface AdminPracticeTestExample {
+  /** @format uuid */
+  exampleId?: string;
+  /** @format int32 */
+  exampleOrder?: number;
+  inputData?: string;
+  outputData?: string;
+  explanation?: string;
+}
+
+export interface AdminPracticeTestItem {
+  /** @format uuid */
+  problemId?: string;
+  title?: string;
+  description?: string;
+  difficulty?: string;
+  /** @format int32 */
+  totalTestCases?: number;
+  /** @format int32 */
+  totalExamples?: number;
+  /** @format int32 */
+  totalTemplates?: number;
+  /** @format int32 */
+  totalSubmissions?: number;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface AdminPracticeTestSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminPracticeTestSelectResponseEntity;
+}
+
+export interface AdminPracticeTestSelectResponseEntity {
+  /** @format uuid */
+  problemId?: string;
+  title?: string;
+  description?: string;
+  difficulty?: string;
+  examples?: AdminPracticeTestExample[];
+  testCases?: AdminPracticeTestTestCase[];
+  templates?: AdminPracticeTestTemplate[];
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface AdminPracticeTestTemplate {
+  /** @format uuid */
+  templateId?: string;
+  /** @format int32 */
+  languageId?: number;
+  languageName?: string;
+  templatePrefix?: string;
+  templateSuffix?: string;
+  userStubCode?: string;
+}
+
+export interface AdminPracticeTestTestCase {
+  /** @format uuid */
+  testcaseId?: string;
+  inputData?: string;
+  expectedOutput?: string;
+  isPublic?: boolean;
+}
+
+export interface AdminPracticeTestsSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminPracticeTestsSelectResponseEntity;
+}
+
+export interface AdminPracticeTestsSelectResponseEntity {
+  practiceTests?: AdminPracticeTestItem[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
 }
 
 export interface AdminQuizItem {
@@ -294,6 +387,363 @@ export interface ModuleLatestQuizScore {
   latestScore100?: number;
   /** @format int32 */
   attemptCount?: number;
+}
+
+export interface PracticeTestAdminDeleteRequest {
+  /** @format uuid */
+  problemId?: string;
+}
+
+export interface PracticeTestAdminDeleteResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface PracticeTestAdminExamplesInsertRequest {
+  /** @format uuid */
+  problemId?: string;
+  examples?: PracticeTestExampleAddRequestEntity[];
+}
+
+export interface PracticeTestAdminExamplesInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface PracticeTestAdminInsertRequest {
+  problem: PracticeTestAdminProblemInsertRequest;
+  testcases: PracticeTestAdminProblemTestcaseInsertRequest[];
+  templates: PracticeTestAdminProblemTemplateInsertRequest[];
+  examples: PracticeTestAdminProblemExampleInsertRequest[];
+}
+
+export interface PracticeTestAdminInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface PracticeTestAdminLanguageInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: PracticeTestAdminLanguageInsertResponseEntity;
+}
+
+export interface PracticeTestAdminLanguageInsertResponseEntity {
+  /** @format int32 */
+  totalLanguagesFromJudge0?: number;
+  /** @format int32 */
+  existingLanguages?: number;
+  /** @format int32 */
+  newLanguagesInserted?: number;
+}
+
+export interface PracticeTestAdminProblemExampleInsertRequest {
+  /** @format int32 */
+  exampleOrder?: number;
+  inputData?: string;
+  outputData?: string;
+  explanation?: string;
+}
+
+export interface PracticeTestAdminProblemExampleUpdateRequest {
+  /** @format uuid */
+  exampleId?: string;
+  /** @format int32 */
+  exampleOrder?: number;
+  inputData?: string;
+  outputData?: string;
+  explanation?: string;
+}
+
+export interface PracticeTestAdminProblemInsertRequest {
+  title?: string;
+  description?: string;
+  difficulty?: ProblemDifficultyLevel;
+}
+
+export interface PracticeTestAdminProblemTemplateInsertRequest {
+  /** @format int32 */
+  languageId?: number;
+  userTemplatePrefix?: string;
+  userTemplateSuffix?: string;
+  userStubCode?: string;
+}
+
+export interface PracticeTestAdminProblemTemplateUpdateRequest {
+  /** @format uuid */
+  templateId?: string;
+  /** @format int32 */
+  languageId?: number;
+  userTemplatePrefix?: string;
+  userTemplateSuffix?: string;
+  userStubCode?: string;
+}
+
+export interface PracticeTestAdminProblemTestcaseInsertRequest {
+  publicTestcases?: PracticeTestAdminProblemTestcasePublicInsertRequest[];
+  privateTestcases?: PracticeTestAdminProblemTestcasePrivateInsertRequest[];
+}
+
+export interface PracticeTestAdminProblemTestcasePrivateInsertRequest {
+  inputData?: string;
+  expectedOutput?: string;
+}
+
+export interface PracticeTestAdminProblemTestcasePublicInsertRequest {
+  inputData?: string;
+  expectedOutput?: string;
+}
+
+export interface PracticeTestAdminProblemTestcaseUpdateRequest {
+  /** @format uuid */
+  testcaseId?: string;
+  inputData?: string;
+  expectedOutput?: string;
+  isPublic?: boolean;
+}
+
+export interface PracticeTestAdminProblemUpdateRequest {
+  title?: string;
+  description?: string;
+  difficulty?: string;
+}
+
+export interface PracticeTestAdminTemplatesInsertRequest {
+  /** @format uuid */
+  problemId?: string;
+  templates?: PracticeTestTemplateAddRequestEntity[];
+}
+
+export interface PracticeTestAdminTemplatesInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface PracticeTestAdminTestcasesInsertRequest {
+  /** @format uuid */
+  problemId?: string;
+  publicTestcases?: PracticeTestTestcaseAddRequestEntity[];
+  privateTestcases?: PracticeTestTestcaseAddRequestEntity[];
+}
+
+export interface PracticeTestAdminTestcasesInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface PracticeTestAdminUpdateRequest {
+  /** @format uuid */
+  problemId?: string;
+  problem?: PracticeTestAdminProblemUpdateRequest;
+  testcases?: PracticeTestAdminProblemTestcaseUpdateRequest[];
+  templates?: PracticeTestAdminProblemTemplateUpdateRequest[];
+  examples?: PracticeTestAdminProblemExampleUpdateRequest[];
+}
+
+export interface PracticeTestAdminUpdateResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface PracticeTestCodeCheckRequest {
+  /** @format uuid */
+  problemId: string;
+  /** @minLength 1 */
+  sourceCode: string;
+  /** @format int32 */
+  languageId: number;
+  /** @minItems 1 */
+  inputs: string[];
+}
+
+export interface PracticeTestCodeCheckResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: PracticeTestCodeCheckResponseEntity;
+}
+
+export interface PracticeTestCodeCheckResponseEntity {
+  overallStatus?: string;
+  /** @format int32 */
+  totalTests?: number;
+  /** @format int32 */
+  passedTests?: number;
+  testCaseResults?: TestCaseExecutionResult[];
+}
+
+export interface PracticeTestExampleAddRequestEntity {
+  /** @format int32 */
+  exampleOrder?: number;
+  inputData?: string;
+  outputData?: string;
+  explanation?: string;
+}
+
+export interface PracticeTestLanguageSelectsResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: PracticeTestLanguageSelectsResponseEntity[];
+}
+
+export interface PracticeTestLanguageSelectsResponseEntity {
+  /** @format int32 */
+  languageId?: number;
+  name?: string;
+}
+
+export interface PracticeTestProblemExample {
+  /** @format uuid */
+  exampleId?: string;
+  /** @format int32 */
+  exampleOrder?: number;
+  inputData?: string;
+  outputData?: string;
+  explanation?: string;
+}
+
+export interface PracticeTestSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: PracticeTestSelectResponseEntity;
+}
+
+export interface PracticeTestSelectResponseEntity {
+  /** @format uuid */
+  problemId?: string;
+  title?: string;
+  description?: string;
+  difficulty?: string;
+  examples?: PracticeTestProblemExample[];
+  testCases?: PracticeTestSelectTestCaseResponse[];
+}
+
+export interface PracticeTestSelectTestCaseResponse {
+  /** @format uuid */
+  testcaseId?: string;
+  /** @format uuid */
+  problemId?: string;
+  inputData?: string;
+  expectedOutput?: string;
+}
+
+export interface PracticeTestSelectsResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: PracticeTestSelectsResponseEntityPagedResult;
+}
+
+export interface PracticeTestSelectsResponseEntity {
+  /** @format uuid */
+  problemId?: string;
+  title?: string;
+  description?: string;
+  difficulty?: string;
+}
+
+export interface PracticeTestSelectsResponseEntityPagedResult {
+  items?: PracticeTestSelectsResponseEntity[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
+}
+
+export interface PracticeTestStudentAnswerRequest {
+  /** @format uuid */
+  problemId: string;
+  /** @minLength 1 */
+  codeSubmission: string;
+  /** @format int32 */
+  languageId: number;
+}
+
+export interface PracticeTestSubmitInsertRequest {
+  /** @format uuid */
+  problemId: string;
+  /** @minLength 1 */
+  sourceCode: string;
+  /** @format int32 */
+  languageId: number;
+}
+
+export interface PracticeTestSubmitInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: PracticeTestSubmitInsertResponseEntity;
+}
+
+export interface PracticeTestSubmitInsertResponseEntity {
+  /** @format uuid */
+  submissionId?: string;
+  status?: string;
+  /** @format int32 */
+  passedTests?: number;
+  /** @format int32 */
+  totalTests?: number;
+  /** @format int32 */
+  averageTimeMs?: number;
+  testResults?: SubmissionTestResultResponse[];
+}
+
+export interface PracticeTestTemplateAddRequestEntity {
+  /** @format int32 */
+  languageId?: number;
+  userTemplatePrefix?: string;
+  userTemplateSuffix?: string;
+  userStubCode?: string;
+}
+
+export interface PracticeTestTestcaseAddRequestEntity {
+  inputData?: string;
+  expectedOutput?: string;
+}
+
+export interface PracticeTestUserTemplateCodeSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: PracticeTestUserTemplateCodeSelectResponseEntity;
+}
+
+export interface PracticeTestUserTemplateCodeSelectResponseEntity {
+  userTemplateCode?: string;
 }
 
 export interface QuestionAddRequest {
@@ -813,6 +1263,7 @@ export interface StudentTestInsertCommand {
   startedAt: string;
   quizIds: string[];
   answers: StudentAnswerRequest[];
+  practiceTestAnswers?: PracticeTestStudentAnswerRequest[];
 }
 
 export interface StudentTestInsertResponse {
@@ -844,6 +1295,17 @@ export interface StudentTestSelectResponseEntity {
   /** @format date-time */
   finishedAt?: string;
   quizResults?: QuizResultSelectResponseEntity[];
+}
+
+export interface SubmissionTestResultResponse {
+  /** @format uuid */
+  testCaseId?: string;
+  isPublic?: boolean;
+  inputData?: string;
+  expectedOutput?: string;
+  actualOutput?: string;
+  passed?: boolean;
+  status?: string;
 }
 
 export interface SuggestCourseEntity {
@@ -980,6 +1442,20 @@ export interface TechnologySelectsEventResponseEntity {
   technologyName?: string;
   /** @format int32 */
   technologyType?: number;
+}
+
+export interface TestCaseExecutionResult {
+  /** @format int32 */
+  testCaseNumber?: number;
+  input?: string;
+  expectedOutput?: string;
+  status?: string;
+  output?: string;
+  error?: string;
+  /** @format double */
+  executionTime?: number;
+  /** @format int32 */
+  memory?: number;
 }
 
 export interface TestInsertCommand {
@@ -1285,20 +1761,107 @@ export class Api<
 > extends HttpClient<SecurityDataType> {
   api = {
     /**
+     * @description Lấy danh sách ngôn ngữ lập trình từ Judge0 API và thêm các ngôn ngữ mới vào hệ thống. Các ngôn ngữ đã tồn tại sẽ được bỏ qua. (Không spam API này). Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminInsertPracticeLanguageCreate
+     * @summary Đồng bộ ngôn ngữ lập trình từ Judge0 (Không spam API này)
+     * @request POST:/api/v1/Admin/InsertPracticeLanguage
+     * @secure
+     */
+    v1AdminInsertPracticeLanguageCreate: (params: RequestParams = {}) =>
+      this.request<PracticeTestAdminLanguageInsertResponse, any>({
+        path: `/api/v1/Admin/InsertPracticeLanguage`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cần cấp quyền Admin cho API
      *
      * @tags Admin
-     * @name V1AdminInsertTestCreate
-     * @summary Tạo bài kiểm tra đầu vào mới
-     * @request POST:/api/v1/Admin/InsertTest
+     * @name V1AdminInsertPracticeTestCreate
+     * @summary Tạo bài tập thực hành mới
+     * @request POST:/api/v1/Admin/InsertPracticeTest
      * @secure
      */
-    v1AdminInsertTestCreate: (
-      body: TestInsertCommand,
+    v1AdminInsertPracticeTestCreate: (
+      body: PracticeTestAdminInsertRequest,
       params: RequestParams = {},
     ) =>
-      this.request<TestInsertResponse, any>({
-        path: `/api/v1/Admin/InsertTest`,
+      this.request<PracticeTestAdminInsertResponse, any>({
+        path: `/api/v1/Admin/InsertPracticeTest`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Thêm các ví dụ minh họa input/output vào bài tập thực hành đã tồn tại. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminInsertPracticeTestExamplesCreate
+     * @summary Thêm ví dụ vào bài tập thực hành
+     * @request POST:/api/v1/Admin/InsertPracticeTestExamples
+     * @secure
+     */
+    v1AdminInsertPracticeTestExamplesCreate: (
+      body: PracticeTestAdminExamplesInsertRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<PracticeTestAdminExamplesInsertResponse, any>({
+        path: `/api/v1/Admin/InsertPracticeTestExamples`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Thêm code templates cho các ngôn ngữ lập trình vào bài tập thực hành đã tồn tại. Mỗi ngôn ngữ chỉ có thể có 1 template. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminInsertPracticeTestTemplatesCreate
+     * @summary Thêm code templates vào bài tập thực hành
+     * @request POST:/api/v1/Admin/InsertPracticeTestTemplates
+     * @secure
+     */
+    v1AdminInsertPracticeTestTemplatesCreate: (
+      body: PracticeTestAdminTemplatesInsertRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<PracticeTestAdminTemplatesInsertResponse, any>({
+        path: `/api/v1/Admin/InsertPracticeTestTemplates`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Thêm public và private test cases vào bài tập thực hành đã tồn tại. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminInsertPracticeTestTestcasesCreate
+     * @summary Thêm test cases vào bài tập thực hành
+     * @request POST:/api/v1/Admin/InsertPracticeTestTestcases
+     * @secure
+     */
+    v1AdminInsertPracticeTestTestcasesCreate: (
+      body: PracticeTestAdminTestcasesInsertRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<PracticeTestAdminTestcasesInsertResponse, any>({
+        path: `/api/v1/Admin/InsertPracticeTestTestcases`,
         method: "POST",
         body: body,
         secure: true,
@@ -1331,139 +1894,67 @@ export class Api<
       }),
 
     /**
-     * @description Hỗ trợ phân trang và lọc theo StudentId hoặc SurveyId
+     * @description Cần cấp quyền Admin cho API
      *
      * @tags Admin
-     * @name V1AdminSelectStudentSurveysList
-     * @summary Lấy danh sách tất cả khảo sát của học sinh
-     * @request GET:/api/v1/Admin/SelectStudentSurveys
+     * @name V1AdminInsertTestCreate
+     * @summary Tạo bài kiểm tra đầu vào mới
+     * @request POST:/api/v1/Admin/InsertTest
      * @secure
      */
-    v1AdminSelectStudentSurveysList: (
-      query?: {
-        /** @format uuid */
-        StudentId?: string;
-        /** @format uuid */
-        SurveyId?: string;
-        /** @format int32 */
-        PageNumber?: number;
-        /** @format int32 */
-        PageSize?: number;
-      },
+    v1AdminInsertTestCreate: (
+      body: TestInsertCommand,
       params: RequestParams = {},
     ) =>
-      this.request<AdminStudentSurveysSelectResponse, any>({
-        path: `/api/v1/Admin/SelectStudentSurveys`,
-        method: "GET",
-        query: query,
+      this.request<TestInsertResponse, any>({
+        path: `/api/v1/Admin/InsertTest`,
+        method: "POST",
+        body: body,
         secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
     /**
-     * @description Hỗ trợ phân trang và lọc theo StudentId hoặc TestId
-     *
-     * @tags Admin
-     * @name V1AdminSelectStudentTestsList
-     * @summary Lấy danh sách tất cả bài kiểm tra của học sinh
-     * @request GET:/api/v1/Admin/SelectStudentTests
-     * @secure
-     */
-    v1AdminSelectStudentTestsList: (
-      query?: {
-        /** @format int32 */
-        PageNumber?: number;
-        /** @format int32 */
-        PageSize?: number;
-        /** @format uuid */
-        StudentId?: string;
-        /** @format uuid */
-        TestId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<AdminStudentTestsSelectResponse, any>({
-        path: `/api/v1/Admin/SelectStudentTests`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Admin
-     * @name V1AdminSelectStudentTestDetailList
-     * @summary Chi tiết một bài kiểm tra đầu vào của sinh viên
-     * @request GET:/api/v1/Admin/SelectStudentTestDetail
-     * @secure
-     */
-    v1AdminSelectStudentTestDetailList: (
-      query: {
-        /** @format uuid */
-        StudentTestId: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<AdminStudentTestSelectDetailResponse, any>({
-        path: `/api/v1/Admin/SelectStudentTestDetail`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Hỗ trợ phân trang và lọc theo QuizType, SubjectCode, SurveyCode
-     *
-     * @tags Admin
-     * @name V1AdminSelectQuizzesList
-     * @summary Lấy danh sách tất cả quiz/survey
-     * @request GET:/api/v1/Admin/SelectQuizzes
-     * @secure
-     */
-    v1AdminSelectQuizzesList: (
-      query?: {
-        /** @format int32 */
-        PageNumber?: number;
-        /** @format int32 */
-        PageSize?: number;
-        QuizType?: any;
-        /** @format uuid */
-        SubjectCode?: string;
-        SurveyCode?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<AdminQuizzesSelectResponse, any>({
-        path: `/api/v1/Admin/SelectQuizzes`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Teacher cho API. Chỉ cập nhật thông tin quiz settings và câu hỏi/câu trả lời hiện có
+     * @description Cần cấp quyền Student cho API
      *
      * @tags CourseQuiz
-     * @name V1CourseQuizUpdateQuizCourseUpdate
-     * @summary Cập nhật bài kiểm tra cho khoá học
-     * @request PUT:/api/v1/CourseQuiz/UpdateQuizCourse
+     * @name V1CourseQuizCheckStudentQuizAttemptCreate
+     * @summary Kiểm tra bài kiểm tra course của sinh viên
+     * @request POST:/api/v1/CourseQuiz/CheckStudentQuizAttempt
      * @secure
      */
-    v1CourseQuizUpdateQuizCourseUpdate: (
-      body: QuizCourseUpdateCommand,
+    v1CourseQuizCheckStudentQuizAttemptCreate: (
+      body: QuizCourseCheckAttemptCommand,
       params: RequestParams = {},
     ) =>
-      this.request<QuizCourseUpdateResponse, any>({
-        path: `/api/v1/CourseQuiz/UpdateQuizCourse`,
-        method: "PUT",
+      this.request<QuizCourseCheckAttemptResponse, any>({
+        path: `/api/v1/CourseQuiz/CheckStudentQuizAttempt`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Teacher cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizInsertQuestionsToQuizCourseCreate
+     * @summary Thêm câu hỏi mới vào bài kiểm tra
+     * @request POST:/api/v1/CourseQuiz/InsertQuestionsToQuizCourse
+     * @secure
+     */
+    v1CourseQuizInsertQuestionsToQuizCourseCreate: (
+      body: QuizCourseAddQuestionsCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseAddQuestionsResponse, any>({
+        path: `/api/v1/CourseQuiz/InsertQuestionsToQuizCourse`,
+        method: "POST",
         body: body,
         secure: true,
         type: ContentType.Json,
@@ -1495,77 +1986,6 @@ export class Api<
       }),
 
     /**
-     * No description
-     *
-     * @tags CourseQuiz
-     * @name V1CourseQuizSelectQuizCourseList
-     * @summary API dùng để test lấy bài kiểm tra cho khoá học
-     * @request GET:/api/v1/CourseQuiz/SelectQuizCourse
-     * @secure
-     */
-    v1CourseQuizSelectQuizCourseList: (
-      query?: {
-        /** @format uuid */
-        QuizId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<QuizCourseSelectQueryResponse, any>({
-        path: `/api/v1/CourseQuiz/SelectQuizCourse`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Teacher cho API
-     *
-     * @tags CourseQuiz
-     * @name V1CourseQuizInsertQuestionsToQuizCourseCreate
-     * @summary Thêm câu hỏi mới vào bài kiểm tra
-     * @request POST:/api/v1/CourseQuiz/InsertQuestionsToQuizCourse
-     * @secure
-     */
-    v1CourseQuizInsertQuestionsToQuizCourseCreate: (
-      body: QuizCourseAddQuestionsCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<QuizCourseAddQuestionsResponse, any>({
-        path: `/api/v1/CourseQuiz/InsertQuestionsToQuizCourse`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Teacher cho API. Xóa mềm (soft delete) - set IsActive = false
-     *
-     * @tags CourseQuiz
-     * @name V1CourseQuizDeleteQuestionsFromQuizCourseDelete
-     * @summary Xóa câu hỏi khỏi bài kiểm tra
-     * @request DELETE:/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse
-     * @secure
-     */
-    v1CourseQuizDeleteQuestionsFromQuizCourseDelete: (
-      body: QuizCourseDeleteQuestionsCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<QuizCourseDeleteQuestionsResponse, any>({
-        path: `/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse`,
-        method: "DELETE",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Cần cấp quyền Student cho API
      *
      * @tags CourseQuiz
@@ -1589,45 +2009,20 @@ export class Api<
       }),
 
     /**
-     * @description Cần cấp quyền Student cho API
+     * @description API này cho phép student kiểm tra code của mình với nhiều test cases (inputs) cùng lúc để xem kết quả thực thi trước khi nộp bài chính thức. Student có thể gửi 1 hoặc nhiều inputs trong một request. Kết quả trả về bao gồm status, output, lỗi (nếu có), thời gian thực thi và memory cho từng test case mà không lưu vào database. Cần cấp quyền cho API
      *
-     * @tags CourseQuiz
-     * @name V1CourseQuizSelectStudentQuizCourseList
-     * @summary Hiển thị bài kiểm tra course cho sinh viên
-     * @request GET:/api/v1/CourseQuiz/SelectStudentQuizCourse
+     * @tags PracticeTest
+     * @name V1PracticeTestCheckPracticeTestCodeCreate
+     * @summary Kiểm tra code với nhiều input tự nhập mà không lưu vào database
+     * @request POST:/api/v1/PracticeTest/CheckPracticeTestCode
      * @secure
      */
-    v1CourseQuizSelectStudentQuizCourseList: (
-      query?: {
-        /** @format uuid */
-        StudentQuizCourseId?: string;
-      },
+    v1PracticeTestCheckPracticeTestCodeCreate: (
+      body: PracticeTestCodeCheckRequest,
       params: RequestParams = {},
     ) =>
-      this.request<StudentCourseQuizSelectResponse, any>({
-        path: `/api/v1/CourseQuiz/SelectStudentQuizCourse`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Student cho API
-     *
-     * @tags CourseQuiz
-     * @name V1CourseQuizCheckStudentQuizAttemptCreate
-     * @summary Kiểm tra bài kiểm tra course của sinh viên
-     * @request POST:/api/v1/CourseQuiz/CheckStudentQuizAttempt
-     * @secure
-     */
-    v1CourseQuizCheckStudentQuizAttemptCreate: (
-      body: QuizCourseCheckAttemptCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<QuizCourseCheckAttemptResponse, any>({
-        path: `/api/v1/CourseQuiz/CheckStudentQuizAttempt`,
+      this.request<PracticeTestCodeCheckResponse, any>({
+        path: `/api/v1/PracticeTest/CheckPracticeTestCode`,
         method: "POST",
         body: body,
         secure: true,
@@ -1637,129 +2032,47 @@ export class Api<
       }),
 
     /**
-     * @description Cần cấp quyền Student cho API
+     * @description Cần cấp quyền cho API
      *
-     * @tags CourseQuiz
-     * @name V1CourseQuizGetLatestModuleQuizScoresList
-     * @summary Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo module
-     * @request GET:/api/v1/CourseQuiz/GetLatestModuleQuizScores
+     * @tags PracticeTest
+     * @name V1PracticeTestSubmitPracticeTestCreate
+     * @summary Nộp bài tập thực hành
+     * @request POST:/api/v1/PracticeTest/SubmitPracticeTest
      * @secure
      */
-    v1CourseQuizGetLatestModuleQuizScoresList: (
-      query?: {
-        /** @format uuid */
-        StudentId?: string;
-        /** @format uuid */
-        CourseId?: string;
-        ModuleIds?: string[];
-      },
+    v1PracticeTestSubmitPracticeTestCreate: (
+      body: PracticeTestSubmitInsertRequest,
       params: RequestParams = {},
     ) =>
-      this.request<GetLatestModuleQuizScoresResponseEvent, any>({
-        path: `/api/v1/CourseQuiz/GetLatestModuleQuizScores`,
-        method: "GET",
-        query: query,
+      this.request<PracticeTestSubmitInsertResponse, any>({
+        path: `/api/v1/PracticeTest/SubmitPracticeTest`,
+        method: "POST",
+        body: body,
         secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
     /**
-     * @description Cần cấp quyền Student cho API
+     * @description Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz
      *
-     * @tags CourseQuiz
-     * @name V1CourseQuizGetLatestLessonQuizScoresList
-     * @summary Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo lesson
-     * @request GET:/api/v1/CourseQuiz/GetLatestLessonQuizScores
+     * @tags Question
+     * @name V1QuestionCreate
+     * @summary Thêm câu hỏi và câu trả lời vào quiz
+     * @request POST:/api/v1/Question
      * @secure
      */
-    v1CourseQuizGetLatestLessonQuizScoresList: (
-      query?: {
-        /** @format uuid */
-        StudentId?: string;
-        /** @format uuid */
-        CourseId?: string;
-        LessonIds?: string[];
-      },
+    v1QuestionCreate: (
+      body: QuestionInsertCommand,
       params: RequestParams = {},
     ) =>
-      this.request<GetLatestLessonQuizScoresResponseEvent, any>({
-        path: `/api/v1/CourseQuiz/GetLatestLessonQuizScores`,
-        method: "GET",
-        query: query,
+      this.request<QuestionInsertResponse, any>({
+        path: `/api/v1/Question`,
+        method: "POST",
+        body: body,
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền cho API
-     *
-     * @tags ExternalQuiz
-     * @name V1ExternalQuizSelectSemestersList
-     * @summary Lấy danh sách tất cả các học kỳ
-     * @request GET:/api/v1/ExternalQuiz/SelectSemesters
-     * @secure
-     */
-    v1ExternalQuizSelectSemestersList: (params: RequestParams = {}) =>
-      this.request<SemesterSelectsEventResponse, any>({
-        path: `/api/v1/ExternalQuiz/SelectSemesters`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền cho API
-     *
-     * @tags ExternalQuiz
-     * @name V1ExternalQuizSelectMajorsList
-     * @summary Lấy danh sách tất cả các chuyên ngành trong trường
-     * @request GET:/api/v1/ExternalQuiz/SelectMajors
-     * @secure
-     */
-    v1ExternalQuizSelectMajorsList: (params: RequestParams = {}) =>
-      this.request<MajorSelectsEventResponse, any>({
-        path: `/api/v1/ExternalQuiz/SelectMajors`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền cho API
-     *
-     * @tags ExternalQuiz
-     * @name V1ExternalQuizSelectTechnologiesList
-     * @summary Lấy danh sách tất cả các ngôn ngữ lập trình/ framework
-     * @request GET:/api/v1/ExternalQuiz/SelectTechnologies
-     * @secure
-     */
-    v1ExternalQuizSelectTechnologiesList: (params: RequestParams = {}) =>
-      this.request<TechnologySelectsEventResponse, any>({
-        path: `/api/v1/ExternalQuiz/SelectTechnologies`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền cho API
-     *
-     * @tags ExternalQuiz
-     * @name V1ExternalQuizSelectLearningGoalsList
-     * @summary Lấy danh sách tất cả các mục tiêu học tập đang có
-     * @request GET:/api/v1/ExternalQuiz/SelectLearningGoals
-     * @secure
-     */
-    v1ExternalQuizSelectLearningGoalsList: (params: RequestParams = {}) =>
-      this.request<LearningGoalSelectsEventResponse, any>({
-        path: `/api/v1/ExternalQuiz/SelectLearningGoals`,
-        method: "GET",
-        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1813,47 +2126,6 @@ export class Api<
       }),
 
     /**
-     * @description Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz
-     *
-     * @tags Question
-     * @name V1QuestionCreate
-     * @summary Thêm câu hỏi và câu trả lời vào quiz
-     * @request POST:/api/v1/Question
-     * @secure
-     */
-    v1QuestionCreate: (
-      body: QuestionInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<QuestionInsertResponse, any>({
-        path: `/api/v1/Question`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền cho API
-     *
-     * @tags Quiz
-     * @name V1QuizSelectQuizzesList
-     * @summary Lấy danh sách quiz của một bài kiểm tra
-     * @request GET:/api/v1/Quiz/SelectQuizzes
-     * @secure
-     */
-    v1QuizSelectQuizzesList: (params: RequestParams = {}) =>
-      this.request<QuizSelectsResponse, any>({
-        path: `/api/v1/Quiz/SelectQuizzes`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Cần cấp quyền Student cho API
      *
      * @tags StudentSurvey
@@ -1872,6 +2144,485 @@ export class Api<
         body: body,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags StudentTest
+     * @name V1StudentTestInsertStudentTestCreate
+     * @summary Lưu câu trả lời của học sinh
+     * @request POST:/api/v1/StudentTest/InsertStudentTest
+     * @secure
+     */
+    v1StudentTestInsertStudentTestCreate: (
+      body: StudentTestInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentTestInsertResponse, any>({
+        path: `/api/v1/StudentTest/InsertStudentTest`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy toàn bộ thông tin chi tiết bao gồm test cases, templates, examples. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminSelectPracticeTestList
+     * @summary Chi tiết một bài kiểm tra thực hành
+     * @request GET:/api/v1/Admin/SelectPracticeTest
+     * @secure
+     */
+    v1AdminSelectPracticeTestList: (
+      query: {
+        /** @format uuid */
+        ProblemId: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminPracticeTestSelectResponse, any>({
+        path: `/api/v1/Admin/SelectPracticeTest`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Hỗ trợ phân trang và lọc theo độ khó, tìm kiếm theo tiêu đề. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminSelectPracticeTestsList
+     * @summary Lấy danh sách tất cả bài kiểm tra thực hành
+     * @request GET:/api/v1/Admin/SelectPracticeTests
+     * @secure
+     */
+    v1AdminSelectPracticeTestsList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        Difficulty?: string;
+        SearchTitle?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminPracticeTestsSelectResponse, any>({
+        path: `/api/v1/Admin/SelectPracticeTests`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Hỗ trợ phân trang và lọc theo QuizType, SubjectCode, SurveyCode
+     *
+     * @tags Admin
+     * @name V1AdminSelectQuizzesList
+     * @summary Lấy danh sách tất cả quiz/survey
+     * @request GET:/api/v1/Admin/SelectQuizzes
+     * @secure
+     */
+    v1AdminSelectQuizzesList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        QuizType?: any;
+        /** @format uuid */
+        SubjectCode?: string;
+        SurveyCode?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminQuizzesSelectResponse, any>({
+        path: `/api/v1/Admin/SelectQuizzes`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Hỗ trợ phân trang và lọc theo StudentId hoặc SurveyId
+     *
+     * @tags Admin
+     * @name V1AdminSelectStudentSurveysList
+     * @summary Lấy danh sách tất cả khảo sát của học sinh
+     * @request GET:/api/v1/Admin/SelectStudentSurveys
+     * @secure
+     */
+    v1AdminSelectStudentSurveysList: (
+      query?: {
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        SurveyId?: string;
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminStudentSurveysSelectResponse, any>({
+        path: `/api/v1/Admin/SelectStudentSurveys`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Admin
+     * @name V1AdminSelectStudentTestDetailList
+     * @summary Chi tiết một bài kiểm tra đầu vào của sinh viên
+     * @request GET:/api/v1/Admin/SelectStudentTestDetail
+     * @secure
+     */
+    v1AdminSelectStudentTestDetailList: (
+      query: {
+        /** @format uuid */
+        StudentTestId: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminStudentTestSelectDetailResponse, any>({
+        path: `/api/v1/Admin/SelectStudentTestDetail`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Hỗ trợ phân trang và lọc theo StudentId hoặc TestId
+     *
+     * @tags Admin
+     * @name V1AdminSelectStudentTestsList
+     * @summary Lấy danh sách tất cả bài kiểm tra của học sinh
+     * @request GET:/api/v1/Admin/SelectStudentTests
+     * @secure
+     */
+    v1AdminSelectStudentTestsList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        TestId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminStudentTestsSelectResponse, any>({
+        path: `/api/v1/Admin/SelectStudentTests`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizGetLatestLessonQuizScoresList
+     * @summary Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo lesson
+     * @request GET:/api/v1/CourseQuiz/GetLatestLessonQuizScores
+     * @secure
+     */
+    v1CourseQuizGetLatestLessonQuizScoresList: (
+      query?: {
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        CourseId?: string;
+        LessonIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetLatestLessonQuizScoresResponseEvent, any>({
+        path: `/api/v1/CourseQuiz/GetLatestLessonQuizScores`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizGetLatestModuleQuizScoresList
+     * @summary Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo module
+     * @request GET:/api/v1/CourseQuiz/GetLatestModuleQuizScores
+     * @secure
+     */
+    v1CourseQuizGetLatestModuleQuizScoresList: (
+      query?: {
+        /** @format uuid */
+        StudentId?: string;
+        /** @format uuid */
+        CourseId?: string;
+        ModuleIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetLatestModuleQuizScoresResponseEvent, any>({
+        path: `/api/v1/CourseQuiz/GetLatestModuleQuizScores`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizSelectQuizCourseList
+     * @summary API dùng để test lấy bài kiểm tra cho khoá học
+     * @request GET:/api/v1/CourseQuiz/SelectQuizCourse
+     * @secure
+     */
+    v1CourseQuizSelectQuizCourseList: (
+      query?: {
+        /** @format uuid */
+        QuizId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseSelectQueryResponse, any>({
+        path: `/api/v1/CourseQuiz/SelectQuizCourse`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student cho API
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizSelectStudentQuizCourseList
+     * @summary Hiển thị bài kiểm tra course cho sinh viên
+     * @request GET:/api/v1/CourseQuiz/SelectStudentQuizCourse
+     * @secure
+     */
+    v1CourseQuizSelectStudentQuizCourseList: (
+      query?: {
+        /** @format uuid */
+        StudentQuizCourseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentCourseQuizSelectResponse, any>({
+        path: `/api/v1/CourseQuiz/SelectStudentQuizCourse`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags ExternalQuiz
+     * @name V1ExternalQuizSelectLearningGoalsList
+     * @summary Lấy danh sách tất cả các mục tiêu học tập đang có
+     * @request GET:/api/v1/ExternalQuiz/SelectLearningGoals
+     * @secure
+     */
+    v1ExternalQuizSelectLearningGoalsList: (params: RequestParams = {}) =>
+      this.request<LearningGoalSelectsEventResponse, any>({
+        path: `/api/v1/ExternalQuiz/SelectLearningGoals`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags ExternalQuiz
+     * @name V1ExternalQuizSelectMajorsList
+     * @summary Lấy danh sách tất cả các chuyên ngành trong trường
+     * @request GET:/api/v1/ExternalQuiz/SelectMajors
+     * @secure
+     */
+    v1ExternalQuizSelectMajorsList: (params: RequestParams = {}) =>
+      this.request<MajorSelectsEventResponse, any>({
+        path: `/api/v1/ExternalQuiz/SelectMajors`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags ExternalQuiz
+     * @name V1ExternalQuizSelectSemestersList
+     * @summary Lấy danh sách tất cả các học kỳ
+     * @request GET:/api/v1/ExternalQuiz/SelectSemesters
+     * @secure
+     */
+    v1ExternalQuizSelectSemestersList: (params: RequestParams = {}) =>
+      this.request<SemesterSelectsEventResponse, any>({
+        path: `/api/v1/ExternalQuiz/SelectSemesters`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags ExternalQuiz
+     * @name V1ExternalQuizSelectTechnologiesList
+     * @summary Lấy danh sách tất cả các ngôn ngữ lập trình/ framework
+     * @request GET:/api/v1/ExternalQuiz/SelectTechnologies
+     * @secure
+     */
+    v1ExternalQuizSelectTechnologiesList: (params: RequestParams = {}) =>
+      this.request<TechnologySelectsEventResponse, any>({
+        path: `/api/v1/ExternalQuiz/SelectTechnologies`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags PracticeTest
+     * @name V1PracticeTestSelectCodeLanguagesList
+     * @summary Lấy danh sách các ngôn ngữ lập trình hỗ trợ cho bài tập thực hành
+     * @request GET:/api/v1/PracticeTest/SelectCodeLanguages
+     * @secure
+     */
+    v1PracticeTestSelectCodeLanguagesList: (params: RequestParams = {}) =>
+      this.request<PracticeTestLanguageSelectsResponse, any>({
+        path: `/api/v1/PracticeTest/SelectCodeLanguages`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags PracticeTest
+     * @name V1PracticeTestSelectPracticeTestDetailList
+     * @summary Lấy danh sách bài tập thực hành
+     * @request GET:/api/v1/PracticeTest/SelectPracticeTestDetail
+     * @secure
+     */
+    v1PracticeTestSelectPracticeTestDetailList: (
+      query: {
+        /** @format uuid */
+        ProblemId: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PracticeTestSelectResponse, any>({
+        path: `/api/v1/PracticeTest/SelectPracticeTestDetail`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy 3 bài tập thực hành ngẫu nhiên có đủ 3 level: Dễ (Easy), Trung bình (Medium), Khó (Hard). Cần cấp quyền cho API
+     *
+     * @tags PracticeTest
+     * @name V1PracticeTestSelectPracticeTestsList
+     * @summary Lấy 3 bài tập thực hành ngẫu nhiên
+     * @request GET:/api/v1/PracticeTest/SelectPracticeTests
+     * @secure
+     */
+    v1PracticeTestSelectPracticeTestsList: (params: RequestParams = {}) =>
+      this.request<PracticeTestSelectsResponse, any>({
+        path: `/api/v1/PracticeTest/SelectPracticeTests`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API này trả về hàm mẫu dành cho người dùng, dựa trên bài tập (problem) và ngôn ngữ lập trình được chọn. Người dùng có thể sử dụng mã nguồn này để code phần bài tập thực hành của mình.
+     *
+     * @tags PracticeTest
+     * @name V1PracticeTestSelectUserTemplateCodeList
+     * @summary Lấy source code mẫu cho user tương ứng với problem và ngôn ngữ lập trình tương ứng
+     * @request GET:/api/v1/PracticeTest/SelectUserTemplateCode
+     * @secure
+     */
+    v1PracticeTestSelectUserTemplateCodeList: (
+      query: {
+        /** @format uuid */
+        ProblemId: string;
+        /** @format int32 */
+        LanguageId: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<PracticeTestUserTemplateCodeSelectResponse, any>({
+        path: `/api/v1/PracticeTest/SelectUserTemplateCode`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags Quiz
+     * @name V1QuizSelectQuizzesList
+     * @summary Lấy danh sách quiz của một bài kiểm tra
+     * @request GET:/api/v1/Quiz/SelectQuizzes
+     * @secure
+     */
+    v1QuizSelectQuizzesList: (params: RequestParams = {}) =>
+      this.request<QuizSelectsResponse, any>({
+        path: `/api/v1/Quiz/SelectQuizzes`,
+        method: "GET",
+        secure: true,
         format: "json",
         ...params,
       }),
@@ -1921,29 +2672,6 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Student cho API
-     *
-     * @tags StudentTest
-     * @name V1StudentTestInsertStudentTestCreate
-     * @summary Lưu câu trả lời của học sinh
-     * @request POST:/api/v1/StudentTest/InsertStudentTest
-     * @secure
-     */
-    v1StudentTestInsertStudentTestCreate: (
-      body: StudentTestInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<StudentTestInsertResponse, any>({
-        path: `/api/v1/StudentTest/InsertStudentTest`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -2040,6 +2768,98 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cập nhật thông tin bài kiểm tra thực hành bao gồm: tiêu đề, mô tả, độ khó, test cases, templates và examples. Chỉ cập nhật/xóa items có ID trong request. Items không có trong request sẽ bị xoá. Phải giữ ít nhất 1 test case và 1 example. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminUpdatePracticeTestUpdate
+     * @summary Cập nhật bài kiểm tra thực hành
+     * @request PUT:/api/v1/Admin/UpdatePracticeTest
+     * @secure
+     */
+    v1AdminUpdatePracticeTestUpdate: (
+      body: PracticeTestAdminUpdateRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<PracticeTestAdminUpdateResponse, any>({
+        path: `/api/v1/Admin/UpdatePracticeTest`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Teacher cho API. Chỉ cập nhật thông tin quiz settings và câu hỏi/câu trả lời hiện có
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizUpdateQuizCourseUpdate
+     * @summary Cập nhật bài kiểm tra cho khoá học
+     * @request PUT:/api/v1/CourseQuiz/UpdateQuizCourse
+     * @secure
+     */
+    v1CourseQuizUpdateQuizCourseUpdate: (
+      body: QuizCourseUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseUpdateResponse, any>({
+        path: `/api/v1/CourseQuiz/UpdateQuizCourse`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Xóa bài tập thực hành. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminDeletePracticeTestDelete
+     * @summary Xóa bài tập thực hành
+     * @request DELETE:/api/v1/Admin/DeletePracticeTest
+     * @secure
+     */
+    v1AdminDeletePracticeTestDelete: (
+      body: PracticeTestAdminDeleteRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<PracticeTestAdminDeleteResponse, any>({
+        path: `/api/v1/Admin/DeletePracticeTest`,
+        method: "DELETE",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Teacher cho API. Xóa mềm (soft delete) - set IsActive = false
+     *
+     * @tags CourseQuiz
+     * @name V1CourseQuizDeleteQuestionsFromQuizCourseDelete
+     * @summary Xóa câu hỏi khỏi bài kiểm tra
+     * @request DELETE:/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse
+     * @secure
+     */
+    v1CourseQuizDeleteQuestionsFromQuizCourseDelete: (
+      body: QuizCourseDeleteQuestionsCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<QuizCourseDeleteQuestionsResponse, any>({
+        path: `/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse`,
+        method: "DELETE",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

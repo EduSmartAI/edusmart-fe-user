@@ -1,0 +1,36 @@
+/* Dropdown chọn ngôn ngữ kiểu Monaco/LeetCode */
+.code-lang-dropdown {
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+/* layout 3 cột */
+.code-lang-dropdown .rc-virtual-list-holder-inner {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  column-gap: 16px;
+}
+
+/* từng item */
+.code-lang-dropdown .ant-select-item {
+  margin: 2px 0;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* hover */
+.code-lang-dropdown .ant-select-item-option-active {
+  background: rgba(148, 163, 184, 0.18); /* xám nhẹ */
+}
+
+/* item đang chọn (C# giống hình) */
+.code-lang-dropdown .ant-select-item-option-selected {
+  background: #111827;
+  color: #f9fafb;
+}
+
+/* tránh item bị cắt khi chia grid */
+.code-lang-dropdown .ant-select-item {
+  break-inside: avoid;
+}

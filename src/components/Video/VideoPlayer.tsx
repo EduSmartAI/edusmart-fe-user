@@ -23,6 +23,7 @@ import { Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { createPortal } from "react-dom";
 import { useCourseStore } from "EduSmart/stores/course/courseStore";
+import { UserBehaviourActionType, UserBehaviourTargetType } from "EduSmart/enum/enum";
 
 // Bổ sung type cho field không có trong định nghĩa
 declare module "hls.js" {
@@ -75,6 +76,7 @@ type Props = {
   }) => void;
   timedOverlays?: TimedOverlay[];
   lessonId?: string;
+  courseId?: string;
   tickSec?: number;
 };
 
@@ -94,6 +96,7 @@ type ExtendedPlyrOptions = Plyr.Options & {
 
 type PlyrWithQuality = Plyr & { quality: number };
 type PlyrWithLanguage = Plyr & { language: string };
+const PLAY_EVENT_INTERVAL_MS = 60 * 60 * 1000;
 
 export default function YouTubeStylePlayer({
   src,
@@ -103,6 +106,7 @@ export default function YouTubeStylePlayer({
   onResume,
   timedOverlays = [],
   lessonId,
+  courseId,
   tickSec = 3,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -130,6 +134,37 @@ export default function YouTubeStylePlayer({
   const [plyrContainerEl, setPlyrContainerEl] = useState<HTMLElement | null>(
     null,
   );
+  const lastProgrammaticSeekRef = useRef(0);
+  const lastSeekFromRef = useRef(0);
+  const pauseCountRef = useRef(0);
+  const scrollCountRef = useRef(0);
+  const retryCountRef = useRef(0);
+  const playCountRef = useRef(0);
+  const lastPlayEventAtRef = useRef<number | null>(null);
+  const insertUserBehaviour = useCourseStore((s) => s.insertUserBehaviour);
+  const trackPlayEvent = useCallback(() => {
+    if (!insertUserBehaviour || !lessonId || !courseId) return;
+
+    const now = Date.now();
+    if (
+      lastPlayEventAtRef.current &&
+      now - lastPlayEventAtRef.current < PLAY_EVENT_INTERVAL_MS
+    ) {
+      // chưa đủ 1 tiếng từ lần gửi trước -> bỏ qua
+      return;
+    }
+
+    playCountRef.current += 1;
+    lastPlayEventAtRef.current = now;
+
+    insertUserBehaviour(
+      UserBehaviourActionType.PlayVideo,
+      lessonId,
+      UserBehaviourTargetType.Lesson,
+      courseId,
+      String(playCountRef.current),
+    ).catch(() => {});
+  }, [insertUserBehaviour, lessonId, courseId]);
 
   const getOverlayEnd = (ov: TimedOverlay) =>
     typeof ov.end === "number"
@@ -357,6 +392,7 @@ export default function YouTubeStylePlayer({
                   if (targetIdx !== -1 && fragData.frag.level !== targetIdx)
                     return;
                   hls.off(Events.FRAG_BUFFERED, onFragBuffered);
+                  lastProgrammaticSeekRef.current = Date.now();
                   v.currentTime = t;
                   setTimeout(() => {
                     if (!wasPaused) v.play().catch(() => {});
@@ -514,13 +550,11 @@ export default function YouTubeStylePlayer({
 
   // Xử lý sự kiện pause
   const handlePause = useCallback(() => {
-    if (!onPause) return;
     const v = videoRef.current;
     if (!v) return;
 
     const now = Date.now();
 
-    // 🚫 Nếu 2 lần pause cách nhau < 300ms → coi như double-tap gesture, bỏ qua
     if (now - lastPauseTsRef.current < 300) {
       lastPauseTsRef.current = now;
       pendingPauseReasonRef.current = null;
@@ -528,12 +562,7 @@ export default function YouTubeStylePlayer({
     }
     lastPauseTsRef.current = now;
 
-    // ✅ Lấy reason "ép buộc" (quality-switch) nếu có
-    const forcedNow = pauseReasonRef.current as
-      | "quality-switch"
-      | "user"
-      | "unknown"
-      | null;
+    const forcedNow = pauseReasonRef.current as PauseReason | null;
     pauseReasonRef.current = null;
     if (forcedNow) pendingPauseReasonRef.current = forcedNow;
 
@@ -552,15 +581,31 @@ export default function YouTubeStylePlayer({
       if (!forced && (seekingRef.current || withinSeekWindow)) return;
 
       pausedSinceRef.current = Date.now();
-      lastPauseReasonCommittedRef.current = forced ?? "user";
+      const reason: PauseReason = (forced ?? "user") as PauseReason;
+      lastPauseReasonCommittedRef.current = reason;
 
-      onPause({
-        currentTime: v.currentTime,
-        duration: Number.isFinite(v.duration) ? v.duration : 0,
-        reason: forced ?? "user",
-      });
+      // callback cũ
+      if (onPause) {
+        onPause({
+          currentTime: v.currentTime,
+          duration: Number.isFinite(v.duration) ? v.duration : 0,
+          reason,
+        });
+      }
+
+      // chỉ log khi user bấm pause
+      if (reason === "user" && insertUserBehaviour && lessonId && courseId) {
+        pauseCountRef.current += 1;
+        insertUserBehaviour(
+          UserBehaviourActionType.PauseVideo,
+          lessonId,
+          UserBehaviourTargetType.Lesson,
+          courseId,
+          String(pauseCountRef.current),
+        ).catch(() => {});
+      }
     }, 80);
-  }, [onPause]);
+  }, [onPause, insertUserBehaviour, lessonId, courseId]);
 
   const handleResume = useCallback(() => {
     const v = videoRef.current;
@@ -626,10 +671,51 @@ export default function YouTubeStylePlayer({
     const onSeeking = () => {
       seekingRef.current = true;
       lastSeekTsRef.current = Date.now();
+      lastSeekFromRef.current = v.currentTime || 0;
+
+      const now = Date.now();
+      const isProgrammatic = now - lastProgrammaticSeekRef.current < 500;
+
+      // ScrollVideo
+      if (!isProgrammatic && insertUserBehaviour && lessonId && courseId) {
+        scrollCountRef.current += 1;
+        insertUserBehaviour(
+          UserBehaviourActionType.ScrollVideo,
+          lessonId,
+          UserBehaviourTargetType.Lesson,
+          courseId,
+          String(scrollCountRef.current),
+        ).catch(() => {});
+      }
     };
+
     const onSeeked = () => {
       lastSeekTsRef.current = Date.now();
-      // thả cờ ở tick kế tiếp để cover trường hợp pause -> seeking
+
+      const to = v.currentTime || 0;
+      const from = lastSeekFromRef.current;
+      const now = Date.now();
+      const isProgrammatic = now - lastProgrammaticSeekRef.current < 500;
+
+      // RetryLesson: đang xem khá xa (>=30s) rồi seek về gần đầu (<=2s)
+      if (
+        !isProgrammatic &&
+        insertUserBehaviour &&
+        lessonId &&
+        courseId &&
+        from > 30 &&
+        to <= 2
+      ) {
+        retryCountRef.current += 1;
+        insertUserBehaviour(
+          UserBehaviourActionType.RetryLesson,
+          lessonId,
+          UserBehaviourTargetType.Lesson,
+          courseId,
+          String(retryCountRef.current),
+        ).catch(() => {});
+      }
+
       setTimeout(() => {
         seekingRef.current = false;
       }, 0);
@@ -641,7 +727,7 @@ export default function YouTubeStylePlayer({
       v.removeEventListener("seeking", onSeeking);
       v.removeEventListener("seeked", onSeeked);
     };
-  }, []);
+  }, [insertUserBehaviour, lessonId, courseId]);
 
   // Đảm bảo lắng nghe sự kiện load/error trực tiếp trên phần tử <track>
   useEffect(() => {
@@ -751,7 +837,9 @@ export default function YouTubeStylePlayer({
 
       const lastPositionSec = Math.floor(v.currentTime || 0);
       // yêu cầu: luôn gửi 3 giây mỗi nhịp
-      studentLessonProgressUpdate(lessonId, lastPositionSec, tickSec).catch(() => {});
+      studentLessonProgressUpdate(lessonId, lastPositionSec, tickSec).catch(
+        () => {},
+      );
     }, tickSec * 500);
   }, [lessonId, tickSec, studentLessonProgressUpdate]);
 
@@ -769,6 +857,7 @@ export default function YouTubeStylePlayer({
     const onPlaying = () => {
       watchingRef.current = true;
       startTicker();
+      trackPlayEvent();
     };
 
     const onPauseGeneric = () => {
@@ -798,7 +887,7 @@ export default function YouTubeStylePlayer({
       v.removeEventListener("ended", onEnded);
       stopTicker();
     };
-  }, [startTicker, stopTicker]);
+  }, [startTicker, stopTicker, trackPlayEvent]);
 
   return (
     <div className="w-full mx-auto">

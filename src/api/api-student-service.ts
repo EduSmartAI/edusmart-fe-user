@@ -260,6 +260,8 @@ export interface CourseItemDto {
   price?: number;
   /** @format double */
   dealPrice?: number;
+  isEnrolled?: boolean;
+  isWishList?: boolean;
 }
 
 export interface CreateAiQuizEvaluateResponse {

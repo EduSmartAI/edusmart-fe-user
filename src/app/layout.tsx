@@ -11,6 +11,7 @@ import "@ant-design/v5-patch-for-react-19";
 // import Head from "next/head";
 import GoogleProvider from "EduSmart/Provider/GoogleProvider";
 import ClientBoot from "./video/ClientBoot";
+import TitleMarquee from "EduSmart/components/BaseControl/TitleMarquee/TitleMarquee";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -106,6 +107,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClientBoot />
+        <TitleMarquee />
         <AntdRegistry>
           <ThemeProvider>
             <AntdThemeProvider>

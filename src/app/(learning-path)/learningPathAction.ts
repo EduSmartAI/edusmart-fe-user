@@ -18,6 +18,8 @@ export interface CourseItem {
   level?: number;
   price?: number;
   dealPrice?: number;
+  isEnrolled?: boolean;
+  isWishList?: boolean;
 }
 
 export interface CourseGroupDto {

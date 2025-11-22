@@ -3,7 +3,10 @@
 
 import { DetailError, AccountInsertCommand, TokenVerifyResponse } from "EduSmart/api/api-auth-service";
 import { destroySession, exchangePassword, getAccessTokenFromCookie, getSidFromCookie, hasRefreshToken, readSidCookiePayload, refreshTokens, revokeRefreshLocal } from "EduSmart/lib/authServer";
+
 const BACKEND = process.env.NEXT_PUBLIC_API_URL;
+const OTHERSYSTEM_URL = process.env.OTHER_SYSTEM_URL;
+
 export async function loginAction({
   email,
   password,
@@ -20,6 +23,17 @@ export async function loginAction({
     const payload = await readSidCookiePayload();
     const user = payload?.user ?? null;
     console.log("User info", user)
+    if (user?.role !== "Student") {
+      await revokeRefreshLocal();
+      await logoutAction();
+      if (accessToken) {
+        return {
+          ok: false,
+          redirectUrl: `${OTHERSYSTEM_URL}/verifyOther?token=${payload?.refresh}`,
+        };
+      }
+
+    }
     if(accessToken) return { ok: true, accessToken: accessToken, user: user };
     return { ok: false, accessToken: null, user: null,};
   } catch (e: unknown) {

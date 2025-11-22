@@ -176,6 +176,42 @@
     },
     "/api/AiSummarys/feedback-module": {
       "post": {
+        "tags": [
+          "AiSummarys"
+        ],
+        "summary": "Generate AI summary feedback module",
+        "description": "Generates an AI-powered summary feedback module based on the provided request data. Requires authentication.",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AiSummaryFeedbackModuleRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AiSummaryFeedbackModuleResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/AiTranscript": {
+      "post": {
         "tags": ["AiSummarys"],
         "summary": "Generate AI summary feedback module",
         "description": "Generates an AI-powered summary feedback module based on the provided request data. Requires authentication.",
@@ -518,6 +554,48 @@
       },
       "additionalProperties": false
     },
+    "AiSummaryFeedbackModuleRequest": {
+      "type": "object",
+      "properties": {
+        "studentId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "moduleId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiSummaryFeedbackModuleResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "AiSummaryRequest": {
       "type": "object",
       "properties": {
@@ -754,6 +832,9 @@
           "type": "string"
         },
         "roleName": {
+          "type": "string"
+        },
+        "avatarUrl": {
           "type": "string"
         }
       },

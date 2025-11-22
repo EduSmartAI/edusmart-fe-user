@@ -6,14 +6,14 @@ import { fetchCourseByQuery, GetAllCourses } from "../apiServer/courseAction";
 export const metadata: Metadata = {
   title: "EduSmart – Khóa học",
   description:
-    "Đăng nhập vào EduSmart để tiếp tục hành trình chăm sóc tinh thần của bạn.",
+    "Nền tảng học trực tuyến EduSmart cung cấp các khóa học chất lượng cao để nâng cao kỹ năng và kiến thức của bạn.",
   openGraph: {
     title: "EduSmart",
     description: "EduSmart",
     url: "https://EduSmart-frontend.vercel.app/Login",
     images: [
       {
-        url: "https://EduSmart-frontend.vercel.app/emo.png",
+        url: "https://EduSmart-frontend.vercel.app/Logo.png",
         width: 1200,
         height: 630,
         alt: "EduSmart logo",
@@ -25,13 +25,13 @@ export const metadata: Metadata = {
     icon: [
       {
         media: "(prefers-color-scheme: light)",
-        url: "/emo.png",
-        href: "/emo.png",
+        url: "/Logo.png",
+        href: "/Logo.png",
       },
       {
         media: "(prefers-color-scheme: dark)",
-        url: "/emo.png",
-        href: "/emo.png",
+        url: "/Logo.png",
+        href: "/Logo.png",
       },
     ],
   },

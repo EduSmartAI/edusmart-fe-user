@@ -9,6 +9,7 @@ import { FadeInUp } from "EduSmart/components/Animation/FadeInUp";
 import { useValidateStore } from "EduSmart/stores/Validate/ValidateStore";
 import NotFound from "EduSmart/app/404/page";
 import { useSidebarStore } from "EduSmart/stores/SideBar/SideBarStore";
+import { GlobalMessage } from "EduSmart/components/Common/Message/GlobalMessage";
 
 const { Header, Content, Footer } = Layout;
 
@@ -68,7 +69,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
         menuItems={menuItems}
         defaultSelectedKeys={defaultSelectedKeys}
       />
-
+      <GlobalMessage />
       {/* Cột phải: flex column */}
       <Layout
         style={{

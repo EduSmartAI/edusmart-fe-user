@@ -215,6 +215,7 @@ export interface IdentityEntity {
   email?: string;
   fullName?: string;
   roleName?: string;
+  avatarUrl?: string;
 }
 
 export interface MajorEvaluation {

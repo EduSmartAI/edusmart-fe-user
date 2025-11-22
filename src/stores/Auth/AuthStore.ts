@@ -18,6 +18,7 @@ export interface AuthState {
   user: BasicUser | null;
   isAuthen: boolean;
   refreshTokenValue: string | null;
+  isOtherSystem: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   refreshToken: () => Promise<void>;
   logout: () => void;
@@ -49,9 +50,10 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthen: false,
       refreshTokenValue: null,
+      isOtherSystem: false,
 
       reset: () => {
-        set({ token: null, refreshTokenValue: null });
+        set({ token: null, refreshTokenValue: null, isOtherSystem: false, });
         Cookies.remove("auth-storage");
       },
 
@@ -75,18 +77,29 @@ export const useAuthStore = create<AuthState>()(
       login: async (email, password) => {
         try {
           const resp = await loginAction({ email, password });
+          if (resp.redirectUrl) {
+            if (typeof window !== "undefined") {
+              window.location.href = resp.redirectUrl;
+            }
+            set({ isOtherSystem: true });
+            return false;
+          }
           if (resp.ok) {
             await getAuthen();
             const token = resp.accessToken;
-            const user: BasicUser = resp.user ?? { name: "", email: "", role: "" };
+            const user: BasicUser = resp.user ?? {
+              name: "",
+              email: "",
+              role: "",
+            };
             set({ token, user });
             apiClient.authEduService.setSecurityData({ token });
-            return true
+            return true;
           }
           console.log("resp", resp.error);
-          return false
+          return false;
         } catch {
-          return false
+          return false;
         }
       },
 

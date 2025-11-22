@@ -441,6 +441,7 @@ export default function LearningPathRecommendation() {
 
   // ---- Convert sang props của CourseCard ----
   const convertToCourseCard = (course: any) => ({
+    id: course?.courseId,
     imageUrl: course?.courseImageUrl,
     title: course?.title,
     descriptionLines: [course?.shortDescription],
@@ -456,6 +457,8 @@ export default function LearningPathRecommendation() {
           ? `${Math.round(course.durationMinutes / 60)}h`
           : undefined,
     learnerCount: course?.learnerCount,
+    isWishList: course.isWishList ?? false,
+    isEnrolled: course.isEnrolled ?? false,
   });
 
   // ---- Header Progress (completionPercent) ----

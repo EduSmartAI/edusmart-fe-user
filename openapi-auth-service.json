@@ -74,7 +74,7 @@
         }
       }
     },
-    "/connect/token": {
+    "/connect/logout": {
       "post": {
         "tags": [
           "Auth"
@@ -86,7 +86,7 @@
         }
       }
     },
-    "/connect/logout": {
+    "/connect/token": {
       "post": {
         "tags": [
           "Auth"
