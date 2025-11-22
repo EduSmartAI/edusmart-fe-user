@@ -24,11 +24,13 @@ import {
   confirmLearningPathAction,
   type LearningPathData,
 } from "EduSmart/app/(learning-path)/learningPathAction";
+import { useSurvey } from "EduSmart/hooks/survey";
 
 export default function LearningPathRecommendation() {
   const router = useRouter();
   const params = useParams();
   const learningPathId = params.id as string;
+  const survey = useSurvey();
 
   // State management
   const [learningPathData, setLearningPathData] =
@@ -152,7 +154,7 @@ export default function LearningPathRecommendation() {
             <SubjectStatusBadge status={group?.status} />
           </div>
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {(group?.courses?.length ?? 0)} khóa học
+            {group?.courses?.length ?? 0} khóa học
           </span>
         </div>
 
@@ -160,8 +162,8 @@ export default function LearningPathRecommendation() {
         {hasSemester ? (
           Object.entries(bySemester).map(([sem, list]: [string, any[]]) => (
             <div key={sem} className="mb-4">
-              {showSemesterHeading && (
-                semesterHeaderStyle === "large" ? (
+              {showSemesterHeading &&
+                (semesterHeaderStyle === "large" ? (
                   <div className="flex items-center mb-4">
                     <div className="w-11 h-11 bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl flex items-center justify-center text-sm font-extrabold mr-3 shadow">
                       {sem}
@@ -180,8 +182,7 @@ export default function LearningPathRecommendation() {
                     </div>
                     <span className="text-sm font-semibold">Kỳ {sem}</span>
                   </div>
-                )
-              )}
+                ))}
 
               <div className="flex flex-wrap gap-4">
                 {list.map((course, i) => (
@@ -210,6 +211,54 @@ export default function LearningPathRecommendation() {
       </div>
     );
   };
+
+  // 🧹 Auto-cleanup assessment data after successful completion
+  // NOTE: Empty dependency array ensures this runs only once on mount
+  useEffect(() => {
+    const cleanupAssessmentData = () => {
+      console.log("🧹 Cleaning up assessment data after dashboard load...");
+
+      try {
+        // 1. Clear survey data
+        survey.resetSurvey();
+        console.log("✅ Survey data cleared");
+
+        // 2. Clear quiz data from localStorage (quiz-store)
+        localStorage.removeItem("quiz-store");
+        console.log("✅ Quiz store cleared");
+
+        // 3. Clear learning path progress data
+        const learningPathKeys = [
+          "learning_path_current_step",
+          "learning_path_completed_steps",
+          "survey_completed",
+          "quiz_completed",
+          "learning_path_id",
+        ];
+        learningPathKeys.forEach((key) => {
+          localStorage.removeItem(key);
+        });
+        console.log("✅ Learning path progress cleared");
+
+        // 4. Clear survey-related localStorage keys
+        localStorage.removeItem("survey_data");
+        localStorage.removeItem("survey_step");
+        localStorage.removeItem("survey-storage");
+        console.log("✅ Survey localStorage keys cleared");
+
+        console.log(
+          "✅ All assessment data cleaned up successfully - ready for next learning path",
+        );
+      } catch (error) {
+        console.error("Error during cleanup:", error);
+      }
+    };
+
+    // Run cleanup after a short delay to ensure dashboard is fully loaded
+    const cleanupTimer = setTimeout(cleanupAssessmentData, 1000);
+
+    return () => clearTimeout(cleanupTimer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch learning path data on mount
   useEffect(() => {
@@ -269,7 +318,10 @@ export default function LearningPathRecommendation() {
 
     try {
       setIsConfirming(true);
-      const result = await confirmLearningPathAction(learningPathId, majorOrder);
+      const result = await confirmLearningPathAction(
+        learningPathId,
+        majorOrder,
+      );
 
       if (result.ok) {
         setLearningPathData(result.data);
@@ -440,8 +492,9 @@ export default function LearningPathRecommendation() {
           </div>
 
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed mb-6">
-            Dựa trên kết quả khảo sát và đánh giá năng lực của bạn, AI đã tạo ra
-            lộ trình học tập tối ưu để giúp bạn đạt được mục tiêu nghề nghiệp.
+            Dựa trên kết quả khảo sát và đánh giá năng lực của bạn, hệ thống đã
+            tạo ra lộ trình học tập tối ưu để giúp bạn đạt được mục tiêu nghề
+            nghiệp.
           </p>
 
           {/* Status Badge */}
@@ -450,20 +503,20 @@ export default function LearningPathRecommendation() {
               displayData.status === 0
                 ? "bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300"
                 : displayData.status === 1
-                ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300"
-                : displayData.status === 2
-                ? "bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300"
-                : "bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300"
+                  ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300"
+                  : displayData.status === 2
+                    ? "bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300"
+                    : "bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300"
             }`}
           >
             <FiClock className="w-4 h-4 mr-2" />
             {displayData.status === 0
-              ? "AI đang tạo lộ trình"
+              ? "Hệ thống đang tạo lộ trình"
               : displayData.status === 1
-              ? "Đang chờ xác nhận"
-              : displayData.status === 2
-              ? "Đang học tập"
-              : `Trạng thái: ${displayData.status}`}
+                ? "Đang chờ xác nhận"
+                : displayData.status === 2
+                  ? "Đang học tập"
+                  : `Trạng thái: ${displayData.status}`}
           </div>
         </div>
 
@@ -562,7 +615,7 @@ export default function LearningPathRecommendation() {
                 <p className="text-gray-600 dark:text-gray-300 text-lg">
                   {displayData.status === 2
                     ? `Bạn đã chọn ${sortedInternalPath.length} chuyên ngành hẹp. Học theo thứ tự đã sắp xếp để hiệu quả nhất.`
-                    : "AI đề xuất các chuyên ngành hẹp phù hợp với năng lực và sở thích của bạn"}
+                    : "Hệ thống đề xuất các chuyên ngành hẹp phù hợp với năng lực và sở thích của bạn"}
                 </p>
               </div>
             </div>
@@ -614,7 +667,8 @@ export default function LearningPathRecommendation() {
                                   </h3>
                                 </div>
                                 <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                  {countGroupCourses(path.majorCourseGroups)} khóa học
+                                  {countGroupCourses(path.majorCourseGroups)}{" "}
+                                  khóa học
                                 </span>
                               </div>
                             </div>
@@ -652,7 +706,10 @@ export default function LearningPathRecommendation() {
                                   );
                                   if (groupsForSem.length === 0) return null;
                                   return (
-                                    <div key={`major-${id}-sem-${sem}`} className="mb-10">
+                                    <div
+                                      key={`major-${id}-sem-${sem}`}
+                                      className="mb-10"
+                                    >
                                       <div className="flex items-center mb-5">
                                         <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-lg flex items-center justify-center text-base font-bold mr-4 shadow-md">
                                           {sem}
@@ -666,13 +723,15 @@ export default function LearningPathRecommendation() {
                                       </div>
 
                                       <div className="space-y-6">
-                                        {groupsForSem.map((g: any, gi: number) => (
-                                          <SubjectGroupSection
-                                            key={g?.subjectCode ?? gi}
-                                            group={g}
-                                            showSemesterHeading={false}
-                                          />
-                                        ))}
+                                        {groupsForSem.map(
+                                          (g: any, gi: number) => (
+                                            <SubjectGroupSection
+                                              key={g?.subjectCode ?? gi}
+                                              group={g}
+                                              showSemesterHeading={false}
+                                            />
+                                          ),
+                                        )}
                                       </div>
                                     </div>
                                   );
@@ -697,7 +756,9 @@ export default function LearningPathRecommendation() {
                           <div
                             key={id || idx}
                             onClick={() =>
-                              setViewingMajorId(viewingMajorId === id ? null : id)
+                              setViewingMajorId(
+                                viewingMajorId === id ? null : id,
+                              )
                             }
                             className={`relative cursor-pointer rounded-lg p-4 transition-all duration-300 border ${
                               viewingMajorId === id
@@ -751,8 +812,8 @@ export default function LearningPathRecommendation() {
                                       ? "bg-white text-black hover:bg-gray-50 shadow-sm"
                                       : "bg-teal-100 text-teal-700 hover:bg-teal-200 dark:bg-teal-800 dark:text-teal-100"
                                     : viewingMajorId === id
-                                    ? "bg-white/20 text-white hover:bg-white/30 border border-white/40"
-                                    : "bg-teal-50 text-teal-600 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400"
+                                      ? "bg-white/20 text-white hover:bg-white/30 border border-white/40"
+                                      : "bg-teal-50 text-teal-600 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400"
                                 }`}
                               >
                                 {selectedMajors.includes(id) ? (
@@ -814,7 +875,10 @@ export default function LearningPathRecommendation() {
                                 );
                                 if (groupsForSem.length === 0) return null;
                                 return (
-                                  <div key={`view-${viewingMajorId}-sem-${sem}`} className="mb-10">
+                                  <div
+                                    key={`view-${viewingMajorId}-sem-${sem}`}
+                                    className="mb-10"
+                                  >
                                     <div className="flex items-center mb-5">
                                       <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-lg flex items-center justify-center text-base font-bold mr-4 shadow-md">
                                         {sem}
@@ -828,13 +892,15 @@ export default function LearningPathRecommendation() {
                                     </div>
 
                                     <div className="space-y-6">
-                                      {groupsForSem.map((g: any, gi: number) => (
-                                        <SubjectGroupSection
-                                          key={g?.subjectCode ?? gi}
-                                          group={g}
-                                          showSemesterHeading={false}
-                                        />
-                                      ))}
+                                      {groupsForSem.map(
+                                        (g: any, gi: number) => (
+                                          <SubjectGroupSection
+                                            key={g?.subjectCode ?? gi}
+                                            group={g}
+                                            showSemesterHeading={false}
+                                          />
+                                        ),
+                                      )}
                                     </div>
                                   </div>
                                 );
@@ -984,7 +1050,9 @@ export default function LearningPathRecommendation() {
                   <>
                     {(() => {
                       const selectedExternal =
-                        displayData.externalLearningPath?.[selectedExternalPath];
+                        displayData.externalLearningPath?.[
+                          selectedExternalPath
+                        ];
                       if (!selectedExternal) return null;
 
                       return (
@@ -1042,7 +1110,8 @@ export default function LearningPathRecommendation() {
                                       </div>
                                     </button>
                                     {stepIndex <
-                                      (selectedExternal.steps?.length ?? 0) - 1 && (
+                                      (selectedExternal.steps?.length ?? 0) -
+                                        1 && (
                                       <FiChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-600 flex-shrink-0" />
                                     )}
                                   </React.Fragment>
@@ -1060,57 +1129,58 @@ export default function LearningPathRecommendation() {
 
                           <div className="space-y-3">
                             {selectedExternal.steps
-                              ? selectedExternal.steps?.[selectedExternalStep]
-                                  ?.suggested_Courses?.map(
-                                    (course: any, courseIndex: number) => (
-                                      <div
-                                        key={courseIndex}
-                                        className="group border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 bg-white dark:bg-gray-700/50"
-                                      >
-                                        <div className="flex items-start justify-between gap-3 mb-3">
-                                          <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2">
+                              ? selectedExternal.steps?.[
+                                  selectedExternalStep
+                                ]?.suggested_Courses?.map(
+                                  (course: any, courseIndex: number) => (
+                                    <div
+                                      key={courseIndex}
+                                      className="group border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 bg-white dark:bg-gray-700/50"
+                                    >
+                                      <div className="flex items-start justify-between gap-3 mb-3">
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex flex-wrap items-center gap-2">
+                                            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                                              <FiStar className="w-3.5 h-3.5 mr-1.5" />
+                                              {course?.provider}
+                                            </span>
+                                            {course?.level && (
                                               <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                                                <FiStar className="w-3.5 h-3.5 mr-1.5" />
-                                                {course?.provider}
+                                                {course.level}
                                               </span>
-                                              {course?.level && (
-                                                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
-                                                  {course.level}
-                                                </span>
-                                              )}
-                                            </div>
+                                            )}
                                           </div>
-                                          {course?.link && (
-                                            <a
-                                              href={course.link}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="flex-shrink-0 w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-200 flex items-center justify-center shadow-sm"
-                                            >
-                                              <FiExternalLink className="w-4 h-4" />
-                                            </a>
-                                          )}
                                         </div>
-
-                                        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-clamp-2 mb-3 font-normal">
-                                          {course?.reason}
-                                        </p>
-
                                         {course?.link && (
                                           <a
                                             href={course.link}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:gap-3 transition-all duration-200"
+                                            className="flex-shrink-0 w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 transition-all duration-200 flex items-center justify-center shadow-sm"
                                           >
-                                            Xem chi tiết khóa học
-                                            <FiArrowDown className="w-4 h-4 rotate-[-90deg]" />
+                                            <FiExternalLink className="w-4 h-4" />
                                           </a>
                                         )}
                                       </div>
-                                    ),
-                                  )
+
+                                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-clamp-2 mb-3 font-normal">
+                                        {course?.reason}
+                                      </p>
+
+                                      {course?.link && (
+                                        <a
+                                          href={course.link}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:gap-3 transition-all duration-200"
+                                        >
+                                          Xem chi tiết khóa học
+                                          <FiArrowDown className="w-4 h-4 rotate-[-90deg]" />
+                                        </a>
+                                      )}
+                                    </div>
+                                  ),
+                                )
                               : null}
                           </div>
                         </div>

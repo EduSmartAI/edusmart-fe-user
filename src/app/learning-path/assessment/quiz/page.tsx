@@ -58,9 +58,9 @@ export default function QuizAssessmentPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <Spin size="large" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">
+          <div className="mt-6 text-gray-600 dark:text-gray-400">
             Đang kiểm tra quyền truy cập...
-          </p>
+          </div>
         </div>
       </div>
     );
@@ -74,9 +74,9 @@ export default function QuizAssessmentPage() {
   return (
     <LearningPathErrorBoundary showProgress={true}>
       <LearningPathGuard requiredStep={2} requiredCompletedSteps={[1]}>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-          {/* Progress Header - Minimal */}
-          <div className="sticky top-0 z-10">
+        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
+          {/* Progress Header - Sticky */}
+          <div className="sticky top-0 z-50 w-full flex-shrink-0">
             <LearningPathProgress
               currentStep={2}
               completedSteps={[1]}
@@ -85,8 +85,10 @@ export default function QuizAssessmentPage() {
             />
           </div>
 
-          {/* Quiz Content */}
-          <QuizMainFlow />
+          {/* Quiz Content - Flex grow to fill remaining space */}
+          <div className="flex-1 flex flex-col w-full">
+            <QuizMainFlow />
+          </div>
         </div>
       </LearningPathGuard>
     </LearningPathErrorBoundary>

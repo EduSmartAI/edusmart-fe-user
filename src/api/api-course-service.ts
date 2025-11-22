@@ -599,6 +599,24 @@ export interface CreateMajorResponse {
   response?: boolean;
 }
 
+export interface CreateMajorCommand {
+  createMajorDto?: CreateMajorDto;
+}
+
+export interface CreateMajorDto {
+  majorCode?: string | null;
+  majorName?: string | null;
+  description?: string | null;
+}
+
+export interface CreateMajorResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface CreateModuleDiscussionDto {
   title?: string | null;
   description?: string | null;
@@ -665,6 +683,23 @@ export interface CreateQuizSettingsDto {
   shuffleQuestions?: boolean;
   showResultsImmediately?: boolean;
   allowRetake?: boolean;
+}
+
+export interface CreateSubjectCommand {
+  createSubjectDto?: CreateSubjectDto;
+}
+
+export interface CreateSubjectDto {
+  subjectCode?: string | null;
+  subjectName?: string | null;
+}
+
+export interface CreateSubjectResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
 }
 
 export interface CreateSubjectCommand {
@@ -930,6 +965,18 @@ export interface GuestLessonDetailDtoModuleDetailDto {
   level?: number | null;
   objectives?: ModuleObjectiveDto[] | null;
   lessons?: GuestLessonDetailDto[] | null;
+}
+
+export interface InProgressCourseDto {
+  /** @format uuid */
+  courseId?: string;
+  title?: string | null;
+  shortDescription?: string | null;
+  courseImageUrl?: string | null;
+  /** @format double */
+  durationHours?: number | null;
+  /** @format date-time */
+  startedAt?: string;
 }
 
 export interface InProgressCourseDto {
@@ -1903,6 +1950,7 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1928,6 +1976,7 @@ export class Api<
         method: "DELETE",
         query: query,
         secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

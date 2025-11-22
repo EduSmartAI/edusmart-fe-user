@@ -24,14 +24,14 @@ interface RetryConfig extends AxiosRequestConfig {
 
 axiosInstance.interceptors.request.use((cfg) => {
   const h = axios.AxiosHeaders.from(cfg.headers);
-  const base = cfg.baseURL ?? process.env.NEXT_PUBLIC_API_URL ?? '';
-  const url = cfg.url ?? '';
-  if (base.includes('ngrok') || url.includes('ngrok')) {
-    h.set('ngrok-skip-browser-warning', 'true');
+  const base = cfg.baseURL ?? process.env.NEXT_PUBLIC_API_URL ?? "";
+  const url = cfg.url ?? "";
+  if (base.includes("ngrok") || url.includes("ngrok")) {
+    h.set("ngrok-skip-browser-warning", "true");
   }
   const { token } = useAuthStore.getState();
   if (token) {
-    h.set('Authorization', `Bearer ${token}`);
+    h.set("Authorization", `Bearer ${token}`);
   }
   cfg.headers = h;
   return cfg;
@@ -48,9 +48,11 @@ axiosInstance.interceptors.response.use(
         await useAuthStore.getState().refreshToken();
         const newToken = useAuthStore.getState().token;
         if (newToken) {
-          originalRequest.headers = axios.AxiosHeaders.from(originalRequest.headers);
-          (originalRequest.headers).set('Authorization', `Bearer ${newToken}`);
-          (originalRequest.headers).set('ngrok-skip-browser-warning', "true");
+          originalRequest.headers = axios.AxiosHeaders.from(
+            originalRequest.headers,
+          );
+          originalRequest.headers.set("Authorization", `Bearer ${newToken}`);
+          originalRequest.headers.set("ngrok-skip-browser-warning", "true");
         }
         return axiosInstance(originalRequest);
       } catch {

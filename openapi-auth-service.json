@@ -278,7 +278,8 @@
         "avatarUrl": {
           "type": "string"
         }
-      },
+      }
+    },
       "additionalProperties": false
     }
   },

@@ -8,6 +8,7 @@ import {
   DesktopOutlined,
   LogoutOutlined,
   SolutionOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Menu, Layout, theme } from "antd";
@@ -51,21 +52,28 @@ const navItems: NavMenuItem[] = [
     "dashboard",
     <PieChartOutlined />,
     undefined,
-    "/dashboard/learning-paths"
+    "/dashboard/learning-paths",
+  ),
+  getItem(
+    "Hồ sơ của tôi",
+    "dashboard-my-profile",
+    <UserOutlined />,
+    undefined,
+    "/dashboard/my-profile",
   ),
   getItem(
     "Dashboard Người dùng",
     "dashboard-user",
     <DesktopOutlined />,
     undefined,
-    "/Admin/profiles"
+    "/Admin/profiles",
   ),
   getItem(
     "Subscriptions",
     "subscriptions",
     <SolutionOutlined />,
     undefined,
-    "/Admin/subscriptions"
+    "/Admin/subscriptions",
   ),
   getItem("Đăng xuất", "logout", <LogoutOutlined />),
   // ❌ BỎ ThemeSwitch khỏi menu để tránh lệch

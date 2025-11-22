@@ -72,7 +72,9 @@ export default function ProcessingClient() {
           if (attemptCount >= 10) {
             clearInterval(pollInterval);
             setIsPolling(false);
-            message.error("Không thể tải lộ trình học tập. Vui lòng thử lại sau.");
+            message.error(
+              "Không thể tải lộ trình học tập. Vui lòng thử lại sau.",
+            );
           }
           return;
         }
@@ -99,7 +101,11 @@ export default function ProcessingClient() {
 
   const aiStages = [
     { id: 1, name: "Phân tích khảo sát", icon: <FiUser className="w-5 h-5" /> },
-    { id: 2, name: "Đánh giá năng lực", icon: <FiTarget className="w-5 h-5" /> },
+    {
+      id: 2,
+      name: "Đánh giá năng lực",
+      icon: <FiTarget className="w-5 h-5" />,
+    },
     { id: 3, name: "Tạo lộ trình", icon: <FiCpu className="w-5 h-5" /> },
   ];
 
@@ -108,7 +114,9 @@ export default function ProcessingClient() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <Spin size="large" />
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Đang kiểm tra quyền truy cập...</p>
+          <div className="mt-6 text-gray-600 dark:text-gray-400">
+            Đang kiểm tra quyền truy cập...
+          </div>
         </div>
       </div>
     );
@@ -162,7 +170,7 @@ export default function ProcessingClient() {
                 <div className="text-center mb-10">
                   {!isCompleted ? (
                     <h1 className="text-3xl md:text-4xl font-black mb-6 bg-gradient-to-r from-[#49BBBD] via-[#2DD4BF] to-[#06B6D4] bg-clip-text text-transparent animate-gradient">
-                      AI đang xử lý dữ liệu của bạn
+                      Hệ thống đang xử lý dữ liệu của bạn
                     </h1>
                   ) : (
                     <h1 className="text-3xl md:text-4xl font-black mb-6 bg-gradient-to-r from-[#10B981] via-[#059669] to-[#14B8A6] bg-clip-text text-transparent">
@@ -172,9 +180,17 @@ export default function ProcessingClient() {
 
                   <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
                     {!isCompleted ? (
-                      <>Hệ thống AI đang phân tích khảo sát và kết quả đánh giá của bạn để tạo ra lộ trình học tập cá nhân hóa. Quá trình này có thể mất vài giây...</>
+                      <>
+                        Hệ thống đang phân tích khảo sát và kết quả đánh giá của
+                        bạn để tạo ra lộ trình học tập cá nhân hóa. Quá trình
+                        này có thể mất vài giây...
+                      </>
                     ) : (
-                      <>Lộ trình học tập cá nhân hóa của bạn đã được tạo thành công! Chúng tôi sẽ chuyển bạn đến trang kết quả ngay bây giờ.</>
+                      <>
+                        Lộ trình học tập cá nhân hóa của bạn đã được tạo thành
+                        công! Chúng tôi sẽ chuyển bạn đến trang kết quả ngay bây
+                        giờ.
+                      </>
                     )}
                   </p>
                 </div>
@@ -189,8 +205,8 @@ export default function ProcessingClient() {
                             aiStage > stage.id
                               ? "bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-1 border-green-300 dark:border-green-700 shadow-sm"
                               : aiStage === stage.id
-                              ? "bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 border-1 border-teal-200 dark:border-teal-800 shadow-sm"
-                              : "bg-gray-50 dark:bg-gray-700/30 border-2 border-gray-200 dark:border-gray-600"
+                                ? "bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 border-1 border-teal-200 dark:border-teal-800 shadow-sm"
+                                : "bg-gray-50 dark:bg-gray-700/30 border-2 border-gray-200 dark:border-gray-600"
                           }`}
                         >
                           <div className="flex items-center space-x-3">
@@ -199,8 +215,8 @@ export default function ProcessingClient() {
                                 aiStage > stage.id
                                   ? "bg-gradient-to-br from-green-500 to-emerald-500 text-white shadow-md"
                                   : aiStage === stage.id
-                                  ? "bg-gradient-to-r from-[#49BBBD] to-cyan-600 text-white shadow-md"
-                                  : "bg-gray-300 dark:bg-gray-600 text-gray-500"
+                                    ? "bg-gradient-to-r from-[#49BBBD] to-cyan-600 text-white shadow-md"
+                                    : "bg-gray-300 dark:bg-gray-600 text-gray-500"
                               }`}
                             >
                               {aiStage > stage.id ? (
@@ -213,7 +229,9 @@ export default function ProcessingClient() {
                             </div>
                             <span
                               className={`font-semibold ${
-                                aiStage >= stage.id ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400"
+                                aiStage >= stage.id
+                                  ? "text-gray-900 dark:text-white"
+                                  : "text-gray-500 dark:text-gray-400"
                               }`}
                             >
                               {stage.name}
@@ -247,7 +265,11 @@ export default function ProcessingClient() {
                       size="large"
                       icon={<FiArrowRight className="w-5 h-5" />}
                       iconPosition="end"
-                      onClick={() => router.push(`/dashboard/learning-paths/${learningPathId}`)}
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/learning-paths/${learningPathId}`,
+                        )
+                      }
                       className="!p-6 !bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 px-12 py-4 h-auto text-xl font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
                     >
                       Xem lộ trình của tôi

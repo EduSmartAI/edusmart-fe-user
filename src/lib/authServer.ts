@@ -29,7 +29,7 @@ type CookiePayload = {
   user?: BasicUser;
 };
 
-export type BasicUser = { name: string; email: string; role: string };
+export type BasicUser = { name: string; email: string; role: string; avatarUrl?: string};
 
 function decodeJwt<T = unknown>(jwt: string): T | null {
   const parts = jwt.split(".");
@@ -44,27 +44,29 @@ function decodeJwt<T = unknown>(jwt: string): T | null {
 
 function extractUserFromIdToken(idt: string): BasicUser | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const c = decodeJwt<any>(idt);
-  if (!c) return null;
+  const jwtDecode = decodeJwt<any>(idt);
+  if (!jwtDecode) return null;
 
   const name =
-    (c.name ??
-      [c.given_name, c.family_name].filter(Boolean).join(" ").trim() ??
-      c.preferred_username ??
+    (jwtDecode.name ??
+      [jwtDecode.given_name, jwtDecode.family_name].filter(Boolean).join(" ").trim() ??
+      jwtDecode.preferred_username ??
       "") || "";
 
-  const email = c.email ?? "";
+  const email = jwtDecode.email ?? "";
 
   const roleCandidate =
-    c.role ??
-    (Array.isArray(c.roles) ? c.roles[0] : c.roles) ??
-    c["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ??
+    jwtDecode.role ??
+    (Array.isArray(jwtDecode.roles) ? jwtDecode.roles[0] : jwtDecode.roles) ??
+    jwtDecode["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ??
     "";
 
   const role =
     (Array.isArray(roleCandidate) ? roleCandidate[0] : roleCandidate) || "Student";
 
-  return { name, email, role };
+  const avatarUrl = jwtDecode.picture ?? "https://i.pravatar.cc/100?img=3";
+
+  return { name, email, role, avatarUrl };
 }
 
 function b64url(s: string) {
@@ -100,7 +102,8 @@ function isCookiePayload(x: unknown): x is CookiePayload {
       !u ||
       typeof u.name !== "string" ||
       typeof u.email !== "string" ||
-      typeof u.role !== "string"
+      typeof u.role !== "string" ||
+      (u.avatarUrl !== undefined && typeof u.avatarUrl !== "string")
     ) {
       return false;
     }
