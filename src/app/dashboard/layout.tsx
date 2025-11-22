@@ -43,6 +43,10 @@ export default function DashboardLayout({
         { title: "Hiệu Suất Học Tập" },
       ],
     },
+    {
+      path: `/dashboard/my-profile`,
+      breadcrumbTitle: [{ title: "Thông Tin Cá Nhân" }],
+    },
   ];
 
   const breadcrumbTitlesValue = DASHBOARD_ROUTES.find((route) => {

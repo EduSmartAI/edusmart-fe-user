@@ -350,7 +350,8 @@ export interface InternalLearningPathDto {
 export interface LearningBehaviorSection {
   /** @format date-time */
   lastAccessed?: string;
-  mostActiveSlot?: string;
+  /** @format int32 */
+  mostActiveSlot?: number;
   /** @format int64 */
   totalPauseCount?: number;
   /** @format int64 */
@@ -559,6 +560,12 @@ export interface LessonDashboardTotals {
   averageAiScore?: number;
 }
 
+export interface MajorItem {
+  /** @format uuid */
+  majorId?: string;
+  majorName?: string;
+}
+
 export interface ModuleAiEvaluationDto {
   /** @format uuid */
   moduleId?: string;
@@ -731,6 +738,12 @@ export interface SelectAllUserBehaviourResponse {
   response?: UserBehaviourDto[];
 }
 
+export interface SemesterItem {
+  /** @format uuid */
+  semesterId?: string;
+  semesterName?: string;
+}
+
 export interface SkillGap {
   skillTag?: string;
   /** @format int32 */
@@ -785,6 +798,21 @@ export interface StudentProfileUpdateResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: string;
+}
+
+export interface StudentTechnologyGoalSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentTechnologyGoalSelectResponseEntity;
+}
+
+export interface StudentTechnologyGoalSelectResponseEntity {
+  semester?: SemesterItem;
+  major?: MajorItem;
+  technologies?: StudentTechnologyItem[];
+  learningGoals?: StudentLearningGoalItem[];
 }
 
 export interface StudentTechnologyItem {
@@ -886,6 +914,23 @@ export interface UpdateCourseStatusToSkippedCommand {
 }
 
 export interface UpdateCourseStatusToSkippedResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface UpdateLearningPathCourseStatusCommand {
+  /** @format uuid */
+  userId?: string;
+  /** @format uuid */
+  courseId?: string;
+  /** @format int32 */
+  status?: number;
+}
+
+export interface UpdateLearningPathCourseStatusResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
@@ -1216,208 +1261,6 @@ export class Api<
 > extends HttpClient<SecurityDataType> {
   api = {
     /**
-     * @description Cần cấp quyền Admin
-     *
-     * @tags Admin
-     * @name V1AdminInsertTechnologyCreate
-     * @summary Thêm ngôn ngữ/ framework mới
-     * @request POST:/api/v1/Admin/InsertTechnology
-     * @secure
-     */
-    v1AdminInsertTechnologyCreate: (
-      body: TechnologyInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<TechnologyInsertResponse, any>({
-        path: `/api/v1/Admin/InsertTechnology`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin
-     *
-     * @tags Admin
-     * @name V1AdminUpdateTechnologyUpdate
-     * @summary Cập nhật ngôn ngữ/ framework
-     * @request PUT:/api/v1/Admin/UpdateTechnology
-     * @secure
-     */
-    v1AdminUpdateTechnologyUpdate: (
-      body: TechnologyUpdateCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<TechnologyUpdateResponse, any>({
-        path: `/api/v1/Admin/UpdateTechnology`,
-        method: "PUT",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin - Xóa logic
-     *
-     * @tags Admin
-     * @name V1AdminDeleteTechnologyDelete
-     * @summary Xóa ngôn ngữ/ framework
-     * @request DELETE:/api/v1/Admin/DeleteTechnology
-     * @secure
-     */
-    v1AdminDeleteTechnologyDelete: (
-      query?: {
-        /** @format uuid */
-        technologyId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<TechnologyDeleteResponse, any>({
-        path: `/api/v1/Admin/DeleteTechnology`,
-        method: "DELETE",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin
-     *
-     * @tags Admin
-     * @name V1AdminInsertLearningGoalCreate
-     * @summary Tạo mục tiêu học tập mới
-     * @request POST:/api/v1/Admin/InsertLearningGoal
-     * @secure
-     */
-    v1AdminInsertLearningGoalCreate: (
-      body: LearningGoalInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<LearningGoalInsertResponse, any>({
-        path: `/api/v1/Admin/InsertLearningGoal`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin
-     *
-     * @tags Admin
-     * @name V1AdminUpdateLearningGoalUpdate
-     * @summary Cập nhật mục tiêu học tập
-     * @request PUT:/api/v1/Admin/UpdateLearningGoal
-     * @secure
-     */
-    v1AdminUpdateLearningGoalUpdate: (
-      body: LearningGoalUpdateCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<LearningGoalUpdateResponse, any>({
-        path: `/api/v1/Admin/UpdateLearningGoal`,
-        method: "PUT",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin - Xóa logic
-     *
-     * @tags Admin
-     * @name V1AdminDeleteLearningGoalDelete
-     * @summary Xóa mục tiêu học tập
-     * @request DELETE:/api/v1/Admin/DeleteLearningGoal
-     * @secure
-     */
-    v1AdminDeleteLearningGoalDelete: (
-      query: {
-        /** @format uuid */
-        GoalId: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<LearningGoalDeleteResponse, any>({
-        path: `/api/v1/Admin/DeleteLearningGoal`,
-        method: "DELETE",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin
-     *
-     * @tags Admin
-     * @name V1AdminSelectTechnologiesList
-     * @summary Lấy danh sách công nghệ (phân trang, tìm kiếm, lọc)
-     * @request GET:/api/v1/Admin/SelectTechnologies
-     * @secure
-     */
-    v1AdminSelectTechnologiesList: (
-      query?: {
-        /** @format int32 */
-        PageNumber?: number;
-        /** @format int32 */
-        PageSize?: number;
-        SearchTerm?: string;
-        /** @format int32 */
-        TechnologyType?: number;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<AdminTechnologiesSelectResponse, any>({
-        path: `/api/v1/Admin/SelectTechnologies`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Admin
-     *
-     * @tags Admin
-     * @name V1AdminSelectLearningGoalsList
-     * @summary Lấy danh sách mục tiêu học tập (phân trang, tìm kiếm, lọc)
-     * @request GET:/api/v1/Admin/SelectLearningGoals
-     * @secure
-     */
-    v1AdminSelectLearningGoalsList: (
-      query?: {
-        /** @format int32 */
-        PageNumber?: number;
-        /** @format int32 */
-        PageSize?: number;
-        SearchTerm?: string;
-        /** @format int32 */
-        LearningGoalType?: number;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<AdminLearningGoalsSelectResponse, any>({
-        path: `/api/v1/Admin/SelectLearningGoals`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * No description
      *
      * @tags AiQuizEvaluate
@@ -1467,6 +1310,172 @@ export class Api<
       }),
 
     /**
+     * @description Dùng để đồng bộ dữ liệu từ write-model khi chỉnh data, chỉ dùng cho Backend
+     *
+     * @tags LearningPaths
+     * @name LearningPathsSyncDataReadmodelCreate
+     * @summary Đồng bộ dữ liệu từ write-model sang read-model (BACKEND)
+     * @request POST:/api/LearningPaths/Sync-data-readmodel
+     * @secure
+     */
+    learningPathsSyncDataReadmodelCreate: (
+      body: UpdateReadModelLearningPathCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateReadModelLearningPathResponse, any>({
+        path: `/api/LearningPaths/Sync-data-readmodel`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Internal debug endpoint - userId lấy từ body, không dùng token
+     *
+     * @tags LearningPaths
+     * @name LearningPathsUpdateCourseStatusCreate
+     * @summary Update course status in all learning paths for a user
+     * @request POST:/api/LearningPaths/update-course-status
+     * @secure
+     */
+    learningPathsUpdateCourseStatusCreate: (
+      body: UpdateLearningPathCourseStatusCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateLearningPathCourseStatusResponse, any>({
+        path: `/api/LearningPaths/update-course-status`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Trả về tài liệu dạng markdown. Cần xác thực Bearer.
+     *
+     * @tags StudentDashboards
+     * @name StudentDashboardsGenAndInsertImprovementByAiCreate
+     * @summary Tìm tài liệu improvement
+     * @request POST:/api/StudentDashboards/GenAndInsertImprovementByAI
+     * @secure
+     */
+    studentDashboardsGenAndInsertImprovementByAiCreate: (
+      query?: {
+        /** @format uuid */
+        ImprovementId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<SearchAiRecommendResponse, any>({
+        path: `/api/StudentDashboards/GenAndInsertImprovementByAI`,
+        method: "POST",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminInsertLearningGoalCreate
+     * @summary Tạo mục tiêu học tập mới
+     * @request POST:/api/v1/Admin/InsertLearningGoal
+     * @secure
+     */
+    v1AdminInsertLearningGoalCreate: (
+      body: LearningGoalInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<LearningGoalInsertResponse, any>({
+        path: `/api/v1/Admin/InsertLearningGoal`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminInsertTechnologyCreate
+     * @summary Thêm ngôn ngữ/ framework mới
+     * @request POST:/api/v1/Admin/InsertTechnology
+     * @secure
+     */
+    v1AdminInsertTechnologyCreate: (
+      body: TechnologyInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<TechnologyInsertResponse, any>({
+        path: `/api/v1/Admin/InsertTechnology`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentInsertStudentTranscriptCreate
+     * @summary Import bảng điểm từ FAP cho sinh viên
+     * @request POST:/api/v1/Student/InsertStudentTranscript
+     * @secure
+     */
+    v1StudentInsertStudentTranscriptCreate: (
+      data: {
+        /** @format binary */
+        TranscriptFile?: File;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentTranscriptInsertResponse, any>({
+        path: `/api/v1/Student/InsertStudentTranscript`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền
+     *
+     * @tags UserBehaviour
+     * @name V1UserBehaviourInsertUserBehaviourCreate
+     * @summary Dùng cho việc lưu hành vi của người dùng để theo dõi đưa ra lộ trình cá nhân hoá phù hợp
+     * @request POST:/api/v1/UserBehaviour/InsertUserBehaviour
+     * @secure
+     */
+    v1UserBehaviourInsertUserBehaviourCreate: (
+      body: UserBehaviourInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UserBehaviourInsertResponse, any>({
+        path: `/api/v1/UserBehaviour/InsertUserBehaviour`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * No description
      *
      * @tags AiQuizEvaluate
@@ -1494,29 +1503,6 @@ export class Api<
       }),
 
     /**
-     * @description API cho phép sinh viên chấp nhận đề xuất khóa học từ hệ thống. Sau khi chấp nhận, IsAccepted sẽ được đặt thành true.
-     *
-     * @tags CourseSuggestions
-     * @name V1CourseSuggestionsUpdateAcceptCourseSuggestionStatusUpdate
-     * @summary Chấp nhận đề xuất khóa học
-     * @request PUT:/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus
-     * @secure
-     */
-    v1CourseSuggestionsUpdateAcceptCourseSuggestionStatusUpdate: (
-      body: AcceptCourseSuggestionCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<AcceptCourseSuggestionResponse, any>({
-        path: `/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus`,
-        method: "PUT",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Trả về Learning Path theo tham số query. Cần xác thực Bearer.
      *
      * @tags LearningPaths
@@ -1537,75 +1523,6 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description API này cho phép sinh viên chọn các khóa học mong muốn.
-     *
-     * @tags LearningPaths
-     * @name LearningPathsUpdateLearningPathCoursesUpdate
-     * @summary Cập nhật các khóa học được chọn trong lộ trình học tập
-     * @request PUT:/api/LearningPaths/UpdateLearningPathCourses
-     * @secure
-     */
-    learningPathsUpdateLearningPathCoursesUpdate: (
-      body: LearningPathCourseUpdateCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<LearningPathCourseUpdateResponse, any>({
-        path: `/api/LearningPaths/UpdateLearningPathCourses`,
-        method: "PUT",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags LearningPaths
-     * @name LearningPathsChooseMajorUpdate
-     * @summary Pick lộ trình chuyên ngành phù hợp
-     * @request PUT:/api/LearningPaths/choose-major
-     * @secure
-     */
-    learningPathsChooseMajorUpdate: (
-      body: UpdateStatusLearningPathCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<UpdateStatusLearningPathResponse, any>({
-        path: `/api/LearningPaths/choose-major`,
-        method: "PUT",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Dùng để đồng bộ dữ liệu từ write-model khi chỉnh data, chỉ dùng cho Backend
-     *
-     * @tags LearningPaths
-     * @name LearningPathsSyncDataReadmodelCreate
-     * @summary Đồng bộ dữ liệu từ write-model sang read-model (BACKEND)
-     * @request POST:/api/LearningPaths/Sync-data-readmodel
-     * @secure
-     */
-    learningPathsSyncDataReadmodelCreate: (
-      body: UpdateReadModelLearningPathCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<UpdateReadModelLearningPathResponse, any>({
-        path: `/api/LearningPaths/Sync-data-readmodel`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1638,6 +1555,236 @@ export class Api<
       }),
 
     /**
+     * @description Trả về Lesson Dashboard theo tham số query. Cần xác thực Bearer.
+     *
+     * @tags StudentDashboards
+     * @name StudentDashboardsGetLessonDashboardProcessList
+     * @summary Lấy Lesson Dashboard
+     * @request GET:/api/StudentDashboards/GetLessonDashboardProcess
+     * @secure
+     */
+    studentDashboardsGetLessonDashboardProcessList: (
+      query?: {
+        /** @format uuid */
+        CourseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetLessonDashboardEventResponse, any>({
+        path: `/api/StudentDashboards/GetLessonDashboardProcess`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Trả về Module Dashboard theo tham số query. Cần xác thực Bearer.
+     *
+     * @tags StudentDashboards
+     * @name StudentDashboardsGetModuleDashboardProcessList
+     * @summary Lấy Module Dashboard
+     * @request GET:/api/StudentDashboards/GetModuleDashboardProcess
+     * @secure
+     */
+    studentDashboardsGetModuleDashboardProcessList: (
+      query?: {
+        /** @format uuid */
+        CourseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetModuleDashboardEventResponse, any>({
+        path: `/api/StudentDashboards/GetModuleDashboardProcess`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Trả về Overview Dashboard theo tham số query. Cần xác thực Bearer.
+     *
+     * @tags StudentDashboards
+     * @name StudentDashboardsGetOverviewCourseDashboardProcessList
+     * @summary Lấy Overview Dashboard
+     * @request GET:/api/StudentDashboards/GetOverviewCourseDashboardProcess
+     * @secure
+     */
+    studentDashboardsGetOverviewCourseDashboardProcessList: (
+      query?: {
+        /** @format uuid */
+        CourseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetOverviewCourseDashboardResponse, any>({
+        path: `/api/StudentDashboards/GetOverviewCourseDashboardProcess`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminSelectLearningGoalsList
+     * @summary Lấy danh sách mục tiêu học tập (phân trang, tìm kiếm, lọc)
+     * @request GET:/api/v1/Admin/SelectLearningGoals
+     * @secure
+     */
+    v1AdminSelectLearningGoalsList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        SearchTerm?: string;
+        /** @format int32 */
+        LearningGoalType?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminLearningGoalsSelectResponse, any>({
+        path: `/api/v1/Admin/SelectLearningGoals`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminSelectTechnologiesList
+     * @summary Lấy danh sách công nghệ (phân trang, tìm kiếm, lọc)
+     * @request GET:/api/v1/Admin/SelectTechnologies
+     * @secure
+     */
+    v1AdminSelectTechnologiesList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        SearchTerm?: string;
+        /** @format int32 */
+        TechnologyType?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminTechnologiesSelectResponse, any>({
+        path: `/api/v1/Admin/SelectTechnologies`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentSelectStudentProfileList
+     * @summary Hiển thị profile học sinh
+     * @request GET:/api/v1/Student/SelectStudentProfile
+     * @secure
+     */
+    v1StudentSelectStudentProfileList: (params: RequestParams = {}) =>
+      this.request<StudentProfileSelectResponse, any>({
+        path: `/api/v1/Student/SelectStudentProfile`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentSelectStudentTechnologyGoalList
+     * @summary Hiển thị công nghệ và mục tiêu học tập của sinh viên
+     * @request GET:/api/v1/Student/SelectStudentTechnologyGoal
+     * @secure
+     */
+    v1StudentSelectStudentTechnologyGoalList: (params: RequestParams = {}) =>
+      this.request<StudentTechnologyGoalSelectResponse, any>({
+        path: `/api/v1/Student/SelectStudentTechnologyGoal`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentSelectStudentTranscriptList
+     * @summary Hiển thị bảng điểm được import từ FAP của sinh viên
+     * @request GET:/api/v1/Student/SelectStudentTranscript
+     * @secure
+     */
+    v1StudentSelectStudentTranscriptList: (params: RequestParams = {}) =>
+      this.request<StudentTranscriptSelectResponse, any>({
+        path: `/api/v1/Student/SelectStudentTranscript`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API hỗ trợ phân trang và lọc theo ActionType, TargetType. Cần cấp quyền.
+     *
+     * @tags UserBehaviour
+     * @name V1UserBehaviourSelectUserBehavioursList
+     * @summary Lấy danh sách toàn bộ hành vi của người dùng hiện tại
+     * @request GET:/api/v1/UserBehaviour/SelectUserBehaviours
+     * @secure
+     */
+    v1UserBehaviourSelectUserBehavioursList: (params: RequestParams = {}) =>
+      this.request<SelectAllUserBehaviourResponse, any>({
+        path: `/api/v1/UserBehaviour/SelectUserBehaviours`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags LearningPaths
+     * @name LearningPathsChooseMajorUpdate
+     * @summary Pick lộ trình chuyên ngành phù hợp
+     * @request PUT:/api/LearningPaths/choose-major
+     * @secure
+     */
+    learningPathsChooseMajorUpdate: (
+      body: UpdateStatusLearningPathCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateStatusLearningPathResponse, any>({
+        path: `/api/LearningPaths/choose-major`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description API cho phép sinh viên chấp nhận học vượt/bỏ qua khóa học trong lộ trình học tập
      *
      * @tags LearningPaths
@@ -1652,6 +1799,98 @@ export class Api<
     ) =>
       this.request<UpdateCourseStatusToSkippedResponse, any>({
         path: `/api/LearningPaths/UpdateCourseStatusToSkipped`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API này cho phép sinh viên chọn các khóa học mong muốn.
+     *
+     * @tags LearningPaths
+     * @name LearningPathsUpdateLearningPathCoursesUpdate
+     * @summary Cập nhật các khóa học được chọn trong lộ trình học tập
+     * @request PUT:/api/LearningPaths/UpdateLearningPathCourses
+     * @secure
+     */
+    learningPathsUpdateLearningPathCoursesUpdate: (
+      body: LearningPathCourseUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<LearningPathCourseUpdateResponse, any>({
+        path: `/api/LearningPaths/UpdateLearningPathCourses`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminUpdateLearningGoalUpdate
+     * @summary Cập nhật mục tiêu học tập
+     * @request PUT:/api/v1/Admin/UpdateLearningGoal
+     * @secure
+     */
+    v1AdminUpdateLearningGoalUpdate: (
+      body: LearningGoalUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<LearningGoalUpdateResponse, any>({
+        path: `/api/v1/Admin/UpdateLearningGoal`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Admin
+     *
+     * @tags Admin
+     * @name V1AdminUpdateTechnologyUpdate
+     * @summary Cập nhật ngôn ngữ/ framework
+     * @request PUT:/api/v1/Admin/UpdateTechnology
+     * @secure
+     */
+    v1AdminUpdateTechnologyUpdate: (
+      body: TechnologyUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<TechnologyUpdateResponse, any>({
+        path: `/api/v1/Admin/UpdateTechnology`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API cho phép sinh viên chấp nhận đề xuất khóa học từ hệ thống. Sau khi chấp nhận, IsAccepted sẽ được đặt thành true.
+     *
+     * @tags CourseSuggestions
+     * @name V1CourseSuggestionsUpdateAcceptCourseSuggestionStatusUpdate
+     * @summary Chấp nhận đề xuất khóa học
+     * @request PUT:/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus
+     * @secure
+     */
+    v1CourseSuggestionsUpdateAcceptCourseSuggestionStatusUpdate: (
+      body: AcceptCourseSuggestionCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<AcceptCourseSuggestionResponse, any>({
+        path: `/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus`,
         method: "PUT",
         body: body,
         secure: true,
@@ -1728,86 +1967,24 @@ export class Api<
       }),
 
     /**
-     * @description Cần cấp quyền Student
+     * @description Cần cấp quyền Admin - Xóa logic
      *
-     * @tags Student
-     * @name V1StudentSelectStudentProfileList
-     * @summary Hiển thị profile học sinh
-     * @request GET:/api/v1/Student/SelectStudentProfile
+     * @tags Admin
+     * @name V1AdminDeleteLearningGoalDelete
+     * @summary Xóa mục tiêu học tập
+     * @request DELETE:/api/v1/Admin/DeleteLearningGoal
      * @secure
      */
-    v1StudentSelectStudentProfileList: (params: RequestParams = {}) =>
-      this.request<StudentProfileSelectResponse, any>({
-        path: `/api/v1/Student/SelectStudentProfile`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Student
-     *
-     * @tags Student
-     * @name V1StudentInsertStudentTranscriptCreate
-     * @summary Import bảng điểm từ FAP cho sinh viên
-     * @request POST:/api/v1/Student/InsertStudentTranscript
-     * @secure
-     */
-    v1StudentInsertStudentTranscriptCreate: (
-      data: {
-        /** @format binary */
-        TranscriptFile?: File;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<StudentTranscriptInsertResponse, any>({
-        path: `/api/v1/Student/InsertStudentTranscript`,
-        method: "POST",
-        body: data,
-        secure: true,
-        type: ContentType.FormData,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền Student
-     *
-     * @tags Student
-     * @name V1StudentSelectStudentTranscriptList
-     * @summary Hiển thị bảng điểm được import từ FAP của sinh viên
-     * @request GET:/api/v1/Student/SelectStudentTranscript
-     * @secure
-     */
-    v1StudentSelectStudentTranscriptList: (params: RequestParams = {}) =>
-      this.request<StudentTranscriptSelectResponse, any>({
-        path: `/api/v1/Student/SelectStudentTranscript`,
-        method: "GET",
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Trả về Module Dashboard theo tham số query. Cần xác thực Bearer.
-     *
-     * @tags StudentDashboards
-     * @name StudentDashboardsGetModuleDashboardProcessList
-     * @summary Lấy Module Dashboard
-     * @request GET:/api/StudentDashboards/GetModuleDashboardProcess
-     * @secure
-     */
-    studentDashboardsGetModuleDashboardProcessList: (
-      query?: {
+    v1AdminDeleteLearningGoalDelete: (
+      query: {
         /** @format uuid */
-        CourseId?: string;
+        GoalId: string;
       },
       params: RequestParams = {},
     ) =>
-      this.request<GetModuleDashboardEventResponse, any>({
-        path: `/api/StudentDashboards/GetModuleDashboardProcess`,
-        method: "GET",
+      this.request<LearningGoalDeleteResponse, any>({
+        path: `/api/v1/Admin/DeleteLearningGoal`,
+        method: "DELETE",
         query: query,
         secure: true,
         format: "json",
@@ -1815,116 +1992,25 @@ export class Api<
       }),
 
     /**
-     * @description Trả về Lesson Dashboard theo tham số query. Cần xác thực Bearer.
+     * @description Cần cấp quyền Admin - Xóa logic
      *
-     * @tags StudentDashboards
-     * @name StudentDashboardsGetLessonDashboardProcessList
-     * @summary Lấy Lesson Dashboard
-     * @request GET:/api/StudentDashboards/GetLessonDashboardProcess
+     * @tags Admin
+     * @name V1AdminDeleteTechnologyDelete
+     * @summary Xóa ngôn ngữ/ framework
+     * @request DELETE:/api/v1/Admin/DeleteTechnology
      * @secure
      */
-    studentDashboardsGetLessonDashboardProcessList: (
+    v1AdminDeleteTechnologyDelete: (
       query?: {
         /** @format uuid */
-        CourseId?: string;
+        technologyId?: string;
       },
       params: RequestParams = {},
     ) =>
-      this.request<GetLessonDashboardEventResponse, any>({
-        path: `/api/StudentDashboards/GetLessonDashboardProcess`,
-        method: "GET",
+      this.request<TechnologyDeleteResponse, any>({
+        path: `/api/v1/Admin/DeleteTechnology`,
+        method: "DELETE",
         query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Trả về Overview Dashboard theo tham số query. Cần xác thực Bearer.
-     *
-     * @tags StudentDashboards
-     * @name StudentDashboardsGetOverviewCourseDashboardProcessList
-     * @summary Lấy Overview Dashboard
-     * @request GET:/api/StudentDashboards/GetOverviewCourseDashboardProcess
-     * @secure
-     */
-    studentDashboardsGetOverviewCourseDashboardProcessList: (
-      query?: {
-        /** @format uuid */
-        CourseId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<GetOverviewCourseDashboardResponse, any>({
-        path: `/api/StudentDashboards/GetOverviewCourseDashboardProcess`,
-        method: "GET",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Trả về tài liệu dạng markdown. Cần xác thực Bearer.
-     *
-     * @tags StudentDashboards
-     * @name StudentDashboardsGenAndInsertImprovementByAiCreate
-     * @summary Tìm tài liệu improvement
-     * @request POST:/api/StudentDashboards/GenAndInsertImprovementByAI
-     * @secure
-     */
-    studentDashboardsGenAndInsertImprovementByAiCreate: (
-      query?: {
-        /** @format uuid */
-        ImprovementId?: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<SearchAiRecommendResponse, any>({
-        path: `/api/StudentDashboards/GenAndInsertImprovementByAI`,
-        method: "POST",
-        query: query,
-        secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Cần cấp quyền
-     *
-     * @tags UserBehaviour
-     * @name V1UserBehaviourInsertUserBehaviourCreate
-     * @summary Dùng cho việc lưu hành vi của người dùng để theo dõi đưa ra lộ trình cá nhân hoá phù hợp
-     * @request POST:/api/v1/UserBehaviour/InsertUserBehaviour
-     * @secure
-     */
-    v1UserBehaviourInsertUserBehaviourCreate: (
-      body: UserBehaviourInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<UserBehaviourInsertResponse, any>({
-        path: `/api/v1/UserBehaviour/InsertUserBehaviour`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description API hỗ trợ phân trang và lọc theo ActionType, TargetType. Cần cấp quyền.
-     *
-     * @tags UserBehaviour
-     * @name V1UserBehaviourSelectUserBehavioursList
-     * @summary Lấy danh sách toàn bộ hành vi của người dùng hiện tại
-     * @request GET:/api/v1/UserBehaviour/SelectUserBehaviours
-     * @secure
-     */
-    v1UserBehaviourSelectUserBehavioursList: (params: RequestParams = {}) =>
-      this.request<SelectAllUserBehaviourResponse, any>({
-        path: `/api/v1/UserBehaviour/SelectUserBehaviours`,
-        method: "GET",
         secure: true,
         format: "json",
         ...params,
