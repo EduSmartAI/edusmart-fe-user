@@ -20,7 +20,7 @@ export interface GetTranscriptResponse {
   success: boolean;
   messageId: string;
   message: string;
-  detailErrors: null | any;
+  detailErrors: null | unknown;
 }
 
 /**

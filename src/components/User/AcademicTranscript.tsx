@@ -33,13 +33,11 @@ export interface TranscriptRecord {
 
 interface AcademicTranscriptProps {
   data: TranscriptRecord[];
-  showStats?: boolean;
   onUploadSuccess?: () => void;
 }
 
 export default function AcademicTranscript({
   data,
-  showStats = true,
   onUploadSuccess,
 }: AcademicTranscriptProps) {
   const [searchText, setSearchText] = useState("");
@@ -81,12 +79,17 @@ export default function AcademicTranscript({
           detailErrors: result.detailErrors,
         });
         // Show error message with longer duration
+        const errorDetails = result.detailErrors
+          ? typeof result.detailErrors === "string"
+            ? result.detailErrors
+            : JSON.stringify(result.detailErrors)
+          : "";
         message.error({
           content: (
             <div>
               <div className="font-semibold">{result.message}</div>
-              {result.detailErrors && (
-                <div className="text-sm mt-1">{result.detailErrors}</div>
+              {errorDetails && (
+                <div className="text-sm mt-1">{errorDetails}</div>
               )}
             </div>
           ),
@@ -116,27 +119,6 @@ export default function AcademicTranscript({
     }
     return false;
   };
-
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const passedCourses = data.filter((item) => item.status === "Passed");
-    const totalCredits = passedCourses.reduce(
-      (sum, item) => sum + item.credit,
-      0,
-    );
-    const totalGradePoints = passedCourses.reduce(
-      (sum, item) => sum + item.grade * item.credit,
-      0,
-    );
-    const gpa = totalCredits > 0 ? totalGradePoints / totalCredits : 0;
-
-    return {
-      totalCourses: data.length,
-      passedCourses: passedCourses.length,
-      totalCredits,
-      gpa: gpa.toFixed(2),
-    };
-  }, [data]);
 
   // Get unique semesters
   const semestersNumber = useMemo(() => {

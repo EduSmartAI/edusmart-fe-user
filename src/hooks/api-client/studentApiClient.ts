@@ -8,7 +8,7 @@ export interface GetTranscriptResponse {
   success: boolean;
   messageId: string;
   message: string;
-  detailErrors: null | any;
+  detailErrors: null | unknown;
 }
 
 export interface UploadTranscriptResponse {
@@ -16,7 +16,7 @@ export interface UploadTranscriptResponse {
   success: boolean;
   messageId: string;
   message: string;
-  detailErrors: null | any;
+  detailErrors: null | unknown;
 }
 
 /**
@@ -186,6 +186,7 @@ export async function updateStudentProfileClient(data: {
 
     const response =
       await apiClient.studentService.api.v1StudentUpdateStudentProfileUpdate(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formData as any,
       );
 

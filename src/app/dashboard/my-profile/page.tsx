@@ -28,6 +28,7 @@ async function fetchStudentProfile() {
             await apiServer.quiz.api.v1ExternalQuizSelectMajorsList();
           if (majorsRes.data?.response) {
             const major = majorsRes.data.response.find(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (m: any) => m.majorId === profile.majorId,
             );
             if (major) {
@@ -45,6 +46,7 @@ async function fetchStudentProfile() {
             await apiServer.quiz.api.v1ExternalQuizSelectSemestersList();
           if (semestersRes.data?.response) {
             const semester = semestersRes.data.response.find(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (s: any) => s.semesterId === profile.semesterId,
             );
             if (semester) {
@@ -126,6 +128,7 @@ export default async function MyProfilePage() {
 
     return (
       <MyProfileClient
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         profile={profileResult.data as any}
         transcript={transcriptResult.data || []} // Ensure transcript is always an array, never null
       />

@@ -77,9 +77,13 @@ export default function MyProfileClient({
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [majors, setMajors] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [semesters, setSemesters] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [technologies, setTechnologies] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [learningGoals, setLearningGoals] = useState<any[]>([]);
   const [selectedTechIds, setSelectedTechIds] = useState<string[]>([]);
   const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
@@ -103,6 +107,7 @@ export default function MyProfileClient({
     if (isEditModalOpen) {
       loadFormData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditModalOpen]);
 
   const loadFormData = async () => {
@@ -192,7 +197,20 @@ export default function MyProfileClient({
         formattedDate = `${day}-${month}-${year}`;
       }
 
-      const updateData: any = {
+      const updateData: {
+        FirstName?: string;
+        LastName?: string;
+        DateOfBirth?: string;
+        PhoneNumber?: string;
+        Gender?: number;
+        Address?: string;
+        Bio?: string;
+        MajorId?: string;
+        SemesterId?: string;
+        Technologies?: string[];
+        LearningGoals?: string[];
+        Avatar?: File;
+      } = {
         FirstName: values.firstName,
         LastName: values.lastName,
         DateOfBirth: formattedDate,
@@ -299,7 +317,7 @@ export default function MyProfileClient({
     setFileList(newFileList);
   };
 
-  const handleLearningGoalChange = (values: any[]) => {
+  const handleLearningGoalChange = (values: string[]) => {
     const goalIds = values as string[];
 
     // Nếu không có learning goals, return empty
@@ -453,10 +471,10 @@ export default function MyProfileClient({
                   Độ am hiểu công nghệ
                 </h3>
                 <div className="space-y-3">
-                  {profile.technologies.map((tech, index) => (
+                  {profile.technologies.map((tech, idx) => (
                     <div key={tech.technologyId}>
                       <label className="block text-sm font-medium mb-2">
-                        {index + 1}. {tech.technologyTypeName}
+                        {idx + 1}. {tech.technologyTypeName}
                       </label>
                       <Input
                         value={tech.technologyName}
@@ -481,11 +499,8 @@ export default function MyProfileClient({
                   Định hướng tương lai
                 </h3>
                 <div className="space-y-3">
-                  {profile.learningGoals.map((goal, index) => (
+                  {profile.learningGoals.map((goal) => (
                     <div key={goal.goalId || goal.learningGoalId}>
-                      {/* <label className="block text-sm font-medium mb-2">
-                        {index + 1}. {goal.learningGoalType}
-                      </label> */}
                       <Input
                         value={goal.goalName || goal.learningGoalName}
                         size="large"
@@ -506,7 +521,6 @@ export default function MyProfileClient({
       children: (
         <AcademicTranscript
           data={transcript}
-          showStats={true}
           onUploadSuccess={() => window.location.reload()}
         />
       ),
@@ -821,7 +835,7 @@ export default function MyProfileClient({
                 className="w-full"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {learningGoals.map((goal, index) => (
+                  {learningGoals.map((goal) => (
                     <div
                       key={goal.learningGoalId || goal.goalId}
                       className="bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
