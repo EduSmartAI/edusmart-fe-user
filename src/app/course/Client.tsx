@@ -85,7 +85,6 @@ export default function CourseListPage({
   );
   const sortValue = searchParams.get("sortBy") ?? "BEST_MATCH";
 
-
   const showLoading = useLoadingStore((s) => s.showLoading);
   const hideLoading = useLoadingStore((s) => s.hideLoading);
 
@@ -155,17 +154,20 @@ export default function CourseListPage({
     });
   }, [searchParams, filterGroups]);
   const handleSearch = (value: string) => {
-  setQueryParams((next) => {
-    if (value) next.set("search", value);
-    else next.delete("search");
-    next.set("page", "1");
-  });
-};
+    setQueryParams((next) => {
+      if (value) next.set("search", value);
+      else next.delete("search");
+      next.set("page", "1");
+    });
+  };
 
   return (
     <BaseScreenWhiteNav>
       <ZoomIn>
-        <CourseSearchSection onSearch={handleSearch} searchCoursedata={searchCoursedata}/>
+        <CourseSearchSection
+          onSearch={handleSearch}
+          searchCoursedata={searchCoursedata}
+        />
         {/* Khung ngoài, canh giữa theo max width */}
         <div className="mx-auto max-w-screen-2xl px-4 lg:px-6 py-8">
           <Layout hasSider className="!bg-transparent gap-4 lg:gap-10">
@@ -292,7 +294,11 @@ export default function CourseListPage({
                   {courses.map((c, idx) => (
                     <Col key={idx} xs={24} sm={12} xl={8}>
                       <div className="h-full xs:ml-4">
-                        <CourseCard {...c} />
+                        <CourseCard
+                          {...c}
+                          isEnrolled={c.isEnroll ?? false}
+                          isWishList={c.isWishList ?? false}
+                        />
                       </div>
                     </Col>
                   ))}

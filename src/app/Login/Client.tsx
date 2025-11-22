@@ -33,6 +33,7 @@ export default function LoginPage() {
   const messageApi = useNotification();
   const [form] = Form.useForm<LoginFormValues>();
   const login = useAuthStore((state) => state.login);
+  const isOtherSystem = useAuthStore((state) => state.isOtherSystem);
   const router = useRouter();
   const [showForm, setShowForm] = useState<boolean>(false);
   const [activeKey, setActiveKey] = useState<"login" | "register">("login");
@@ -44,7 +45,10 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const rawRedirect = searchParams.get("redirect") || "";
   const redirect =
-    rawRedirect && rawRedirect.startsWith("/") ? decodeURIComponent(rawRedirect) : "";
+    rawRedirect && rawRedirect.startsWith("/")
+      ? decodeURIComponent(rawRedirect)
+      : "";
+  const [waitingSeconds, setWaitingSeconds] = useState(0);
 
   useEffect(() => {
     const SetForm = async () => {
@@ -58,6 +62,21 @@ export default function LoginPage() {
     };
     SetForm();
   }, []);
+
+  useEffect(() => {
+    if (!isOtherSystem) {
+      setWaitingSeconds(0);
+      return;
+    }
+
+    const start = Date.now();
+    const interval = setInterval(() => {
+      const diff = Math.floor((Date.now() - start) / 1000);
+      setWaitingSeconds(diff);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isOtherSystem]);
 
   useEffect(() => {
     router.prefetch("/Register"); // tải sẵn chunk của trang Register
@@ -111,6 +130,10 @@ export default function LoginPage() {
     try {
       useLoadingStore.getState().showLoading();
       const isOK = await login(values.email, values.password);
+      if (useAuthStore.getState().isOtherSystem) {
+        useLoadingStore.getState().hideLoading();
+        return;
+      }
       const target = redirect || "/";
       console.log("Redirecting to:", target);
       if (isOK) {
@@ -119,7 +142,9 @@ export default function LoginPage() {
         useLoadingStore.getState().hideLoading();
         return;
       }
-      messageApi.error("Đăng nhập thất bại, vui lòng kiểm tra lại email/mật khẩu");
+      messageApi.error(
+        "Đăng nhập thất bại, vui lòng kiểm tra lại email/mật khẩu",
+      );
       useLoadingStore.getState().hideLoading();
     } catch (error: unknown) {
       useLoadingStore.getState().hideLoading();
@@ -141,6 +166,13 @@ export default function LoginPage() {
     immediate: skipMountAnim,
     config: { mass: 1, tension: 280, friction: 60 },
     delay: 300,
+  });
+  const statusSpring = useSpring({
+    opacity: isOtherSystem ? 1 : 0,
+    transform: isOtherSystem
+      ? "translateY(0px) scale(1)"
+      : "translateY(16px) scale(0.96)",
+    config: { mass: 1, tension: 240, friction: 22 },
   });
 
   // 2) Trail cho các input field
@@ -302,6 +334,80 @@ export default function LoginPage() {
     sessionStorage.removeItem("authMountOnce");
     router.push("/home");
   };
+
+  if (isOtherSystem) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 px-4">
+        <animated.div style={statusSpring} className="relative max-w-md w-full">
+          {/* Viền gradient + glow nhẹ */}
+          <div
+            className="
+            absolute -inset-[1px] rounded-3xl 
+            bg-gradient-to-br from-teal-400/35 via-cyan-400/25 to-blue-500/35 
+            opacity-80 blur-md
+            dark:from-teal-400/60 dark:via-cyan-400/40 dark:to-blue-500/60
+          "
+          />
+
+          <div
+            className="
+            relative rounded-3xl p-8 text-center
+            bg-white/90 border border-slate-200 shadow-[0_18px_60px_rgba(15,23,42,0.18)]
+            dark:bg-slate-900/90 dark:border-slate-700/70 dark:shadow-[0_18px_60px_rgba(15,23,42,0.85)]
+          "
+          >
+            <p className="text-xs font-semibold tracking-[0.25em] uppercase text-teal-600 dark:text-teal-300 mb-3">
+              Đang chuyển hướng
+            </p>
+
+            <h1 className="text-2xl md:text-3xl font-semibold mb-2 text-slate-900 dark:text-slate-50">
+              Đang kết nối tới hệ thống xác thực khác
+            </h1>
+
+            <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
+              Vui lòng giữ nguyên tab này. Hệ thống sẽ tự động chuyển khi kết
+              nối hoàn tất.
+            </p>
+
+            {/* Khu vực timer + loading */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="inline-flex items-center gap-3">
+                {/* Vòng tròn loading + ping */}
+                <span className="relative flex h-8 w-8">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400/35 dark:bg-teal-400/40" />
+                  <span className="relative inline-flex rounded-full h-8 w-8 border-2 border-teal-500 border-t-transparent animate-spin" />
+                </span>
+
+                <div className="text-left">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    Thời gian chờ
+                  </div>
+                  <div className="mt-0.5 text-2xl font-mono text-slate-900 dark:text-slate-100">
+                    {waitingSeconds} <span className="text-sm">giây</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Thanh progress giả để đỡ trống */}
+              <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden mt-2">
+                <div
+                  className="h-full bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500 transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, (waitingSeconds % 10) * 10)}%`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <p className="mt-6 text-xs text-slate-500 dark:text-slate-400">
+              Nếu chờ quá lâu, hãy thử tải lại trang hoặc kiểm tra lại đường dẫn
+              đăng nhập.
+            </p>
+          </div>
+        </animated.div>
+      </div>
+    );
+  }
 
   return (
     <>

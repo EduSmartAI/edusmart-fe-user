@@ -8,6 +8,7 @@ import {
   AIChatBotResponse,
   ChatHistoryItem,
 } from "EduSmart/api/api-ai-service";
+import { UserBehaviourActionType, UserBehaviourInsertResponse } from "EduSmart/api/api-student-service";
 
 interface SubmitAnswerDto {
   questionId: string;
@@ -33,6 +34,13 @@ interface CourseState {
     history?: ChatHistoryItem[],
     lessonId?: string,
   ) => Promise<AIChatBotResponse>;
+  insertUserBehaviour: (
+    actionType?: number,
+    targetId?: string,
+    targetType?: number,
+    parentTargetId?: string,
+    metadata?: string,
+  ) => Promise<UserBehaviourInsertResponse>;
 }
 
 export const useCourseStore = create<CourseState>(() => ({
@@ -147,6 +155,37 @@ export const useCourseStore = create<CourseState>(() => ({
       return {
         data: {},
       };
+    }
+  },
+ insertUserBehaviour: async (
+    actionType,
+    targetId,
+    targetType,
+    parentTargetId,
+    metadata,
+  ) => {
+    try {
+
+      const res =
+        await apiClient.studentService.api.v1UserBehaviourInsertUserBehaviourCreate(
+          {
+            actionType: actionType as UserBehaviourActionType,
+            targetId: targetId,
+            targetType: targetType,
+            parentTargetId: parentTargetId,
+            metadata: metadata,
+          }
+        );
+
+      if (res.data?.success && res.data.response) {
+        console.log("InsertUserBehaviour - res:", res.data.response);
+        return res.data as UserBehaviourInsertResponse;
+      }
+
+      return res.data as UserBehaviourInsertResponse;
+    } catch (error) {
+      console.error("Error inserting user behaviour:", error);
+      return { data: {} } as unknown as UserBehaviourInsertResponse;
     }
   },
 }));

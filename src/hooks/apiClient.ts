@@ -9,6 +9,7 @@ import { Api as AuthEduClientApi } from "EduSmart/api/api-auth-service";
 import { Api as CourseClientApi } from "EduSmart/api/api-course-service";
 import { Api as QuizClientApi } from "EduSmart/api/api-quiz-service";
 import { Api as AIClientApi } from "EduSmart/api/api-ai-service";
+import { Api as StudentClientApi } from "EduSmart/api/api-student-service";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useValidateStore } from "EduSmart/stores/Validate/ValidateStore";
 
@@ -129,11 +130,17 @@ export const AIClient = new AIClientApi({
   customFetch: axiosFetch,
 });
 
+export const StudentClient = new StudentClientApi({
+  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/student`,
+  customFetch: axiosFetch,
+});
+
 const apiClient = {
   authEduService: AuthEduClient,
   courseService: CourseClient,
   quizService: QuizClient,
   aiService: AIClient,
+  studentService: StudentClient,
 };
 
 export default apiClient;

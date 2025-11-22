@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   Button,
@@ -10,14 +10,23 @@ import {
   ImageProps,
 } from "antd";
 import { useRouter } from "next/navigation";
+import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import "EduSmart/components/CourseCard/styles/component.card.css";
+import {
+  courseWishlistCreate,
+  courseWishlistDelete,
+} from "EduSmart/app/apiServer/wishlist/wishlistAction";
+import { useMessageStore } from "EduSmart/stores/message/MessageStore";
+
 const { Title, Paragraph, Text } = Typography;
 
 interface CourseCardProps {
   imageUrl: ImageProps["src"];
+  id?: string;
   title: string;
   descriptionLines?: string[];
   instructor: string;
+  isEnrolled?: boolean;
   price?: number;
   dealPrice?: number | null;
   isShowProgress?: boolean;
@@ -26,6 +35,11 @@ interface CourseCardProps {
   totalLessons?: number;
   instructorAvatar?: ImageProps["src"];
   routerPush?: string;
+
+  // ⭐ NEW: trạng thái wishlist
+  isWishList?: boolean;
+  // ⭐ NEW: callback nếu muốn handle khi bấm trái tim
+  onToggleWishList?: () => void;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({
@@ -41,14 +55,24 @@ const CourseCard: React.FC<CourseCardProps> = ({
   totalLessons = 0,
   instructorAvatar,
   routerPush,
+  isWishList = false,
+  id,
+  isEnrolled = false,
+  onToggleWishList,
 }) => {
   const router = useRouter();
+  const [localWish, setLocalWish] = useState(isWishList);
+  const setMessage = useMessageStore((s) => s.setMessage);
+
+  useEffect(() => {
+    setLocalWish(isWishList);
+  }, [isWishList]);
 
   useEffect(() => {
     if (routerPush) {
       router.prefetch(routerPush);
     }
-  }, [routerPush, router])
+  }, [routerPush, router]);
 
   const handleClick = () => {
     if (routerPush) router.push(routerPush);
@@ -81,9 +105,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
           );
         })}
       </ul>
-      <Button type="primary" block>
-        Add to cart
-      </Button>
     </div>
   );
 
@@ -100,7 +121,60 @@ const CourseCard: React.FC<CourseCardProps> = ({
     }
   };
 
+  const handleButtonClick = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    e.stopPropagation(); // tránh trigger Card onClick
+
+    if (!routerPush) return;
+
+    if (isEnrolled) {
+      router.push(`${routerPush}/learn`);
+    } else {
+      router.push(routerPush);
+    }
+  };
+
+  const handleToggleWish = async () => {
+    if (onToggleWishList) {
+      onToggleWishList();
+      return;
+    }
+
+    if (!id) return;
+
+    try {
+      if (!localWish) {
+        const res = await courseWishlistCreate(id);
+        if (res?.success && res.response) {
+          setLocalWish(true);
+        }
+        setMessage(res?.message ?? "", {
+          type: "success",
+          duration: 1,
+        });
+      } else {
+        console.log("Removing from wishlist");
+        const res = await courseWishlistDelete(id);
+        if (res?.success) {
+          setLocalWish(false);
+        }
+        setMessage(res?.message ?? "", {
+          type: "success",
+          duration: 1,
+        });
+      }
+    } catch (error) {
+      console.error("handleToggleWish error:", error);
+      setMessage("Có lỗi xảy ra, vui lòng thử lại", {
+        type: "error",
+        duration: 1,
+      });
+    }
+  };
   const hasDeal = dealPrice !== null && dealPrice !== undefined;
+
+  console.log("router push", routerPush);
 
   return (
     <Popover
@@ -117,13 +191,34 @@ const CourseCard: React.FC<CourseCardProps> = ({
           w-[22rem]
           max-w-[26rem] min-w-[16rem] h-[28rem]
           cursor-pointer rounded-lg overflow-hidden !border !border-slate-200/80 dark:!border-slate-700/60
-        hover:!border-slate-300 dark:hover:!border-slate-600 !shadow-sm hover:!shadow-md !transition focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-emerald-400
+          hover:!border-slate-300 dark:hover:!border-slate-600 !shadow-sm hover:!shadow-md !transition
+          focus-visible:!outline-none focus-visible:ring-2 focus-visible:ring-emerald-400
         "
         style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: 0 }}
       >
         <div className="flex flex-col h-full">
           {/* Image */}
           <div className="relative w-full h-[180px] overflow-hidden flex items-center justify-center">
+            {/* ⭐ Icon trái tim wishlist */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation(); // tránh trigger Card onClick
+                handleToggleWish();
+              }}
+              className="
+                absolute top-2 right-2 z-10
+                rounded-full bg-black/40 hover:bg-black/60
+                p-1 flex items-center justify-center
+              "
+            >
+              {localWish ? (
+                <HeartFilled style={{ fontSize: 20, color: "#f97373" }} />
+              ) : (
+                <HeartOutlined style={{ fontSize: 20, color: "#ffffff" }} />
+              )}
+            </button>
+
             <Image
               src={imageUrl}
               className="w-full h-full object-cover"
@@ -208,7 +303,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
                                 {formatMoneyVND(price)}
                               </Text>
                             ) : (
-                              // giữ chỗ cho dòng thứ 2 để các card cao bằng nhau
                               <span
                                 style={{ marginTop: 4, visibility: "hidden" }}
                               >
@@ -226,7 +320,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
                                 {formatMoneyVND(price)}
                               </Text>
                             )}
-                            {/* placeholder dòng thứ 2 */}
                             <span
                               style={{ marginTop: 4, visibility: "hidden" }}
                             >
@@ -239,8 +332,9 @@ const CourseCard: React.FC<CourseCardProps> = ({
                   )}
 
                   <div className="mt-6">
-                    <Button style={{ marginRight: 8 }}>Chọn</Button>
-                    <Button type="primary">Xem ngay</Button>
+                    <Button type="primary" onClick={handleButtonClick}>
+                      {isEnrolled ? "Học ngay" : "Xem ngay"}
+                    </Button>
                   </div>
                 </>
               )}

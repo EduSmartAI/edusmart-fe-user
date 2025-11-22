@@ -541,6 +541,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                     console.log(`Resumed after ${info.pausedForMs}ms`, info)
                   }
                   lessonId={currentLessonId}
+                  courseId={course.courseId}
                   tickSec={1}
                   poster={
                     course.courseImageUrl ??
