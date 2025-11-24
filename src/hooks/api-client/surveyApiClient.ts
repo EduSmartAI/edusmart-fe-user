@@ -404,6 +404,7 @@ export async function submitSurveyClient(
                             })),
                         },
                     ],
+                    isWantToTakeTest: false, // hard code
                 },
             );
 

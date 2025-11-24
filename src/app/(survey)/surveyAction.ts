@@ -806,6 +806,7 @@ export async function submitSurveyAction(surveyData: {
         },
       },
       studentSurveys: studentSurveys,
+      isWantToTakeTest: false, // hard code
     };
 
     // Validate payload before sending
@@ -1034,6 +1035,7 @@ export async function submitSurveyServerAction(submissionData: {
           })),
         },
       ],
+      isWantToTakeTest: false, // hard code
     };
 
     // Try actual API call
