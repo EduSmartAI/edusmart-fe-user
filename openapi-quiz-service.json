@@ -2349,6 +2349,9 @@
         "learningGoalType": {
           "format": "int32",
           "type": "integer"
+        },
+        "learningGoalName": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -2558,6 +2561,7 @@
       "required": [
         "examples",
         "problem",
+        "solutions",
         "templates",
         "testcases"
       ],
@@ -2567,10 +2571,7 @@
           "$ref": "#/definitions/PracticeTestAdminProblemInsertRequest"
         },
         "testcases": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/PracticeTestAdminProblemTestcaseInsertRequest"
-          }
+          "$ref": "#/definitions/PracticeTestAdminProblemTestcaseInsertRequest"
         },
         "templates": {
           "type": "array",
@@ -2582,6 +2583,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/PracticeTestAdminProblemExampleInsertRequest"
+          }
+        },
+        "solutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminSolutionInsertRequest"
           }
         }
       },
@@ -2823,6 +2830,19 @@
           "type": "string"
         },
         "difficulty": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PracticeTestAdminSolutionInsertRequest": {
+      "type": "object",
+      "properties": {
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "solutionCode": {
           "type": "string"
         }
       },
@@ -4636,6 +4656,7 @@
     },
     "StudentSurveyInsertCommand": {
       "required": [
+        "isWantToTakeTest",
         "studentInformation",
         "studentSurveys"
       ],
@@ -4649,6 +4670,9 @@
           "items": {
             "$ref": "#/definitions/StudentSurveyInsertRequest"
           }
+        },
+        "isWantToTakeTest": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -4697,6 +4721,7 @@
           }
         },
         "response": {
+          "format": "uuid",
           "type": "string"
         }
       },

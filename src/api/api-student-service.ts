@@ -911,8 +911,8 @@ export interface TechnologyUpdateResponse {
 }
 
 export interface UpdateCourseStatusToSkippedCommand {
-  /** @format uuid */
-  learningPathCourseId: string;
+  /** @minLength 1 */
+  subjectCode: string;
 }
 
 export interface UpdateCourseStatusToSkippedResponse {

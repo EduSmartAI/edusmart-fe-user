@@ -14,7 +14,7 @@ export default function SentPage() {
       <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(#0000000d_1px,transparent_1px)] [background-size:20px_20px]" />
 
       <VerificationSentCard
-        email="edusmartAI@gmail.com"
+        email={sessionStorage.getItem("justRegisteredEmail") || ""}
         backHref="/home"
         manageHref="/Register"
         brand="EduSmart"

@@ -14,7 +14,6 @@ import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import Editor, { Monaco, OnMount } from "@monaco-editor/react";
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { FiChevronDown, FiPlay, FiSend } from "react-icons/fi";
-import type { CodeLanguageOption, PracticeProblem } from "../../app/code/page";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -31,6 +30,7 @@ import TestCaseComponent, {
   JudgeRunRes,
 } from "EduSmart/components/Code/TestCaseComponent";
 import { handleEditorWillMount } from "EduSmart/utils/EditorCodeConfig";
+import { CodeLanguageOption, PracticeProblem } from "./CodeEditorContainer";
 
 const { Header, Content } = Layout;
 const { Option } = Select;
