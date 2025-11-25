@@ -49,6 +49,7 @@ import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
 import CourseDetailsCardTabs from "EduSmart/components/Course/CourseDetailsCardTabs";
 import BasecontrolModal from "EduSmart/components/BaseControl/BasecontrolModal";
 import ChatAssistantPanel from "EduSmart/components/Course/Learn/ChatAssistantPanel";
+import CourseComments from "EduSmart/components/Course/Learn/CourseComments";
 import { animated, useTransition, useSpring } from "@react-spring/web";
 
 const { Text } = Typography;
@@ -258,6 +259,15 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
             Ghi chú của bạn sẽ hiển thị ở đây.
           </div>
         ),
+      },
+      {
+        key: "comments",
+        label: (
+          <span className="inline-flex items-center gap-2">
+            <MessageOutlined /> Comments
+          </span>
+        ),
+        children: <CourseComments courseId={course.courseId ?? ""} />,
       },
 
       /** -------- Discussions tab -------- */

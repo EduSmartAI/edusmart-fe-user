@@ -3,12 +3,21 @@ import apiClient from "EduSmart/hooks/apiClient";
 import { create } from "zustand";
 import { useLoadingStore } from "../Loading/LoadingStore";
 import { StudentQuizCourseInsertResponse } from "EduSmart/api/api-quiz-service";
-import { UpsertUserLessonProgressResponse } from "EduSmart/api/api-course-service";
+import {
+  UpsertUserLessonProgressResponse,
+  CreateCommentBody,
+  CreateCommentResponse,
+  GetCourseCommentsResponse,
+  ReplyToCommentResponse,
+} from "EduSmart/api/api-course-service";
 import {
   AIChatBotResponse,
   ChatHistoryItem,
 } from "EduSmart/api/api-ai-service";
-import { UserBehaviourActionType, UserBehaviourInsertResponse } from "EduSmart/api/api-student-service";
+import {
+  UserBehaviourActionType,
+  UserBehaviourInsertResponse,
+} from "EduSmart/api/api-student-service";
 
 interface SubmitAnswerDto {
   questionId: string;
@@ -41,6 +50,20 @@ interface CourseState {
     parentTargetId?: string,
     metadata?: string,
   ) => Promise<UserBehaviourInsertResponse>;
+  courseCommentsCreate: (
+    data: CreateCommentBody,
+    query?: { courseId?: string },
+  ) => Promise<{ data: CreateCommentResponse }>;
+  courseCommentsList: (query?: {
+    courseId?: string;
+    page?: number;
+    size?: number;
+  }) => Promise<{ data: GetCourseCommentsResponse }>;
+  courseCommentsRepliesCreate: (
+    parentCommentId: string,
+    data: CreateCommentBody,
+    query?: { courseId?: string },
+  ) => Promise<{ data: ReplyToCommentResponse }>;
 }
 
 export const useCourseStore = create<CourseState>(() => ({
@@ -157,7 +180,7 @@ export const useCourseStore = create<CourseState>(() => ({
       };
     }
   },
- insertUserBehaviour: async (
+  insertUserBehaviour: async (
     actionType,
     targetId,
     targetType,
@@ -165,7 +188,6 @@ export const useCourseStore = create<CourseState>(() => ({
     metadata,
   ) => {
     try {
-
       const res =
         await apiClient.studentService.api.v1UserBehaviourInsertUserBehaviourCreate(
           {
@@ -174,7 +196,7 @@ export const useCourseStore = create<CourseState>(() => ({
             targetType: targetType,
             parentTargetId: parentTargetId,
             metadata: metadata,
-          }
+          },
         );
 
       if (res.data?.success && res.data.response) {
@@ -186,6 +208,40 @@ export const useCourseStore = create<CourseState>(() => ({
     } catch (error) {
       console.error("Error inserting user behaviour:", error);
       return { data: {} } as unknown as UserBehaviourInsertResponse;
+    }
+  },
+  courseCommentsCreate: async (data, query) => {
+    try {
+      const res = await apiClient.courseService.api.courseCommentsCreate(
+        data,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error creating course comment:", error);
+      throw error;
+    }
+  },
+  courseCommentsList: async (query) => {
+    try {
+      const res = await apiClient.courseService.api.courseCommentsList(query);
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error fetching course comments:", error);
+      throw error;
+    }
+  },
+  courseCommentsRepliesCreate: async (parentCommentId, data, query) => {
+    try {
+      const res = await apiClient.courseService.api.courseCommentsRepliesCreate(
+        parentCommentId,
+        data,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error creating comment reply:", error);
+      throw error;
     }
   },
 }));
