@@ -41,14 +41,16 @@ export default function NavigationbarClient({ isAuthed }: Props) {
     { key: "learningPath", label: "Đề xuất lộ trình học tập", href: "/learning-path" },
     { key: "dashboard", label: "Dashboard", href: "/dashboard" },
     { key: "quiz", label: "Quiz", href: "/quiz" },
+    { key: "chatAI", label: "Chat AI", href: "/chat/ai" },
     { key: "login", label: "Đăng nhập", button: true, type: "link" },
     { key: "signup", label: "Đăng Ký", button: true, type: "primary" },
   ];
 
+  const navigableItems = menuItems.filter((item) => !item.button);
+
   const activeItem =
-    menuItems
-      .slice(0, 5)
-      .find((item) => pathname.startsWith(item.href ?? "")) || menuItems[0];
+    navigableItems.find((item) => pathname.startsWith(item.href ?? "")) ||
+    navigableItems[0];
   const currentKey = activeItem.key;
 
   const [underline, api] = useSpring(() => ({
@@ -204,7 +206,7 @@ export default function NavigationbarClient({ isAuthed }: Props) {
             ref={linksRef}
             className="hidden xl:flex flex-1 justify-center items-center relative mx-20"
           >
-            {menuItems.slice(0, 5).map((item) => {
+            {navigableItems.map((item) => {
               const isActive = item.key === currentKey;
               return (
                 <a

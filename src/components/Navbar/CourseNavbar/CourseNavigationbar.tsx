@@ -18,6 +18,7 @@ import {
   CopyOutlined,
   FacebookFilled,
   TwitterSquareFilled,
+  RobotOutlined,
 } from "@ant-design/icons";
 
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
@@ -235,6 +236,17 @@ export default function CourseNavigationbar({
               />
             </Dropdown>
 
+            {/* Chat AI */}
+            <Button
+              size="middle"
+              type="primary"
+              className="hidden lg:inline-flex items-center rounded-full bg-[#49BBBD] hover:!bg-[#3f9c9e] border-none"
+              icon={<RobotOutlined />}
+              onClick={() => router.push("/chat/ai")}
+            >
+              Chat AI
+            </Button>
+
             {/* Theme */}
             <div className="hidden md:block">
               <ThemeSwitch />
@@ -330,6 +342,21 @@ export default function CourseNavigationbar({
                   <Button size="middle" icon={<EllipsisOutlined />} />
                 </Dropdown>
               </div>
+            </div>
+
+            <div className="px-3 pb-3">
+              <Button
+                block
+                type="primary"
+                icon={<RobotOutlined />}
+                className="bg-[#49BBBD] hover:!bg-[#3f9c9e]"
+                onClick={() => {
+                  setIsOpen(false);
+                  router.push("/chat/ai");
+                }}
+              >
+                Chat AI
+              </Button>
             </div>
 
             <div className="h-px bg-slate-200 dark:bg-slate-800" />

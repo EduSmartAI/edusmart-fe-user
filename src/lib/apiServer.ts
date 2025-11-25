@@ -6,7 +6,8 @@ import { Api as AuthApi } from "EduSmart/api/api-auth-service"; // <-- đường
 import { Api as CourseApi } from "EduSmart/api/api-course-service"; // Import Course API
 import { Api as QuizApi } from "EduSmart/api/api-quiz-service";
 import { Api as StudentApi } from "EduSmart/api/api-student-service"; // Import Student API
-import { Api as PaymentApi } from "EduSmart/api/api-payment-service"; // Import Student API
+import { Api as PaymentApi } from "EduSmart/api/api-payment-service"; // Import Payment API
+import { Api as AiApi } from "EduSmart/api/api-ai-service"; // Import Payment API
 import {
     getAuthHeaderFromCookie,
     getSidFromCookie,
@@ -97,7 +98,17 @@ export const studentService = new StudentApi({
 });
 
 export const paymentService = new PaymentApi({
-    baseUrl: `${BACKEND}/student`,
+    baseUrl: `${BACKEND}/payment`,
+    customFetch: with401Retry,
+    baseApiParams: { credentials: "include" },
+    securityWorker: async () => {
+        const auth = await getAuthHeaderFromCookie();
+        return { headers: auth ?? {} };
+    },
+});
+
+export const aiService = new AiApi({
+    baseUrl: `${BACKEND}/ai`,
     customFetch: with401Retry,
     baseApiParams: { credentials: "include" },
     securityWorker: async () => {
@@ -129,6 +140,7 @@ export const apiServer = {
     quiz: quizService,
     student: studentService,
     payment: paymentService,
+    ai: aiService,
 };
 
 // Export default để có thể import { apiServer} hoặc import apiServer
@@ -141,3 +153,4 @@ export type CourseService = typeof courseService;
 export type QuizService = typeof quizService;
 export type StudentService = typeof studentService;
 export type PaymentService = typeof paymentService;
+export type AiService = typeof aiService;
