@@ -9,6 +9,12 @@ import {
   CreateCommentResponse,
   GetCourseCommentsResponse,
   ReplyToCommentResponse,
+  CreateNoteDto,
+  CreateNoteResponse,
+  GetLessonNotesResponse,
+  UpdateNoteDto,
+  UpdateNoteResponse,
+  DeleteNoteResponse,
 } from "EduSmart/api/api-course-service";
 import {
   AIChatBotResponse,
@@ -64,6 +70,24 @@ interface CourseState {
     data: CreateCommentBody,
     query?: { courseId?: string },
   ) => Promise<{ data: ReplyToCommentResponse }>;
+  lessonNotesCreate: (
+    data: CreateNoteDto,
+    query?: { lessonId?: string },
+  ) => Promise<{ data: CreateNoteResponse }>;
+  lessonNotesList: (query?: {
+    lessonId?: string;
+    page?: number;
+    size?: number;
+  }) => Promise<{ data: GetLessonNotesResponse }>;
+  lessonNotesUpdate: (
+    noteId: string,
+    data: UpdateNoteDto,
+    query?: { lessonId?: string },
+  ) => Promise<{ data: UpdateNoteResponse }>;
+  lessonNotesDelete: (
+    noteId: string,
+    query?: { lessonId?: string },
+  ) => Promise<{ data: DeleteNoteResponse }>;
 }
 
 export const useCourseStore = create<CourseState>(() => ({
@@ -241,6 +265,52 @@ export const useCourseStore = create<CourseState>(() => ({
       return { data: res.data };
     } catch (error) {
       console.error("Error creating comment reply:", error);
+      throw error;
+    }
+  },
+  lessonNotesCreate: async (data, query) => {
+    try {
+      const res = await apiClient.courseService.api.lessonNotesCreate(
+        data,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error creating lesson note:", error);
+      throw error;
+    }
+  },
+  lessonNotesList: async (query) => {
+    try {
+      const res = await apiClient.courseService.api.lessonNotesList(query);
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error fetching lesson notes:", error);
+      throw error;
+    }
+  },
+  lessonNotesUpdate: async (noteId, data, query) => {
+    try {
+      const res = await apiClient.courseService.api.lessonNotesUpdate(
+        noteId,
+        data,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error updating lesson note:", error);
+      throw error;
+    }
+  },
+  lessonNotesDelete: async (noteId, query) => {
+    try {
+      const res = await apiClient.courseService.api.lessonNotesDelete(
+        noteId,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error deleting lesson note:", error);
       throw error;
     }
   },
