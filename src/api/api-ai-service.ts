@@ -17,6 +17,18 @@ export enum QuizScope {
   Value3 = 3,
 }
 
+export interface AIChatBotLearningPathRequest {
+  request?: ChatBotLearningPathRequestDto;
+}
+
+export interface AIChatBotLearningPathResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: ChatResponseDto;
+}
+
 export interface AIChatBotRequest {
   request?: ChatRequestDto;
 }
@@ -152,9 +164,34 @@ export interface AskResponse {
   roadmap?: RoadmapPayload;
 }
 
+export interface ChatBotLearningPathRequestDto {
+  message?: string;
+  /** @format uuid */
+  sessionId?: string;
+}
+
+export interface ChatDetailDto {
+  /** @format uuid */
+  id?: string;
+  name?: string;
+  messages?: ChatHistoryLearningPathItemDto[];
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
 export interface ChatHistoryItem {
   role?: string;
   content?: string;
+}
+
+export interface ChatHistoryLearningPathItemDto {
+  role?: string;
+  content?: string;
+  rawFinishReason?: string;
 }
 
 export interface ChatRequestDto {
@@ -167,6 +204,18 @@ export interface ChatRequestDto {
 export interface ChatResponseDto {
   reply?: string;
   rawFinishReason?: string;
+}
+
+export interface ChatSummaryDto {
+  /** @format uuid */
+  id?: string;
+  name?: string;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string;
+  /** @format int32 */
+  messageCount?: number;
 }
 
 export interface CreateTranscriptCommand {
@@ -207,6 +256,22 @@ export interface ExternalSuggestion {
   major_name?: string;
   description?: string;
   why_for_you?: string;
+}
+
+export interface GetAllChatsLearningPathResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: ChatSummaryDto[];
+}
+
+export interface GetChatDetailLearningPathResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: ChatDetailDto;
 }
 
 export interface IdentityEntity {
@@ -635,6 +700,69 @@ export class Api<
         body: body,
         secure: true,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AIChatBots
+     * @name AiChatBotsChatWithAiLearningPathCreate
+     * @request POST:/api/AIChatBots/ChatWithAILearningPath
+     * @secure
+     */
+    aiChatBotsChatWithAiLearningPathCreate: (
+      body: AIChatBotLearningPathRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<AIChatBotLearningPathResponse, any>({
+        path: `/api/AIChatBots/ChatWithAILearningPath`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AIChatBots
+     * @name AiChatBotsLearningPathList
+     * @request GET:/api/AIChatBots/learning-path
+     * @secure
+     */
+    aiChatBotsLearningPathList: (params: RequestParams = {}) =>
+      this.request<GetAllChatsLearningPathResponse, any>({
+        path: `/api/AIChatBots/learning-path`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AIChatBots
+     * @name AiChatBotsLearningPathDetailList
+     * @request GET:/api/AIChatBots/learning-path/detail
+     * @secure
+     */
+    aiChatBotsLearningPathDetailList: (
+      query?: {
+        /** @format uuid */
+        sessionId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetChatDetailLearningPathResponse, any>({
+        path: `/api/AIChatBots/learning-path/detail`,
+        method: "GET",
+        query: query,
+        secure: true,
         format: "json",
         ...params,
       }),
