@@ -1,9 +1,21 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import VerificationSentCard from "./sent";
 
 export default function SentPage() {
+  const [email, setEmail] = useState("");
 
+  useEffect(() => {
+    try {
+      const storedEmail = window.sessionStorage.getItem("justRegisteredEmail");
+      if (storedEmail) {
+        setEmail(storedEmail);
+      }
+    } catch (err) {
+      console.error("Cannot access sessionStorage:", err);
+    }
+  }, []);
 
   return (
     <main className="min-h-screen relative flex items-center justify-center overflow-hidden">
@@ -14,7 +26,7 @@ export default function SentPage() {
       <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(#0000000d_1px,transparent_1px)] [background-size:20px_20px]" />
 
       <VerificationSentCard
-        email="edusmartAI@gmail.com"
+        email={email}
         backHref="/home"
         manageHref="/Register"
         brand="EduSmart"

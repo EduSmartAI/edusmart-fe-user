@@ -8,9 +8,19 @@
   "paths": {
     "/api/AIChatBots": {
       "post": {
-        "tags": ["AIChatBots"],
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "tags": [
+          "AIChatBots"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -32,9 +42,19 @@
     },
     "/api/AIChatBots/ai-search-assignment": {
       "post": {
-        "tags": ["AIChatBots"],
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "tags": [
+          "AIChatBots"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -54,11 +74,103 @@
         }
       }
     },
+    "/api/AIChatBots/ChatWithAILearningPath": {
+      "post": {
+        "tags": [
+          "AIChatBots"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AIChatBotLearningPathRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AIChatBotLearningPathResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/AIChatBots/learning-path": {
+      "get": {
+        "tags": [
+          "AIChatBots"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetAllChatsLearningPathResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/AIChatBots/learning-path/detail": {
+      "get": {
+        "tags": [
+          "AIChatBots"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "sessionId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetChatDetailLearningPathResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/AiQuizEvaluate/evaluate": {
       "post": {
-        "tags": ["AiQuizEvaluate"],
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "tags": [
+          "AiQuizEvaluate"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -80,9 +192,19 @@
     },
     "/api/v1/AiRecommend": {
       "post": {
-        "tags": ["AiRecommend"],
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "tags": [
+          "AiRecommend"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -104,9 +226,19 @@
     },
     "/api/v1/AiRecommend/external-courses": {
       "post": {
-        "tags": ["AiRecommend"],
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "tags": [
+          "AiRecommend"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -128,9 +260,19 @@
     },
     "/api/v1/AiRecommend/improvement-search-ai": {
       "post": {
-        "tags": ["AiRecommend"],
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "tags": [
+          "AiRecommend"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -152,9 +294,19 @@
     },
     "/api/AiSummarys/feedback-course": {
       "post": {
-        "tags": ["AiSummarys"],
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "tags": [
+          "AiSummarys"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -212,35 +364,19 @@
     },
     "/api/AiTranscript": {
       "post": {
-        "tags": ["AiSummarys"],
-        "summary": "Generate AI summary feedback module",
-        "description": "Generates an AI-powered summary feedback module based on the provided request data. Requires authentication.",
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/AiSummaryFeedbackModuleRequest"
-            }
-          }
+        "tags": [
+          "AiTranscript"
         ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/AiSummaryFeedbackModuleResponse"
-            }
-          }
-        }
-      }
-    },
-    "/api/AiTranscript": {
-      "post": {
-        "tags": ["AiTranscript"],
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -262,6 +398,39 @@
     }
   },
   "definitions": {
+    "AIChatBotLearningPathRequest": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/definitions/ChatBotLearningPathRequestDto"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AIChatBotLearningPathResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/ChatResponseDto"
+        }
+      },
+      "additionalProperties": false
+    },
     "AIChatBotRequest": {
       "type": "object",
       "properties": {
@@ -554,48 +723,6 @@
       },
       "additionalProperties": false
     },
-    "AiSummaryFeedbackModuleRequest": {
-      "type": "object",
-      "properties": {
-        "studentId": {
-          "format": "uuid",
-          "type": "string"
-        },
-        "courseId": {
-          "format": "uuid",
-          "type": "string"
-        },
-        "moduleId": {
-          "format": "uuid",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "AiSummaryFeedbackModuleResponse": {
-      "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        },
-        "messageId": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "detailErrors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DetailError"
-          }
-        },
-        "response": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
     "AiSummaryRequest": {
       "type": "object",
       "properties": {
@@ -665,6 +792,52 @@
       },
       "additionalProperties": false
     },
+    "ChatBotLearningPathRequestDto": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "sessionId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChatDetailDto": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ChatHistoryLearningPathItemDto"
+          }
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "ChatHistoryItem": {
       "type": "object",
       "properties": {
@@ -672,6 +845,21 @@
           "type": "string"
         },
         "content": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChatHistoryLearningPathItemDto": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "rawFinishReason": {
           "type": "string"
         }
       },
@@ -704,6 +892,31 @@
         },
         "rawFinishReason": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ChatSummaryDto": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "messageCount": {
+          "format": "int32",
+          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -778,7 +991,7 @@
     "EvaluateResult": {
       "type": "object",
       "properties": {
-        "inputs": {},
+        "inputs": { },
         "evaluations": {
           "type": "array",
           "items": {
@@ -814,6 +1027,57 @@
         },
         "why_for_you": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetAllChatsLearningPathResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ChatSummaryDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetChatDetailLearningPathResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/ChatDetailDto"
         }
       },
       "additionalProperties": false
@@ -969,7 +1233,11 @@
     },
     "QuizScope": {
       "format": "int32",
-      "enum": [1, 2, 3],
+      "enum": [
+        1,
+        2,
+        3
+      ],
       "type": "integer"
     },
     "RecommendedAction": {
@@ -1155,7 +1423,7 @@
   },
   "security": [
     {
-      "JWT_Token": []
+      "JWT_Token": [ ]
     }
   ]
 }

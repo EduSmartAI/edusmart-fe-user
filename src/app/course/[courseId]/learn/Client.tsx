@@ -46,6 +46,7 @@ import {
   StudentLessonDetailDto,
 } from "EduSmart/api/api-course-service";
 import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
+import { useCourseStore } from "EduSmart/stores/course/courseStore";
 import CourseDetailsCardTabs from "EduSmart/components/Course/CourseDetailsCardTabs";
 import BasecontrolModal from "EduSmart/components/BaseControl/BasecontrolModal";
 import ChatAssistantPanel from "EduSmart/components/Course/Learn/ChatAssistantPanel";
@@ -77,6 +78,20 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
     () => modules.flatMap((m) => m.lessons ?? []),
     [modules],
   );
+
+  const lessonProgressById = useCourseStore((s) => s.lessonProgressById);
+
+  const completedLessonIds = useMemo(() => {
+    const completed = new Set<string>();
+    for (const lesson of allLessons) {
+      if (lesson.lessonId && lesson.isCompleted) completed.add(lesson.lessonId);
+    }
+    Object.entries(lessonProgressById).forEach(([lessonId, progress]) => {
+      if (lessonId && progress?.completedAt) completed.add(lessonId);
+    });
+    return completed;
+  }, [allLessons, lessonProgressById]);
+
 
   const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(
     initialLessonId,
@@ -668,6 +683,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                             }}
                             items={modules.map((m, i) => {
                               const lessons = m.lessons ?? [];
+                              const totalLessons = lessons.length;
                               const totalMinutes = lessons.reduce(
                                 (sum, l) =>
                                   sum + secToMinutes(l.videoDurationSec),
@@ -678,13 +694,39 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                               const materialsCount = materials.length;
 
                               const moduleProgress = m.progress;
-                              const percent = Math.round(
+                              const lessonsTotal =
+                                moduleProgress?.lessonsTotal ?? totalLessons;
+                              const completedFromStore =
+                                moduleProgress?.lessonsCompleted ?? 0;
+                              const completedFromState = lessons.reduce(
+                                (count, lesson) => {
+                                  if (
+                                    lesson.lessonId &&
+                                    completedLessonIds.has(lesson.lessonId)
+                                  ) {
+                                    return count + 1;
+                                  }
+                                  return count;
+                                },
+                                0,
+                              );
+                              const lessonsCompleted = Math.max(
+                                completedFromStore,
+                                completedFromState,
+                              );
+                              const percentFromStore = Math.round(
                                 moduleProgress?.percentCompleted ?? 0,
                               );
-                              const lessonsCompleted =
-                                moduleProgress?.lessonsCompleted ?? 0;
-                              const lessonsTotal =
-                                moduleProgress?.lessonsTotal ?? lessons.length;
+                              const percentFromCompletion =
+                                lessonsTotal > 0
+                                  ? Math.round(
+                                      (lessonsCompleted / lessonsTotal) * 100,
+                                    )
+                                  : 0;
+                              const percent = Math.min(
+                                100,
+                                Math.max(percentFromStore, percentFromCompletion),
+                              );
 
                               return {
                                 key: m.moduleId ?? `m-${i}`,
@@ -849,6 +891,11 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                                     renderItem={(it) => {
                                       const isActive =
                                         it.lessonId === currentLessonId;
+                                      const lessonId = it.lessonId ?? "";
+                                      const isLessonCompleted =
+                                        lessonId === ""
+                                          ? Boolean(it.isCompleted)
+                                          : completedLessonIds.has(lessonId);
                                       return (
                                         <List.Item className="!px-0">
                                           <div
@@ -915,7 +962,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                                                       Now playing
                                                     </Tag>
                                                   )}
-                                                  {it.isCompleted && (
+                                                  {isLessonCompleted && (
                                                     <Tag
                                                       color="green"
                                                       className="m-0"

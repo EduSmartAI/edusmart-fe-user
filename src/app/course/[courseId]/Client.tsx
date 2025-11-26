@@ -39,13 +39,17 @@ import Link from "next/link";
 import CourseReviews, {
   ReviewItem,
 } from "EduSmart/components/User/Course/CourseReviews";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CourseInstructor from "EduSmart/components/User/Course/CourseInstructor";
 import CourseOverview from "EduSmart/components/User/Course/CourseOverView";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
 import { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 import { useCourseStore } from "EduSmart/stores/course/courseStore";
 import { useRouter } from "next/navigation";
+import {
+  v1CartItemsCheckList,
+  v1CartItemsCreate,
+} from "EduSmart/app/apiServer/cart/cartAction";
 
 const { Title, Text } = Typography;
 
@@ -151,6 +155,8 @@ export default function CourseDetailUI({
   isLearning = false,
 }: Props) {
   const [activeTab, setActiveTab] = useState<string>("reviews");
+  const [inCart, setInCart] = useState(false);
+  const [loadingCart, setLoadingCart] = useState(false);
 
   const courseTitle = data?.title ?? "—";
   const coverUrl = data?.courseImageUrl || IMG_FALLBACK;
@@ -254,6 +260,66 @@ export default function CourseDetailUI({
       }
 
       message.error("Có lỗi xảy ra khi ghi danh. Vui lòng thử lại.");
+    }
+  };
+
+  useEffect(() => {
+    let ignore = false;
+
+    const checkCart = async () => {
+      if (!data?.courseId) return;
+
+      try {
+        const result = await v1CartItemsCheckList(data.courseId);
+        if (!ignore) {
+          setInCart(result?.response?.isInCart ?? false);
+        }
+      } catch {
+        // bỏ qua lỗi, giữ inCart = false
+      }
+    };
+
+    void checkCart();
+
+    return () => {
+      ignore = true;
+    };
+  }, [data?.courseId]);
+
+  const handleAddToCart = async () => {
+    if (!data?.courseId) {
+      message.error("Thiếu thông tin khóa học.");
+      return;
+    }
+
+    // đã ghi danh rồi thì thôi
+    if (isLearning) {
+      message.info("Bạn đã ghi danh khóa học này.");
+      return;
+    }
+
+    // đã ở trong giỏ thì không gọi API nữa
+    if (inCart) {
+      message.info("Khóa học đã có trong giỏ hàng.");
+      return;
+    }
+
+    try {
+      setLoadingCart(true);
+      const ok = await v1CartItemsCreate(data.courseId);
+
+      if (ok) {
+        setInCart(true);
+        message.success("Đã thêm khóa học vào giỏ hàng.");
+      } else {
+        message.error(
+          "Không thể thêm khóa học vào giỏ hàng. Vui lòng thử lại.",
+        );
+      }
+    } catch {
+      message.error("Có lỗi xảy ra khi thêm khóa học vào giỏ hàng.");
+    } finally {
+      setLoadingCart(false);
     }
   };
 
@@ -436,9 +502,15 @@ export default function CourseDetailUI({
                     <Button
                       icon={<ShoppingCartOutlined />}
                       className="w-full sm:w-auto"
-                      onClick={() => message.success("Đã thêm vào giỏ")}
+                      onClick={handleAddToCart}
+                      disabled={isLearning || inCart}
+                      loading={loadingCart}
                     >
-                      Thêm vào giỏ
+                      {isLearning
+                        ? "Đã ghi danh"
+                        : inCart
+                          ? "Đã trong giỏ"
+                          : "Thêm vào giỏ"}
                     </Button>
                     <Button
                       type="primary"

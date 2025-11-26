@@ -70,6 +70,7 @@ export const useAuthStore = create<AuthState>()(
           firstName,
           lastName,
         });
+        sessionStorage.setItem("justRegisteredEmail", email);
         if (!res.ok) throw new Error(res.error || "InsertStudent failed");
         return res.data;
       },

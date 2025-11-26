@@ -1,11 +1,8 @@
 export const revalidate = 120;
 
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import {
-  CheckCourseById,
-  GetStudentCourseProgressByCourseId,
-} from "EduSmart/app/apiServer/courseAction";
+import { redirect } from "next/navigation";
+import { GetStudentCourseProgressByCourseId } from "EduSmart/app/apiServer/courseAction";
 import {
   CourseDetailForStudentDto,
   StudentLessonDetailDto,
@@ -78,17 +75,17 @@ export default async function Page(props: PageProps) {
     props.searchParams,
   ]);
 
-  if (!courseId) return notFound();
+  if (!courseId) return redirect("/404");
 
-  const isLearning = await CheckCourseById(courseId);
-  if (!isLearning?.data) return notFound();
+  const progress = await GetStudentCourseProgressByCourseId(courseId);
+  const course = progress?.data;
+  if (!course?.courseId) return redirect("/404");
 
-  const data = await GetStudentCourseProgressByCourseId(courseId);
-  const initialLessonId = pickInitialLessonId(data.data, lessonId);
+  const initialLessonId = pickInitialLessonId(course, lessonId);
 
   return (
     <CourseVideoClient
-      course={data.data}
+      course={course}
       initialLessonId={initialLessonId}
     />
   );
