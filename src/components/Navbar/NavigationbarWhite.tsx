@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Kaushan_Script } from "next/font/google";
 // import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import UserMenu from "./UserMenu";
+import CartIcon from "EduSmart/components/Cart/CartIcon";
 import "@ant-design/v5-patch-for-react-19";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 
@@ -272,9 +273,12 @@ export default function Navigationbar() {
           {!authReady ? ( // (tuỳ chọn) skeleton trong lúc chờ xác thực
             <DesktopAuthSkeleton />
           ) : isAuthed ? (
-            <div className="hidden xl:block">
-              {" "}
-              <UserMenu name={user ? user.name : ""} email={user ? user.email : ""} />{" "}
+            <div className="hidden xl:flex xl:items-center xl:gap-2">
+              <CartIcon />
+              <UserMenu
+                name={user ? user.name : ""}
+                email={user ? user.email : ""}
+              />
             </div>
           ) : (
             <div className="hidden xl:flex items-center gap-2 ml-6 flex-nowrap">

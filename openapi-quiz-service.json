@@ -283,6 +283,42 @@
     },
     "/api/v1/LearningPath/InsertLearningPathWithPreviousSurveyAndTranscript": {
       "post": {
+        "tags": [
+          "LearningPath"
+        ],
+        "summary": "Tạo learning path từ khảo sát đã làm trước đó và bảng điểm (không làm bài test)",
+        "description": "Dành cho sinh viên đã làm khảo sát và không muốn làm bài test. Hệ thống sẽ tính toán level từ bảng điểm. Cần cấp quyền Student cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/InsertLearningPathWithPreviousSurveyAndTranscriptCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/InsertLearningPathWithPreviousSurveyAndTranscriptResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/CheckPracticeTestCode": {
+      "post": {
         "tags": ["LearningPath"],
         "summary": "Tạo learning path từ khảo sát đã làm trước đó và bảng điểm (không làm bài test)",
         "description": "Dành cho sinh viên đã làm khảo sát và không muốn làm bài test. Hệ thống sẽ tính toán level từ bảng điểm. Cần cấp quyền Student cho API",
@@ -2102,7 +2138,18 @@
     },
     "LearningGoalType": {
       "format": "int32",
-      "enum": [0, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "enum": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
       "type": "integer"
     },
     "LessonLatestQuizScore": {

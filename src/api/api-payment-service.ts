@@ -82,7 +82,7 @@ export interface GetMyCartResponse {
 }
 
 export interface InsertOrderCommand {
-  courseIds: string[];
+  cartItemIds: string[];
   paymentMethod: PaymentGateway;
 }
 
@@ -143,27 +143,6 @@ export interface PaymentResultEntity {
   qrCode?: string;
 }
 
-export interface ProcessPaymentCommand {
-  /** @format uuid */
-  orderId?: string;
-}
-
-export interface ProcessPaymentDto {
-  checkoutUrl?: string;
-  qrCode?: string;
-  transactionId?: string;
-  /** @format uuid */
-  orderId?: string;
-}
-
-export interface ProcessPaymentResponse {
-  success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: ProcessPaymentDto;
-}
-
 export interface RePaymentResponse {
   success?: boolean;
   messageId?: string;
@@ -216,18 +195,6 @@ export interface SelectOrderResponseEntity {
   /** @format date-time */
   paidAt?: string;
   orderItems?: OrderItemEntity[];
-}
-
-export interface UpdateCartItemRequest {
-  isSelected?: boolean;
-}
-
-export interface UpdateCartItemResponse {
-  success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: string;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -537,29 +504,6 @@ export class Api<
       }),
 
     /**
-     * @description Create payment request via PayOS gateway. Returns checkout URL and QR code for payment.
-     *
-     * @tags Payment
-     * @name V1PaymentInsertPaymentCreate
-     * @summary Process payment for an order
-     * @request POST:/api/v1/Payment/InsertPayment
-     * @secure
-     */
-    v1PaymentInsertPaymentCreate: (
-      body: ProcessPaymentCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<ProcessPaymentResponse, any>({
-        path: `/api/v1/Payment/InsertPayment`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Process payment result from PayOS gateway. Update order and payment transaction status based on payment result.
      *
      * @tags Payment
@@ -680,30 +624,6 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update quantity / isSelected of a cart item
-     *
-     * @tags Cart
-     * @name V1CartItemsPartialUpdate
-     * @summary Update cart item
-     * @request PATCH:/api/v1/Cart/items/{cartItemId}
-     * @secure
-     */
-    v1CartItemsPartialUpdate: (
-      cartItemId: string,
-      body: UpdateCartItemRequest,
-      params: RequestParams = {},
-    ) =>
-      this.request<UpdateCartItemResponse, any>({
-        path: `/api/v1/Cart/items/${cartItemId}`,
-        method: "PATCH",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),

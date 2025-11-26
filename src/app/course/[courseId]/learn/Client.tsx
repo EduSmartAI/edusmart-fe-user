@@ -50,6 +50,8 @@ import { useCourseStore } from "EduSmart/stores/course/courseStore";
 import CourseDetailsCardTabs from "EduSmart/components/Course/CourseDetailsCardTabs";
 import BasecontrolModal from "EduSmart/components/BaseControl/BasecontrolModal";
 import ChatAssistantPanel from "EduSmart/components/Course/Learn/ChatAssistantPanel";
+import CourseComments from "EduSmart/components/Course/Learn/CourseComments";
+import LessonNotes from "EduSmart/components/Course/Learn/LessonNotes";
 import { animated, useTransition, useSpring } from "@react-spring/web";
 
 const { Text } = Typography;
@@ -268,11 +270,32 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       {
         key: "notes",
         label: "Notes",
-        children: (
+        children: currentLessonId ? (
+          <LessonNotes
+            lessonId={currentLessonId}
+            currentVideoTime={0}
+            onJumpToTime={(timeSeconds) => {
+              // Jump to specific time in video
+              const videoElement = document.querySelector("video");
+              if (videoElement) {
+                videoElement.currentTime = timeSeconds;
+              }
+            }}
+          />
+        ) : (
           <div className="text-sm text-neutral-500 dark:text-neutral-400">
-            Ghi chú của bạn sẽ hiển thị ở đây.
+            Vui lòng chọn một bài học để xem ghi chú.
           </div>
         ),
+      },
+      {
+        key: "comments",
+        label: (
+          <span className="inline-flex items-center gap-2">
+            <MessageOutlined /> Comments
+          </span>
+        ),
+        children: <CourseComments courseId={course.courseId ?? ""} />,
       },
 
       /** -------- Discussions tab -------- */
@@ -506,6 +529,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       },
     ],
     [
+      course.courseId,
       course.description,
       course.durationHours,
       course.durationMinutes,
@@ -514,6 +538,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       course.ratingsCount,
       currentDiscussions,
       activeModule.moduleName,
+      currentLessonId,
       activeModuleName,
       replyOpenId,
       onRightTabChange,

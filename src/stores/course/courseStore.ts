@@ -5,13 +5,26 @@ import { useLoadingStore } from "../Loading/LoadingStore";
 import { StudentQuizCourseInsertResponse } from "EduSmart/api/api-quiz-service";
 import {
   UpsertUserLessonProgressResponse,
+  CreateCommentBody,
+  CreateCommentResponse,
+  GetCourseCommentsResponse,
+  ReplyToCommentResponse,
+  CreateNoteDto,
+  CreateNoteResponse,
+  GetLessonNotesResponse,
+  UpdateNoteDto,
+  UpdateNoteResponse,
+  DeleteNoteResponse,
   UserLessonProgressEntity,
 } from "EduSmart/api/api-course-service";
 import {
   AIChatBotResponse,
   ChatHistoryItem,
 } from "EduSmart/api/api-ai-service";
-import { UserBehaviourActionType, UserBehaviourInsertResponse } from "EduSmart/api/api-student-service";
+import {
+  UserBehaviourActionType,
+  UserBehaviourInsertResponse,
+} from "EduSmart/api/api-student-service";
 
 interface SubmitAnswerDto {
   questionId: string;
@@ -45,6 +58,38 @@ interface CourseState {
     parentTargetId?: string,
     metadata?: string,
   ) => Promise<UserBehaviourInsertResponse>;
+  courseCommentsCreate: (
+    data: CreateCommentBody,
+    query?: { courseId?: string },
+  ) => Promise<{ data: CreateCommentResponse }>;
+  courseCommentsList: (query?: {
+    courseId?: string;
+    page?: number;
+    size?: number;
+  }) => Promise<{ data: GetCourseCommentsResponse }>;
+  courseCommentsRepliesCreate: (
+    parentCommentId: string,
+    data: CreateCommentBody,
+    query?: { courseId?: string },
+  ) => Promise<{ data: ReplyToCommentResponse }>;
+  lessonNotesCreate: (
+    data: CreateNoteDto,
+    query?: { lessonId?: string },
+  ) => Promise<{ data: CreateNoteResponse }>;
+  lessonNotesList: (query?: {
+    lessonId?: string;
+    page?: number;
+    size?: number;
+  }) => Promise<{ data: GetLessonNotesResponse }>;
+  lessonNotesUpdate: (
+    noteId: string,
+    data: UpdateNoteDto,
+    query?: { lessonId?: string },
+  ) => Promise<{ data: UpdateNoteResponse }>;
+  lessonNotesDelete: (
+    noteId: string,
+    query?: { lessonId?: string },
+  ) => Promise<{ data: DeleteNoteResponse }>;
 }
 
 export const useCourseStore = create<CourseState>((set) => ({
@@ -172,7 +217,7 @@ export const useCourseStore = create<CourseState>((set) => ({
       };
     }
   },
- insertUserBehaviour: async (
+  insertUserBehaviour: async (
     actionType,
     targetId,
     targetType,
@@ -180,7 +225,6 @@ export const useCourseStore = create<CourseState>((set) => ({
     metadata,
   ) => {
     try {
-
       const res =
         await apiClient.studentService.api.v1UserBehaviourInsertUserBehaviourCreate(
           {
@@ -189,7 +233,7 @@ export const useCourseStore = create<CourseState>((set) => ({
             targetType: targetType,
             parentTargetId: parentTargetId,
             metadata: metadata,
-          }
+          },
         );
 
       if (res.data?.success && res.data.response) {
@@ -201,6 +245,86 @@ export const useCourseStore = create<CourseState>((set) => ({
     } catch (error) {
       console.error("Error inserting user behaviour:", error);
       return { data: {} } as unknown as UserBehaviourInsertResponse;
+    }
+  },
+  courseCommentsCreate: async (data, query) => {
+    try {
+      const res = await apiClient.courseService.api.courseCommentsCreate(
+        data,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error creating course comment:", error);
+      throw error;
+    }
+  },
+  courseCommentsList: async (query) => {
+    try {
+      const res = await apiClient.courseService.api.courseCommentsList(query);
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error fetching course comments:", error);
+      throw error;
+    }
+  },
+  courseCommentsRepliesCreate: async (parentCommentId, data, query) => {
+    try {
+      const res = await apiClient.courseService.api.courseCommentsRepliesCreate(
+        parentCommentId,
+        data,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error creating comment reply:", error);
+      throw error;
+    }
+  },
+  lessonNotesCreate: async (data, query) => {
+    try {
+      const res = await apiClient.courseService.api.lessonNotesCreate(
+        data,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error creating lesson note:", error);
+      throw error;
+    }
+  },
+  lessonNotesList: async (query) => {
+    try {
+      const res = await apiClient.courseService.api.lessonNotesList(query);
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error fetching lesson notes:", error);
+      throw error;
+    }
+  },
+  lessonNotesUpdate: async (noteId, data, query) => {
+    try {
+      const res = await apiClient.courseService.api.lessonNotesUpdate(
+        noteId,
+        data,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error updating lesson note:", error);
+      throw error;
+    }
+  },
+  lessonNotesDelete: async (noteId, query) => {
+    try {
+      const res = await apiClient.courseService.api.lessonNotesDelete(
+        noteId,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error deleting lesson note:", error);
+      throw error;
     }
   },
 }));

@@ -154,6 +154,40 @@
         }
       }
     },
+    "/api/LearningPaths/UpdateLearningPathStatus": {
+      "post": {
+        "tags": [
+          "LearningPaths"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateLearningPathStatusCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UpdateLearningPathStatusResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/StudentDashboards/GenAndInsertImprovementByAI": {
       "post": {
         "tags": [
@@ -3237,12 +3271,12 @@
     },
     "UpdateCourseStatusToSkippedCommand": {
       "required": [
-        "subjectCode"
+        "courseId"
       ],
       "type": "object",
       "properties": {
-        "subjectCode": {
-          "minLength": 1,
+        "courseId": {
+          "format": "uuid",
           "type": "string"
         }
       },
@@ -3310,6 +3344,44 @@
         },
         "response": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateLearningPathStatusCommand": {
+      "type": "object",
+      "properties": {
+        "learningPathId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateLearningPathStatusResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

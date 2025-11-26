@@ -10,6 +10,7 @@ import {
   SolutionOutlined,
   UserOutlined,
   RobotOutlined,
+  ShoppingOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Menu, Layout, theme } from "antd";
@@ -44,7 +45,7 @@ const getItem = (
   key: string,
   icon?: React.ReactNode,
   children?: NavMenuItem[],
-  path?: string
+  path?: string,
 ): NavMenuItem => ({ label, key, icon, children, path });
 
 const navItems: NavMenuItem[] = [
@@ -61,6 +62,13 @@ const navItems: NavMenuItem[] = [
     <UserOutlined />,
     undefined,
     "/dashboard/my-profile",
+  ),
+  getItem(
+    "Đơn hàng của tôi",
+    "dashboard-orders",
+    <ShoppingOutlined />,
+    undefined,
+    "/dashboard/orders",
   ),
   getItem(
     "Dashboard Người dùng",
@@ -93,7 +101,7 @@ const keyPathMap = flatten(navItems);
 
 const pathKeyMap = Object.entries(keyPathMap).reduce<Record<string, string>>(
   (m, [k, p]) => ((m[p] = k), m),
-  {}
+  {},
 );
 
 function getSelectedKeys(pathname: string): string[] {
@@ -110,12 +118,12 @@ function getSelectedKeys(pathname: string): string[] {
 }
 
 const toAntdItems = (items: NavMenuItem[]): MenuItem[] =>
-  (items.map((it) => ({
+  items.map((it) => ({
     key: it.key,
     icon: it.icon,
     label: it.label,
     children: it.children ? toAntdItems(it.children) : undefined,
-  })) as MenuItem[]);
+  })) as MenuItem[];
 
 /* ---------- COMPONENT ---------- */
 interface AdminSidebarProps {
