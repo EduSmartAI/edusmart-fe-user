@@ -121,6 +121,52 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "CourseComments"
+        ],
+        "summary": "Delete a comment",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "commentId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteCommentResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteCommentResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteCommentResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/CourseComments/{parentCommentId}/replies": {
@@ -696,6 +742,226 @@
         }
       }
     },
+    "/api/Syllabus/{syllabusId}/semesters/{semesterId}/subjects": {
+      "post": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Thêm môn học vào học kỳ của chương trình đào tạo - FE không dùng API này",
+        "description": "Thêm môn học vào học kỳ của chương trình đào tạo. Cần xác thực Bearer.",
+        "parameters": [
+          {
+            "name": "syllabusId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "semesterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSubjectToSyllabusDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSubjectToSyllabusDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSubjectToSyllabusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddSubjectResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddSubjectResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddSubjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/clone/cascade": {
+      "post": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Clone chương trình đào tạo nền tảng kèm theo các môn học",
+        "description": "Clone chương trình đào tạo nền tảng kèm theo các môn học. Cần xác thực Bearer.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneCascadeSyllabusCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneCascadeSyllabusCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneCascadeSyllabusCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloneCascadeSyllabusResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloneCascadeSyllabusResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloneCascadeSyllabusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/clone/foundation": {
+      "post": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Clone chương trình đào tạo nền tảng",
+        "description": "Clone chương trình đào tạo nền tảng. Cần xác thực Bearer.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneFoundationSyllabusCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneFoundationSyllabusCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloneFoundationSyllabusCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloneFoundationSyllabusResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloneFoundationSyllabusResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloneFoundationSyllabusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/CreateFullSyllabusForMajor": {
+      "post": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Tạo mới chương trình đào tạo cho chuyên ngành - FE không dùng API này",
+        "description": "Tạo mới chương trình đào tạo cho chuyên ngành. Cần xác thực Bearer.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFullSyllabusCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFullSyllabusCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFullSyllabusCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateFullSyllabusResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateFullSyllabusResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateFullSyllabusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Syllabus/CreateMajorProcess": {
       "post": {
         "tags": [
@@ -789,6 +1055,56 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CreateSubjectResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/CreateSyllabus": {
+      "post": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Tạo mới chương trình đào tạo - FE không dùng API này",
+        "description": "Tạo mới chương trình đào tạo. Cần xác thực Bearer.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSyllabusCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSyllabusCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSyllabusCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSyllabusResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSyllabusResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSyllabusResponse"
                 }
               }
             }
@@ -1120,6 +1436,335 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetMyLearningCoursesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/full/{versionLabel}": {
+      "get": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Lấy đầy đủ thông tin chương trình đào tạo theo phiên bản",
+        "description": "Lấy đầy đủ thông tin chương trình đào tạo theo phiên bản.",
+        "parameters": [
+          {
+            "name": "versionLabel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFullSyllabusResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFullSyllabusResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetFullSyllabusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/GetMajorDetail/{majorId}": {
+      "get": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Get major detail by id",
+        "parameters": [
+          {
+            "name": "majorId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMajorDetailResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMajorDetailResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMajorDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/GetMajors": {
+      "get": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Get list of majors",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMajorsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMajorsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMajorsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/GetSemesterDetail/{semesterId}": {
+      "get": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Get semester detail by id",
+        "parameters": [
+          {
+            "name": "semesterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSemesterDetailResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSemesterDetailResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSemesterDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/GetSemesters": {
+      "get": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Get list of semesters",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSemestersResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSemestersResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSemestersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/GetSubjectDetail/{subjectId}": {
+      "get": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Get subject detail by id",
+        "parameters": [
+          {
+            "name": "subjectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSubjectDetailResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSubjectDetailResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSubjectDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/GetSubjects": {
+      "get": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Get list of subjects",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSubjectsResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSubjectsResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSubjectsResponse"
                 }
               }
             }
@@ -1929,6 +2574,55 @@
   },
   "components": {
     "schemas": {
+      "AddSubjectResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddSubjectToSyllabusDto": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "credit": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isMandatory": {
+            "type": "boolean"
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
       "AddToWishlistResponse": {
         "type": "object",
         "properties": {
@@ -1970,6 +2664,128 @@
         "additionalProperties": false
       },
       "CheckEnrollmentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneCascadeSyllabusCommand": {
+        "type": "object",
+        "properties": {
+          "cloneCascadeSyllabusDto": {
+            "$ref": "#/components/schemas/CloneCascadeSyllabusDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneCascadeSyllabusDto": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "newVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "majorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneCascadeSyllabusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneFoundationSyllabusCommand": {
+        "type": "object",
+        "properties": {
+          "cloneFoundationSyllabusDto": {
+            "$ref": "#/components/schemas/CloneFoundationSyllabusDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneFoundationSyllabusDto": {
+        "type": "object",
+        "properties": {
+          "baseVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "newVersion": {
+            "type": "string",
+            "nullable": true
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CloneFoundationSyllabusResponse": {
         "type": "object",
         "properties": {
           "success": {
@@ -2537,6 +3353,10 @@
           "teacherId": {
             "type": "string",
             "format": "uuid"
+          },
+          "teacherName": {
+            "type": "string",
+            "nullable": true
           },
           "subjectId": {
             "type": "string",
@@ -3333,6 +4153,72 @@
         },
         "additionalProperties": false
       },
+      "CreateFullSyllabusCommand": {
+        "type": "object",
+        "properties": {
+          "createFullSyllabusDto": {
+            "$ref": "#/components/schemas/CreateFullSyllabusDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateFullSyllabusDto": {
+        "type": "object",
+        "properties": {
+          "majorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "semesters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FullSemesterDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateFullSyllabusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateLessonDto": {
         "type": "object",
         "properties": {
@@ -3701,11 +4587,96 @@
           "subjectName": {
             "type": "string",
             "nullable": true
+          },
+          "prerequisiteSubjectIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
       },
       "CreateSubjectResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSyllabusCommand": {
+        "type": "object",
+        "properties": {
+          "majorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateSyllabusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteCommentResponse": {
         "type": "object",
         "properties": {
           "success": {
@@ -3908,6 +4879,49 @@
           "response": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FullSemesterDto": {
+        "type": "object",
+        "properties": {
+          "semesterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FullSubjectDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FullSubjectDto": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "credit": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isMandatory": {
+            "type": "boolean"
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -4315,6 +5329,33 @@
         },
         "additionalProperties": false
       },
+      "GetFullSyllabusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/SyllabusFullDto"
+          }
+        },
+        "additionalProperties": false
+      },
       "GetInProgressCourseByStudentIdResponse": {
         "type": "object",
         "properties": {
@@ -4373,6 +5414,60 @@
         },
         "additionalProperties": false
       },
+      "GetMajorDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/MajorDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetMajorsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/MajorDtoPagedResult"
+          }
+        },
+        "additionalProperties": false
+      },
       "GetMyLearningCoursesResponse": {
         "type": "object",
         "properties": {
@@ -4423,6 +5518,114 @@
           },
           "response": {
             "$ref": "#/components/schemas/WishlistItemDtoPagedResult"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetSemesterDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/SemesterDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetSemestersResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/SemesterDtoPagedResult"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetSubjectDetailResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/SubjectDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetSubjectsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/SubjectDtoPagedResult"
           }
         },
         "additionalProperties": false
@@ -4645,6 +5848,66 @@
         ],
         "type": "integer",
         "format": "int32"
+      },
+      "MajorDto": {
+        "type": "object",
+        "properties": {
+          "majorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "majorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "majorName": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "MajorDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MajorDto"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
       },
       "ModuleDetailForLectureDto": {
         "type": "object",
@@ -5263,6 +6526,91 @@
         },
         "additionalProperties": false
       },
+      "SemesterDto": {
+        "type": "object",
+        "properties": {
+          "semesterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "semesterCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "semesterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "semesterNumber": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SemesterDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SemesterDto"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SemesterWithSubjectsDto": {
+        "type": "object",
+        "properties": {
+          "semesterId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "semesterName": {
+            "type": "string",
+            "nullable": true
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubjectDetailDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "StudentLessonDetailDto": {
         "type": "object",
         "properties": {
@@ -5307,6 +6655,126 @@
           },
           "lessonQuiz": {
             "$ref": "#/components/schemas/QuizOutDto"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubjectDetailDto": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "subjectName": {
+            "type": "string",
+            "nullable": true
+          },
+          "credit": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isMandatory": {
+            "type": "boolean"
+          },
+          "positionIndex": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubjectDto": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "subjectName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubjectDtoPagedResult": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubjectDto"
+            },
+            "nullable": true
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SyllabusFullDto": {
+        "type": "object",
+        "properties": {
+          "syllabusId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "majorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "effectiveFrom": {
+            "type": "string",
+            "format": "date"
+          },
+          "effectiveTo": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "semesters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SemesterWithSubjectsDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -6029,6 +7497,10 @@
           "courseId": {
             "type": "string",
             "format": "uuid"
+          },
+          "teacherName": {
+            "type": "string",
+            "nullable": true
           },
           "courseTitle": {
             "type": "string",

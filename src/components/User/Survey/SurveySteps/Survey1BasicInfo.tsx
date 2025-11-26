@@ -561,13 +561,38 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                   { required: true, message: "Vui lòng chọn mục tiêu học tập" },
                 ]}
               >
-                <Select
-                  placeholder="Chọn mục tiêu học tập"
-                  options={learningGoalOptions}
-                  onChange={handleLearningGoalChange}
-                  size="large"
-                  className="rounded-lg"
-                />
+                <Radio.Group
+                  onChange={(e) => handleLearningGoalChange(e.target.value)}
+                  className="w-full"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {learningGoalOptions.map((goal) => (
+                      <Radio
+                        key={goal.value}
+                        value={goal.value}
+                        className="!m-0 w-full"
+                      >
+                        <div
+                          className={`w-full px-4 py-3 rounded-lg cursor-pointer  ${
+                            selectedLearningGoal === goal.value
+                              ? "border-[#49BBBD] bg-teal-50 dark:bg-teal-900/20"
+                              : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-800"
+                          }`}
+                        >
+                          <Text
+                            className={`text-sm font-medium ${
+                              selectedLearningGoal === goal.value
+                                ? "text-[#49BBBD] dark:text-teal-400"
+                                : "text-gray-700 dark:text-gray-300"
+                            }`}
+                          >
+                            {goal.label}
+                          </Text>
+                        </div>
+                      </Radio>
+                    ))}
+                  </div>
+                </Radio.Group>
               </Form.Item>
 
               {shouldShowInterestSurvey() && (

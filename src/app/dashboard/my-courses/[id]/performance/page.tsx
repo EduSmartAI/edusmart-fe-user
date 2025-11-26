@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 import { Button, Result } from "antd";
 import CoursePerformanceClient from "./CoursePerformanceClient";
 import {
-  fetchCourseBySlug,
+  fetchCourseById,
   fetchAllCoursePerformance,
   fetchOverallPerformance,
   CheckCourseById,
@@ -18,27 +18,26 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function CoursePerformancePage({ params }: PageProps) {
-  const { slug } = await params;
+  const { id } = await params;
 
-  if (!slug) {
-    console.log("CoursePerformancePage - slug missing");
+  if (!id) {
+    console.log("CoursePerformancePage - id missing");
     return notFound();
   }
 
-  // First fetch course by slug to get courseId
-  const courseDataResponse = await fetchCourseBySlug(slug);
+  // Fetch course by id directly
+  const courseDataResponse = await fetchCourseById(id);
 
-  if (!courseDataResponse?.data?.success || !courseDataResponse.data.response) {
-    const decodedSlug = decodeURIComponent(slug);
+  if (!courseDataResponse?.data) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <Result
           status="404"
-          title={`Khóa học ${decodedSlug} không tồn tại`}
+          title="Khóa học không tồn tại"
           extra={
             <Button href="/" type="primary" size="large">
               Quay về trang chủ
@@ -50,28 +49,8 @@ export default async function CoursePerformancePage({ params }: PageProps) {
     );
   }
 
-  const courseDetail = courseDataResponse.data.response;
-
-  if (!courseDetail.courseId) {
-    console.log("CoursePerformancePage - courseId missing in response");
-    const decodedSlug = decodeURIComponent(slug);
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <Result
-          status="warning"
-          title={`Khóa học ${decodedSlug} không tồn tại`}
-          extra={
-            <Button type="primary" href="/" size="large">
-              Quay về trang chủ
-            </Button>
-          }
-          className="max-w-lg"
-        />
-      </div>
-    );
-  }
-
-  const courseId = courseDetail.courseId;
+  const courseDetail = courseDataResponse.data;
+  const courseId = id;
 
   const enrollmentResult = await CheckCourseById(courseId);
 

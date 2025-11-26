@@ -45,6 +45,7 @@ import CourseOverview from "EduSmart/components/User/Course/CourseOverView";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
 import { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 import { useCourseStore } from "EduSmart/stores/course/courseStore";
+import { useCartStore } from "EduSmart/stores/cart/cartStore";
 import { useRouter } from "next/navigation";
 import {
   v1CartItemsCheckList,
@@ -163,6 +164,7 @@ export default function CourseDetailUI({
   const subjectTag = data?.subjectCode ? [data.subjectCode] : [];
   const levelTag = levelLabel(data?.level ?? 0);
   const enRollingCourseById = useCourseStore((s) => s.enRollingCourseById);
+  const { addToCart } = useCartStore();
   const router = useRouter();
   const durationText = useMemo(
     () => formatDuration(data?.durationHours ?? 0, data?.durationMinutes ?? 0),
@@ -221,46 +223,65 @@ export default function CourseDetailUI({
       router.push(`/course/${data?.courseId}/learn`);
       return;
     }
-    try {
-      await enRollingCourseById(data?.courseId || "");
-      router.push(`/course/${data?.courseId}/learn`);
-      router.refresh();
-    } catch (err: unknown) {
-      let status: number | undefined;
-      if (typeof err === "number") {
-        status = err;
-      } else if (
-        typeof err === "object" &&
-        err !== null &&
-        "response" in err &&
-        typeof (err as { response?: { status?: number } }).response?.status ===
-          "number"
-      ) {
-        status = (err as { response?: { status?: number } }).response?.status;
-      }
 
-      if (status === 401) {
-        Modal.confirm({
-          title: "Bạn cần đăng nhập",
-          content: "Vui lòng đăng nhập để ghi danh khóa học.",
-          okText: "Đăng nhập",
-          cancelText: "Hủy",
-          onOk: () => {
-            const returnUrl =
-              typeof window !== "undefined" ? window.location.pathname : "/";
-            router.push(`/Login?returnUrl=${encodeURIComponent(returnUrl)}`);
-          },
-        });
-        return;
-      }
+    // Kiểm tra khóa học miễn phí hay trả phí
+    const isFree = data?.price === 0 || data?.dealPrice === 0;
 
-      if (status === 403) {
-        message.error("Bạn không có quyền ghi danh khóa học này.");
-        return;
+    if (isFree) {
+      // FREE course - enroll trực tiếp
+      try {
+        await enRollingCourseById(data?.courseId || "");
+        router.push(`/course/${data?.courseId}/learn`);
+        router.refresh();
+      } catch (err: unknown) {
+        handleEnrollError(err);
       }
-
-      message.error("Có lỗi xảy ra khi ghi danh. Vui lòng thử lại.");
+    } else {
+      // PAID course - thêm vào giỏ và redirect to checkout
+      try {
+        await addToCart(data?.courseId || "");
+        router.push("/checkout");
+      } catch {
+        message.error("Không thể thêm vào giỏ hàng");
+      }
     }
+  };
+
+  const handleEnrollError = (err: unknown) => {
+    let status: number | undefined;
+    if (typeof err === "number") {
+      status = err;
+    } else if (
+      typeof err === "object" &&
+      err !== null &&
+      "response" in err &&
+      typeof (err as { response?: { status?: number } }).response?.status ===
+        "number"
+    ) {
+      status = (err as { response?: { status?: number } }).response?.status;
+    }
+
+    if (status === 401) {
+      Modal.confirm({
+        title: "Bạn cần đăng nhập",
+        content: "Vui lòng đăng nhập để ghi danh khóa học.",
+        okText: "Đăng nhập",
+        cancelText: "Hủy",
+        onOk: () => {
+          const returnUrl =
+            typeof window !== "undefined" ? window.location.pathname : "/";
+          router.push(`/Login?returnUrl=${encodeURIComponent(returnUrl)}`);
+        },
+      });
+      return;
+    }
+
+    if (status === 403) {
+      message.error("Bạn không có quyền ghi danh khóa học này.");
+      return;
+    }
+
+    message.error("Có lỗi xảy ra khi ghi danh. Vui lòng thử lại.");
   };
 
   useEffect(() => {

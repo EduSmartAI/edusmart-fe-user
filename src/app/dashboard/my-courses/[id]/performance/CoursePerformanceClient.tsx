@@ -988,8 +988,13 @@ export default function CoursePerformanceClient({
               <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                 Điểm trung bình
               </div>
-              <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
-                {progress?.averageScore?.toFixed(1) || 0}
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
+                  {progress?.averageScore?.toFixed(1) || 0}
+                </div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  /100
+                </div>
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 Điểm AI: {progress?.averageAiScore?.toFixed(1) || 0}
@@ -1172,7 +1177,7 @@ export default function CoursePerformanceClient({
           </Row>
 
           {/* Charts Placeholder */}
-          <div className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/30 dark:to-gray-800/50 rounded-lg p-6 border border-dashed border-gray-300 dark:border-gray-700">
+          {/* <div className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/30 dark:to-gray-800/50 rounded-lg p-6 border border-dashed border-gray-300 dark:border-gray-700">
             <div className="text-center text-gray-500 dark:text-gray-400">
               <div className="text-sm font-medium mb-2">
                 Biểu đồ thời gian học tập
@@ -1184,7 +1189,7 @@ export default function CoursePerformanceClient({
                 (Sẽ được triển khai sau)
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Additional Behavior Metrics - Compact Grid */}
           <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">

@@ -32,6 +32,20 @@ export enum ProblemDifficultyLevel {
 }
 
 /** @format int32 */
+export enum LearningGoalType {
+  Value0 = 0,
+  Value2 = 2,
+  Value3 = 3,
+  Value4 = 4,
+  Value5 = 5,
+  Value6 = 6,
+  Value7 = 7,
+  Value8 = 8,
+  Value9 = 9,
+  Value10 = 10,
+}
+
+/** @format int32 */
 export enum AnswerRuleUnit {
   Value1 = 1,
   Value2 = 2,
@@ -329,6 +343,26 @@ export interface GetLatestModuleQuizScoresResponseEvent {
 export interface InsertAnswers {
   answerText?: string;
   isCorrect?: boolean;
+}
+
+export interface InsertLearningPathWithPreviousSurveyAndTranscriptCommand {
+  /** @format uuid */
+  learningGoalId?: string;
+  learningGoalName?: string;
+  learningGoalType?: LearningGoalType;
+}
+
+export interface InsertLearningPathWithPreviousSurveyAndTranscriptResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: InsertLearningPathWithPreviousSurveyAndTranscriptResponseEntity;
+}
+
+export interface InsertLearningPathWithPreviousSurveyAndTranscriptResponseEntity {
+  /** @format uuid */
+  learningPathId?: string;
 }
 
 export interface LearningGoal {
@@ -2010,6 +2044,32 @@ export class Api<
     ) =>
       this.request<StudentQuizCourseInsertResponse, any>({
         path: `/api/v1/CourseQuiz/InsertStudentQuizCourse`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Dành cho sinh viên đã làm khảo sát và không muốn làm bài test. Hệ thống sẽ tính toán level từ bảng điểm. Cần cấp quyền Student cho API
+     *
+     * @tags LearningPath
+     * @name V1LearningPathInsertLearningPathWithPreviousSurveyAndTranscriptCreate
+     * @summary Tạo learning path từ khảo sát đã làm trước đó và bảng điểm (không làm bài test)
+     * @request POST:/api/v1/LearningPath/InsertLearningPathWithPreviousSurveyAndTranscript
+     * @secure
+     */
+    v1LearningPathInsertLearningPathWithPreviousSurveyAndTranscriptCreate: (
+      body: InsertLearningPathWithPreviousSurveyAndTranscriptCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        InsertLearningPathWithPreviousSurveyAndTranscriptResponse,
+        any
+      >({
+        path: `/api/v1/LearningPath/InsertLearningPathWithPreviousSurveyAndTranscript`,
         method: "POST",
         body: body,
         secure: true,
