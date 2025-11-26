@@ -326,7 +326,7 @@ export default function SurveyToQuizTransition() {
                             showIcon
                             className="text-xs"
                           /> */}
-                          <Spin spinning={uploading}>
+                          {/* <Spin spinning={uploading}>
                             <Upload
                               accept=".xlsx,.xls,.csv"
                               maxCount={1}
@@ -347,7 +347,7 @@ export default function SurveyToQuizTransition() {
                           </Spin>
                           <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
                             Định dạng: Excel (.xlsx)
-                          </p>
+                          </p> */}
                         </div>
                       ) : (
                         <Alert

@@ -95,8 +95,7 @@ export default function CodeEditor({
   const [errMsg, setErrMsg] = useState<string | null>(null);
 
   // Use prop if provided, otherwise default to CSharpMono
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [selectedLangId] = useState<JudgeLanguageId>(() => {
+  const [selectedLangId, setSelectedLangId] = useState<JudgeLanguageId>(() => {
     if (propSelectedLanguageId !== undefined) {
       console.log(
         "🎯 Initializing selectedLangId from prop:",
@@ -640,7 +639,7 @@ export default function CodeEditor({
               </Select>
             )}
 
-            {/* <Select
+            <Select
               value={selectedLangId}
               style={{ minWidth: 170 }}
               size="small"
@@ -673,7 +672,7 @@ export default function CodeEditor({
                   {lang.name}
                 </Option>
               ))}
-            </Select> */}
+            </Select>
           </div>
 
           <div className="flex gap-3 items-center">
