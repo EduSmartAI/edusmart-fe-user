@@ -2992,7 +2992,12 @@
         "additionalProperties": false
       },
       "CourseSortBy": {
-        "enum": [1, 2, 3, 4],
+        "enum": [
+          1,
+          2,
+          3,
+          4
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -4555,7 +4560,11 @@
         "additionalProperties": false
       },
       "LessonStatus": {
-        "enum": [0, 1, 2],
+        "enum": [
+          0,
+          1,
+          2
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -4833,7 +4842,11 @@
         "additionalProperties": false
       },
       "ModuleProgressStatus": {
-        "enum": [0, 1, 2],
+        "enum": [
+          0,
+          1,
+          2
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -6033,7 +6046,7 @@
   },
   "security": [
     {
-      "JWT_Token": []
+      "JWT_Token": [ ]
     }
   ]
 }

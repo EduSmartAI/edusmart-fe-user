@@ -8,11 +8,21 @@
   "paths": {
     "/api/v1/Cart/items": {
       "post": {
-        "tags": ["Cart"],
+        "tags": [
+          "Cart"
+        ],
         "summary": "Add course to cart",
         "description": "Add a course into current user's cart",
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -34,11 +44,21 @@
     },
     "/api/v1/Order/InsertOrder": {
       "post": {
-        "tags": ["Order"],
+        "tags": [
+          "Order"
+        ],
         "summary": "Tạo đơn hàng mới và khởi tạo thanh toán qua PayOS.",
         "description": "PaymentMethod: 1. Momo, 2. PayOS",
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -60,11 +80,21 @@
     },
     "/api/v1/Payment/InsertPayment": {
       "post": {
-        "tags": ["Payment"],
+        "tags": [
+          "Payment"
+        ],
         "summary": "Process payment for an order",
         "description": "Create payment request via PayOS gateway. Returns checkout URL and QR code for payment.",
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -86,11 +116,21 @@
     },
     "/api/v1/Payment/PaymentCallback": {
       "post": {
-        "tags": ["Payment"],
+        "tags": [
+          "Payment"
+        ],
         "summary": "Handle payment callback from PayOS",
         "description": "Process payment result from PayOS gateway. Update order and payment transaction status based on payment result.",
-        "consumes": ["application/json", "text/json", "application/*+json"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "body",
@@ -112,10 +152,16 @@
     },
     "/api/v1/Cart": {
       "get": {
-        "tags": ["Cart"],
+        "tags": [
+          "Cart"
+        ],
         "summary": "Get current user's cart",
         "description": "Return active cart of the authenticated user",
-        "produces": ["text/plain", "application/json", "text/json"],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -128,8 +174,14 @@
     },
     "/api/v1/Cart/items/check": {
       "get": {
-        "tags": ["Cart"],
-        "produces": ["text/plain", "application/json", "text/json"],
+        "tags": [
+          "Cart"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "query",
@@ -150,10 +202,16 @@
     },
     "/api/v1/Order/SelectOrder": {
       "get": {
-        "tags": ["Order"],
+        "tags": [
+          "Order"
+        ],
         "summary": "Lấy danh sách đơn hàng hoặc chi tiết một đơn hàng.",
         "description": "Get paginated list of user's orders or single order detail by OrderId.",
-        "produces": ["text/plain", "application/json", "text/json"],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "query",
@@ -188,10 +246,16 @@
     },
     "/api/v1/Payment/RePayment": {
       "get": {
-        "tags": ["Payment"],
+        "tags": [
+          "Payment"
+        ],
         "summary": "Lấy lại link thanh toán khi người dùng đóng tab hoặc cần thanh toán lại.",
         "description": "Retrieve existing payment URL and QR code when user closed the payment tab or needs to retry payment.",
-        "produces": ["text/plain", "application/json", "text/json"],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "query",
@@ -211,11 +275,58 @@
       }
     },
     "/api/v1/Cart/items/{cartItemId}": {
+      "patch": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Update cart item",
+        "description": "Update quantity / isSelected of a cart item",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cartItemId",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateCartItemRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UpdateCartItemResponse"
+            }
+          }
+        }
+      },
       "delete": {
-        "tags": ["Cart"],
+        "tags": [
+          "Cart"
+        ],
         "summary": "Remove cart item",
         "description": "Logical delete a cart item from current user's cart",
-        "produces": ["text/plain", "application/json", "text/json"],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
         "parameters": [
           {
             "in": "path",
@@ -403,10 +514,13 @@
       "additionalProperties": false
     },
     "InsertOrderCommand": {
-      "required": ["cartItemIds", "paymentMethod"],
+      "required": [
+        "courseIds",
+        "paymentMethod"
+      ],
       "type": "object",
       "properties": {
-        "cartItemIds": {
+        "courseIds": {
           "type": "array",
           "items": {
             "format": "uuid",
@@ -547,7 +661,10 @@
     },
     "PaymentGateway": {
       "format": "int32",
-      "enum": [1, 2],
+      "enum": [
+        1,
+        2
+      ],
       "type": "integer"
     },
     "PaymentResultEntity": {
@@ -759,6 +876,39 @@
         }
       },
       "additionalProperties": false
+    },
+    "UpdateCartItemRequest": {
+      "type": "object",
+      "properties": {
+        "isSelected": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateCartItemResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
     }
   },
   "securityDefinitions": {
@@ -771,7 +921,7 @@
   },
   "security": [
     {
-      "JWT_Token": []
+      "JWT_Token": [ ]
     }
   ]
 }

@@ -6,7 +6,7 @@ import { Api as AuthApi } from "EduSmart/api/api-auth-service"; // <-- đường
 import { Api as CourseApi } from "EduSmart/api/api-course-service"; // Import Course API
 import { Api as QuizApi } from "EduSmart/api/api-quiz-service";
 import { Api as StudentApi } from "EduSmart/api/api-student-service"; // Import Student API
-import { Api as PaymentApi } from "EduSmart/api/api-payment-service";
+import { Api as PaymentApi } from "EduSmart/api/api-payment-service"; // Import Student API
 import {
     getAuthHeaderFromCookie,
     getSidFromCookie,
@@ -97,7 +97,7 @@ export const studentService = new StudentApi({
 });
 
 export const paymentService = new PaymentApi({
-    baseUrl: `${BACKEND}/payment`,
+    baseUrl: `${BACKEND}/student`,
     customFetch: with401Retry,
     baseApiParams: { credentials: "include" },
     securityWorker: async () => {
@@ -141,4 +141,3 @@ export type CourseService = typeof courseService;
 export type QuizService = typeof quizService;
 export type StudentService = typeof studentService;
 export type PaymentService = typeof paymentService;
-

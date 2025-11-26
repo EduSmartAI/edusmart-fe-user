@@ -336,6 +336,7 @@ export interface LearningGoal {
   learningGoalId?: string;
   /** @format int32 */
   learningGoalType?: number;
+  learningGoalName?: string;
 }
 
 export interface LearningGoalSelectsEventResponse {
@@ -418,9 +419,10 @@ export interface PracticeTestAdminExamplesInsertResponse {
 
 export interface PracticeTestAdminInsertRequest {
   problem: PracticeTestAdminProblemInsertRequest;
-  testcases: PracticeTestAdminProblemTestcaseInsertRequest[];
+  testcases: PracticeTestAdminProblemTestcaseInsertRequest;
   templates: PracticeTestAdminProblemTemplateInsertRequest[];
   examples: PracticeTestAdminProblemExampleInsertRequest[];
+  solutions: PracticeTestAdminSolutionInsertRequest[];
 }
 
 export interface PracticeTestAdminInsertResponse {
@@ -517,6 +519,12 @@ export interface PracticeTestAdminProblemUpdateRequest {
   title?: string;
   description?: string;
   difficulty?: string;
+}
+
+export interface PracticeTestAdminSolutionInsertRequest {
+  /** @format int32 */
+  languageId?: number;
+  solutionCode?: string;
 }
 
 export interface PracticeTestAdminTemplatesInsertRequest {
@@ -1181,6 +1189,7 @@ export interface StudentQuizCourseInsertResponseEntity {
 export interface StudentSurveyInsertCommand {
   studentInformation: StudentInformation;
   studentSurveys: StudentSurveyInsertRequest[];
+  isWantToTakeTest: boolean;
 }
 
 export interface StudentSurveyInsertRequest {
@@ -1196,6 +1205,7 @@ export interface StudentSurveyInsertResponse {
   messageId?: string;
   message?: string;
   detailErrors?: DetailError[];
+  /** @format uuid */
   response?: string;
 }
 
