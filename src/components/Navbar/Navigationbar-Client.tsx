@@ -37,7 +37,6 @@ export default function NavigationbarClient({ isAuthed }: Props) {
   const menuItems = [
     { key: "home", label: "Trang chủ", href: "/home" },
     { key: "jobs", label: "Khóa học", href: "/course" },
-    { key: "contact", label: "Liên hệ chúng tôi", href: "/contact" },
     { key: "learningPath", label: "Đề xuất lộ trình học tập", href: "/learning-path" },
     { key: "dashboard", label: "Dashboard", href: "/dashboard" },
     { key: "quiz", label: "Quiz", href: "/quiz" },
@@ -204,7 +203,7 @@ export default function NavigationbarClient({ isAuthed }: Props) {
           </div>
           <div
             ref={linksRef}
-            className="hidden xl:flex flex-1 justify-center items-center relative mx-20"
+            className="hidden xl:flex flex-1 justify-center items-center relative mx-12"
           >
             {navigableItems.map((item) => {
               const isActive = item.key === currentKey;
@@ -235,17 +234,19 @@ export default function NavigationbarClient({ isAuthed }: Props) {
               <UserMenu name={user ? user.name : ""} email={user ? user.email : ""} />
             </div>
           ) : (
-            <div className="hidden md:flex items-center space-x-3 ml-8">
+            <div className="hidden xl:flex items-center gap-2 ml-6 flex-nowrap">
               <ThemeSwitch />
               <button
+                type="button"
                 onClick={() => router.push("/Login")}
-                className="flex items-center justify-center h-12 px-6 border-2 border-white text-white font-medium text-base whitespace-nowrap rounded-full transition-all duration-300 hover:bg-white hover:text-[#49BBBD] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white "
+                className="relative inline-flex items-center justify-center h-10 px-6 rounded-2xl text-sm font-semibold tracking-wide !text-slate-900 border border-[#baf5dc] bg-white/95 shadow-[0_8px_20px_rgba(12,56,64,0.16)] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c9ffe8] hover:bg-white hover:!text-slate-900 whitespace-nowrap"
               >
                 Đăng nhập
               </button>
               <button
-                onClick={() => router.push("/Signup")}
-                className="flex items-center justify-center h-12 px-6 bg-gradient-to-r from-[#5da38f] to-[#4a8a7a] text-white font-medium text-base whitespace-nowrap rounded-full shadow-lg transition-all duration-300 hover:from-[#4a8a7a] hover:to-[#5da38f] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5da38f]"
+                type="button"
+                onClick={() => router.push("/Register")}
+                className="relative inline-flex items-center justify-center h-10 px-6 rounded-2xl text-sm font-semibold tracking-wide text-slate-900 bg-gradient-to-r from-[#5ed0a3] via-[#34b3bf] to-[#2c7dd9] shadow-[0_16px_28px_rgba(26,86,122,0.3)] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7ee8c0] hover:brightness-105 whitespace-nowrap"
               >
                 Đăng Ký
               </button>
@@ -367,7 +368,7 @@ export default function NavigationbarClient({ isAuthed }: Props) {
                       } text-white rounded-xl`,
                     onClick: () => {
                       closeMenu();
-                      router.push(item.key === "login" ? "/Login" : "/Signup");
+                      router.push(item.key === "login" ? "/Login" : "/Register");
                     },
                   };
                   return (
