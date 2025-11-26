@@ -911,8 +911,8 @@ export interface TechnologyUpdateResponse {
 }
 
 export interface UpdateCourseStatusToSkippedCommand {
-  /** @minLength 1 */
-  subjectCode: string;
+  /** @format uuid */
+  courseId: string;
 }
 
 export interface UpdateCourseStatusToSkippedResponse {
@@ -938,6 +938,21 @@ export interface UpdateLearningPathCourseStatusResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: string;
+}
+
+export interface UpdateLearningPathStatusCommand {
+  /** @format uuid */
+  learningPathId?: string;
+  /** @format int32 */
+  status?: number;
+}
+
+export interface UpdateLearningPathStatusResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: boolean;
 }
 
 export interface UpdateReadModelLearningPathCommand {
@@ -1349,6 +1364,28 @@ export class Api<
     ) =>
       this.request<UpdateLearningPathCourseStatusResponse, any>({
         path: `/api/LearningPaths/update-course-status`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags LearningPaths
+     * @name LearningPathsUpdateLearningPathStatusCreate
+     * @request POST:/api/LearningPaths/UpdateLearningPathStatus
+     * @secure
+     */
+    learningPathsUpdateLearningPathStatusCreate: (
+      body: UpdateLearningPathStatusCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateLearningPathStatusResponse, any>({
+        path: `/api/LearningPaths/UpdateLearningPathStatus`,
         method: "POST",
         body: body,
         secure: true,

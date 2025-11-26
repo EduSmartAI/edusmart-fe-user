@@ -78,42 +78,6 @@
         }
       }
     },
-    "/api/v1/Payment/InsertPayment": {
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "summary": "Process payment for an order",
-        "description": "Create payment request via PayOS gateway. Returns checkout URL and QR code for payment.",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/ProcessPaymentCommand"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/ProcessPaymentResponse"
-            }
-          }
-        }
-      }
-    },
     "/api/v1/Payment/PaymentCallback": {
       "post": {
         "tags": [
@@ -275,47 +239,6 @@
       }
     },
     "/api/v1/Cart/items/{cartItemId}": {
-      "patch": {
-        "tags": [
-          "Cart"
-        ],
-        "summary": "Update cart item",
-        "description": "Update quantity / isSelected of a cart item",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "cartItemId",
-            "required": true,
-            "type": "string",
-            "format": "uuid"
-          },
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/UpdateCartItemRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/UpdateCartItemResponse"
-            }
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Cart"
@@ -515,12 +438,12 @@
     },
     "InsertOrderCommand": {
       "required": [
-        "courseIds",
+        "cartItemIds",
         "paymentMethod"
       ],
       "type": "object",
       "properties": {
-        "courseIds": {
+        "cartItemIds": {
           "type": "array",
           "items": {
             "format": "uuid",
@@ -682,59 +605,6 @@
       },
       "additionalProperties": false
     },
-    "ProcessPaymentCommand": {
-      "type": "object",
-      "properties": {
-        "orderId": {
-          "format": "uuid",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "ProcessPaymentDto": {
-      "type": "object",
-      "properties": {
-        "checkoutUrl": {
-          "type": "string"
-        },
-        "qrCode": {
-          "type": "string"
-        },
-        "transactionId": {
-          "type": "string"
-        },
-        "orderId": {
-          "format": "uuid",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "ProcessPaymentResponse": {
-      "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        },
-        "messageId": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "detailErrors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DetailError"
-          }
-        },
-        "response": {
-          "$ref": "#/definitions/ProcessPaymentDto"
-        }
-      },
-      "additionalProperties": false
-    },
     "RePaymentResponse": {
       "type": "object",
       "properties": {
@@ -873,39 +743,6 @@
           "items": {
             "$ref": "#/definitions/OrderItemEntity"
           }
-        }
-      },
-      "additionalProperties": false
-    },
-    "UpdateCartItemRequest": {
-      "type": "object",
-      "properties": {
-        "isSelected": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
-    "UpdateCartItemResponse": {
-      "type": "object",
-      "properties": {
-        "success": {
-          "type": "boolean"
-        },
-        "messageId": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        },
-        "detailErrors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DetailError"
-          }
-        },
-        "response": {
-          "type": "string"
         }
       },
       "additionalProperties": false

@@ -39,6 +39,24 @@ export enum CourseProgressStatus {
   Value2 = 2,
 }
 
+export interface AddSubjectResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface AddSubjectToSyllabusDto {
+  /** @format uuid */
+  subjectId?: string;
+  /** @format int32 */
+  credit?: number | null;
+  isMandatory?: boolean;
+  /** @format int32 */
+  positionIndex?: number;
+}
+
 export interface AddToWishlistResponse {
   success?: boolean;
   messageId?: string | null;
@@ -53,6 +71,49 @@ export interface Answers {
 }
 
 export interface CheckEnrollmentResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface CloneCascadeSyllabusCommand {
+  cloneCascadeSyllabusDto?: CloneCascadeSyllabusDto;
+}
+
+export interface CloneCascadeSyllabusDto {
+  baseVersion?: string | null;
+  newVersion?: string | null;
+  majorCode?: string | null;
+  /** @format date */
+  effectiveFrom?: string;
+  /** @format date */
+  effectiveTo?: string | null;
+}
+
+export interface CloneCascadeSyllabusResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface CloneFoundationSyllabusCommand {
+  cloneFoundationSyllabusDto?: CloneFoundationSyllabusDto;
+}
+
+export interface CloneFoundationSyllabusDto {
+  baseVersion?: string | null;
+  newVersion?: string | null;
+  /** @format date */
+  effectiveFrom?: string;
+  /** @format date */
+  effectiveTo?: string | null;
+}
+
+export interface CloneFoundationSyllabusResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
@@ -244,6 +305,7 @@ export interface CourseDto {
   courseId?: string;
   /** @format uuid */
   teacherId?: string;
+  teacherName?: string | null;
   /** @format uuid */
   subjectId?: string;
   subjectCode?: string | null;
@@ -550,6 +612,29 @@ export interface CreateCourseTagDto {
   tagId?: number;
 }
 
+export interface CreateFullSyllabusCommand {
+  createFullSyllabusDto?: CreateFullSyllabusDto;
+}
+
+export interface CreateFullSyllabusDto {
+  /** @format uuid */
+  majorId?: string;
+  versionLabel?: string | null;
+  /** @format date */
+  effectiveFrom?: string;
+  /** @format date */
+  effectiveTo?: string | null;
+  semesters?: FullSemesterDto[] | null;
+}
+
+export interface CreateFullSyllabusResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface CreateLessonDto {
   title?: string | null;
   videoUrl?: string | null;
@@ -674,9 +759,36 @@ export interface CreateSubjectCommand {
 export interface CreateSubjectDto {
   subjectCode?: string | null;
   subjectName?: string | null;
+  prerequisiteSubjectIds?: string[] | null;
 }
 
 export interface CreateSubjectResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface CreateSyllabusCommand {
+  /** @format uuid */
+  majorId?: string;
+  versionLabel?: string | null;
+  /** @format date */
+  effectiveFrom?: string;
+  /** @format date */
+  effectiveTo?: string | null;
+}
+
+export interface CreateSyllabusResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface DeleteCommentResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
@@ -742,6 +854,24 @@ export interface EnrollInCourseResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: string | null;
+}
+
+export interface FullSemesterDto {
+  /** @format uuid */
+  semesterId?: string;
+  /** @format int32 */
+  positionIndex?: number;
+  subjects?: FullSubjectDto[] | null;
+}
+
+export interface FullSubjectDto {
+  /** @format uuid */
+  subjectId?: string;
+  /** @format int32 */
+  credit?: number | null;
+  isMandatory?: boolean;
+  /** @format int32 */
+  positionIndex?: number;
 }
 
 export interface GetCourseByIdForGuestResponse {
@@ -872,6 +1002,14 @@ export interface GetDiscussionThreadResponse {
   response?: DiscussionCommentDtoPagedResult;
 }
 
+export interface GetFullSyllabusResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SyllabusFullDto;
+}
+
 export interface GetInProgressCourseByStudentIdResponse {
   success?: boolean;
   messageId?: string | null;
@@ -888,6 +1026,22 @@ export interface GetLessonNotesResponse {
   response?: LessonNoteDtoPagedResult;
 }
 
+export interface GetMajorDetailResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: MajorDto;
+}
+
+export interface GetMajorsResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: MajorDtoPagedResult;
+}
+
 export interface GetMyLearningCoursesResponse {
   success?: boolean;
   messageId?: string | null;
@@ -902,6 +1056,38 @@ export interface GetMyWishlistResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: WishlistItemDtoPagedResult;
+}
+
+export interface GetSemesterDetailResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SemesterDto;
+}
+
+export interface GetSemestersResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SemesterDtoPagedResult;
+}
+
+export interface GetSubjectDetailResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SubjectDto;
+}
+
+export interface GetSubjectsResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SubjectDtoPagedResult;
 }
 
 export interface GuestLessonDetailDto {
@@ -973,6 +1159,28 @@ export interface LessonNoteDto {
 
 export interface LessonNoteDtoPagedResult {
   items?: LessonNoteDto[] | null;
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
+}
+
+export interface MajorDto {
+  /** @format uuid */
+  majorId?: string;
+  majorCode?: string | null;
+  majorName?: string | null;
+  description?: string | null;
+}
+
+export interface MajorDtoPagedResult {
+  items?: MajorDto[] | null;
   /** @format int32 */
   totalCount?: number;
   /** @format int32 */
@@ -1198,6 +1406,38 @@ export interface ReplyToCommentResponse {
   response?: CourseCommentDetailsDto;
 }
 
+export interface SemesterDto {
+  /** @format uuid */
+  semesterId?: string;
+  semesterCode?: string | null;
+  semesterName?: string | null;
+  /** @format int32 */
+  semesterNumber?: number;
+}
+
+export interface SemesterDtoPagedResult {
+  items?: SemesterDto[] | null;
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
+}
+
+export interface SemesterWithSubjectsDto {
+  /** @format uuid */
+  semesterId?: string;
+  semesterName?: string | null;
+  /** @format int32 */
+  positionIndex?: number;
+  subjects?: SubjectDetailDto[] | null;
+}
+
 export interface StudentLessonDetailDto {
   /** @format uuid */
   lessonId?: string;
@@ -1215,6 +1455,52 @@ export interface StudentLessonDetailDto {
   /** @format uuid */
   studentQuizResultId?: string | null;
   lessonQuiz?: QuizOutDto;
+}
+
+export interface SubjectDetailDto {
+  /** @format uuid */
+  subjectId?: string;
+  subjectCode?: string | null;
+  subjectName?: string | null;
+  /** @format int32 */
+  credit?: number | null;
+  isMandatory?: boolean;
+  /** @format int32 */
+  positionIndex?: number;
+}
+
+export interface SubjectDto {
+  /** @format uuid */
+  subjectId?: string;
+  subjectCode?: string | null;
+  subjectName?: string | null;
+}
+
+export interface SubjectDtoPagedResult {
+  items?: SubjectDto[] | null;
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
+}
+
+export interface SyllabusFullDto {
+  /** @format uuid */
+  syllabusId?: string;
+  /** @format uuid */
+  majorId?: string;
+  versionLabel?: string | null;
+  /** @format date */
+  effectiveFrom?: string;
+  /** @format date */
+  effectiveTo?: string | null;
+  semesters?: SemesterWithSubjectsDto[] | null;
 }
 
 export interface UpdateCourseAudienceDto {
@@ -1469,6 +1755,7 @@ export interface WishlistItemDto {
   wishlistId?: string;
   /** @format uuid */
   courseId?: string;
+  teacherName?: string | null;
   courseTitle?: string | null;
   courseDescription?: string | null;
   courseShortDescription?: string | null;
@@ -1823,6 +2110,33 @@ export class Api<
      * No description
      *
      * @tags CourseComments
+     * @name CourseCommentsDelete
+     * @summary Delete a comment
+     * @request DELETE:/api/CourseComments
+     * @secure
+     */
+    courseCommentsDelete: (
+      query?: {
+        /** @format uuid */
+        courseId?: string;
+        /** @format uuid */
+        commentId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DeleteCommentResponse, any>({
+        path: `/api/CourseComments`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags CourseComments
      * @name CourseCommentsRepliesCreate
      * @summary Reply to a comment
      * @request POST:/api/CourseComments/{parentCommentId}/replies
@@ -2101,6 +2415,100 @@ export class Api<
       }),
 
     /**
+     * @description Thêm môn học vào học kỳ của chương trình đào tạo. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusSemestersSubjectsCreate
+     * @summary Thêm môn học vào học kỳ của chương trình đào tạo - FE không dùng API này
+     * @request POST:/api/Syllabus/{syllabusId}/semesters/{semesterId}/subjects
+     * @secure
+     */
+    syllabusSemestersSubjectsCreate: (
+      syllabusId: string,
+      semesterId: string,
+      data: AddSubjectToSyllabusDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<AddSubjectResponse, any>({
+        path: `/api/Syllabus/${syllabusId}/semesters/${semesterId}/subjects`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Clone chương trình đào tạo nền tảng kèm theo các môn học. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusCloneCascadeCreate
+     * @summary Clone chương trình đào tạo nền tảng kèm theo các môn học
+     * @request POST:/api/Syllabus/clone/cascade
+     * @secure
+     */
+    syllabusCloneCascadeCreate: (
+      data: CloneCascadeSyllabusCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CloneCascadeSyllabusResponse, any>({
+        path: `/api/Syllabus/clone/cascade`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Clone chương trình đào tạo nền tảng. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusCloneFoundationCreate
+     * @summary Clone chương trình đào tạo nền tảng
+     * @request POST:/api/Syllabus/clone/foundation
+     * @secure
+     */
+    syllabusCloneFoundationCreate: (
+      data: CloneFoundationSyllabusCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CloneFoundationSyllabusResponse, any>({
+        path: `/api/Syllabus/clone/foundation`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo mới chương trình đào tạo cho chuyên ngành. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusCreateFullSyllabusForMajorCreate
+     * @summary Tạo mới chương trình đào tạo cho chuyên ngành - FE không dùng API này
+     * @request POST:/api/Syllabus/CreateFullSyllabusForMajor
+     * @secure
+     */
+    syllabusCreateFullSyllabusForMajorCreate: (
+      data: CreateFullSyllabusCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateFullSyllabusResponse, any>({
+        path: `/api/Syllabus/CreateFullSyllabusForMajor`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Tạo mới chuyên ngành. Cần xác thực Bearer.
      *
      * @tags Syllabus
@@ -2138,6 +2546,29 @@ export class Api<
     ) =>
       this.request<CreateSubjectResponse, any>({
         path: `/api/Syllabus/CreateSubjectProcess`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo mới chương trình đào tạo. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusCreateSyllabusCreate
+     * @summary Tạo mới chương trình đào tạo - FE không dùng API này
+     * @request POST:/api/Syllabus/CreateSyllabus
+     * @secure
+     */
+    syllabusCreateSyllabusCreate: (
+      data: CreateSyllabusCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateSyllabusResponse, any>({
+        path: `/api/Syllabus/CreateSyllabus`,
         method: "POST",
         body: data,
         secure: true,
@@ -2298,6 +2729,171 @@ export class Api<
     ) =>
       this.request<GetMyLearningCoursesResponse, any>({
         path: `/api/StudentLessonProgress/in-progress-courses`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy đầy đủ thông tin chương trình đào tạo theo phiên bản.
+     *
+     * @tags Syllabus
+     * @name SyllabusFullDetail
+     * @summary Lấy đầy đủ thông tin chương trình đào tạo theo phiên bản
+     * @request GET:/api/Syllabus/full/{versionLabel}
+     * @secure
+     */
+    syllabusFullDetail: (versionLabel: string, params: RequestParams = {}) =>
+      this.request<GetFullSyllabusResponse, any>({
+        path: `/api/Syllabus/full/${versionLabel}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Syllabus
+     * @name SyllabusGetMajorDetailDetail
+     * @summary Get major detail by id
+     * @request GET:/api/Syllabus/GetMajorDetail/{majorId}
+     * @secure
+     */
+    syllabusGetMajorDetailDetail: (
+      majorId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetMajorDetailResponse, any>({
+        path: `/api/Syllabus/GetMajorDetail/${majorId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Syllabus
+     * @name SyllabusGetMajorsList
+     * @summary Get list of majors
+     * @request GET:/api/Syllabus/GetMajors
+     * @secure
+     */
+    syllabusGetMajorsList: (
+      query?: {
+        /** @format int32 */
+        page?: number;
+        /** @format int32 */
+        size?: number;
+        search?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetMajorsResponse, any>({
+        path: `/api/Syllabus/GetMajors`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Syllabus
+     * @name SyllabusGetSemesterDetailDetail
+     * @summary Get semester detail by id
+     * @request GET:/api/Syllabus/GetSemesterDetail/{semesterId}
+     * @secure
+     */
+    syllabusGetSemesterDetailDetail: (
+      semesterId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSemesterDetailResponse, any>({
+        path: `/api/Syllabus/GetSemesterDetail/${semesterId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Syllabus
+     * @name SyllabusGetSemestersList
+     * @summary Get list of semesters
+     * @request GET:/api/Syllabus/GetSemesters
+     * @secure
+     */
+    syllabusGetSemestersList: (
+      query?: {
+        /** @format int32 */
+        page?: number;
+        /** @format int32 */
+        size?: number;
+        search?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSemestersResponse, any>({
+        path: `/api/Syllabus/GetSemesters`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Syllabus
+     * @name SyllabusGetSubjectDetailDetail
+     * @summary Get subject detail by id
+     * @request GET:/api/Syllabus/GetSubjectDetail/{subjectId}
+     * @secure
+     */
+    syllabusGetSubjectDetailDetail: (
+      subjectId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSubjectDetailResponse, any>({
+        path: `/api/Syllabus/GetSubjectDetail/${subjectId}`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Syllabus
+     * @name SyllabusGetSubjectsList
+     * @summary Get list of subjects
+     * @request GET:/api/Syllabus/GetSubjects
+     * @secure
+     */
+    syllabusGetSubjectsList: (
+      query?: {
+        /** @format int32 */
+        page?: number;
+        /** @format int32 */
+        size?: number;
+        search?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSubjectsResponse, any>({
+        path: `/api/Syllabus/GetSubjects`,
         method: "GET",
         query: query,
         secure: true,

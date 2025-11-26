@@ -4,8 +4,6 @@ import {
   PaymentGateway,
   InsertOrderCommand,
   InsertOrderResponse,
-  ProcessPaymentCommand,
-  ProcessPaymentResponse,
   SelectOrderResponseEntity,
   RePaymentResponse,
 } from "EduSmart/api/api-payment-service";
@@ -23,7 +21,6 @@ interface PaymentState {
     cartItemIds: string[],
     paymentMethod: PaymentGateway,
   ) => Promise<InsertOrderResponse | null>;
-  processPayment: (orderId: string) => Promise<ProcessPaymentResponse | null>;
   fetchOrderDetails: (orderId: string) => Promise<void>;
   retryPayment: (orderId: string) => Promise<RePaymentResponse | null>;
   setPaymentMethod: (method: PaymentGateway) => void;
@@ -40,7 +37,7 @@ export const usePaymentStore = create<PaymentState>((set) => ({
     set({ isProcessing: true, error: null });
     try {
       const body: InsertOrderCommand = {
-        courseIds: cartItemIds,
+        cartItemIds,
         paymentMethod,
       };
 
@@ -59,29 +56,6 @@ export const usePaymentStore = create<PaymentState>((set) => ({
       console.error("Failed to create order:", error);
       console.error("Backend error response:", err?.response?.data);
       const errorMsg = err?.response?.data?.message || "Không thể tạo đơn hàng";
-      set({ error: errorMsg, isProcessing: false });
-      message.error(errorMsg);
-      return null;
-    }
-  },
-
-  processPayment: async (orderId: string) => {
-    set({ isProcessing: true, error: null });
-    try {
-      const body: ProcessPaymentCommand = { orderId };
-      const res = await PaymentClient.api.v1PaymentInsertPaymentCreate(body);
-
-      if (res.data?.success) {
-        set({ isProcessing: false });
-        return res.data;
-      }
-
-      throw new Error(res.data?.message || "Failed to process payment");
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      console.error("Failed to process payment:", error);
-      const errorMsg =
-        err?.response?.data?.message || "Không thể xử lý thanh toán";
       set({ error: errorMsg, isProcessing: false });
       message.error(errorMsg);
       return null;
@@ -115,7 +89,7 @@ export const usePaymentStore = create<PaymentState>((set) => ({
     set({ isProcessing: true, error: null });
     try {
       // Re-process payment for the order
-      const res = await PaymentClient.api.v1PaymentInsertPaymentCreate({
+      const res = await PaymentClient.api.v1PaymentRePaymentList({
         orderId,
       });
 

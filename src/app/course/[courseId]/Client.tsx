@@ -164,7 +164,7 @@ export default function CourseDetailUI({
   const subjectTag = data?.subjectCode ? [data.subjectCode] : [];
   const levelTag = levelLabel(data?.level ?? 0);
   const enRollingCourseById = useCourseStore((s) => s.enRollingCourseById);
-  const { addToCart, isLoading: isAddingToCart } = useCartStore();
+  const { addToCart } = useCartStore();
   const router = useRouter();
   const durationText = useMemo(
     () => formatDuration(data?.durationHours ?? 0, data?.durationMinutes ?? 0),
@@ -282,11 +282,6 @@ export default function CourseDetailUI({
     }
 
     message.error("Có lỗi xảy ra khi ghi danh. Vui lòng thử lại.");
-  };
-
-  const handleAddToCart = async () => {
-    if (!data?.courseId) return;
-    await addToCart(data.courseId);
   };
 
   useEffect(() => {
@@ -531,9 +526,6 @@ export default function CourseDetailUI({
                       onClick={handleAddToCart}
                       disabled={isLearning || inCart}
                       loading={loadingCart}
-                      onClick={handleAddToCart}
-                      loading={isAddingToCart}
-                      disabled={isLearning}
                     >
                       {isLearning
                         ? "Đã ghi danh"
