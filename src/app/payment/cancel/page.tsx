@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Card, Result, Typography, Space, Spin, message } from "antd";
+import { Button, Card, Result, Typography, Space, Spin } from "antd";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
 import { PaymentClient } from "EduSmart/hooks/apiClient";
 
@@ -13,7 +13,6 @@ function PaymentCancelContent() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [callbackProcessed, setCallbackProcessed] = useState(false);
 
   // Extract query parameters from PayOS callback
   const orderId = searchParams?.get("orderId");
@@ -45,14 +44,16 @@ function PaymentCancelContent() {
         );
 
         if (response.data?.success) {
-          setCallbackProcessed(true);
           console.log("Payment callback processed successfully");
         } else {
           setError(response.data?.message || "Không thể xử lý hủy đơn hàng");
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { message?: string } } };
         console.error("Payment callback error:", err);
-        setError(err?.response?.data?.message || "Lỗi khi xử lý hủy đơn hàng");
+        setError(
+          error?.response?.data?.message || "Lỗi khi xử lý hủy đơn hàng",
+        );
       } finally {
         setIsLoading(false);
       }

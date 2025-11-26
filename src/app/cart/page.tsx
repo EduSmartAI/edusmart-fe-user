@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -29,9 +29,7 @@ export default function CartPage() {
     removeFromCart,
     selectedItemIds,
     setSelectedItemIds,
-    getSelectedItems,
     getTotalPrice,
-    getSelectedCount,
   } = useCartStore();
 
   useEffect(() => {

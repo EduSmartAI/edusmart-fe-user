@@ -514,6 +514,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       },
     ],
     [
+      course.courseId,
       course.description,
       course.durationHours,
       course.durationMinutes,
@@ -522,6 +523,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       course.ratingsCount,
       currentDiscussions,
       activeModule.moduleName,
+      currentLessonId,
       activeModuleName,
       replyOpenId,
       onRightTabChange,

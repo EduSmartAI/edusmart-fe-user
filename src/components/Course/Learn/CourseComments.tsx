@@ -13,8 +13,14 @@ import {
   Empty,
   Spin,
   message,
+  Tag,
 } from "antd";
-import { UserOutlined, SendOutlined, MessageOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  SendOutlined,
+  MessageOutlined,
+  CheckCircleFilled,
+} from "@ant-design/icons";
 import { CourseCommentDetailsDto } from "EduSmart/api/api-course-service";
 import { useCourseStore } from "EduSmart/stores/course/courseStore";
 import moment from "moment";
@@ -31,7 +37,12 @@ type Props = {
 
 export default function CourseComments({ courseId }: Props) {
   // State
-  const [comments, setComments] = useState<CourseCommentDetailsDto[]>([]);
+  interface CommentWithReplies extends CourseCommentDetailsDto {
+    replies?: CourseCommentDetailsDto[];
+    replyCount?: number;
+  }
+
+  const [comments, setComments] = useState<CommentWithReplies[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [newComment, setNewComment] = useState("");
@@ -42,6 +53,9 @@ export default function CourseComments({ courseId }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
   const [totalCount, setTotalCount] = useState(0);
+  const [allCommentsData, setAllCommentsData] = useState<CommentWithReplies[]>(
+    [],
+  );
 
   // Store
   const courseCommentsCreate = useCourseStore((s) => s.courseCommentsCreate);
@@ -56,16 +70,82 @@ export default function CourseComments({ courseId }: Props) {
 
     setLoading(true);
     try {
+      // Fetch all comments (backend returns all with pageSize=1000)
       const response = await courseCommentsList({
         courseId,
-        page,
-        size: pageSize,
+        page: currentPage - 1,
+        size: 1000,
       });
 
       if (response.data.success && response.data.response) {
-        setComments(response.data.response.items ?? []);
-        setTotalCount(response.data.response.totalCount ?? 0);
-        setCurrentPage(response.data.response.pageNumber ?? 1);
+        const allComments = response.data.response.items ?? [];
+
+        // Filter only top-level comments (parentCommentId = null)
+        const topLevelComments = allComments.filter((c) => !c.parentCommentId);
+
+        // Sort top-level comments by createdAt (newest first)
+        topLevelComments.sort(
+          (a, b) =>
+            new Date(b.createdAt ?? 0).getTime() -
+            new Date(a.createdAt ?? 0).getTime(),
+        );
+
+        // Build replies map
+        const repliesMap = new Map<string, CourseCommentDetailsDto[]>();
+        allComments.forEach((c) => {
+          if (c.parentCommentId) {
+            const existing = repliesMap.get(c.parentCommentId) ?? [];
+            repliesMap.set(c.parentCommentId, [...existing, c]);
+          }
+        });
+
+        // Attach replies to parent comments and sort by createdAt
+        const commentsWithReplies = topLevelComments.map((c) => {
+          const replies = repliesMap.get(c.commentId ?? "") ?? [];
+          // Sort replies by createdAt (oldest first)
+          const sortedReplies = replies.sort(
+            (a, b) =>
+              new Date(a.createdAt ?? 0).getTime() -
+              new Date(b.createdAt ?? 0).getTime(),
+          );
+          return {
+            ...c,
+            replies: sortedReplies,
+            replyCount: sortedReplies.length,
+          };
+        });
+
+        console.log("=== Comments Processing ===");
+        console.log("Total items from API:", allComments.length);
+        console.log("Parent comments:", topLevelComments.length);
+        console.log(
+          "Reply comments:",
+          allComments.length - topLevelComments.length,
+        );
+        console.log("Comments with replies:", commentsWithReplies);
+
+        // Store all comments data for client-side pagination
+        setAllCommentsData(commentsWithReplies);
+        setTotalCount(topLevelComments.length);
+
+        // Apply client-side pagination
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedComments = commentsWithReplies.slice(
+          startIndex,
+          endIndex,
+        );
+
+        console.log("=== Pagination ===");
+        console.log("Current page:", page);
+        console.log("Page size:", pageSize);
+        console.log("Start index:", startIndex);
+        console.log("End index:", endIndex);
+        console.log("Paginated comments:", paginatedComments);
+        console.log("Paginated comments length:", paginatedComments.length);
+
+        setComments(paginatedComments);
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -81,15 +161,23 @@ export default function CourseComments({ courseId }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  // Handle page change
+  // Handle page change (client-side pagination)
   const handlePageChange = (page: number, size?: number) => {
     if (size && size !== pageSize) {
       setPageSize(size);
       setCurrentPage(1);
-      fetchComments(1);
+      // Re-paginate with new page size
+      const startIndex = 0;
+      const endIndex = size;
+      const paginatedComments = allCommentsData.slice(startIndex, endIndex);
+      setComments(paginatedComments);
     } else {
       setCurrentPage(page);
-      fetchComments(page);
+      // Re-paginate with new page
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedComments = allCommentsData.slice(startIndex, endIndex);
+      setComments(paginatedComments);
     }
   };
 
@@ -236,11 +324,11 @@ export default function CourseComments({ courseId }: Props) {
                     <div className="flex-1 min-w-0">
                       {/* User info & timestamp */}
                       <div className="flex items-center justify-between mb-2">
-                        <div>
+                        <div className="flex items-center gap-2">
                           <Text strong className="text-sm">
                             {comment.userDisplayName ?? "Người dùng"}
                           </Text>
-                          <Text type="secondary" className="text-xs ml-2">
+                          <Text type="secondary" className="text-xs">
                             {moment(comment.createdAt).fromNow()}
                           </Text>
                         </div>
@@ -268,12 +356,12 @@ export default function CourseComments({ courseId }: Props) {
                         >
                           {replyingTo === comment.commentId ? "Hủy" : "Trả lời"}
                         </Button>
-                        {comment.replyCount !== undefined &&
-                          comment.replyCount > 0 && (
-                            <Text type="secondary" className="text-xs">
-                              {comment.replyCount} câu trả lời
-                            </Text>
-                          )}
+                        {/* Show actual replies count */}
+                        {comment.replyCount && comment.replyCount > 0 && (
+                          <Text type="secondary" className="text-xs">
+                            {comment.replyCount} câu trả lời
+                          </Text>
+                        )}
                       </Space>
 
                       {/* Reply Input */}
@@ -305,6 +393,50 @@ export default function CourseComments({ courseId }: Props) {
                           </div>
                         </div>
                       )}
+
+                      {/* Nested Replies */}
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div className="mt-4 space-y-3">
+                          {comment.replies.map(
+                            (reply: CourseCommentDetailsDto) => (
+                              <div
+                                key={reply.commentId}
+                                className="flex items-start gap-3 pl-4 py-3 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 border-l-2 border-violet-400"
+                              >
+                                <Avatar
+                                  size={32}
+                                  icon={<UserOutlined />}
+                                  className="flex-shrink-0 bg-gradient-to-br from-emerald-500 to-teal-500"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  {/* User info & timestamp with Teacher badge */}
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Text strong className="text-sm">
+                                      {reply.userDisplayName ?? "Người dùng"}
+                                    </Text>
+                                    {/* Teacher badge - you can add logic to check if user is teacher */}
+                                    <Tag
+                                      icon={<CheckCircleFilled />}
+                                      color="success"
+                                      className="!m-0 text-xs"
+                                    >
+                                      Giáo viên
+                                    </Tag>
+                                    <Text type="secondary" className="text-xs">
+                                      {moment(reply.createdAt).fromNow()}
+                                    </Text>
+                                  </div>
+
+                                  {/* Reply content */}
+                                  <Paragraph className="mb-0 text-sm whitespace-pre-wrap text-neutral-700 dark:text-neutral-300">
+                                    {reply.content}
+                                  </Paragraph>
+                                </div>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </List.Item>
@@ -312,17 +444,17 @@ export default function CourseComments({ courseId }: Props) {
             />
 
             {/* Pagination */}
-            {totalCount > pageSize && (
+            {totalCount > 0 && (
               <div className="flex justify-center mt-6">
                 <Pagination
                   current={currentPage}
                   pageSize={pageSize}
                   total={totalCount}
                   onChange={handlePageChange}
-                  // showSizeChanger
-                  // showTotal={(total, range) =>
-                  //   `${range[0]}-${range[1]} của ${total} bình luận`
-                  // }
+                  showSizeChanger
+                  showTotal={(total, range) =>
+                    `${range[0]}-${range[1]} của ${total} bình luận`
+                  }
                   pageSizeOptions={["6", "10", "20", "50"]}
                 />
               </div>

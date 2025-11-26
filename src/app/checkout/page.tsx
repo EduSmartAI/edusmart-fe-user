@@ -53,16 +53,16 @@ export default function CheckoutPage() {
       return;
     }
 
-    const cartItemIds = selectedItems
-      .map((item) => item.cartItemId)
+    const courseIds = selectedItems
+      .map((item) => item.courseId)
       .filter((id): id is string => !!id);
 
-    if (cartItemIds.length === 0) {
+    if (courseIds.length === 0) {
       message.error("Không thể xác định khóa học");
       return;
     }
 
-    const result = await createOrder(cartItemIds, paymentMethod);
+    const result = await createOrder(courseIds, paymentMethod);
 
     if (result?.success && result.response?.checkoutUrl) {
       // Redirect to payment gateway

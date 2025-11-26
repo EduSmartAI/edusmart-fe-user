@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Card, Result, Typography, Space, Spin } from "antd";
 import { CloseCircleOutlined } from "@ant-design/icons";

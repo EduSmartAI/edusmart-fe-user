@@ -5,9 +5,6 @@ import {
   CartDto,
   CartItemDto,
   AddToCartRequest,
-  GetMyCartResponse,
-  AddToCartResponse,
-  RemoveCartItemResponse,
 } from "EduSmart/api/api-payment-service";
 import { PaymentClient } from "EduSmart/hooks/apiClient";
 
@@ -84,10 +81,11 @@ export const useCartStore = create<CartState>()(
           } else {
             throw new Error(res.data?.message || "Failed to add to cart");
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as { response?: { data?: { message?: string } } };
           console.error("Failed to add to cart:", error);
           const errorMsg =
-            error?.response?.data?.message || "Không thể thêm vào giỏ hàng";
+            err?.response?.data?.message || "Không thể thêm vào giỏ hàng";
           set({ error: errorMsg, isLoading: false });
           message.error(errorMsg);
         }
@@ -109,10 +107,11 @@ export const useCartStore = create<CartState>()(
           } else {
             throw new Error(res.data?.message || "Failed to remove from cart");
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as { response?: { data?: { message?: string } } };
           console.error("Failed to remove from cart:", error);
           const errorMsg =
-            error?.response?.data?.message || "Không thể xóa khỏi giỏ hàng";
+            err?.response?.data?.message || "Không thể xóa khỏi giỏ hàng";
           set({ error: errorMsg, isLoading: false });
           message.error(errorMsg);
         }
@@ -181,10 +180,13 @@ export const useCartStore = create<CartState>()(
       partialize: (state) => ({
         selectedItemIds: Array.from(state.selectedItemIds), // Only persist selection, not cart data
       }),
-      merge: (persistedState: any, currentState) => ({
-        ...currentState,
-        selectedItemIds: new Set(persistedState?.selectedItemIds || []), // Restore selection from storage
-      }),
+      merge: (persistedState: unknown, currentState) => {
+        const state = persistedState as { selectedItemIds?: string[] };
+        return {
+          ...currentState,
+          selectedItemIds: new Set(state?.selectedItemIds || []), // Restore selection from storage
+        };
+      },
     },
   ),
 );

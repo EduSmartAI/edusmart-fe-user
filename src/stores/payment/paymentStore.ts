@@ -30,7 +30,7 @@ interface PaymentState {
   clearOrder: () => void;
 }
 
-export const usePaymentStore = create<PaymentState>((set, get) => ({
+export const usePaymentStore = create<PaymentState>((set) => ({
   currentOrder: null,
   paymentMethod: PaymentGateway.Value2, // Default: PayOS
   isProcessing: false,
@@ -40,11 +40,13 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
     set({ isProcessing: true, error: null });
     try {
       const body: InsertOrderCommand = {
-        cartItemIds,
+        courseIds: cartItemIds,
         paymentMethod,
       };
 
+      console.log("Creating order with payload:", body);
       const res = await PaymentClient.api.v1OrderInsertOrderCreate(body);
+      console.log("Order created response:", res.data);
 
       if (res.data?.success) {
         set({ isProcessing: false });
@@ -52,10 +54,11 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       }
 
       throw new Error(res.data?.message || "Failed to create order");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       console.error("Failed to create order:", error);
-      const errorMsg =
-        error?.response?.data?.message || "Không thể tạo đơn hàng";
+      console.error("Backend error response:", err?.response?.data);
+      const errorMsg = err?.response?.data?.message || "Không thể tạo đơn hàng";
       set({ error: errorMsg, isProcessing: false });
       message.error(errorMsg);
       return null;
@@ -74,10 +77,11 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       }
 
       throw new Error(res.data?.message || "Failed to process payment");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       console.error("Failed to process payment:", error);
       const errorMsg =
-        error?.response?.data?.message || "Không thể xử lý thanh toán";
+        err?.response?.data?.message || "Không thể xử lý thanh toán";
       set({ error: errorMsg, isProcessing: false });
       message.error(errorMsg);
       return null;
@@ -85,31 +89,35 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
   },
 
   fetchOrderDetails: async (orderId: string) => {
-    set({ isProcessing: true, error: null });
     try {
-      const res = await PaymentClient.api.v1OrderSelectOrderList({ orderId });
+      const res = await PaymentClient.api.v1OrderSelectOrderList({
+        pageIndex: 0,
+        pageSize: 1,
+      });
 
-      if (
-        res.data?.success &&
-        res.data.response &&
-        res.data.response.length > 0
-      ) {
-        set({ currentOrder: res.data.response[0], isProcessing: false });
-      } else {
-        set({ isProcessing: false });
+      if (res.data?.success) {
+        const order = res.data.response?.find((o) => o.orderId === orderId);
+        if (order) {
+          set({ currentOrder: order });
+        }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       console.error("Failed to fetch order details:", error);
       const errorMsg =
-        error?.response?.data?.message || "Không thể tải thông tin đơn hàng";
-      set({ error: errorMsg, isProcessing: false });
+        err?.response?.data?.message || "Không thể tải chi tiết đơn hàng";
+      set({ error: errorMsg });
+      message.error(errorMsg);
     }
   },
 
   retryPayment: async (orderId: string) => {
     set({ isProcessing: true, error: null });
     try {
-      const res = await PaymentClient.api.v1PaymentRePaymentList({ orderId });
+      // Re-process payment for the order
+      const res = await PaymentClient.api.v1PaymentInsertPaymentCreate({
+        orderId,
+      });
 
       if (res.data?.success) {
         set({ isProcessing: false });
@@ -117,10 +125,11 @@ export const usePaymentStore = create<PaymentState>((set, get) => ({
       }
 
       throw new Error(res.data?.message || "Failed to retry payment");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
       console.error("Failed to retry payment:", error);
       const errorMsg =
-        error?.response?.data?.message || "Không thể thử lại thanh toán";
+        err?.response?.data?.message || "Không thể thử lại thanh toán";
       set({ error: errorMsg, isProcessing: false });
       message.error(errorMsg);
       return null;

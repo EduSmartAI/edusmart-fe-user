@@ -235,7 +235,7 @@ export default function CourseDetailUI({
       try {
         await addToCart(data?.courseId || "");
         router.push("/checkout");
-      } catch (err: unknown) {
+      } catch {
         message.error("Không thể thêm vào giỏ hàng");
       }
     }

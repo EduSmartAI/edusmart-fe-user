@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -11,9 +11,6 @@ import {
   Empty,
   Spin,
   Card,
-  Statistic,
-  Row,
-  Col,
   Tooltip,
 } from "antd";
 import { PaymentClient, CourseClient } from "EduSmart/hooks/apiClient";
@@ -22,7 +19,7 @@ import type {
   OrderItemEntity,
 } from "EduSmart/api/api-payment-service";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 // Order status mapping - simple colors only
 const ORDER_STATUS = {
@@ -125,23 +122,6 @@ export default function OrdersPage() {
     );
   };
 
-  const summary = useMemo(() => {
-    const totalOrders = orders.length;
-    const paidOrders = orders.filter((order) => order.status === 2).length;
-    const pendingOrders = orders.filter((order) => order.status === 1).length;
-    const totalAmount = orders.reduce(
-      (sum, order) => sum + (order.finalAmount || 0),
-      0,
-    );
-
-    return {
-      totalOrders,
-      paidOrders,
-      pendingOrders,
-      totalAmount,
-    };
-  }, [orders]);
-
   const columns = [
     {
       title: "Mã đơn hàng",
@@ -190,7 +170,7 @@ export default function OrdersPage() {
       key: "finalAmount",
       width: 140,
       align: "right" as const,
-      render: (amount: number, record: SelectOrderResponseEntity) => (
+      render: (amount: number) => (
         <Space direction="vertical" size={0} className="w-full text-right">
           {/* {record.discount && record.discount > 0 && (
             <Text delete type="secondary" className="text-xs">
@@ -219,7 +199,7 @@ export default function OrdersPage() {
       key: "action",
       width: 100,
       align: "center" as const,
-      render: (_: any, record: SelectOrderResponseEntity) => (
+      render: (_: unknown, record: SelectOrderResponseEntity) => (
         <Button
           type="link"
           onClick={() => router.push(`/dashboard/orders/${record.orderId}`)}

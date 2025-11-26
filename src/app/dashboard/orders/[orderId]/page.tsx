@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Card,
-  Descriptions,
   Tag,
   Typography,
   Button,
@@ -18,9 +17,8 @@ import {
 } from "antd";
 import { PaymentClient, CourseClient } from "EduSmart/hooks/apiClient";
 import type { SelectOrderResponseEntity } from "EduSmart/api/api-payment-service";
-import type { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 // Order status mapping
 const ORDER_STATUS = {
@@ -204,7 +202,7 @@ export default function OrderDetailPage() {
       title: "STT",
       key: "index",
       width: 60,
-      render: (_: any, __: any, index: number) => index + 1,
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
       title: "Tên khóa học",
