@@ -22,7 +22,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   const isDynamicRoute = Object.keys(params).length > 0;
-  const id = isDynamicRoute ? params["id"] || params["slug"] : "";
+  const id = isDynamicRoute ? params["id"] || params["slug"] || params["orderId"] : "";
 
   const DASHBOARD_ROUTES = [
     {
@@ -46,6 +46,17 @@ export default function DashboardLayout({
     {
       path: `/dashboard/my-profile`,
       breadcrumbTitle: [{ title: "Thông Tin Cá Nhân" }],
+    },
+    {
+      path: `/dashboard/orders`,
+      breadcrumbTitle: [{ title: "Đơn Hàng Của Tôi" }],
+    },
+    {
+      path: `/dashboard/orders/${id}`,
+      breadcrumbTitle: [
+        { title: "Đơn Hàng Của Tôi" },
+        { title: "Chi Tiết Đơn Hàng" },
+      ],
     },
   ];
 

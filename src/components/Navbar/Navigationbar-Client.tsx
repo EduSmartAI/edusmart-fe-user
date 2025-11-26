@@ -7,7 +7,7 @@ import { ThemeSwitch } from "../Themes/Theme";
 import { usePathname, useRouter } from "next/navigation";
 import { Kaushan_Script } from "next/font/google";
 // import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
-import UserMenu from "./UserMenu";
+import UserMenu from "EduSmart/components/Navbar/UserMenu";
 import "@ant-design/v5-patch-for-react-19";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 
@@ -39,7 +39,7 @@ export default function NavigationbarClient({ isAuthed }: Props) {
     { key: "jobs", label: "Khóa học", href: "/course" },
     { key: "contact", label: "Liên hệ chúng tôi", href: "/contact" },
     { key: "learningPath", label: "Đề xuất lộ trình học tập", href: "/learning-path" },
-    { key: "dashboard", label: "Dashboard", href: "/dashboard" },
+    { key: "dashboard", label: "Dashboard", href: "/dashboard/" },
     { key: "quiz", label: "Quiz", href: "/quiz" },
     { key: "login", label: "Đăng nhập", button: true, type: "link" },
     { key: "signup", label: "Đăng Ký", button: true, type: "primary" },
