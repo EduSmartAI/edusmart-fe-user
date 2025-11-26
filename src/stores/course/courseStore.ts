@@ -15,6 +15,7 @@ import {
   UpdateNoteDto,
   UpdateNoteResponse,
   DeleteNoteResponse,
+  UserLessonProgressEntity,
 } from "EduSmart/api/api-course-service";
 import {
   AIChatBotResponse,
@@ -30,6 +31,7 @@ interface SubmitAnswerDto {
   selectedAnswerIds: string[];
 }
 interface CourseState {
+  lessonProgressById: Record<string, UserLessonProgressEntity | undefined>;
   enRollingCourseById: (id: string) => Promise<string>;
   submitLessonOrModuleQuiz: (
     lessonId: string,
@@ -90,7 +92,8 @@ interface CourseState {
   ) => Promise<{ data: DeleteNoteResponse }>;
 }
 
-export const useCourseStore = create<CourseState>(() => ({
+export const useCourseStore = create<CourseState>((set) => ({
+  lessonProgressById: {},
   enRollingCourseById: async (id) => {
     const setLoading = useLoadingStore.getState().setLoading;
     const hideLoading = useLoadingStore.getState().hideLoading;
@@ -168,12 +171,22 @@ export const useCourseStore = create<CourseState>(() => ({
         },
       );
       console.log("Enrollment failed:", res.data);
+      const progressEntity = res.data?.response;
+      if (progressEntity?.lessonId && progressEntity.completedAt) {
+        const lessonKey: string = progressEntity.lessonId;
+        set((state) => ({
+          lessonProgressById: {
+            ...state.lessonProgressById,
+            [lessonKey]: progressEntity,
+          },
+        }));
+      }
       if (res.data?.success && res.data.response) {
         console.log("CheckCourseById - res:", res.data.response);
         console.log("CheckCourseById - res:", res.data.success);
-        return res.data as StudentQuizCourseInsertResponse;
+        return res.data as UpsertUserLessonProgressResponse;
       }
-      return res.data as StudentQuizCourseInsertResponse;
+      return res.data as UpsertUserLessonProgressResponse;
     } catch (error) {
       console.error("Error fetching courses:", error);
       return {

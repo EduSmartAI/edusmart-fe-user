@@ -9,6 +9,7 @@ import {
   LogoutOutlined,
   SolutionOutlined,
   UserOutlined,
+  RobotOutlined,
   ShoppingOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -83,6 +84,7 @@ const navItems: NavMenuItem[] = [
     undefined,
     "/Admin/subscriptions",
   ),
+  getItem("Chat AI", "chat-ai", <RobotOutlined />, undefined, "/chat/ai"),
   getItem("Đăng xuất", "logout", <LogoutOutlined />),
   // ❌ BỎ ThemeSwitch khỏi menu để tránh lệch
 ];

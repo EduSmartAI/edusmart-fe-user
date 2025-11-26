@@ -46,7 +46,7 @@ export default function HeroSection() {
                   250k
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Assisted Student
+                  Học viên được AI đồng hành
                 </p>
               </div>
             </div>
@@ -56,10 +56,10 @@ export default function HeroSection() {
               <FiMail className="w-6 h-6 text-orange-400 dark:text-orange-300" />
               <div className="ml-2">
                 <p className="font-semibold text-gray-800 dark:text-white">
-                  Congratulations
+                  Chúc mừng
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Your admission completed
+                  Lộ trình cá nhân đã sẵn sàng
                 </p>
               </div>
             </div>
@@ -80,14 +80,14 @@ export default function HeroSection() {
               />
               <div className="ml-3 flex-1">
                 <p className="font-semibold text-gray-800 dark:text-white text-sm">
-                  User Experience Class
+                  Nhập môn Thiết kế trải nghiệm
                 </p>
                 <p className="text-xs text-gray-600 dark:text-gray-300">
-                  Today at 12.00 PM
+                  Hôm nay • 12:00
                 </p>
               </div>
               <button className="bg-pink-500 dark:bg-pink-600 text-white px-4 py-2 rounded-full text-sm">
-                Join Now
+                Học ngay
               </button>
             </div>
           </div>

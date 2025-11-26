@@ -51,22 +51,19 @@ export default function Navigationbar() {
   const menuItems = [
     { key: "home", label: "Trang chủ", href: "/home" },
     { key: "jobs", label: "Khóa học", href: "/course" },
-    { key: "contact", label: "Liên hệ chúng tôi", href: "/contact" },
-    {
-      key: "learningPath",
-      label: "Đề xuất lộ trình học tập",
-      href: "/learning-path",
-    },
+    { key: "learningPath", label: "Đề xuất lộ trình học tập", href: "/learning-path" },
     { key: "dashboard", label: "Dashboard", href: "/dashboard" },
     { key: "quiz", label: "Quiz", href: "/quiz" },
+    { key: "chatAI", label: "Chat AI", href: "/chat/ai" },
     { key: "login", label: "Đăng nhập", button: true, type: "link" },
     { key: "signup", label: "Đăng Ký", button: true, type: "primary" },
   ];
 
+  const navigableItems = menuItems.filter((item) => !item.button);
+
   const activeItem =
-    menuItems
-      .slice(0, 5)
-      .find((item) => pathname.startsWith(item.href ?? "")) || menuItems[0];
+    navigableItems.find((item) => pathname.startsWith(item.href ?? "")) ||
+    navigableItems[0];
   const currentKey = activeItem.key;
 
   const [underline, api] = useSpring(() => ({
@@ -247,9 +244,9 @@ export default function Navigationbar() {
           </div>
           <div
             ref={linksRef}
-            className="hidden xl:flex flex-1 justify-center items-center relative mx-20"
+            className="hidden xl:flex flex-1 justify-center items-center relative mx-12"
           >
-            {menuItems.slice(0, 5).map((item) => {
+            {navigableItems.map((item) => {
               const isActive = item.key === currentKey;
               return (
                 <a
@@ -284,17 +281,19 @@ export default function Navigationbar() {
               />
             </div>
           ) : (
-            <div className="hidden md:flex items-center space-x-3 ml-8">
+            <div className="hidden xl:flex items-center gap-2 ml-6 flex-nowrap">
               <ThemeSwitch />
               <button
+                type="button"
                 onClick={() => router.push("/Login")}
-                className="flex items-center justify-center h-12 px-6 border-2 border-white text-white font-medium text-base whitespace-nowrap rounded-full transition-all duration-300 hover:bg-white hover:text-[#49BBBD] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white "
+                className="relative inline-flex items-center justify-center h-10 px-6 rounded-2xl text-sm font-semibold tracking-wide text-emerald-900 dark:text-white border border-emerald-100/80 dark:border-white/25 bg-white/95 dark:bg-white/10 shadow-[0_6px_18px_rgba(15,23,42,0.08)] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-100 dark:focus-visible:outline-white hover:bg-emerald-50/70 dark:hover:bg-white/15 whitespace-nowrap"
               >
                 Đăng nhập
               </button>
               <button
-                onClick={() => router.push("/Signup")}
-                className="flex items-center justify-center h-12 px-6 bg-gradient-to-r from-[#5da38f] to-[#4a8a7a] text-white font-medium text-base whitespace-nowrap rounded-full shadow-lg transition-all duration-300 hover:from-[#4a8a7a] hover:to-[#5da38f] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5da38f]"
+                type="button"
+                onClick={() => router.push("/Register")}
+                className="relative inline-flex items-center justify-center h-10 px-6 rounded-2xl text-sm font-semibold tracking-wide text-white bg-gradient-to-r from-emerald-400 via-teal-500 to-sky-600 shadow-[0_16px_28px_rgba(31,134,194,0.3)] transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300 hover:shadow-[0_20px_36px_rgba(31,134,194,0.38)] whitespace-nowrap"
               >
                 Đăng Ký
               </button>
@@ -416,7 +415,7 @@ export default function Navigationbar() {
                       } text-white rounded-xl`,
                     onClick: () => {
                       closeMenu();
-                      router.push(item.key === "login" ? "/Login" : "/Signup");
+                      router.push(item.key === "login" ? "/Login" : "/Register");
                     },
                   };
                   return (
