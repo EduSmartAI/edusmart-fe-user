@@ -240,7 +240,7 @@ export default function CourseDetailUI({
       // PAID course - thêm vào giỏ và redirect to checkout
       try {
         await addToCart(data?.courseId || "");
-        router.push("/checkout");
+        router.push("/cart");
       } catch {
         message.error("Không thể thêm vào giỏ hàng");
       }
