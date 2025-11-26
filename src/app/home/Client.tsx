@@ -11,20 +11,20 @@ const features = [
   {
     icon: <FiFileText className="w-8 h-8 text-white" />,
     bg: "bg-indigo-500",
-    title: "Online Billing, Invoicing, & Contracts",
-    desc: "Simple and secure control of your organization’s financial and legal transactions. Send customized invoices and contracts.",
+    title: "Quản lý học phí & hợp đồng cá nhân",
+    desc: "Tự động tạo biên lai, hợp đồng và chính sách học phí cho từng lộ trình học. Mọi thông tin được đồng bộ tức thời, minh bạch cho phụ huynh và học viên.",
   },
   {
     icon: <FiCalendar className="w-8 h-8 text-white" />,
     bg: "bg-teal-400",
-    title: "Easy Scheduling & Attendance Tracking",
-    desc: "Schedule and reserve classrooms at one campus or multiple campuses. Keep detailed records of student attendance.",
+    title: "Lịch học thông minh cho từng lộ trình",
+    desc: "Sắp xếp lịch học theo năng lực của mỗi học viên, đồng bộ giữa các cơ sở và ghi nhận điểm danh tự động để không bỏ sót tiến trình cá nhân hóa.",
   },
   {
     icon: <FiUsers className="w-8 h-8 text-white" />,
     bg: "bg-cyan-400",
-    title: "Customer Tracking",
-    desc: "Automate and track emails to individuals or groups. Built-in system helps organize your organization’s workflow.",
+    title: "Theo dõi tương tác & tiến bộ học viên",
+    desc: "Hệ thống nhắc nhở, email và báo cáo được cá nhân hóa giúp giáo viên nắm bắt hành vi học tập, từ đó điều chỉnh lộ trình phù hợp hơn.",
   },
 ];
 

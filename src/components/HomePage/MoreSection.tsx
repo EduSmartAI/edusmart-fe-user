@@ -33,38 +33,48 @@ export default function MoreSection() {
         {/* Two cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
           {/* Card 1: Giảng viên */}
-          <div className="relative overflow-hidden rounded-2xl shadow-xl h-96">
-            <Image
-              src={teacherPNG}
-              alt="Giảng viên"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-white dark:bg-gray-800 opacity-40 backdrop-blur-sm"></div>
-            <div className="relative z-10 flex flex-col items-center justify-center h-full">
-              <p className="text-3xl font-bold text-gray-800 dark:text-white mb-6 ">
+          <div className="relative overflow-hidden rounded-3xl shadow-2xl h-96 group">
+            <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
+              <Image
+                src={teacherPNG}
+                alt="Giảng viên"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/55 to-white/70 dark:from-gray-900/50 dark:via-gray-900/60 dark:to-gray-900/70 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-90"></div>
+            <div className="relative z-10 flex flex-col items-center justify-center h-full px-8 text-center transition-transform duration-300 group-hover:-translate-y-2">
+              <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Với giảng viên
               </p>
-              <button className="px-8 py-3 border-2 border-gray-800 dark:border-gray-200 rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 hover:text-white dark:hover:text-gray-800 transition-colors duration-300 font-medium">
+              <p className="text-base text-gray-700 dark:text-gray-200 mb-6">
+                Thiết kế khóa học cá nhân hóa và chia sẻ lộ trình với hàng nghìn học viên FPT.
+              </p>
+              <button className="px-8 py-3 border-2 border-gray-900 dark:border-gray-200 rounded-full hover:bg-gray-900 dark:hover:bg-gray-200 hover:text-white dark:hover:text-gray-900 transition-colors duration-300 font-semibold">
                 Hãy đăng một khóa
               </button>
             </div>
           </div>
 
           {/* Card 2: Sinh viên */}
-          <div className="relative overflow-hidden rounded-2xl shadow-xl h-96">
-            <Image
-              src={studentPNG}
-              alt="Sinh viên"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-black opacity-40"></div>
-            <div className="relative z-10 flex flex-col items-center justify-center h-full">
-              <div className="text-3xl font-bold text-white mb-6">
+          <div className="relative overflow-hidden rounded-3xl shadow-2xl h-96 group">
+            <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-110">
+              <Image
+                src={studentPNG}
+                alt="Sinh viên"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/60"></div>
+            <div className="relative z-10 flex flex-col items-center justify-center h-full px-8 text-center transition-transform duration-300 group-hover:-translate-y-2">
+              <p className="text-3xl font-bold text-white mb-4">
                 Với sinh viên
-              </div>
-              <button className="px-8 py-3 bg-teal-500 dark:bg-teal-600 text-white rounded-full hover:bg-teal-600 dark:hover:bg-teal-700 transition-colors duration-300 font-medium">
+              </p>
+              <p className="text-base text-white/80 mb-6">
+                Khám phá khóa học phù hợp năng lực, để AI điều chỉnh lộ trình theo tiến độ riêng của bạn.
+              </p>
+              <button className="px-8 py-3 bg-teal-500 dark:bg-teal-600 text-white rounded-full hover:bg-teal-400 transition-colors duration-300 font-semibold">
                 Hãy chọn một khóa
               </button>
             </div>
@@ -171,9 +181,10 @@ export default function MoreSection() {
             </p>
             <div className="relative z-10">
               <p className="text-gray-600 dark:text-gray-400 text-lg mb-8 leading-relaxed gsap-zoom">
-                EduSmart&apos;s school management software helps traditional and
-                online schools manage scheduling, attendance, payments and
-                virtual classrooms all in one secure cloud-based system.
+                EduSmart giúp bạn ghép nối lịch học, bài tập và phản hồi của
+                giảng viên trong một hệ thống duy nhất. AI phân tích hành vi học
+                tập để đề xuất nội dung phù hợp, vì vậy bạn có thể học ở mọi nơi
+                nhưng vẫn theo sát lộ trình được cá nhân hóa.
               </p>
               <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-green-400 dark:bg-green-500 rounded-full"></div>
             </div>
@@ -181,7 +192,7 @@ export default function MoreSection() {
               href="#"
               className="text-teal-500 dark:text-teal-400 underline hover:text-teal-600 dark:hover:text-teal-300 font-medium text-lg"
             >
-              View Function
+              Khám phá tính năng
             </a>
           </div>
 
@@ -217,8 +228,8 @@ export default function MoreSection() {
             <span className="text-gray-800 dark:text-gray-200">chúng tôi</span>
           </p>
           <p className="relative mt-4 text-gray-600 dark:text-gray-400 z-50">
-            This very extraordinary feature can make learning activities more
-            efficient
+            Bộ công cụ cá nhân hóa giúp việc học trở nên hiệu quả và dễ theo
+            dõi hơn cho từng học viên.
           </p>
         </div>
 
@@ -260,15 +271,15 @@ export default function MoreSection() {
               {[
                 {
                   icon: <FiGrid className="w-6 h-6" />,
-                  desc: "Teachers don’t get lost in the grid view and have a dedicated Podium space.",
+                  desc: "Giáo viên nắm được tổng quan lớp học và có không gian Podium riêng để điều phối nội dung.",
                 },
                 {
                   icon: <FiUsers className="w-6 h-6" />,
-                  desc: "TA’s and presenters can be moved to the front of the class.",
+                  desc: "Trợ giảng và khách mời được ghim lên đầu giao diện, đảm bảo tương tác theo đúng lộ trình.",
                 },
                 {
                   icon: <FiAward className="w-6 h-6" />,
-                  desc: "Teachers can easily see all students and class data at one time.",
+                  desc: "Toàn bộ dữ liệu học viên được hiển thị tức thì giúp giáo viên điều chỉnh kế hoạch cá nhân hóa.",
                 },
               ].map((feat, idx) => (
                 <div key={idx} className="flex items-start space-x-4">
