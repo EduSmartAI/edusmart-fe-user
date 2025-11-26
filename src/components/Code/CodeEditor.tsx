@@ -59,6 +59,7 @@ type Props = {
   onSubmit?: (payload: SubmitPayload) => void;
   onCodeChange?: (code: string) => void; // Callback when code changes
   onProblemChange?: (problemId: string) => void; // Callback when problem changes
+  onLanguageChange?: (languageId: JudgeLanguageId) => void; // Callback when language changes
   selectedLanguageId?: number; // Optional: pre-select language
   activeProblemId?: string; // Optional: control which problem is active
 };
@@ -66,12 +67,12 @@ type Props = {
 // Removed unused difficultyColor function
 
 export default function CodeEditor({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   languages,
   problems,
   onSubmit,
   onCodeChange,
   onProblemChange,
+  onLanguageChange,
   selectedLanguageId: propSelectedLanguageId,
   activeProblemId: propActiveProblemId,
 }: Props) {
@@ -650,6 +651,9 @@ export default function CodeEditor({
               onChange={async (value) => {
                 const langId = value as JudgeLanguageId;
                 setSelectedLangId(langId);
+
+                // Notify parent component about language change
+                onLanguageChange?.(langId);
 
                 const currentKey = activeProblem?.problemId ?? "default";
                 if (editorRef.current) {

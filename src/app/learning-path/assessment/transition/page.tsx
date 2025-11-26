@@ -1,19 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Card, message, Spin, Upload, Alert } from "antd";
+import { Button, Card, message, Spin, Alert } from "antd";
 import { FiCheckCircle, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
 import { HiDocumentText } from "react-icons/hi";
-import { UploadOutlined } from "@ant-design/icons";
-import type { RcFile } from "antd/es/upload";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
-import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
 import { createLearningPathFromTranscriptAction } from "EduSmart/app/(learning-path)/learningPathAction";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
-import { uploadTranscriptClient } from "EduSmart/hooks/api-client/studentApiClient";
 import { getLearningGoalAction } from "EduSmart/app/(survey)/surveyAction";
 
 interface LearningGoalOption {
@@ -22,7 +18,7 @@ interface LearningGoalOption {
   learningGoalType: number;
 }
 
-export default function SurveyToQuizTransition() {
+function SurveyToQuizTransitionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedOption, setSelectedOption] = useState<
@@ -31,10 +27,8 @@ export default function SurveyToQuizTransition() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasTranscript, setHasTranscript] = useState<boolean | null>(null);
   const [checkingTranscript, setCheckingTranscript] = useState(true);
-  const [uploading, setUploading] = useState(false);
   const [learningGoalDetails, setLearningGoalDetails] =
     useState<LearningGoalOption | null>(null);
-  const [isLoadingGoal, setIsLoadingGoal] = useState(true);
 
   // Load learning goal from URL param and fetch learning goals list
   useEffect(() => {
@@ -44,7 +38,6 @@ export default function SurveyToQuizTransition() {
 
         if (!learningGoalId) {
           console.warn("No learningGoalId in URL params");
-          setIsLoadingGoal(false);
           return;
         }
 
@@ -70,8 +63,6 @@ export default function SurveyToQuizTransition() {
         }
       } catch (error) {
         console.error("Error loading learning goal:", error);
-      } finally {
-        setIsLoadingGoal(false);
       }
     };
 
@@ -100,56 +91,6 @@ export default function SurveyToQuizTransition() {
 
     checkTranscript();
   }, []);
-
-  // Handle transcript upload
-  const handleUploadTranscript = async (file: RcFile) => {
-    try {
-      setUploading(true);
-      const result = await uploadTranscriptClient(file);
-
-      if (result.success === true) {
-        message.success(result.message || "Upload bảng điểm thành công");
-        setHasTranscript(true);
-      } else {
-        const errorDetails = result.detailErrors
-          ? typeof result.detailErrors === "string"
-            ? result.detailErrors
-            : JSON.stringify(result.detailErrors)
-          : "";
-        message.error({
-          content: (
-            <div>
-              <div className="font-semibold">{result.message}</div>
-              {errorDetails && (
-                <div className="text-sm mt-1">{errorDetails}</div>
-              )}
-            </div>
-          ),
-          duration: 5,
-        });
-      }
-    } catch (error) {
-      console.error("Upload exception:", error);
-      message.error({
-        content: (
-          <div>
-            <div className="font-semibold">
-              {error instanceof Error
-                ? error.message
-                : "Có lỗi xảy ra khi upload bảng điểm"}
-            </div>
-            <div className="text-sm mt-1">
-              Vui lòng thử lại hoặc liên hệ với quản trị viên.
-            </div>
-          </div>
-        ),
-        duration: 5,
-      });
-    } finally {
-      setUploading(false);
-    }
-    return false;
-  };
 
   const handleContinueToQuiz = () => {
     router.push("/learning-path/assessment/quiz");
@@ -521,5 +462,19 @@ export default function SurveyToQuizTransition() {
         </div>
       </div>
     </LearningPathGuard>
+  );
+}
+
+export default function SurveyToQuizTransition() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Spin />
+        </div>
+      }
+    >
+      <SurveyToQuizTransitionContent />
+    </Suspense>
   );
 }

@@ -36,6 +36,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     isAllCompleted,
     setCurrentProblemDetail,
     setLoadingProblemDetail,
+    setSelectedLanguageId,
     saveSubmission,
     markProblemCompleted,
     goToNextProblem,
@@ -150,10 +151,18 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
   };
 
   const handleProblemChange = (problemId: string) => {
-    const problemIndex = problems.findIndex((p) => p.problemId === problemId);
-    if (problemIndex !== -1) {
+    console.log("Problem changed:", problemId);
+    const problemIndex = codeProblems.findIndex(
+      (p) => p.problemId === problemId,
+    );
+    if (problemIndex >= 0) {
       goToProblem(problemIndex);
     }
+  };
+
+  const handleLanguageChange = (langId: number) => {
+    console.log("🔄 Language changed in CodeEditor:", langId);
+    setSelectedLanguageId(langId);
   };
 
   const handleMarkAsComplete = () => {
@@ -305,6 +314,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
             activeProblemId={currentProblem?.problemId}
             onCodeChange={handleCodeChange}
             onProblemChange={handleProblemChange}
+            onLanguageChange={handleLanguageChange}
             onSubmit={(payload) => {
               // Handle code submission for testing
               console.log("Code submitted for testing:", payload);

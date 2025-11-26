@@ -153,9 +153,9 @@ export async function updateStudentProfileClient(data: {
     // Create proper FormData object
     const formData = new FormData();
 
-    // Add basic fields
-    if (data.FirstName) formData.append("FirstName", data.FirstName);
-    if (data.LastName) formData.append("LastName", data.LastName);
+    // Add basic fields (always add, even if empty - backend may require them)
+    formData.append("FirstName", data.FirstName || "");
+    formData.append("LastName", data.LastName || "");
     if (data.DateOfBirth) formData.append("DateOfBirth", data.DateOfBirth);
     if (data.PhoneNumber) formData.append("PhoneNumber", data.PhoneNumber);
     if (data.Gender !== undefined)
@@ -170,18 +170,27 @@ export async function updateStudentProfileClient(data: {
       formData.append("Avatar", data.Avatar);
     }
 
-    // Add Technologies as multiple fields with same name
+    // Add Technologies - IMPORTANT: Backend requires at least 1 item (@minItems 1)
     if (data.Technologies && data.Technologies.length > 0) {
       data.Technologies.forEach((techId) => {
         formData.append("Technologies", techId);
       });
     }
 
-    // Add LearningGoals as multiple fields with same name
+    // Add LearningGoals - IMPORTANT: Backend requires at least 1 item (@minItems 1)
     if (data.LearningGoals && data.LearningGoals.length > 0) {
       data.LearningGoals.forEach((goalId) => {
         formData.append("LearningGoals", goalId);
       });
+    }
+
+    // Debug log FormData contents
+    console.log("📤 FormData contents:");
+    for (const [key, value] of formData.entries()) {
+      console.log(
+        `  ${key}:`,
+        value instanceof File ? `File: ${value.name}` : value,
+      );
     }
 
     const response =
@@ -189,6 +198,8 @@ export async function updateStudentProfileClient(data: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formData as any,
       );
+
+    console.log("📥 API Response:", response.data);
 
     return {
       success: response.data?.success ?? false,
@@ -198,14 +209,36 @@ export async function updateStudentProfileClient(data: {
     };
   } catch (error) {
     console.error("❌ CLIENT API - Update profile error:", error);
+
+    // Extract more detailed error info
+    let errorMessage = "Không thể cập nhật thông tin. Vui lòng thử lại sau.";
+    let detailErrors = null;
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      detailErrors = error.message;
+    }
+
+    // Check if it's an Axios error with response
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any)?.response?.data) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const responseData = (error as any).response.data;
+      console.error("📋 Server error response:", responseData);
+
+      if (responseData.message) {
+        errorMessage = responseData.message;
+      }
+      if (responseData.detailErrors) {
+        detailErrors = responseData.detailErrors;
+      }
+    }
+
     return {
       success: false,
       messageId: "E00001",
-      message:
-        error instanceof Error
-          ? error.message
-          : "Không thể cập nhật thông tin. Vui lòng thử lại sau.",
-      detailErrors: error instanceof Error ? error.message : null,
+      message: errorMessage,
+      detailErrors: detailErrors,
     };
   }
 }
