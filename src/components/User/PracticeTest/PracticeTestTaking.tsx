@@ -58,6 +58,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
 
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentCode, setCurrentCode] = useState("");
 
   const currentProblem = getCurrentProblem();
@@ -95,11 +96,18 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
   // Load template code when problem or language changes
   useEffect(() => {
     const loadTemplate = async () => {
-      if (!currentProblem || !selectedLanguageId) return;
+      if (!currentProblem || !selectedLanguageId) {
+        console.warn("Missing currentProblem or selectedLanguageId:", {
+          currentProblem: currentProblem?.problemId,
+          selectedLanguageId,
+        });
+        return;
+      }
 
       // Check if we have saved code for this problem
       const savedSubmission = getSubmission(currentProblem.problemId);
       if (savedSubmission && savedSubmission.sourceCode) {
+        console.log("Using saved code for problem:", currentProblem.problemId);
         setCurrentCode(savedSubmission.sourceCode);
         return;
       }
@@ -107,10 +115,17 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
       setIsLoadingTemplate(true);
 
       try {
+        console.log("Loading template for:", {
+          problemId: currentProblem.problemId,
+          languageId: selectedLanguageId,
+        });
+
         const template = await selectUserTemplateCodeList(
           currentProblem.problemId,
           selectedLanguageId,
         );
+
+        console.log("Template response:", template);
 
         if (template?.response?.userTemplateCode) {
           setCurrentCode(template.response.userTemplateCode);
@@ -133,7 +148,17 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
 
     // Auto-save code
     if (currentProblem && selectedLanguageId) {
+      console.log("💾 Auto-saving code:", {
+        problemId: currentProblem.problemId,
+        languageId: selectedLanguageId,
+        codeLength: code.length,
+      });
       saveSubmission(currentProblem.problemId, selectedLanguageId, code);
+    } else {
+      console.warn("⚠️ Cannot save code:", {
+        hasProblem: !!currentProblem,
+        selectedLanguageId,
+      });
     }
   };
 
@@ -167,24 +192,43 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     const incompletedCount = problems.length - completedProblems.length;
 
     const submitAllTests = async () => {
-      // Save current code before submitting
-      if (currentProblem && selectedLanguageId && currentCode) {
-        saveSubmission(
-          currentProblem.problemId,
+      setIsSubmitting(true);
+
+      try {
+        // Save current code before submitting
+        console.log("📤 Submitting all tests:", {
+          currentProblem: currentProblem?.problemId,
           selectedLanguageId,
-          currentCode,
-        );
+          currentCodeLength: currentCode.length,
+        });
+
+        if (currentProblem && selectedLanguageId && currentCode) {
+          console.log("💾 Saving final submission...");
+          saveSubmission(
+            currentProblem.problemId,
+            selectedLanguageId,
+            currentCode,
+          );
+        } else {
+          console.warn("⚠️ Cannot save final submission:", {
+            hasProblem: !!currentProblem,
+            selectedLanguageId,
+            hasCode: !!currentCode,
+          });
+        }
+
+        message.success({
+          content: "Đã lưu code của bạn!",
+          duration: 1,
+        });
+
+        // Call onComplete to trigger combined submission (quiz + practice test)
+        setTimeout(() => {
+          onComplete();
+        }, 300);
+      } finally {
+        setIsSubmitting(false);
       }
-
-      message.success({
-        content: "Đã lưu code của bạn!",
-        duration: 1,
-      });
-
-      // Call onComplete to trigger combined submission (quiz + practice test)
-      setTimeout(() => {
-        onComplete();
-      }, 300);
     };
 
     if (incompletedCount > 0) {
@@ -233,72 +277,39 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     name: l.name,
   }));
 
-  const codeProblems: PracticeProblem[] = currentProblemDetail
-    ? [
-        {
-          problemId: currentProblemDetail.problemId,
-          title: currentProblemDetail.title,
-          description: currentProblemDetail.description,
-          difficulty: currentProblemDetail.difficulty,
-          examples: currentProblemDetail.examples,
-          testCases: currentProblemDetail.testCases,
-        },
-      ]
-    : [];
+  // Map all problems to PracticeProblem format for CodeEditor
+  const codeProblems: PracticeProblem[] = problems.map((problem) => ({
+    problemId: problem.problemId,
+    title: problem.title,
+    description: problem.description,
+    difficulty: problem.difficulty,
+    // Use currentProblemDetail if it matches, otherwise empty arrays
+    examples:
+      currentProblemDetail?.problemId === problem.problemId
+        ? currentProblemDetail.examples
+        : [],
+    testCases:
+      currentProblemDetail?.problemId === problem.problemId
+        ? currentProblemDetail.testCases
+        : [],
+  }));
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Bài {currentProblemIndex + 1}/{problems.length}
-            </h2>
-            <Tag color={difficultyColor(currentProblem.difficulty)}>
-              {currentProblem.difficulty}
-            </Tag>
-            {isProblemCompleted(currentProblem.problemId) && (
-              <Tag icon={<FiCheckCircle />} color="success">
-                Đã hoàn thành
-              </Tag>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Tiến độ: {completedProblems.length}/{problems.length}
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 relative">
+      {/* Loading Overlay */}
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-2xl text-center border border-gray-200 dark:border-gray-700">
+            <Spin size="large" />
+            <div className="mt-4 text-gray-900 dark:text-white font-medium">
+              Đang nộp bài kiểm tra...
             </div>
-            <Progress
-              type="circle"
-              percent={progressPercent}
-              width={40}
-              strokeColor="#8b5cf6"
-            />
+            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Vui lòng không đóng cửa sổ này
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Problem Navigation */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto">
-          {problems.map((problem, index) => (
-            <Button
-              key={problem.problemId}
-              size="small"
-              type={index === currentProblemIndex ? "primary" : "default"}
-              onClick={() => goToProblem(index)}
-              icon={
-                isProblemCompleted(problem.problemId) ? (
-                  <FiCheckCircle className="text-green-500" />
-                ) : null
-              }
-            >
-              {index + 1}
-            </Button>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Code Editor */}
       <div className="flex-1 overflow-hidden">
@@ -310,6 +321,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
           <CodeEditor
             languages={codeLanguages}
             problems={codeProblems}
+            selectedLanguageId={selectedLanguageId ?? undefined}
             onSubmit={(payload) => {
               // Handle code submission for testing
               console.log("Code submitted for testing:", payload);
@@ -321,20 +333,21 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
       {/* Footer Actions */}
       <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Button
+          {/* <Button
             icon={<FiChevronLeft />}
             onClick={goToPreviousProblem}
-            disabled={currentProblemIndex === 0}
+            disabled={currentProblemIndex === 0 || isSubmitting}
           >
             Bài trước
-          </Button>
+          </Button> */}
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mx-auto">
             {!isProblemCompleted(currentProblem.problemId) && (
               <Button
                 type="default"
                 icon={<FiCheckCircle />}
                 onClick={handleMarkAsComplete}
+                disabled={isSubmitting}
               >
                 Đánh dấu hoàn thành
               </Button>
@@ -346,29 +359,34 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
                 size="large"
                 icon={<FiSend />}
                 onClick={handleSubmitAll}
-                className="px-8"
+                loading={isSubmitting}
+                disabled={isSubmitting}
+                className="px-10"
               >
-                Nộp bài
+                {isSubmitting ? "Đang nộp..." : "Nộp bài"}
               </Button>
             ) : (
               <Button
                 type="default"
                 icon={<FiAlertCircle />}
                 onClick={handleSubmitAll}
+                disabled={isSubmitting}
               >
                 Nộp bài ({completedProblems.length}/{problems.length})
               </Button>
             )}
           </div>
 
-          <Button
+          {/* <Button
             icon={<FiChevronRight />}
             iconPosition="end"
             onClick={goToNextProblem}
-            disabled={currentProblemIndex === problems.length - 1}
+            disabled={
+              currentProblemIndex === problems.length - 1 || isSubmitting
+            }
           >
             Bài tiếp
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

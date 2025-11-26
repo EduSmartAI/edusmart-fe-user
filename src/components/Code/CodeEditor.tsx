@@ -12,7 +12,13 @@ import {
 } from "antd";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import Editor, { Monaco, OnMount } from "@monaco-editor/react";
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import { FiChevronDown, FiPlay, FiSend } from "react-icons/fi";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 import ReactMarkdown from "react-markdown";
@@ -57,6 +63,7 @@ type Props = {
   languages: CodeLanguageOption[];
   problems: PracticeProblem[];
   onSubmit?: (payload: SubmitPayload) => void;
+  selectedLanguageId?: number; // Optional: pre-select language
 };
 
 const difficultyColor = (d?: string | null): string => {
@@ -67,7 +74,12 @@ const difficultyColor = (d?: string | null): string => {
   return "default";
 };
 
-export default function CodeEditor({ languages, problems, onSubmit }: Props) {
+export default function CodeEditor({
+  languages,
+  problems,
+  onSubmit,
+  selectedLanguageId: propSelectedLanguageId,
+}: Props) {
   const { isDarkMode } = useTheme();
   const hasProblems = problems.length > 0;
 
@@ -86,9 +98,17 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
   const [result, setResult] = useState<JudgeRunRes | null>(null);
   const [errMsg, setErrMsg] = useState<string | null>(null);
 
-  const [selectedLangId, setSelectedLangId] = useState<JudgeLanguageId>(
-    JudgeLanguageId.CSharpMono,
-  );
+  // Use prop if provided, otherwise default to CSharpMono
+  const [selectedLangId, setSelectedLangId] = useState<JudgeLanguageId>(() => {
+    if (propSelectedLanguageId !== undefined) {
+      console.log(
+        "🎯 Initializing selectedLangId from prop:",
+        propSelectedLanguageId,
+      );
+      return propSelectedLanguageId as JudgeLanguageId;
+    }
+    return JudgeLanguageId.CSharpMono;
+  });
   const monacoLanguage = judgeLanguageToMonaco[selectedLangId] ?? "plaintext";
 
   const [activeProblemId, setActiveProblemId] = useState<string>(() =>
@@ -193,10 +213,7 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
   const onEditorMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
-
-    const key = activeProblem?.problemId ?? "default";
-    const initial = codeByProblem[key] ?? DEFAULT_SNIPPET;
-    editor.setValue(initial);
+    // No need to setValue - controlled component will handle initial value
   };
 
   useEffect(() => {
@@ -449,51 +466,75 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
   const handleChangeProblem = (problemId: string) => {
     if (!hasProblems) return;
 
-    setCodeByProblem((prev) => {
-      const map = { ...prev };
-      const currentKey = activeProblem?.problemId ?? "default";
-      if (editorRef.current) {
-        map[currentKey] = editorRef.current.getValue() ?? "";
-      }
+    // Save current code before switching
+    const currentKey = activeProblem?.problemId ?? "default";
+    if (editorRef.current) {
+      setCodeByProblem((prev) => ({
+        ...prev,
+        [currentKey]: editorRef.current!.getValue() ?? "",
+      }));
+    }
 
-      const nextCode = map[problemId] ?? DEFAULT_SNIPPET;
-      if (editorRef.current) {
-        editorRef.current.setValue(nextCode);
-      }
-
-      return map;
-    });
-
+    // Switch to new problem - controlled component will handle display
     setActiveProblemId(problemId);
     setResult(null);
     setErrMsg(null);
     setActiveTestTab("testcase");
   };
 
+  const handleEditorChange = useCallback(
+    (value: string | undefined) => {
+      if (value !== undefined && activeProblemId) {
+        setCodeByProblem((prev) => ({
+          ...prev,
+          [activeProblemId]: value,
+        }));
+      }
+    },
+    [activeProblemId],
+  );
+
   const loadUserTemplateCode = async (
     problemId: string,
     languageId: number,
   ) => {
     if (!problemId) return;
+    console.log("🔄 Loading template for:", { problemId, languageId });
+    console.log(
+      "🔍 Language ID type:",
+      typeof languageId,
+      "value:",
+      languageId,
+    );
+    console.log(
+      "🔍 JudgeLanguageId.JavaScriptNode:",
+      JudgeLanguageId.JavaScriptNode,
+    );
+    console.log("🔍 JudgeLanguageId.CSharpMono:", JudgeLanguageId.CSharpMono);
     setTemplateLoading(true);
     try {
-      const template = (
-        await selectUserTemplateCodeList(problemId, languageId)
-      )?.response?.userTemplateCode?.trim();
+      const response = await selectUserTemplateCodeList(problemId, languageId);
+      console.log("📥 Template API response:", response);
+
+      const template = response?.response?.userTemplateCode?.trim();
+      console.log("📝 Extracted template:", template);
 
       const finalCode =
         template && template.length > 0 ? template : DEFAULT_SNIPPET;
 
-      setCodeByProblem((prev) => ({
-        ...prev,
-        [problemId]: finalCode,
-      }));
+      console.log("✅ Final code to set:", finalCode);
 
-      if (editorRef.current) {
-        editorRef.current.setValue(finalCode);
-      }
+      // Update state only - controlled component will handle display
+      setCodeByProblem((prev) => {
+        const newState = {
+          ...prev,
+          [problemId]: finalCode,
+        };
+        console.log("📦 Updated codeByProblem state:", newState);
+        return newState;
+      });
     } catch (e) {
-      console.error("loadUserTemplateCode error:", e);
+      console.error("❌ loadUserTemplateCode error:", e);
       message.warning("Không tải được template code, dùng snippet mặc định.");
     } finally {
       setTemplateLoading(false);
@@ -501,16 +542,27 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
   };
 
   useEffect(() => {
-    if (!hasProblems || !activeProblemId || !editorRef.current) return;
+    if (!hasProblems || !activeProblemId) return;
     const saved = codeByProblem[activeProblemId];
-    console.log("Checking saved template code...");
-    if (saved !== undefined) {
-      editorRef.current.setValue(saved);
-      return;
+    console.log(
+      "🔍 Checking saved template code for:",
+      activeProblemId,
+      "saved:",
+      !!saved,
+      "selectedLangId:",
+      selectedLangId,
+    );
+
+    // If no saved code, load template from API
+    if (saved === undefined) {
+      console.log(
+        "📡 Calling loadUserTemplateCode with selectedLangId:",
+        selectedLangId,
+      );
+      loadUserTemplateCode(activeProblemId, selectedLangId);
     }
-    loadUserTemplateCode(activeProblemId, selectedLangId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasProblems, activeProblemId, codeByProblem]);
+  }, [activeProblemId, selectedLangId]);
 
   if (!mounted) return null;
 
@@ -518,7 +570,7 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
     <Layout className="min-h-screen">
       {/* HEADER */}
       <Header className="flex items-center justify-between !px-3 md:!px-6 !bg-white dark:!bg-[#020712] shadow-md">
-        <div className="flex flex-col md:flex-row md:items-center md:space-x-3">
+        {/* <div className="flex flex-col md:flex-row md:items-center md:space-x-3">
           <div className="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-50">
             {activeProblem ? activeProblem.title : "Practice coding problems"}
           </div>
@@ -527,82 +579,89 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
               {activeProblem.difficulty ?? "Unknown"}
             </Tag>
           )}
-        </div>
+        </div> */}
 
-        <div className="flex items-center gap-2">
-          {hasProblems && (
+        <div className="flex flex-row items-center gap-2 w-full justify-between">
+          <div className="flex gap-3 items-center">
+            {hasProblems && (
+              <Select
+                key={problemsKey}
+                value={activeProblemId}
+                style={{ minWidth: 350 }}
+                size="small"
+                suffixIcon={<FiChevronDown />}
+                onChange={(value) => handleChangeProblem(value as string)}
+                placeholder="Chọn bài tập"
+              >
+                {problems.map((p, idx) => (
+                  <Option key={p.problemId} value={p.problemId}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{idx + 1}.</span>
+                      <span>{p.title}</span>
+                    </div>
+                  </Option>
+                ))}
+              </Select>
+            )}
+
             <Select
-              key={problemsKey} // force remount khi danh sách problems đổi
-              value={activeProblemId}
-              style={{ minWidth: 250 }}
+              value={selectedLangId}
+              style={{ minWidth: 170 }}
               size="small"
               suffixIcon={<FiChevronDown />}
-              onChange={(value) => handleChangeProblem(value as string)}
-              placeholder="Chọn bài tập"
+              dropdownMatchSelectWidth={false}
+              dropdownClassName="code-lang-dropdown"
+              dropdownStyle={{ padding: 0 }}
+              onChange={async (value) => {
+                const langId = value as JudgeLanguageId;
+                setSelectedLangId(langId);
+
+                const currentKey = activeProblem?.problemId ?? "default";
+                if (editorRef.current) {
+                  const currentCode = editorRef.current.getValue() ?? "";
+                  setCodeByProblem((prev) => ({
+                    ...prev,
+                    [currentKey]: currentCode,
+                  }));
+                }
+
+                await loadUserTemplateCode(currentKey, langId);
+              }}
+              placeholder="Chọn ngôn ngữ"
             >
-              {problems.map((p, idx) => (
-                <Option key={p.problemId} value={p.problemId}>
-                  {idx + 1}. [{p.difficulty ?? "Unknown"}] {p.title}
+              {languages.map((lang) => (
+                <Option
+                  key={lang.judgeLanguageId}
+                  value={lang.judgeLanguageId as JudgeLanguageId}
+                >
+                  {lang.name}
                 </Option>
               ))}
             </Select>
-          )}
+          </div>
 
-          <Select
-            value={selectedLangId}
-            style={{ minWidth: 170 }}
-            size="small"
-            suffixIcon={<FiChevronDown />}
-            dropdownMatchSelectWidth={false}
-            dropdownClassName="code-lang-dropdown"
-            dropdownStyle={{ padding: 0 }}
-            onChange={async (value) => {
-              const langId = value as JudgeLanguageId;
-              setSelectedLangId(langId);
+          <div className="flex gap-3 items-center">
+            {/* <Button
+              type="primary"
+              icon={<FiPlay />}
+              onClick={runCode}
+              loading={loading}
+              className="font-medium"
+            >
+              Run
+            </Button> */}
 
-              const currentKey = activeProblem?.problemId ?? "default";
-              if (editorRef.current) {
-                const currentCode = editorRef.current.getValue() ?? "";
-                setCodeByProblem((prev) => ({
-                  ...prev,
-                  [currentKey]: currentCode,
-                }));
-              }
+            {/* <Button
+              type="default"
+              icon={<FiSend />}
+              onClick={handleSubmit}
+              className="font-medium"
+            >
+              Submit
+            </Button> */}
 
-              await loadUserTemplateCode(currentKey, langId);
-            }}
-            placeholder="Chọn ngôn ngữ"
-          >
-            {languages.map((lang) => (
-              <Option
-                key={lang.judgeLanguageId}
-                value={lang.judgeLanguageId as JudgeLanguageId}
-              >
-                {lang.name}
-              </Option>
-            ))}
-          </Select>
-
-          <Button
-            type="primary"
-            icon={<FiPlay />}
-            onClick={runCode}
-            loading={loading}
-            className="font-medium"
-          >
-            Run
-          </Button>
-
-          <Button
-            type="default"
-            icon={<FiSend />}
-            onClick={handleSubmit}
-            className="font-medium"
-          >
-            Submit
-          </Button>
-
-          <ThemeSwitch />
+            <ThemeSwitch />
+          </div>
         </div>
       </Header>
 
@@ -624,7 +683,7 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
             >
               {/* header giống LeetCode */}
               <div className="border-b border-gray-200 dark:border-gray-800 px-3 md:px-4 lg:px-5 py-2 text-xs md:text-[13px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                Description
+                Mô tả
               </div>
 
               {/* body */}
@@ -646,7 +705,7 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
                       {activeProblem.examples?.length > 0 && (
                         <div className="pt-2 space-y-2">
                           <div className="font-semibold text-sm md:text-base">
-                            Examples
+                            Ví dụ
                           </div>
                           {activeProblem.examples
                             .slice()
@@ -665,17 +724,17 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
                                   rehypePlugins={[rehypeRaw, rehypeSanitize]}
                                 >
                                   {[
-                                    "**Input:**",
+                                    "**Đầu vào:**",
                                     "```text",
                                     ex.inputData ?? "",
                                     "```",
                                     "",
-                                    "**Output:**",
+                                    "**Đầu ra::**",
                                     "```text",
                                     ex.outputData ?? "",
                                     "```",
                                     ex.explanation
-                                      ? `\n**Explanation:**\n${ex.explanation}`
+                                      ? `\n**Giải thích:**\n${ex.explanation}`
                                       : "",
                                   ].join("\n")}
                                 </ReactMarkdown>
@@ -688,7 +747,7 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
                       {activeProblem.testCases?.length > 0 && (
                         <div className="pt-2 space-y-2">
                           <div className="font-semibold text-sm md:text-base">
-                            Sample testcases
+                            Mẫu test case
                           </div>
 
                           <div className="space-y-2">
@@ -704,12 +763,12 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
                                 <MarkdownBlock
                                   className="whitespace-pre-wrap font-mono text-[13px] md:text-[14px]"
                                   markdown={[
-                                    "**Input:**",
+                                    "**Đầu vào:**",
                                     "```text",
                                     tc.inputData ?? "",
                                     "```",
                                     "",
-                                    "**Expected:**",
+                                    "**Kết quả mong muốn:**",
                                     "```text",
                                     tc.expectedOutput ?? "",
                                     "```",
@@ -754,7 +813,8 @@ export default function CodeEditor({ languages, problems, onSubmit }: Props) {
                     <Editor
                       height="100%"
                       language={monacoLanguage}
-                      defaultValue={DEFAULT_SNIPPET}
+                      value={codeByProblem[activeProblemId] || ""}
+                      onChange={handleEditorChange}
                       beforeMount={handleEditorWillMount}
                       onMount={onEditorMount}
                       theme={isDarkMode ? "edusmart-night" : "edusmart-light"}

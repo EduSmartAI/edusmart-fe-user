@@ -39,7 +39,7 @@ const QuizMainFlow: React.FC = () => {
   const getInitialStage = (): QuizState["stage"] => {
     if (flowState.practiceTestCompleted) {
       // Already completed everything, redirect to processing
-      router.push("/learning-path/assessment/processing");
+      // router.push("/learning-path/assessment/processing");
       return "selection";
     }
     if (flowState.quizCompleted && canAccessPracticeTest()) {
@@ -117,6 +117,8 @@ const QuizMainFlow: React.FC = () => {
 
       // Get practice test submissions
       const practiceSubmissions = practiceTestStore.getAllSubmissions();
+      console.log("🔍 Practice submissions from store:", practiceSubmissions);
+
       const practiceTestAnswers = practiceSubmissions.map((sub) => ({
         problemId: sub.problemId,
         languageId: sub.languageId,
@@ -128,6 +130,7 @@ const QuizMainFlow: React.FC = () => {
         quizIds: quizState.quizSubmissionData.quizIds,
         answersCount: quizState.quizSubmissionData.answers.length,
         practiceTestAnswersCount: practiceTestAnswers.length,
+        practiceTestAnswers: practiceTestAnswers,
       });
 
       // Submit combined data

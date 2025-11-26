@@ -1,8 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, Button, Tag, Spin, Empty, message } from "antd";
-import { FiCode, FiArrowRight, FiCheckCircle } from "react-icons/fi";
+import { Card, Button, Tag, Spin, Empty, message, Select } from "antd";
+import {
+  FiCode,
+  FiArrowRight,
+  FiCheckCircle,
+  FiSettings,
+} from "react-icons/fi";
 import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
 import {
   selectCodeLangues,
@@ -27,8 +32,10 @@ const PracticeTestSelection: React.FC<PracticeTestSelectionProps> = ({
   const {
     problems,
     languages,
+    selectedLanguageId,
     setLanguages,
     setProblems,
+    setSelectedLanguageId,
     setLoadingLanguages,
     setLoadingProblems,
     isLoadingLanguages,
@@ -49,6 +56,7 @@ const PracticeTestSelection: React.FC<PracticeTestSelectionProps> = ({
         ]);
 
         if (langRes?.response) {
+          console.log("📚 Loaded languages:", langRes.response);
           setLanguages(langRes.response);
         } else {
           message.error("Không thể tải danh sách ngôn ngữ lập trình");
@@ -107,6 +115,18 @@ const PracticeTestSelection: React.FC<PracticeTestSelectionProps> = ({
     );
   }
 
+  const handleLanguageChange = (languageId: number) => {
+    setSelectedLanguageId(languageId);
+  };
+
+  const handleStart = () => {
+    if (!selectedLanguageId) {
+      message.warning("Vui lòng chọn ngôn ngữ lập trình trước khi bắt đầu");
+      return;
+    }
+    onStartPracticeTest();
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
@@ -115,7 +135,7 @@ const PracticeTestSelection: React.FC<PracticeTestSelectionProps> = ({
           <FiCode className="text-3xl text-white" />
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Bài Tập Thực Hành
+          Bài Tập Thực Hành Lập Trình
         </h1>
         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Hoàn thành{" "}
@@ -126,11 +146,45 @@ const PracticeTestSelection: React.FC<PracticeTestSelectionProps> = ({
         </p>
       </div>
 
-      {/* Info Card */}
-      <Card className="mb-8 border-l-4 border-l-violet-500">
+      {/* Language Selection Card */}
+      <Card className="mb-8 border-l-4 border-l-violet-500 bg-gradient-to-r from-violet-50/50 to-purple-50/50 dark:from-violet-900/10 dark:to-purple-900/10">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-            <FiCheckCircle className="text-violet-600 dark:text-violet-400 text-xl" />
+            <FiSettings className="text-violet-600 dark:text-violet-400 text-xl" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
+              Chọn ngôn ngữ lập trình
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Chọn ngôn ngữ lập trình bạn muốn sử dụng cho tất cả các bài tập
+            </p>
+            <Select
+              size="large"
+              placeholder="Chọn ngôn ngữ lập trình"
+              value={selectedLanguageId}
+              onChange={handleLanguageChange}
+              className="w-full max-w-md"
+              showSearch
+              filterOption={(input, option) =>
+                (option?.label ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              options={languages.map((lang) => ({
+                value: lang.languageId,
+                label: lang.name,
+              }))}
+            />
+          </div>
+        </div>
+      </Card>
+
+      {/* Info Card */}
+      <Card className="mb-8 border-l-4 border-l-blue-500">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+            <FiCheckCircle className="text-blue-600 dark:text-blue-400 text-xl" />
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
@@ -138,23 +192,25 @@ const PracticeTestSelection: React.FC<PracticeTestSelectionProps> = ({
             </h3>
             <ul className="space-y-2 text-gray-600 dark:text-gray-400">
               <li className="flex items-start gap-2">
-                <span className="text-violet-500 mt-1">•</span>
+                <span className="text-blue-500 mt-1">•</span>
                 <span>
                   Bạn sẽ làm <strong>{problems.length} bài tập</strong> với độ
-                  khó khác nhau
+                  khó khác nhau (Easy, Medium, Hard)
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-violet-500 mt-1">•</span>
-                <span>Chọn ngôn ngữ lập trình bạn muốn sử dụng</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-violet-500 mt-1">•</span>
+                <span className="text-blue-500 mt-1">•</span>
                 <span>Viết code và chạy test để kiểm tra kết quả</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-violet-500 mt-1">•</span>
-                <span>Hoàn thành tất cả bài tập để tiếp tục</span>
+                <span className="text-blue-500 mt-1">•</span>
+                <span>
+                  Bạn có thể đánh dấu hoàn thành từng bài khi code xong
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-1">•</span>
+                <span>Hoàn thành tất cả bài tập để nộp bài và tiếp tục</span>
               </li>
             </ul>
           </div>
@@ -191,31 +247,15 @@ const PracticeTestSelection: React.FC<PracticeTestSelectionProps> = ({
         ))}
       </div>
 
-      {/* Languages Info */}
-      <Card className="mb-8">
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-          Ngôn ngữ lập trình hỗ trợ
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {languages.slice(0, 10).map((lang) => (
-            <Tag key={lang.languageId} color="blue">
-              {lang.name}
-            </Tag>
-          ))}
-          {languages.length > 10 && (
-            <Tag color="default">+{languages.length - 10} ngôn ngữ khác</Tag>
-          )}
-        </div>
-      </Card>
-
       {/* Start Button */}
       <div className="flex justify-center">
         <Button
           type="primary"
           size="large"
           icon={<FiArrowRight />}
-          onClick={onStartPracticeTest}
-          className="px-8 h-12 text-base font-medium"
+          onClick={handleStart}
+          disabled={!selectedLanguageId}
+          className="px-8 h-12 text-base font-medium bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 border-none"
         >
           Bắt đầu làm bài
         </Button>
