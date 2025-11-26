@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Spin, Button } from "antd";
 import { FiLock } from "react-icons/fi";
 import { LearningPathExitConfirmModal } from "EduSmart/components/LearningPath";
@@ -48,6 +48,7 @@ export function LearningPathGuard({
 }: LearningPathGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const survey = useSurvey();
   const [isChecking, setIsChecking] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
@@ -56,10 +57,23 @@ export function LearningPathGuard({
 
   useEffect(() => {
     checkAccess();
-  }, [requiredStep, pathname]);
+  }, [requiredStep, pathname, searchParams]);
 
   const checkAccess = () => {
     try {
+      // Special case: If learningPathId param exists, bypass guard
+      // This is for the transcript flow where user skips quiz
+      const learningPathId = searchParams.get("learningPathId");
+      if (learningPathId) {
+        console.log(
+          "✅ Transcript flow detected - bypassing guard with learningPathId:",
+          learningPathId,
+        );
+        setHasAccess(true);
+        setIsChecking(false);
+        return;
+      }
+
       // Get completed steps from localStorage
       const completedStepsStr = localStorage.getItem(
         STORAGE_KEYS.COMPLETED_STEPS,

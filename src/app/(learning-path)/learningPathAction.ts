@@ -215,24 +215,31 @@ export async function getAllLearningPathsAction(
 /**
  * Create learning path from previous survey and transcript (without taking quiz)
  * @param learningGoalId - UUID of the learning goal
+ * @param learningGoalName - Name of the learning goal
+ * @param learningGoalType - Type of the learning goal (enum)
  * @returns Learning path ID or error
  */
 export async function createLearningPathFromTranscriptAction(
   learningGoalId: string,
+  learningGoalName: string,
+  learningGoalType: number,
 ): Promise<
   | { ok: true; learningPathId: string }
   | { ok: false; error: string; status?: number }
 > {
   try {
-    console.log(
-      "🔒 SERVER ACTION: Creating learning path from transcript for learningGoalId:",
+    console.log("🔒 SERVER ACTION: Creating learning path from transcript", {
       learningGoalId,
-    );
+      learningGoalName,
+      learningGoalType,
+    });
 
     const response =
       await apiServer.quiz.api.v1LearningPathInsertLearningPathWithPreviousSurveyAndTranscriptCreate(
         {
-          learningGoalId: learningGoalId,
+          learningGoalId,
+          learningGoalName,
+          learningGoalType,
         },
       );
 

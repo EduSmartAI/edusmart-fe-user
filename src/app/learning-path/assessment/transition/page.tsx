@@ -1,30 +1,175 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button, Card, message, Spin } from "antd";
-import { FiCheckCircle, FiArrowRight } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button, Card, message, Spin, Upload, Alert } from "antd";
+import { FiCheckCircle, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
 import { HiDocumentText } from "react-icons/hi";
+import { UploadOutlined } from "@ant-design/icons";
+import type { RcFile } from "antd/es/upload";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
 import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
 import { createLearningPathFromTranscriptAction } from "EduSmart/app/(learning-path)/learningPathAction";
+import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
+import { uploadTranscriptClient } from "EduSmart/hooks/api-client/studentApiClient";
+import { getLearningGoalAction } from "EduSmart/app/(survey)/surveyAction";
+
+interface LearningGoalOption {
+  learningGoalId: string;
+  learningGoalName: string;
+  learningGoalType: number;
+}
 
 export default function SurveyToQuizTransition() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedOption, setSelectedOption] = useState<
     "quiz" | "transcript" | null
   >(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const survey1Data = useSurveyStore((s) => s.survey1Data);
+  const [hasTranscript, setHasTranscript] = useState<boolean | null>(null);
+  const [checkingTranscript, setCheckingTranscript] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [learningGoalDetails, setLearningGoalDetails] =
+    useState<LearningGoalOption | null>(null);
+  const [isLoadingGoal, setIsLoadingGoal] = useState(true);
+
+  // Load learning goal from URL param and fetch learning goals list
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        const learningGoalId = searchParams.get("learningGoalId");
+
+        if (!learningGoalId) {
+          console.warn("No learningGoalId in URL params");
+          setIsLoadingGoal(false);
+          return;
+        }
+
+        console.log("📚 Fetching learning goals for ID:", learningGoalId);
+
+        // Fetch learning goals list from API
+        const result = await getLearningGoalAction();
+
+        if (result.ok && result.data) {
+          // Find the learning goal matching the ID from URL
+          const goal = result.data.find(
+            (g) => g.learningGoalId === learningGoalId,
+          );
+
+          if (goal) {
+            console.log("✅ Found learning goal:", goal);
+            setLearningGoalDetails(goal);
+          } else {
+            console.warn("Learning goal not found in list:", learningGoalId);
+          }
+        } else {
+          console.error("Failed to fetch learning goals:", result.error);
+        }
+      } catch (error) {
+        console.error("Error loading learning goal:", error);
+      } finally {
+        setIsLoadingGoal(false);
+      }
+    };
+
+    initializeData();
+  }, [searchParams]);
+
+  // Check transcript on mount
+  useEffect(() => {
+    const checkTranscript = async () => {
+      try {
+        setCheckingTranscript(true);
+        const result = await getStudentTranscriptServer();
+
+        if (result.success && result.response && result.response.length > 0) {
+          setHasTranscript(true);
+        } else {
+          setHasTranscript(false);
+        }
+      } catch (error) {
+        console.error("Error checking transcript:", error);
+        setHasTranscript(false);
+      } finally {
+        setCheckingTranscript(false);
+      }
+    };
+
+    checkTranscript();
+  }, []);
+
+  // Handle transcript upload
+  const handleUploadTranscript = async (file: RcFile) => {
+    try {
+      setUploading(true);
+      const result = await uploadTranscriptClient(file);
+
+      if (result.success === true) {
+        message.success(result.message || "Upload bảng điểm thành công");
+        setHasTranscript(true);
+      } else {
+        const errorDetails = result.detailErrors
+          ? typeof result.detailErrors === "string"
+            ? result.detailErrors
+            : JSON.stringify(result.detailErrors)
+          : "";
+        message.error({
+          content: (
+            <div>
+              <div className="font-semibold">{result.message}</div>
+              {errorDetails && (
+                <div className="text-sm mt-1">{errorDetails}</div>
+              )}
+            </div>
+          ),
+          duration: 5,
+        });
+      }
+    } catch (error) {
+      console.error("Upload exception:", error);
+      message.error({
+        content: (
+          <div>
+            <div className="font-semibold">
+              {error instanceof Error
+                ? error.message
+                : "Có lỗi xảy ra khi upload bảng điểm"}
+            </div>
+            <div className="text-sm mt-1">
+              Vui lòng thử lại hoặc liên hệ với quản trị viên.
+            </div>
+          </div>
+        ),
+        duration: 5,
+      });
+    } finally {
+      setUploading(false);
+    }
+    return false;
+  };
 
   const handleContinueToQuiz = () => {
     router.push("/learning-path/assessment/quiz");
   };
 
+  const handleExit = () => {
+    // Clear all learning path related localStorage
+    localStorage.removeItem("learning-path-flow-state");
+    localStorage.removeItem("learning_path_completed_steps");
+    localStorage.removeItem("learning_path_current_step");
+    localStorage.removeItem("practice-test-storage");
+    localStorage.removeItem("quiz-store");
+    localStorage.removeItem("survey-storage");
+
+    // Redirect to home or profile
+    router.push("/");
+  };
+
   const handleUseTranscript = async () => {
-    if (!survey1Data?.learningGoal) {
+    if (!learningGoalDetails) {
       message.error("Không tìm thấy thông tin mục tiêu học tập");
       return;
     }
@@ -33,7 +178,9 @@ export default function SurveyToQuizTransition() {
     try {
       // Call server action to create learning path from transcript
       const result = await createLearningPathFromTranscriptAction(
-        survey1Data.learningGoal,
+        learningGoalDetails.learningGoalId,
+        learningGoalDetails.learningGoalName,
+        learningGoalDetails.learningGoalType,
       );
 
       if (!result.ok) {
@@ -98,13 +245,13 @@ export default function SurveyToQuizTransition() {
 
                 {/* Main Message */}
                 <div className="text-center mb-10">
-                  <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
+                  <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white mb-5">
                     Xuất sắc! Bạn đã hoàn thành khảo sát
                   </h1>
 
                   <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto mb-2">
                     Thông tin của bạn đã được ghi nhận. Bây giờ, hãy chọn cách
-                    bạn muốn tiếp tục:
+                    bạn muốn tiếp tục
                   </p>
                   {/* <p className="text-base text-gray-500 dark:text-gray-400">
                     Bạn có thể sử dụng bảng điểm hiện có hoặc làm bài đánh giá
@@ -113,15 +260,23 @@ export default function SurveyToQuizTransition() {
                 </div>
 
                 {/* Choice Cards */}
-                <div className="grid md:grid-cols-2 gap-5 mb-8 max-w-4xl mx-auto">
+                <div className="grid md:grid-cols-2 gap-4 mb-8 max-w-4xl mx-auto">
                   {/* Option 1: Use Transcript */}
                   <Card
-                    className={`relative cursor-pointer transition-all duration-200 ${
+                    className={`relative transition-all duration-200 ${
+                      hasTranscript === false || checkingTranscript
+                        ? "opacity-60 cursor-not-allowed"
+                        : "cursor-pointer"
+                    } ${
                       selectedOption === "transcript"
                         ? "border-2 border-[#49BBBD] shadow-sm"
                         : "border border-gray-200 dark:border-gray-700"
                     }`}
-                    onClick={() => setSelectedOption("transcript")}
+                    onClick={() => {
+                      if (hasTranscript === true && !checkingTranscript) {
+                        setSelectedOption("transcript");
+                      }
+                    }}
                   >
                     <div className="text-center p-5">
                       {/* Icon */}
@@ -153,6 +308,55 @@ export default function SurveyToQuizTransition() {
                         Hệ thống sẽ phân tích bảng điểm của bạn để đánh giá năng
                         lực và đề xuất lộ trình phù hợp
                       </p>
+
+                      {/* Transcript Status */}
+                      {checkingTranscript ? (
+                        <div className="text-center py-2">
+                          <Spin size="small" />
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Đang kiểm tra bảng điểm...
+                          </p>
+                        </div>
+                      ) : hasTranscript === false ? (
+                        <div className="space-y-3">
+                          {/* <Alert
+                            message="Chưa có bảng điểm"
+                            description="Vui lòng upload bảng điểm để sử dụng tính năng này"
+                            type="warning"
+                            showIcon
+                            className="text-xs"
+                          /> */}
+                          <Spin spinning={uploading}>
+                            <Upload
+                              accept=".xlsx,.xls,.csv"
+                              maxCount={1}
+                              beforeUpload={handleUploadTranscript}
+                              showUploadList={false}
+                            >
+                              <Button
+                                icon={<UploadOutlined />}
+                                block
+                                disabled={uploading}
+                                size="small"
+                              >
+                                {uploading
+                                  ? "Đang upload..."
+                                  : "Upload bảng điểm"}
+                              </Button>
+                            </Upload>
+                          </Spin>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                            Định dạng: Excel (.xlsx)
+                          </p>
+                        </div>
+                      ) : (
+                        <Alert
+                          message="Đã có bảng điểm"
+                          type="success"
+                          showIcon
+                          className="text-xs"
+                        />
+                      )}
 
                       {/* Benefits */}
                       {/* <div className="space-y-2 text-left">
@@ -259,27 +463,42 @@ export default function SurveyToQuizTransition() {
 
                 {/* CTA Section */}
                 <div className="text-center">
-                  <Button
-                    type="primary"
-                    size="large"
-                    onClick={handleConfirmChoice}
-                    disabled={!selectedOption || isSubmitting}
-                    className="!p-6 !bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 px-12 py-4 h-auto text-xl font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                    icon={
-                      isSubmitting ? (
-                        <Spin size="small" />
-                      ) : (
-                        <FiArrowRight className="w-6 h-6 ml-2" />
-                      )
-                    }
-                    iconPosition="end"
-                  >
-                    {isSubmitting
-                      ? "Đang xử lý..."
-                      : selectedOption
-                        ? "Tiếp tục"
-                        : "Chọn một phương án"}
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <Button
+                      size="large"
+                      onClick={handleExit}
+                      icon={<FiArrowLeft className="w-6 h-6" />}
+                      disabled={isSubmitting}
+                      className="!px-8 !py-6 h-auto text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                      Thoát
+                    </Button>
+                    <Button
+                      type="primary"
+                      size="large"
+                      onClick={handleConfirmChoice}
+                      disabled={
+                        !selectedOption || isSubmitting || checkingTranscript
+                      }
+                      className="!p-6 !bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 px-12 py-4 h-auto text-xl font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      icon={
+                        isSubmitting ? (
+                          <Spin size="small" />
+                        ) : (
+                          <FiArrowRight className="w-6 h-6 ml-2" />
+                        )
+                      }
+                      iconPosition="end"
+                    >
+                      {isSubmitting
+                        ? "Đang xử lý..."
+                        : checkingTranscript
+                          ? "Đang kiểm tra..."
+                          : selectedOption
+                            ? "Tiếp tục"
+                            : "Chọn một phương án"}
+                    </Button>
+                  </div>
 
                   {/* {selectedOption && !isSubmitting && (
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">

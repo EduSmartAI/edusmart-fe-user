@@ -82,8 +82,18 @@ export default function SurveyAssessmentPage() {
     // Mark survey completed in flow state
     markSurveyCompleted();
 
-    // Redirect to transition page
-    router.push("/learning-path/assessment/transition");
+    // Get learningGoalId from survey data
+    const learningGoalId = survey.survey1Data?.learningGoal;
+
+    // Redirect to transition page with learningGoalId param
+    if (learningGoalId) {
+      router.push(
+        `/learning-path/assessment/transition?learningGoalId=${learningGoalId}`,
+      );
+    } else {
+      console.warn("No learningGoalId found in survey data");
+      router.push("/learning-path/assessment/transition");
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
