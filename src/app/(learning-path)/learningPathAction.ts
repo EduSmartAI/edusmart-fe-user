@@ -64,9 +64,9 @@ export interface ExternalLearningPathDto {
 }
 
 export interface LearningPathSelectDto {
-  status?: number;                // int32
+  status?: number; // int32
   pathName?: string;
-  completionPercent?: number;     // double
+  completionPercent?: number; // double
   basicLearningPath?: BasicLearningPathDto;
   internalLearningPath?: InternalLearningPathDto[];
   externalLearningPath?: ExternalLearningPathDto[];
@@ -74,7 +74,6 @@ export interface LearningPathSelectDto {
 
 /** Export alias để component import như cũ */
 export type LearningPathData = LearningPathSelectDto;
-
 
 // Import shared error handler from quizAction
 import { normalizeFetchError } from "EduSmart/app/(quiz)/quizAction";
@@ -205,6 +204,79 @@ export async function getAllLearningPathsAction(
   } catch (error) {
     const nErr = await normalizeFetchError(error);
     console.error("❌ [Learning Path] Get All exception:", nErr.message);
+    return {
+      ok: false,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
+    };
+  }
+}
+
+/**
+ * Create learning path from previous survey and transcript (without taking quiz)
+ * @param learningGoalId - UUID of the learning goal
+ * @returns Learning path ID or error
+ */
+export async function createLearningPathFromTranscriptAction(
+  learningGoalId: string,
+): Promise<
+  | { ok: true; learningPathId: string }
+  | { ok: false; error: string; status?: number }
+> {
+  try {
+    console.log(
+      "🔒 SERVER ACTION: Creating learning path from transcript for learningGoalId:",
+      learningGoalId,
+    );
+
+    const response =
+      await apiServer.quiz.api.v1LearningPathInsertLearningPathWithPreviousSurveyAndTranscriptCreate(
+        {
+          learningGoalId: learningGoalId,
+        },
+      );
+
+    if (!response.data?.success) {
+      console.error(
+        "❌ [Learning Path] Create from transcript error:",
+        response.data?.message,
+      );
+      return {
+        ok: false,
+        error:
+          response.data?.message ||
+          "Failed to create learning path from transcript",
+        status: response.status,
+      };
+    }
+
+    if (!response.data.response?.learningPathId) {
+      console.error(
+        "❌ [Learning Path] No learningPathId in response:",
+        response.data,
+      );
+      return {
+        ok: false,
+        error: "No learning path ID returned from server",
+        status: response.status,
+      };
+    }
+
+    console.log(
+      "✅ [Learning Path] Created from transcript successfully:",
+      response.data.response.learningPathId,
+    );
+
+    return {
+      ok: true,
+      learningPathId: response.data.response.learningPathId,
+    };
+  } catch (error) {
+    const nErr = await normalizeFetchError(error);
+    console.error(
+      "❌ [Learning Path] Create from transcript exception:",
+      nErr.message,
+    );
     return {
       ok: false,
       error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
