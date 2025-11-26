@@ -727,6 +727,7 @@ export async function submitSurveyAction(surveyData: {
       learningGoal: {
         learningGoalId: survey1Data.learningGoal,
         learningGoalType: learningGoalType,
+        learningGoalName: selectedGoal.learningGoalName || "", // Add learningGoalName
       },
     };
 
@@ -769,8 +770,20 @@ export async function submitSurveyAction(surveyData: {
       const habitAnswers: Array<{ questionId: string; answerId: string }> = [];
 
       survey3Data.studyHabits.forEach((habit) => {
+        // Filter out invalid UUIDs ac(e.g., "time_preference", "morning" from old mock data)
+        if (!isValidUUID(habit.questionId)) {
+          console.warn(`⚠️ Skipping invalid questionId: ${habit.questionId}`);
+          return;
+        }
+
         // For each selected answer in the habit question
         habit.selectedAnswers.forEach((answerId) => {
+          // Filter out invalid UUIDs
+          if (!isValidUUID(answerId)) {
+            console.warn(`⚠️ Skipping invalid answerId: ${answerId}`);
+            return;
+          }
+
           habitAnswers.push({
             questionId: habit.questionId,
             answerId: answerId,
@@ -803,10 +816,11 @@ export async function submitSurveyAction(surveyData: {
         learningGoal: {
           learningGoalId: studentInformation.learningGoal.learningGoalId,
           learningGoalType: studentInformation.learningGoal.learningGoalType,
+          learningGoalName: studentInformation.learningGoal.learningGoalName,
         },
       },
       studentSurveys: studentSurveys,
-      isWantToTakeTest: false, // hard code
+      isWantToTakeTest: true, // hard code
     };
 
     // Validate payload before sending
@@ -1023,6 +1037,7 @@ export async function submitSurveyServerAction(submissionData: {
         learningGoal: {
           learningGoalId: "default-goal",
           learningGoalType: 1,
+          learningGoalName: "Default Goal",
         },
       },
       studentSurveys: [
@@ -1035,7 +1050,7 @@ export async function submitSurveyServerAction(submissionData: {
           })),
         },
       ],
-      isWantToTakeTest: false, // hard code
+      isWantToTakeTest: true, // hard code
     };
 
     // Try actual API call

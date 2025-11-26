@@ -101,6 +101,11 @@ interface QuizStoreActions {
     startedAt: string;
     quizIds: string[];
     answers: Array<{ questionId: string; answerId: string }>;
+    practiceTestAnswers?: Array<{
+      problemId: string;
+      languageId: number;
+      codeSubmission: string;
+    }>;
   }) => Promise<{ ok: boolean; learningPathId?: string; error?: string }>; // Submit test
   loadTestResult: (studentTestId: string) => Promise<boolean>; // Load kết quả test
 

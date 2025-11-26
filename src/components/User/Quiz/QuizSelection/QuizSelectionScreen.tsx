@@ -236,7 +236,7 @@ const QuizSelectionScreen: React.FC<QuizSelectionScreenProps> = ({
           />
 
           {/* Spacer to avoid content hidden under fixed buttons */}
-          <div className="h-20 sm:h-24" />
+          <div className="h-10 sm:h-12" />
         </div>
       </div>
 

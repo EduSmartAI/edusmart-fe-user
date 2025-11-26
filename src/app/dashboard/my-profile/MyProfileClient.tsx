@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   Avatar,
@@ -72,6 +73,7 @@ export default function MyProfileClient({
   profile: initialProfile,
   transcript,
 }: MyProfileClientProps) {
+  const router = useRouter();
   const [profile, setProfile] = useState<StudentProfile>(initialProfile);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [form] = Form.useForm();
@@ -187,6 +189,19 @@ export default function MyProfileClient({
       setLoading(true);
       const values = await form.validateFields();
 
+      // Validate Technologies and LearningGoals (backend requires at least 1 item)
+      if (!selectedTechIds || selectedTechIds.length === 0) {
+        message.error("Vui lòng chọn ít nhất 1 công nghệ");
+        setLoading(false);
+        return;
+      }
+
+      if (!selectedGoalIds || selectedGoalIds.length === 0) {
+        message.error("Vui lòng chọn ít nhất 1 định hướng tương lai");
+        setLoading(false);
+        return;
+      }
+
       // Prepare data for API
       // Format date as DD-MM-YYYY (backend expects this format)
       let formattedDate: string | undefined;
@@ -229,7 +244,15 @@ export default function MyProfileClient({
         updateData.Avatar = fileList[0].originFileObj;
       }
 
+      // Debug log
+      console.log("📤 Sending update data:", {
+        ...updateData,
+        Avatar: updateData.Avatar ? "File uploaded" : "No file",
+      });
+
       const result = await updateStudentProfileClient(updateData);
+
+      console.log("📥 Update result:", result);
 
       if (result.success) {
         message.success(result.message || "Cập nhật thông tin thành công!");
@@ -295,10 +318,19 @@ export default function MyProfileClient({
         // Close modal and reset form
         setIsEditModalOpen(false);
         setFileList([]);
+
+        // Refresh server-side data
+        console.log("🔄 Refreshing page data...");
+        router.refresh();
       } else {
+        console.error("❌ Update failed:", result);
         message.error(result.message || "Cập nhật thông tin thất bại");
         if (result.detailErrors) {
-          console.error("Detail errors:", result.detailErrors);
+          console.error("📋 Detail errors:", result.detailErrors);
+          // Show detail errors to user if available
+          if (typeof result.detailErrors === "string") {
+            message.error(result.detailErrors, 5);
+          }
         }
       }
     } catch (error) {

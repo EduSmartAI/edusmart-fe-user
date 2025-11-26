@@ -1,20 +1,154 @@
 "use client";
 
-import React from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "antd";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { FiCheckCircle, FiArrowRight, FiAward, FiUser } from "react-icons/fi";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button, Card, message, Spin, Alert } from "antd";
+import { FiCheckCircle, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
-import { FaMapLocationDot } from "react-icons/fa6";
+import { HiDocumentText } from "react-icons/hi";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
+import { createLearningPathFromTranscriptAction } from "EduSmart/app/(learning-path)/learningPathAction";
+import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
+import { getLearningGoalAction } from "EduSmart/app/(survey)/surveyAction";
 
-export default function SurveyToQuizTransition() {
+interface LearningGoalOption {
+  learningGoalId: string;
+  learningGoalName: string;
+  learningGoalType: number;
+}
+
+function SurveyToQuizTransitionContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [selectedOption, setSelectedOption] = useState<
+    "quiz" | "transcript" | null
+  >(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasTranscript, setHasTranscript] = useState<boolean | null>(null);
+  const [checkingTranscript, setCheckingTranscript] = useState(true);
+  const [learningGoalDetails, setLearningGoalDetails] =
+    useState<LearningGoalOption | null>(null);
+
+  // Load learning goal from URL param and fetch learning goals list
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        const learningGoalId = searchParams.get("learningGoalId");
+
+        if (!learningGoalId) {
+          console.warn("No learningGoalId in URL params");
+          return;
+        }
+
+        console.log("📚 Fetching learning goals for ID:", learningGoalId);
+
+        // Fetch learning goals list from API
+        const result = await getLearningGoalAction();
+
+        if (result.ok && result.data) {
+          // Find the learning goal matching the ID from URL
+          const goal = result.data.find(
+            (g) => g.learningGoalId === learningGoalId,
+          );
+
+          if (goal) {
+            console.log("✅ Found learning goal:", goal);
+            setLearningGoalDetails(goal);
+          } else {
+            console.warn("Learning goal not found in list:", learningGoalId);
+          }
+        } else {
+          console.error("Failed to fetch learning goals:", result.error);
+        }
+      } catch (error) {
+        console.error("Error loading learning goal:", error);
+      }
+    };
+
+    initializeData();
+  }, [searchParams]);
+
+  // Check transcript on mount
+  useEffect(() => {
+    const checkTranscript = async () => {
+      try {
+        setCheckingTranscript(true);
+        const result = await getStudentTranscriptServer();
+
+        if (result.success && result.response && result.response.length > 0) {
+          setHasTranscript(true);
+        } else {
+          setHasTranscript(false);
+        }
+      } catch (error) {
+        console.error("Error checking transcript:", error);
+        setHasTranscript(false);
+      } finally {
+        setCheckingTranscript(false);
+      }
+    };
+
+    checkTranscript();
+  }, []);
 
   const handleContinueToQuiz = () => {
     router.push("/learning-path/assessment/quiz");
+  };
+
+  const handleExit = () => {
+    // Clear all learning path related localStorage
+    localStorage.removeItem("learning-path-flow-state");
+    localStorage.removeItem("learning_path_completed_steps");
+    localStorage.removeItem("learning_path_current_step");
+    localStorage.removeItem("practice-test-storage");
+    localStorage.removeItem("quiz-store");
+    localStorage.removeItem("survey-storage");
+
+    // Redirect to home or profile
+    router.push("/");
+  };
+
+  const handleUseTranscript = async () => {
+    if (!learningGoalDetails) {
+      message.error("Không tìm thấy thông tin mục tiêu học tập");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Call server action to create learning path from transcript
+      const result = await createLearningPathFromTranscriptAction(
+        learningGoalDetails.learningGoalId,
+        learningGoalDetails.learningGoalName,
+        learningGoalDetails.learningGoalType,
+      );
+
+      if (!result.ok) {
+        message.error(result.error || "Không thể tạo lộ trình từ bảng điểm");
+        return;
+      }
+
+      // Success case
+      message.success("Đang tạo lộ trình học tập từ bảng điểm...");
+      // Redirect to processing page with learningPathId
+      router.push(
+        `/learning-path/assessment/processing?learningPathId=${result.learningPathId}`,
+      );
+    } catch (error) {
+      console.error("Error creating learning path from transcript:", error);
+      message.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmChoice = () => {
+    if (selectedOption === "quiz") {
+      handleContinueToQuiz();
+    } else if (selectedOption === "transcript") {
+      handleUseTranscript();
+    }
   };
 
   return (
@@ -52,86 +186,268 @@ export default function SurveyToQuizTransition() {
 
                 {/* Main Message */}
                 <div className="text-center mb-10">
-                  <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
+                  <h1 className="text-2xl md:text-4xl font-black text-gray-900 dark:text-white mb-5">
                     Xuất sắc! Bạn đã hoàn thành khảo sát
                   </h1>
 
-                  <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto">
-                    Thông tin của bạn đã được ghi nhận. Bước tiếp theo, chúng ta
-                    sẽ đánh giá năng lực để đề xuất lộ trình phù hợp nhất.
+                  <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed max-w-2xl mx-auto mb-2">
+                    Thông tin của bạn đã được ghi nhận. Bây giờ, hãy chọn cách
+                    bạn muốn tiếp tục
                   </p>
+                  {/* <p className="text-base text-gray-500 dark:text-gray-400">
+                    Bạn có thể sử dụng bảng điểm hiện có hoặc làm bài đánh giá
+                    năng lực
+                  </p> */}
                 </div>
 
-                {/* Progress Indicator - Clean Timeline */}
-                <div className="mb-12">
-                  <div className="relative">
-                    {/* Connecting line */}
-                    <div className="absolute top-6 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 via-[#49BBBD] to-gray-300 dark:to-gray-600"></div>
-
-                    {/* Steps */}
-                    <div className="relative flex justify-between items-start">
-                      {/* Step 1 - Completed */}
-                      <div className="flex flex-col items-center w-1/3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-3 shadow-md z-10">
-                          <FiUser className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-bold text-green-600 dark:text-green-400 mb-1">
-                            Khảo sát
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Hoàn thành ✓
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Step 2 - Current */}
-                      <div className="flex flex-col items-center w-1/3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#49BBBD] to-cyan-600 rounded-full flex items-center justify-center mb-3 shadow-lg z-10 animate-pulse">
-                          <SiQuizlet className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-bold text-[#49BBBD] dark:text-teal-400 mb-1">
-                            Đánh giá năng lực
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">
-                            Tiếp theo
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Step 3 - Pending */}
-                      <div className="flex flex-col items-center w-1/3">
-                        <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-3 shadow-sm z-10">
-                          <FaMapLocationDot className="w-6 h-6 text-gray-400 dark:text-gray-500" />
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-1">
-                            Kết quả
-                          </div>
-                          <div className="text-xs text-gray-400 dark:text-gray-500">
-                            Chờ xử lý
-                          </div>
+                {/* Choice Cards */}
+                <div className="grid md:grid-cols-2 gap-4 mb-8 max-w-4xl mx-auto">
+                  {/* Option 1: Use Transcript */}
+                  <Card
+                    className={`relative transition-all duration-200 ${
+                      hasTranscript === false || checkingTranscript
+                        ? "opacity-60 cursor-not-allowed"
+                        : "cursor-pointer"
+                    } ${
+                      selectedOption === "transcript"
+                        ? "border-2 border-[#49BBBD] shadow-sm"
+                        : "border border-gray-200 dark:border-gray-700"
+                    }`}
+                    onClick={() => {
+                      if (hasTranscript === true && !checkingTranscript) {
+                        setSelectedOption("transcript");
+                      }
+                    }}
+                  >
+                    <div className="text-center p-5">
+                      {/* Icon */}
+                      <div className="mb-4">
+                        <div
+                          className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center transition-colors duration-200 ${
+                            selectedOption === "transcript"
+                              ? "bg-[#49BBBD]"
+                              : "bg-teal-100 dark:bg-teal-900/30"
+                          }`}
+                        >
+                          <HiDocumentText
+                            className={`w-8 h-8 ${
+                              selectedOption === "transcript"
+                                ? "text-white"
+                                : "text-[#49BBBD]"
+                            }`}
+                          />
                         </div>
                       </div>
+
+                      {/* Title */}
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                        Sử dụng bảng điểm
+                      </h3>
+
+                      {/* Description */}
+                      <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+                        Hệ thống sẽ phân tích bảng điểm của bạn để đánh giá năng
+                        lực và đề xuất lộ trình phù hợp
+                      </p>
+
+                      {/* Transcript Status */}
+                      {checkingTranscript ? (
+                        <div className="text-center py-2">
+                          <Spin size="small" />
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Đang kiểm tra bảng điểm...
+                          </p>
+                        </div>
+                      ) : hasTranscript === false ? (
+                        <div className="space-y-3">
+                          {/* <Alert
+                            message="Chưa có bảng điểm"
+                            description="Vui lòng upload bảng điểm để sử dụng tính năng này"
+                            type="warning"
+                            showIcon
+                            className="text-xs"
+                          /> */}
+                          {/* <Spin spinning={uploading}>
+                            <Upload
+                              accept=".xlsx,.xls,.csv"
+                              maxCount={1}
+                              beforeUpload={handleUploadTranscript}
+                              showUploadList={false}
+                            >
+                              <Button
+                                icon={<UploadOutlined />}
+                                block
+                                disabled={uploading}
+                                size="small"
+                              >
+                                {uploading
+                                  ? "Đang upload..."
+                                  : "Upload bảng điểm"}
+                              </Button>
+                            </Upload>
+                          </Spin>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                            Định dạng: Excel (.xlsx)
+                          </p> */}
+                        </div>
+                      ) : (
+                        <Alert
+                          message="Đã có bảng điểm"
+                          type="success"
+                          showIcon
+                          className="text-xs"
+                        />
+                      )}
+
+                      {/* Benefits */}
+                      {/* <div className="space-y-2 text-left">
+                        <div>
+                          <div className="font-medium text-sm text-gray-900 dark:text-white">
+                            • Nhanh chóng
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 ml-3">
+                            Chỉ mất ~1 phút
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm text-gray-900 dark:text-white">
+                            • Dựa trên thành tích
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 ml-3">
+                            Phân tích từ điểm số thực tế
+                          </div>
+                        </div>
+                      </div> */}
+
+                      {/* Selected Badge */}
+                      {selectedOption === "transcript" && (
+                        <div className="absolute top-3 right-3">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <FiCheckCircle className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </div>
+                  </Card>
 
-                {/* Motivation Box - Minimal */}
+                  {/* Option 2: Take Quiz */}
+                  <Card
+                    className={`relative cursor-pointer transition-all duration-200 ${
+                      selectedOption === "quiz"
+                        ? "border-2 border-orange-500 shadow-sm"
+                        : "border border-gray-200 dark:border-gray-700"
+                    }`}
+                    onClick={() => setSelectedOption("quiz")}
+                  >
+                    <div className="text-center p-5">
+                      {/* Icon */}
+                      <div className="mb-4">
+                        <div
+                          className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center transition-colors duration-200 ${
+                            selectedOption === "quiz"
+                              ? "bg-orange-500"
+                              : "bg-orange-100 dark:bg-orange-900/30"
+                          }`}
+                        >
+                          <SiQuizlet
+                            className={`w-8 h-8 ${
+                              selectedOption === "quiz"
+                                ? "text-white"
+                                : "text-orange-600"
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                        Làm bài đánh giá
+                      </h3>
+
+                      {/* Description */}
+                      <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
+                        Làm bài test đánh giá năng lực để hệ thống có thể đề
+                        xuất lộ trình chính xác nhất
+                      </p>
+
+                      {/* Benefits */}
+                      {/* <div className="space-y-2 text-left">
+                        <div>
+                          <div className="font-medium text-sm text-gray-900 dark:text-white">
+                            • Chính xác cao
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 ml-3">
+                            Đánh giá toàn diện năng lực
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-medium text-sm text-gray-900 dark:text-white">
+                            • Thời gian
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 ml-3">
+                            Khoảng 15-20 phút
+                          </div>
+                        </div>
+                      </div> */}
+
+                      {/* Selected Badge */}
+                      {selectedOption === "quiz" && (
+                        <div className="absolute top-3 right-3">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <FiCheckCircle className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                </div>
 
                 {/* CTA Section */}
                 <div className="text-center">
-                  <Button
-                    type="primary"
-                    size="large"
-                    onClick={handleContinueToQuiz}
-                    className="!p-6 !bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 px-12 py-4 h-auto text-xl font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
-                    icon={<FiArrowRight className="w-6 h-6 ml-2" />}
-                    iconPosition="end"
-                  >
-                    Sẵn sàng cho thử thách tiếp theo
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <Button
+                      size="large"
+                      onClick={handleExit}
+                      icon={<FiArrowLeft className="w-6 h-6" />}
+                      disabled={isSubmitting}
+                      className="!px-8 !py-6 h-auto text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                      Thoát
+                    </Button>
+                    <Button
+                      type="primary"
+                      size="large"
+                      onClick={handleConfirmChoice}
+                      disabled={
+                        !selectedOption || isSubmitting || checkingTranscript
+                      }
+                      className="!p-6 !bg-gradient-to-r from-[#49BBBD] to-cyan-600 border-none hover:from-[#3da8aa] hover:to-cyan-700 px-12 py-4 h-auto text-xl font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      icon={
+                        isSubmitting ? (
+                          <Spin size="small" />
+                        ) : (
+                          <FiArrowRight className="w-6 h-6 ml-2" />
+                        )
+                      }
+                      iconPosition="end"
+                    >
+                      {isSubmitting
+                        ? "Đang xử lý..."
+                        : checkingTranscript
+                          ? "Đang kiểm tra..."
+                          : selectedOption
+                            ? "Tiếp tục"
+                            : "Chọn một phương án"}
+                    </Button>
+                  </div>
+
+                  {/* {selectedOption && !isSubmitting && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                      {selectedOption === "transcript"
+                        ? "Bạn đã chọn sử dụng bảng điểm"
+                        : "Bạn đã chọn làm bài đánh giá năng lực"}
+                    </p>
+                  )} */}
                 </div>
               </div>
             </div>
@@ -146,5 +462,19 @@ export default function SurveyToQuizTransition() {
         </div>
       </div>
     </LearningPathGuard>
+  );
+}
+
+export default function SurveyToQuizTransition() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Spin />
+        </div>
+      }
+    >
+      <SurveyToQuizTransitionContent />
+    </Suspense>
   );
 }
