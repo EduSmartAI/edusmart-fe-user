@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react";
 import { Spin } from "antd";
 import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
