@@ -569,6 +569,12 @@ export default function CodeEditor({
         console.log("📦 Updated codeByProblem state:", newState);
         return newState;
       });
+
+      // Notify parent about code change
+      if (onCodeChange && problemId === activeProblemId) {
+        console.log("📢 Notifying parent about template code load");
+        onCodeChange(finalCode);
+      }
     } catch (e) {
       console.error("❌ loadUserTemplateCode error:", e);
       message.warning("Không tải được template code, dùng snippet mặc định.");

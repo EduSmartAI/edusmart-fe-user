@@ -163,6 +163,17 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
   const handleLanguageChange = (langId: number) => {
     console.log("🔄 Language changed in CodeEditor:", langId);
     setSelectedLanguageId(langId);
+
+    // Re-save current code with new language ID
+    if (currentProblem && currentCode) {
+      console.log("💾 Re-saving code with new language:", {
+        problemId: currentProblem.problemId,
+        oldLanguageId: selectedLanguageId,
+        newLanguageId: langId,
+        codeLength: currentCode.length,
+      });
+      saveSubmission(currentProblem.problemId, langId, currentCode);
+    }
   };
 
   const handleMarkAsComplete = () => {
