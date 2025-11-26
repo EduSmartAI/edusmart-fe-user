@@ -11,12 +11,14 @@ import {
 } from "EduSmart/components/LearningPath";
 import { useSurvey } from "EduSmart/hooks/survey";
 import { useSessionAuthStore } from "EduSmart/stores/Auth/SessionAuthStore";
+import { useLearningPathFlow } from "EduSmart/hooks/useLearningPathFlow";
 import { Spin, message } from "antd";
 
 export default function SurveyAssessmentPage() {
   const router = useRouter();
   const survey = useSurvey();
   const { session, fetchSession, isLoading } = useSessionAuthStore();
+  const { markSurveyCompleted, resetFlow } = useLearningPathFlow();
   const [showExitModal, setShowExitModal] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
 
@@ -77,6 +79,9 @@ export default function SurveyAssessmentPage() {
     // Mark step 1 as completed
     learningPathProgress.completeStep(1);
 
+    // Mark survey completed in flow state
+    markSurveyCompleted();
+
     // Redirect to transition page
     router.push("/learning-path/assessment/transition");
   };
@@ -96,17 +101,21 @@ export default function SurveyAssessmentPage() {
     // 2. Reset survey store (clears survey1Data, survey2Data, survey3Data, etc.)
     survey.resetSurvey();
 
-    // 3. Clear any other survey-related data in localStorage
+    // 3. Reset flow state
+    resetFlow();
+
+    // 4. Clear any other survey-related data in localStorage
     localStorage.removeItem("survey_data");
     localStorage.removeItem("survey_step");
     localStorage.removeItem("survey-storage"); // Store key
+    localStorage.removeItem("practice-test-storage"); // Practice test store
 
     console.log("✅ All data cleared successfully");
 
-    // 4. Close modal
+    // 5. Close modal
     setShowExitModal(false);
 
-    // 5. Redirect to learning path overview
+    // 6. Redirect to learning path overview
     router.push("/learning-path");
   };
 

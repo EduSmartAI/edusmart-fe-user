@@ -271,13 +271,28 @@ export async function submitStudentTestAction(testData: {
   startedAt: string;
   quizIds: string[];
   answers: Array<{ questionId: string; answerId: string }>;
+  practiceTestAnswers?: Array<{
+    problemId: string;
+    languageId: number;
+    codeSubmission: string;
+  }>;
 }): Promise<
   | { ok: true; data: ApiResponse<{ learningPathId: string }> }
   | { ok: false; error: string; status?: number }
 > {
   try {
     // Use exact payload structure as specified
-    const payload = {
+    const payload: {
+      testId: string;
+      startedAt: string;
+      quizIds: string[];
+      answers: Array<{ questionId: string; answerId: string }>;
+      practiceTestAnswers?: Array<{
+        problemId: string;
+        languageId: number;
+        codeSubmission: string;
+      }>;
+    } = {
       testId: testData.testId,
       startedAt: testData.startedAt,
       quizIds: testData.quizIds,
@@ -286,6 +301,20 @@ export async function submitStudentTestAction(testData: {
         answerId: answer.answerId,
       })),
     };
+
+    // Add practiceTestAnswers if provided
+    if (
+      testData.practiceTestAnswers &&
+      testData.practiceTestAnswers.length > 0
+    ) {
+      payload.practiceTestAnswers = testData.practiceTestAnswers.map(
+        (answer) => ({
+          problemId: answer.problemId,
+          languageId: answer.languageId,
+          codeSubmission: answer.codeSubmission,
+        }),
+      );
+    }
 
     console.log("📤 Final payload:", payload);
 
