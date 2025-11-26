@@ -100,6 +100,7 @@ interface PracticeTestState {
   // Getters
   getCurrentProblem: () => PracticeProblem | null;
   getSubmission: (problemId: string) => PracticeTestSubmission | null;
+  getAllSubmissions: () => PracticeTestSubmission[];
   isProblemCompleted: (problemId: string) => boolean;
 }
 
@@ -270,6 +271,10 @@ export const usePracticeTestStore = create<PracticeTestState>()(
 
       getSubmission: (problemId) => {
         return get().submissions[problemId] ?? null;
+      },
+
+      getAllSubmissions: () => {
+        return Object.values(get().submissions);
       },
 
       isProblemCompleted: (problemId) => {

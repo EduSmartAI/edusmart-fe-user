@@ -331,8 +331,12 @@ export async function submitStudentTestAction(testData: {
       };
     }
 
-    // Response is learningPathId (UUID string)
-    const learningPathId = res.data.response ?? "";
+    // Response is learningPathId (UUID string or object with learningPathId)
+    const learningPathId =
+      typeof res.data.response === "string"
+        ? res.data.response
+        : ((res.data.response as any)?.learningPathId ?? "");
+
     return {
       ok: true,
       data: {

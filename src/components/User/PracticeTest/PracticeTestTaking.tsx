@@ -167,58 +167,24 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     const incompletedCount = problems.length - completedProblems.length;
 
     const submitAllTests = async () => {
-      message.loading({
-        content: "Đang nộp bài...",
-        key: "submit",
-        duration: 0,
+      // Save current code before submitting
+      if (currentProblem && selectedLanguageId && currentCode) {
+        saveSubmission(
+          currentProblem.problemId,
+          selectedLanguageId,
+          currentCode,
+        );
+      }
+
+      message.success({
+        content: "Đã lưu code của bạn!",
+        duration: 1,
       });
 
-      try {
-        // Submit all problems with their code
-        const submissions = problems.map((problem) => {
-          const submission = getSubmission(problem.problemId);
-          return {
-            problemId: problem.problemId,
-            languageId: submission?.languageId || selectedLanguageId || 51,
-            sourceCode: submission?.sourceCode || "// No code submitted",
-          };
-        });
-
-        // Submit all in parallel
-        const results = await Promise.allSettled(
-          submissions.map((sub) =>
-            submitPracticeTestCreate(
-              sub.problemId,
-              sub.languageId,
-              sub.sourceCode,
-            ),
-          ),
-        );
-
-        const successCount = results.filter(
-          (r) => r.status === "fulfilled",
-        ).length;
-        const failCount = results.filter((r) => r.status === "rejected").length;
-
-        message.destroy("submit");
-
-        if (failCount === 0) {
-          message.success(`Đã nộp thành công ${successCount} bài tập!`);
-        } else {
-          message.warning(
-            `Nộp thành công ${successCount} bài, thất bại ${failCount} bài`,
-          );
-        }
-
-        // Complete regardless of submission results
-        setTimeout(() => {
-          onComplete();
-        }, 1000);
-      } catch (error) {
-        message.destroy("submit");
-        message.error("Có lỗi khi nộp bài. Vui lòng thử lại.");
-        console.error("Submit error:", error);
-      }
+      // Call onComplete to trigger combined submission (quiz + practice test)
+      setTimeout(() => {
+        onComplete();
+      }, 300);
     };
 
     if (incompletedCount > 0) {

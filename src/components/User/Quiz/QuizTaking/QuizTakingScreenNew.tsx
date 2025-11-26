@@ -36,12 +36,18 @@ const { Title, Text } = Typography;
 
 interface QuizTakingScreenNewProps {
   testId: string;
-  onComplete: (studentTestId: string) => void;
+  onComplete: (quizData: {
+    testId: string;
+    startedAt: string;
+    quizIds: string[];
+    answers: Array<{ questionId: string; answerId: string }>;
+  }) => void;
   onExit: () => void;
 }
 
 const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   testId,
+  onComplete,
   onExit,
 }) => {
   const router = useRouter();
@@ -49,77 +55,64 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitTest = useCallback(async () => {
-    console.log("🚀 Submitting quiz...");
+    console.log("🚀 Preparing quiz data for submission...");
 
     // Set submitting state to show blur overlay with Spin
     setIsSubmitting(true);
 
-    // Show loading message
-    const hideLoading = message.loading(
-      "Đang xử lý bài kiểm tra của bạn...",
-      0,
-    );
-
     try {
-      const learningPathId = await actions.submitTest();
-      console.log("Submit result:", { learningPathId });
+      // Prepare quiz data (don't submit yet, will submit with practice test)
+      const testDetail = state.testDetail;
 
-      if (learningPathId) {
-        console.log("✅ Quiz submitted successfully:", { learningPathId });
-
-        // Hide loading message BEFORE redirect
-        hideLoading();
-
-        // Show success message (briefly visible)
-        message.success({
-          content: "Bài kiểm tra đã được nộp thành công!",
-          duration: 1,
-        });
-
-        // Mark step 2 as completed BEFORE redirecting
-        learningPathProgress.completeStep(2);
-        learningPathProgress.setLearningPathId(learningPathId);
-
-        // Use a small delay to ensure message is visible
-        setTimeout(() => {
-          // Redirect to new processing page with learningPathId for AI processing
-          router.push(
-            `/learning-path/assessment/processing?learningPathId=${learningPathId}`,
-          );
-        }, 300);
-      } else {
-        // Hide loading message
-        hideLoading();
-
-        console.error(
-          "❌ Quiz submission failed: No learning path ID returned",
-        );
-
-        // Show error message
-        message.error({
-          content: "❌ Nộp bài kiểm tra thất bại. Vui lòng thử lại sau.",
-          duration: 6,
-        });
-
-        // Reset submitting state on error to allow retry
-        setIsSubmitting(false);
+      if (!testDetail || !testDetail.testId) {
+        throw new Error("Test data not found");
       }
-    } catch (error) {
-      console.error("❌ Quiz submission error:", error);
 
-      // Hide loading message
-      hideLoading();
+      // Convert answers from Record to Array format
+      const answersArray: Array<{ questionId: string; answerId: string }> = [];
+      Object.entries(state.answers || {}).forEach(([questionId, answerIds]) => {
+        (answerIds as string[]).forEach((answerId) => {
+          answersArray.push({ questionId, answerId });
+        });
+      });
+
+      const quizData = {
+        testId: testDetail.testId,
+        startedAt: new Date().toISOString(),
+        quizIds: (testDetail.quizzes || [])
+          .map((q: any) => q.quizId)
+          .filter(Boolean),
+        answers: answersArray,
+      };
+
+      console.log("✅ Quiz data prepared:", quizData);
+
+      // Show success message
+      message.success({
+        content: "Đã lưu bài kiểm tra! Tiếp tục với bài tập thực hành.",
+        duration: 1,
+      });
+
+      // Mark step 2 as completed
+      learningPathProgress.completeStep(2);
+
+      // Call onComplete callback to move to practice test
+      setTimeout(() => {
+        onComplete(quizData);
+      }, 300);
+    } catch (error) {
+      console.error("❌ Quiz preparation error:", error);
 
       // Show error message
       message.error({
-        content: "❌ Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.",
+        content: "❌ Đã xảy ra lỗi. Vui lòng thử lại sau.",
         duration: 6,
       });
 
       // Reset submitting state on error to allow retry
       setIsSubmitting(false);
     }
-  }, [actions, router]);
+  }, [state, onComplete]);
 
   // Load test when component mounts
   useEffect(() => {
