@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Button,
-  Card,
-  Layout,
-  message,
-  Select,
-  Spin,
-  Splitter,
-  Tag,
-} from "antd";
+import { Card, Layout, message, Select, Spin, Splitter } from "antd";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import Editor, { Monaco, OnMount } from "@monaco-editor/react";
 import React, {
@@ -19,7 +10,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import { FiChevronDown, FiPlay, FiSend } from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -37,20 +28,23 @@ import TestCaseComponent, {
 } from "EduSmart/components/Code/TestCaseComponent";
 import { handleEditorWillMount } from "EduSmart/utils/EditorCodeConfig";
 import { CodeLanguageOption, PracticeProblem } from "./CodeEditorContainer";
+import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
 
 const { Header, Content } = Layout;
 const { Option } = Select;
 
-const DEFAULT_SNIPPET = `using System;
-using System.Collections.Generic;
+// const DEFAULT_SNIPPET = `using System;
+// using System.Collections.Generic;
 
-public class Solution {
-    public int Solve() {
-        // TODO: implement solution here
-        return 0;
-    }
-}
-`;
+// public class Solution {
+//     public int Solve() {
+//         // TODO: implement solution here
+//         return 0;
+//     }
+// }
+// `;
+
+const DEFAULT_SNIPPET = "";
 
 export type SubmitItem = {
   languageId: JudgeLanguageId;
@@ -63,25 +57,27 @@ type Props = {
   languages: CodeLanguageOption[];
   problems: PracticeProblem[];
   onSubmit?: (payload: SubmitPayload) => void;
+  onCodeChange?: (code: string) => void; // Callback when code changes
+  onProblemChange?: (problemId: string) => void; // Callback when problem changes
   selectedLanguageId?: number; // Optional: pre-select language
+  activeProblemId?: string; // Optional: control which problem is active
 };
 
-const difficultyColor = (d?: string | null): string => {
-  const v = (d || "").toLowerCase();
-  if (v === "easy") return "green";
-  if (v === "medium") return "gold";
-  if (v === "hard") return "red";
-  return "default";
-};
+// Removed unused difficultyColor function
 
 export default function CodeEditor({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   languages,
   problems,
   onSubmit,
+  onCodeChange,
+  onProblemChange,
   selectedLanguageId: propSelectedLanguageId,
+  activeProblemId: propActiveProblemId,
 }: Props) {
   const { isDarkMode } = useTheme();
   const hasProblems = problems.length > 0;
+  const getSubmission = usePracticeTestStore((s) => s.getSubmission);
 
   // key để force remount Select khi danh sách problems đổi → tránh giữ label cũ
   const problemsKey = useMemo(
@@ -99,7 +95,8 @@ export default function CodeEditor({
   const [errMsg, setErrMsg] = useState<string | null>(null);
 
   // Use prop if provided, otherwise default to CSharpMono
-  const [selectedLangId, setSelectedLangId] = useState<JudgeLanguageId>(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [selectedLangId] = useState<JudgeLanguageId>(() => {
     if (propSelectedLanguageId !== undefined) {
       console.log(
         "🎯 Initializing selectedLangId from prop:",
@@ -153,7 +150,7 @@ export default function CodeEditor({
     return map;
   });
 
-  // Khi danh sách problems đổi (ví dụ đổi từ Two Sum → Reverse String),
+  // 1. Khi danh sách problems đổi (ví dụ đổi từ Two Sum → Reverse String),
   // đồng bộ lại activeProblemId + codeByProblem + testInputsByProblem.
   useEffect(() => {
     if (!hasProblems) {
@@ -171,12 +168,18 @@ export default function CodeEditor({
       return problems[0].problemId;
     });
 
-    // giữ code cũ cho những problemId trùng, problem mới thì dùng snippet mặc định
+    // giữ code cũ cho những problemId trùng, check saved submissions from store
     setCodeByProblem((prev) => {
       const map: Record<string, string> = {};
       problems.forEach((p) => {
+        // Priority: 1. Current state, 2. Saved submission, 3. Nothing (will load template)
         if (prev[p.problemId] !== undefined) {
           map[p.problemId] = prev[p.problemId];
+        } else {
+          const savedSubmission = getSubmission(p.problemId);
+          if (savedSubmission?.sourceCode) {
+            map[p.problemId] = savedSubmission.sourceCode;
+          }
         }
       });
       return map;
@@ -200,7 +203,7 @@ export default function CodeEditor({
       });
       return map;
     });
-  }, [hasProblems, problems]);
+  }, [hasProblems, problems, getSubmission]);
 
   const activeProblem: PracticeProblem | null = hasProblems
     ? (problems.find((p) => p.problemId === activeProblemId) ?? problems[0])
@@ -219,6 +222,14 @@ export default function CodeEditor({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Sync activeProblemId from prop
+  useEffect(() => {
+    if (propActiveProblemId && propActiveProblemId !== activeProblemId) {
+      console.log("🔄 Syncing activeProblemId from prop:", propActiveProblemId);
+      setActiveProblemId(propActiveProblemId);
+    }
+  }, [propActiveProblemId, activeProblemId]);
 
   const clearMarkers = () => {
     if (!editorRef.current || !monacoRef.current) return;
@@ -265,6 +276,8 @@ export default function CodeEditor({
     ]);
   };
 
+  // Unused function - kept for future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const runCode = async () => {
     const code = editorRef.current?.getValue() ?? "";
     if (!code.trim()) {
@@ -433,6 +446,8 @@ export default function CodeEditor({
     }
   };
 
+  // Unused function - kept for future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSubmit = () => {
     const currentKey = activeProblem?.problemId ?? activeProblemId ?? "default";
     const currentCode = editorRef.current?.getValue() ?? "";
@@ -480,6 +495,11 @@ export default function CodeEditor({
     setResult(null);
     setErrMsg(null);
     setActiveTestTab("testcase");
+
+    // Notify parent component
+    if (onProblemChange) {
+      onProblemChange(problemId);
+    }
   };
 
   const handleEditorChange = useCallback(
@@ -489,9 +509,13 @@ export default function CodeEditor({
           ...prev,
           [activeProblemId]: value,
         }));
+        // Notify parent component of code change
+        if (onCodeChange) {
+          onCodeChange(value);
+        }
       }
     },
-    [activeProblemId],
+    [activeProblemId, onCodeChange],
   );
 
   const loadUserTemplateCode = async (
@@ -499,6 +523,18 @@ export default function CodeEditor({
     languageId: number,
   ) => {
     if (!problemId) return;
+
+    // Check if we have saved code first
+    const savedSubmission = getSubmission(problemId);
+    if (savedSubmission?.sourceCode) {
+      console.log("✅ Using saved code for problem:", problemId);
+      setCodeByProblem((prev) => ({
+        ...prev,
+        [problemId]: savedSubmission.sourceCode,
+      }));
+      return;
+    }
+
     console.log("🔄 Loading template for:", { problemId, languageId });
     console.log(
       "🔍 Language ID type:",
@@ -604,7 +640,7 @@ export default function CodeEditor({
               </Select>
             )}
 
-            <Select
+            {/* <Select
               value={selectedLangId}
               style={{ minWidth: 170 }}
               size="small"
@@ -637,7 +673,7 @@ export default function CodeEditor({
                   {lang.name}
                 </Option>
               ))}
-            </Select>
+            </Select> */}
           </div>
 
           <div className="flex gap-3 items-center">
@@ -716,7 +752,7 @@ export default function CodeEditor({
                                 className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-[13px] md:text-[14px]"
                               >
                                 <div className="font-semibold mb-1">
-                                  Example {ex.exampleOrder}
+                                  Ví dụ {ex.exampleOrder}
                                 </div>
 
                                 <ReactMarkdown

@@ -68,6 +68,7 @@ const QuizMainFlow: React.FC = () => {
       practiceTestStore.reset();
       setPracticeTestResetDone(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quizState.stage]);
 
   const handleStartQuiz = (testId: string) => {

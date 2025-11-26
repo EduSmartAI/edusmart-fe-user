@@ -335,7 +335,8 @@ export async function submitStudentTestAction(testData: {
     const learningPathId =
       typeof res.data.response === "string"
         ? res.data.response
-        : ((res.data.response as any)?.learningPathId ?? "");
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ((res.data.response as any)?.learningPathId ?? "");
 
     return {
       ok: true,

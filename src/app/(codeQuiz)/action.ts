@@ -87,6 +87,7 @@ export async function submitPracticeTestCreate(
   ProblemId: string,
   LanguageId: number,
   sourceCode: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any | null> {
   try {
     const resp = await quizService.api.v1PracticeTestSubmitPracticeTestCreate({

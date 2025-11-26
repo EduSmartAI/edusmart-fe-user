@@ -50,6 +50,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   onComplete,
   onExit,
 }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const { state, actions } = useQuizTaking();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,6 +81,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
         testId: testDetail.testId,
         startedAt: new Date().toISOString(),
         quizIds: (testDetail.quizzes || [])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((q: any) => q.quizId)
           .filter(Boolean),
         answers: answersArray,

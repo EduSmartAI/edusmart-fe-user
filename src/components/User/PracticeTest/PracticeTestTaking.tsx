@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { Button, Card, Tag, Spin, message, Progress, Modal } from "antd";
+import React, { useEffect, useState } from "react";
+import { Button, Spin, message, Modal } from "antd";
 import {
-  FiChevronLeft,
-  FiChevronRight,
-  FiSend,
   FiCheckCircle,
+  FiChevronLeft,
+  FiSend,
   FiAlertCircle,
 } from "react-icons/fi";
 import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
 import {
   selectPracticeTestDetailList,
   selectUserTemplateCodeList,
-  submitPracticeTestCreate,
 } from "EduSmart/app/(codeQuiz)/action";
 import CodeEditor from "EduSmart/components/Code/CodeEditor";
 import {
@@ -24,14 +22,6 @@ import {
 interface PracticeTestTakingProps {
   onComplete: () => void;
 }
-
-const difficultyColor = (difficulty: string): string => {
-  const d = difficulty.toLowerCase();
-  if (d === "easy") return "green";
-  if (d === "medium") return "gold";
-  if (d === "hard") return "red";
-  return "default";
-};
 
 const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
   onComplete,
@@ -63,7 +53,6 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
 
   const currentProblem = getCurrentProblem();
 
-  // Load problem detail when problem changes
   useEffect(() => {
     const loadProblemDetail = async () => {
       if (!currentProblem) return;
@@ -72,6 +61,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
       setLoadingProblemDetail(true);
 
       try {
+        // const detail = await selectPracticeTestsList(currentProblem.problemId);
         const detail = await selectPracticeTestDetailList(
           currentProblem.problemId,
         );
@@ -93,7 +83,6 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     loadProblemDetail();
   }, [currentProblem, setCurrentProblemDetail, setLoadingProblemDetail]);
 
-  // Load template code when problem or language changes
   useEffect(() => {
     const loadTemplate = async () => {
       if (!currentProblem || !selectedLanguageId) {
@@ -104,7 +93,6 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
         return;
       }
 
-      // Check if we have saved code for this problem
       const savedSubmission = getSubmission(currentProblem.problemId);
       if (savedSubmission && savedSubmission.sourceCode) {
         console.log("Using saved code for problem:", currentProblem.problemId);
@@ -146,7 +134,6 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
   const handleCodeChange = (code: string) => {
     setCurrentCode(code);
 
-    // Auto-save code
     if (currentProblem && selectedLanguageId) {
       console.log("💾 Auto-saving code:", {
         problemId: currentProblem.problemId,
@@ -162,6 +149,13 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     }
   };
 
+  const handleProblemChange = (problemId: string) => {
+    const problemIndex = problems.findIndex((p) => p.problemId === problemId);
+    if (problemIndex !== -1) {
+      goToProblem(problemIndex);
+    }
+  };
+
   const handleMarkAsComplete = () => {
     if (!currentProblem) return;
 
@@ -170,7 +164,6 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
       return;
     }
 
-    // Save final submission
     if (selectedLanguageId) {
       saveSubmission(currentProblem.problemId, selectedLanguageId, currentCode);
     }
@@ -180,7 +173,6 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
       `Đã hoàn thành bài ${currentProblemIndex + 1}/${problems.length}`,
     );
 
-    // Auto move to next problem if not last
     if (currentProblemIndex < problems.length - 1) {
       setTimeout(() => {
         goToNextProblem();
@@ -195,13 +187,6 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
       setIsSubmitting(true);
 
       try {
-        // Save current code before submitting
-        console.log("📤 Submitting all tests:", {
-          currentProblem: currentProblem?.problemId,
-          selectedLanguageId,
-          currentCodeLength: currentCode.length,
-        });
-
         if (currentProblem && selectedLanguageId && currentCode) {
           console.log("💾 Saving final submission...");
           saveSubmission(
@@ -222,7 +207,6 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
           duration: 1,
         });
 
-        // Call onComplete to trigger combined submission (quiz + practice test)
         setTimeout(() => {
           onComplete();
         }, 300);
@@ -244,18 +228,14 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     }
   };
 
-  const progressPercent = Math.round(
-    (completedProblems.length / problems.length) * 100,
-  );
-
   if (isLoadingDetail) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Spin size="large" />
-          <div className="mt-4 text-gray-600 dark:text-gray-400">
+          {/* <div className="mt-4 text-gray-600 dark:text-gray-400">
             Đang tải bài tập...
-          </div>
+          </div> */}
         </div>
       </div>
     );
@@ -322,6 +302,9 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
             languages={codeLanguages}
             problems={codeProblems}
             selectedLanguageId={selectedLanguageId ?? undefined}
+            activeProblemId={currentProblem?.problemId}
+            onCodeChange={handleCodeChange}
+            onProblemChange={handleProblemChange}
             onSubmit={(payload) => {
               // Handle code submission for testing
               console.log("Code submitted for testing:", payload);
@@ -333,13 +316,13 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
       {/* Footer Actions */}
       <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* <Button
+          <Button
             icon={<FiChevronLeft />}
             onClick={goToPreviousProblem}
             disabled={currentProblemIndex === 0 || isSubmitting}
           >
             Bài trước
-          </Button> */}
+          </Button>
 
           <div className="flex items-center gap-3 mx-auto">
             {!isProblemCompleted(currentProblem.problemId) && (
