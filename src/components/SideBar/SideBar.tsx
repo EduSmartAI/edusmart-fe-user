@@ -50,7 +50,7 @@ const getItem = (
 
 const navItems: NavMenuItem[] = [
   getItem(
-    "Dashboard Lộ trình học tập",
+    "Lộ trình học tập",
     "dashboard",
     <PieChartOutlined />,
     undefined,

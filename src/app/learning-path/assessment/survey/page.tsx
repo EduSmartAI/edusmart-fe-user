@@ -30,6 +30,9 @@ export default function SurveyAssessmentPage() {
     };
 
     checkAuth();
+
+    // Clear any previous assessment completion flag when starting new assessment
+    sessionStorage.removeItem("learning-path-assessment-completed");
   }, [fetchSession]);
 
   useEffect(() => {

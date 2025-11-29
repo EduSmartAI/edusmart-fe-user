@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Layout, message, Select, Spin, Splitter } from "antd";
+import { Card, Layout, message, Select, Spin, Splitter, Button } from "antd";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import Editor, { Monaco, OnMount } from "@monaco-editor/react";
 import React, {
@@ -10,7 +10,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import { FiChevronDown } from "react-icons/fi";
+import { FiChevronDown, FiSend, FiPlay } from "react-icons/fi";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -135,14 +135,10 @@ export default function CodeEditor({
     Record<string, string>
   >(() => {
     const map: Record<string, string> = {};
+    // Don't auto-load test inputs - let user type manually
     if (hasProblems) {
       problems.forEach((p) => {
-        const defaultInput =
-          (p.testCases ?? [])
-            .map((tc) => tc.inputData ?? "")
-            .filter((x) => x && x.trim().length > 0)
-            .join("\n\n") || "";
-        map[p.problemId] = defaultInput;
+        map[p.problemId] = ""; // Empty by default
       });
     } else {
       map["default"] = "";
@@ -185,7 +181,7 @@ export default function CodeEditor({
       return map;
     });
 
-    // giữ test input cũ nếu có, không thì build lại từ testCases
+    // giữ test input cũ nếu có, không thì để trống cho user nhập
     setTestInputsByProblem((prev) => {
       const map: Record<string, string> = {};
       problems.forEach((p) => {
@@ -194,12 +190,8 @@ export default function CodeEditor({
           map[p.problemId] = existing;
           return;
         }
-        const defaultInput =
-          (p.testCases ?? [])
-            .map((tc) => tc.inputData ?? "")
-            .filter((x) => x && x.trim().length > 0)
-            .join("\n\n") || "";
-        map[p.problemId] = defaultInput;
+        // Don't auto-fill from testCases - let user type manually
+        map[p.problemId] = "";
       });
       return map;
     });
@@ -276,8 +268,6 @@ export default function CodeEditor({
     ]);
   };
 
-  // Unused function - kept for future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const runCode = async () => {
     const code = editorRef.current?.getValue() ?? "";
     if (!code.trim()) {
@@ -446,8 +436,6 @@ export default function CodeEditor({
     }
   };
 
-  // Unused function - kept for future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSubmit = () => {
     const currentKey = activeProblem?.problemId ?? activeProblemId ?? "default";
     const currentCode = editorRef.current?.getValue() ?? "";
@@ -686,7 +674,7 @@ export default function CodeEditor({
           </div>
 
           <div className="flex gap-3 items-center">
-            {/* <Button
+            <Button
               type="primary"
               icon={<FiPlay />}
               onClick={runCode}
@@ -694,7 +682,7 @@ export default function CodeEditor({
               className="font-medium"
             >
               Run
-            </Button> */}
+            </Button>
 
             {/* <Button
               type="default"
@@ -774,7 +762,7 @@ export default function CodeEditor({
                                     ex.inputData ?? "",
                                     "```",
                                     "",
-                                    "**Đầu ra::**",
+                                    "**Đầu ra:**",
                                     "```text",
                                     ex.outputData ?? "",
                                     "```",

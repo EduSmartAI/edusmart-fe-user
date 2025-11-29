@@ -153,6 +153,9 @@ const QuizMainFlow: React.FC = () => {
         // Store learning path ID
         learningPathProgress.setLearningPathId(result.learningPathId);
 
+        // Set flag to allow access to processing page
+        sessionStorage.setItem("learning-path-assessment-completed", "true");
+
         // Redirect to processing
         setTimeout(() => {
           router.push(

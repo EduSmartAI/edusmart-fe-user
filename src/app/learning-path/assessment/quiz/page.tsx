@@ -21,6 +21,9 @@ export default function QuizAssessmentPage() {
     };
 
     checkAuth();
+
+    // Clear any previous assessment completion flag when starting quiz
+    sessionStorage.removeItem("learning-path-assessment-completed");
   }, [fetchSession]);
 
   useEffect(() => {
