@@ -17,7 +17,7 @@ import { throwStoreError } from "EduSmart/types/errors";
 const { Content } = Layout;
 
 interface SurveyMainFlowProps {
-  onComplete?: () => void;
+  onComplete?: (learningGoalId?: string) => void;
   onBack?: (
     data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
   ) => void;
@@ -112,16 +112,21 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
             duration: 1,
           });
 
+          // Save learningGoalId BEFORE clearing survey data
+          const learningGoalId = survey.survey1Data?.learningGoal;
+          console.log("💾 Saved learningGoalId before reset:", learningGoalId);
+
           // Clear survey data BEFORE redirecting to prevent flash of Survey1
           // Use a small delay to ensure message is visible
           setTimeout(() => {
-            // Clear survey store data
-            survey.resetSurvey();
 
-            // Redirect to transition page
+            // Redirect to transition page with learningGoalId
             if (onComplete) {
-              console.log("Redirecting to transition page...");
-              onComplete();
+              console.log(
+                "Redirecting to transition page with learningGoalId:",
+                learningGoalId,
+              );
+              onComplete(learningGoalId);
             }
           }, 300);
         } else {
