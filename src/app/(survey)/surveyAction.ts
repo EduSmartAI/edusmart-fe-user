@@ -7,6 +7,7 @@ import {
 } from "EduSmart/types";
 import { normalizeFetchError } from "EduSmart/app/(quiz)/quizAction";
 import apiServer from "EduSmart/lib/apiServer";
+import type { OtherQuestionCode } from "EduSmart/api/api-quiz-service";
 
 // ======================== API RESPONSE TYPES ========================
 export interface SurveySubmissionResponse {
@@ -85,7 +86,7 @@ function logPayloadStructure(
       }>;
     }>;
     isWantToTakeTest?: boolean;
-    otherQuestionAnswerCodes?: string[];
+    otherQuestionAnswerCodes?: OtherQuestionCode[];
   },
   title: string = "Payload Structure",
 ): void {
@@ -968,7 +969,7 @@ export async function submitSurveyAction(surveyData: {
       },
       studentSurveys: studentSurveys,
       isWantToTakeTest: surveyData.isWantToTakeTest, // ✅ Use parameter from function argument
-      otherQuestionAnswerCodes: (otherQuestionAnswerCodes || []) as any, // ✅ Include other question answer codes (cast to match API type)
+      otherQuestionAnswerCodes: (otherQuestionAnswerCodes || []) as OtherQuestionCode[], // ✅ Cast number array to enum array
     };
 
     // Validate payload before sending

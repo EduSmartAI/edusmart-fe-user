@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Button, Spin, message, Modal } from "antd";
+import { Button, Spin, Modal } from "antd";
 import {
   FiCheckCircle,
   FiChevronLeft,
@@ -132,7 +132,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     };
 
     loadTemplate();
-  }, [currentProblem, selectedLanguageId, getSubmission]);
+  }, [currentProblem, selectedLanguageId, getSubmission, messageApi]);
 
   const handleCodeChange = (code: string) => {
     setCurrentCode(code);

@@ -13,8 +13,6 @@ import {
   FiArrowRight,
   FiClock,
   FiArrowLeft,
-  FiLayers,
-  FiAlertCircle,
 } from "react-icons/fi";
 import { getLearningPathAction } from "EduSmart/app/(learning-path)/learningPathAction";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";

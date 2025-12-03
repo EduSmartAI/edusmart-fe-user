@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { message } from "antd";
 import QuizSelectionScreen from "./QuizSelection/QuizSelectionScreen";
 import QuizTakingScreenNew from "./QuizTaking/QuizTakingScreenNew";
 import PracticeTestSelection from "../PracticeTest/PracticeTestSelection";

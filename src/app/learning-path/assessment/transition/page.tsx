@@ -5,11 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Button,
   Card,
-  message,
   Spin,
   Alert,
   Checkbox,
-  Divider,
   Space,
   Modal,
   Table,
@@ -21,9 +19,6 @@ import {
   FiCheckCircle,
   FiArrowRight,
   FiArrowLeft,
-  FiChevronDown,
-  FiChevronUp,
-  FiEye,
 } from "react-icons/fi";
 import { UploadOutlined } from "@ant-design/icons";
 import { SiQuizlet } from "react-icons/si";
@@ -73,7 +68,7 @@ function SurveyToQuizTransitionContent() {
     number[]
   >([]);
   const [loadingOtherQuestions, setLoadingOtherQuestions] = useState(false);
-  const [showOtherQuestions, setShowOtherQuestions] = useState(false);
+  // const [showOtherQuestions, setShowOtherQuestions] = useState(false); // Not used yet
   const [showTranscriptModal, setShowTranscriptModal] = useState(false);
   const [transcriptData, setTranscriptData] = useState<
     StudentTranscriptRecord[]
@@ -627,9 +622,9 @@ function SurveyToQuizTransitionContent() {
                                   ghost
                                   size="small"
                                   expandIconPosition="start"
-                                  onChange={(keys) => {
-                                    setShowOtherQuestions(keys.length > 0);
-                                  }}
+                                  // onChange={(keys) => {
+                                  //   setShowOtherQuestions(keys.length > 0);
+                                  // }}
                                   items={[
                                     {
                                       key: "1",

@@ -10,7 +10,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import { FiChevronDown, FiSend, FiPlay } from "react-icons/fi";
+import { FiChevronDown, FiPlay } from "react-icons/fi";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -70,7 +70,7 @@ type Props = {
 export default function CodeEditor({
   languages,
   problems,
-  onSubmit,
+  onSubmit, // eslint-disable-line @typescript-eslint/no-unused-vars
   onCodeChange,
   onProblemChange,
   onLanguageChange,
@@ -438,35 +438,35 @@ export default function CodeEditor({
     }
   };
 
-  const handleSubmit = () => {
-    const currentKey = activeProblem?.problemId ?? activeProblemId ?? "default";
-    const currentCode = editorRef.current?.getValue() ?? "";
+  // const handleSubmit = () => {
+  //   const currentKey = activeProblem?.problemId ?? activeProblemId ?? "default";
+  //   const currentCode = editorRef.current?.getValue() ?? "";
 
-    // merge code hiện tại vào state
-    const mergedCodes: Record<string, string> = {
-      ...codeByProblem,
-      [currentKey]: currentCode,
-    };
+  //   // merge code hiện tại vào state
+  //   const mergedCodes: Record<string, string> = {
+  //     ...codeByProblem,
+  //     [currentKey]: currentCode,
+  //   };
 
-    // build mảng [ { languageId, sourceCode }, ... ]
-    const payload: SubmitPayload = hasProblems
-      ? problems.map((p) => ({
-          languageId: selectedLangId,
-          sourceCode: mergedCodes[p.problemId] ?? "",
-        }))
-      : [
-          {
-            languageId: selectedLangId,
-            sourceCode: mergedCodes[currentKey] ?? "",
-          },
-        ];
+  //   // build mảng [ { languageId, sourceCode }, ... ]
+  //   const payload: SubmitPayload = hasProblems
+  //     ? problems.map((p) => ({
+  //         languageId: selectedLangId,
+  //         sourceCode: mergedCodes[p.problemId] ?? "",
+  //       }))
+  //     : [
+  //         {
+  //           languageId: selectedLangId,
+  //           sourceCode: mergedCodes[currentKey] ?? "",
+  //         },
+  //       ];
 
-    if (onSubmit) {
-      onSubmit(payload);
-    } else {
-      console.log("[SUBMIT inside Client]:", payload);
-    }
-  };
+  //   if (onSubmit) {
+  //     onSubmit(payload);
+  //   } else {
+  //     console.log("[SUBMIT inside Client]:", payload);
+  //   }
+  // };
 
   const handleChangeProblem = (problemId: string) => {
     if (!hasProblems) return;

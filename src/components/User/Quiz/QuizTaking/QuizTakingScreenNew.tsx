@@ -16,7 +16,6 @@ import {
   Row,
   Col,
   Spin,
-  message,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -114,7 +113,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
       // Reset submitting state on error to allow retry
       setIsSubmitting(false);
     }
-  }, [state, onComplete]);
+  }, [state, onComplete, messageApi]);
 
   // Load test when component mounts
   useEffect(() => {
