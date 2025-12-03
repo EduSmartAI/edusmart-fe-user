@@ -8,9 +8,9 @@ import { SiQuizlet } from "react-icons/si";
 import { HiDocumentText } from "react-icons/hi";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
-import { createLearningPathFromTranscriptAction } from "EduSmart/app/(learning-path)/learningPathAction";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
 import { getLearningGoalAction } from "EduSmart/app/(survey)/surveyAction";
+import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
 
 interface LearningGoalOption {
   learningGoalId: string;
@@ -21,6 +21,7 @@ interface LearningGoalOption {
 function SurveyToQuizTransitionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { submitSurvey } = useSurveyStore(); // ✅ Get submitSurvey from store
   const [selectedOption, setSelectedOption] = useState<
     "quiz" | "transcript" | null
   >(null);
@@ -92,8 +93,35 @@ function SurveyToQuizTransitionContent() {
     checkTranscript();
   }, []);
 
-  const handleContinueToQuiz = () => {
-    router.push("/learning-path/assessment/quiz");
+  const handleContinueToQuiz = async () => {
+    // ✅ Submit survey with isWantToTakeTest = true
+    setIsSubmitting(true);
+    try {
+      console.log(
+        "🎯 [TRANSITION] Submitting survey with isWantToTakeTest = true (Take Quiz)",
+      );
+      const result = await submitSurvey(true);
+
+      console.log("🎯 [TRANSITION] Survey result:", result);
+
+      if (result.success) {
+        // Update localStorage
+        localStorage.setItem("learning_path_completed_steps", JSON.stringify([1, 2]));
+        localStorage.setItem("learning_path_current_step", "3");
+
+        message.success("Đang chuyển đến bài đánh giá...");
+        router.push("/learning-path/assessment/quiz");
+      } else {
+        message.error(
+          result.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting survey:", error);
+      message.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleExit = () => {
@@ -117,26 +145,44 @@ function SurveyToQuizTransitionContent() {
 
     setIsSubmitting(true);
     try {
-      // Call server action to create learning path from transcript
-      const result = await createLearningPathFromTranscriptAction(
-        learningGoalDetails.learningGoalId,
-        learningGoalDetails.learningGoalName,
-        learningGoalDetails.learningGoalType,
+      // ✅ Submit survey with isWantToTakeTest = false
+      // Backend will create learning path from transcript and return learningPathId
+      console.log(
+        "📄 [TRANSITION] Submitting survey with isWantToTakeTest = false (Use Transcript)",
       );
+      const surveyResult = await submitSurvey(false);
 
-      if (!result.ok) {
-        message.error(result.error || "Không thể tạo lộ trình từ bảng điểm");
+      console.log("📄 [TRANSITION] Survey result:", surveyResult);
+
+      if (!surveyResult.success) {
+        message.error(
+          surveyResult.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
+        );
         return;
       }
 
-      // Success case
+      // ✅ When isWantToTakeTest = false, response contains learningPathId
+      const learningPathId = surveyResult.learningPathId || surveyResult.surveyId;
+      
+      if (!learningPathId) {
+        message.error("Không nhận được ID lộ trình học tập");
+        console.error("❌ No learningPathId in response:", surveyResult);
+        return;
+      }
+
+      console.log("✅ [TRANSITION] Received learningPathId:", learningPathId);
+
+      // Update localStorage
+      localStorage.setItem("learning_path_completed_steps", JSON.stringify([1, 2]));
+      localStorage.setItem("learning_path_current_step", "3");
+
+      // Success - redirect to processing page
       message.success("Đang tạo lộ trình học tập từ bảng điểm...");
-      // Redirect to processing page with learningPathId
       router.push(
-        `/learning-path/assessment/processing?learningPathId=${result.learningPathId}`,
+        `/learning-path/assessment/processing?learningPathId=${learningPathId}`,
       );
     } catch (error) {
-      console.error("Error creating learning path from transcript:", error);
+      console.error("Error using transcript:", error);
       message.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);

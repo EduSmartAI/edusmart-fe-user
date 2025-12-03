@@ -626,12 +626,19 @@ export async function getSurveyByCodeAction(surveyCode: string): Promise<{
       );
 
       // Ưu tiên lấy survey có title (survey mới hơn) hoặc survey cuối cùng
-      const targetSurvey = matchingSurveys.length > 0
-        ? matchingSurveys.find((s) => s.title) || matchingSurveys[matchingSurveys.length - 1]
-        : null;
+      const targetSurvey =
+        matchingSurveys.length > 0
+          ? matchingSurveys.find((s) => s.title) ||
+            matchingSurveys[matchingSurveys.length - 1]
+          : null;
 
-      console.log(`🔍 [getSurveyByCodeAction] Found ${matchingSurveys.length} surveys with code "${surveyCode}":`, 
-        matchingSurveys.map(s => ({ surveyId: s.surveyId, title: s.title, description: s.description }))
+      console.log(
+        `🔍 [getSurveyByCodeAction] Found ${matchingSurveys.length} surveys with code "${surveyCode}":`,
+        matchingSurveys.map((s) => ({
+          surveyId: s.surveyId,
+          title: s.title,
+          description: s.description,
+        })),
       );
       console.log(`✅ [getSurveyByCodeAction] Selected survey:`, {
         surveyId: targetSurvey?.surveyId,
@@ -697,6 +704,7 @@ export async function submitSurveyAction(surveyData: {
   survey1Data?: Survey1FormValues;
   survey2Data?: Survey2FormValues;
   survey3Data?: Survey3FormValues;
+  isWantToTakeTest: boolean; // ✅ REQUIRED: true = làm test, false = upload transcript
 }): Promise<{
   ok: boolean;
   surveyId?: string;
@@ -846,7 +854,7 @@ export async function submitSurveyAction(surveyData: {
         questionsCount: habitSurveyResult.data?.questions?.length,
         error: habitSurveyResult.error,
       });
-      
+
       if (!habitSurveyResult.ok || !habitSurveyResult.data?.surveyId) {
         throw new Error(
           habitSurveyResult.error || "Failed to get HABIT survey",
@@ -886,7 +894,13 @@ export async function submitSurveyAction(surveyData: {
         };
 
         console.log("✅ Adding HABIT survey:", habitSurvey);
-        console.log("🔍 [VALIDATION] HABIT Survey has", habitSurveyResult.data.questions?.length, "questions but submitting", habitAnswers.length, "answers");
+        console.log(
+          "🔍 [VALIDATION] HABIT Survey has",
+          habitSurveyResult.data.questions?.length,
+          "questions but submitting",
+          habitAnswers.length,
+          "answers",
+        );
         studentSurveys.push(habitSurvey);
       } else {
         console.warn("⚠️ No valid HABIT answers after filtering!");
@@ -941,7 +955,7 @@ export async function submitSurveyAction(surveyData: {
         },
       },
       studentSurveys: studentSurveys,
-      isWantToTakeTest: false, // false - không bắt buộc làm test (theo request mẫu)
+      isWantToTakeTest: surveyData.isWantToTakeTest, // ✅ Use parameter from function argument
       //   otherQuestionAnswerCodes: [], // Empty array - tạm thời không dùng
     };
 
