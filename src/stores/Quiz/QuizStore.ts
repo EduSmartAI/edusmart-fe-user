@@ -106,6 +106,11 @@ interface QuizStoreActions {
       languageId: number;
       codeSubmission: string;
     }>;
+    learningGoal?: {
+      learningGoalId?: string;
+      learningGoalType?: number;
+      learningGoalName?: string;
+    };
   }) => Promise<{ ok: boolean; learningPathId?: string; error?: string }>; // Submit test
   loadTestResult: (studentTestId: string) => Promise<boolean>; // Load kết quả test
 

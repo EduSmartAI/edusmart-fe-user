@@ -20,7 +20,7 @@ import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
 import {
   selectUserTemplateCodeList,
   checkPracticeTestCodeCreate,
-} from "../../app/(codeQuiz)/action";
+} from "EduSmart/app/(codeQuiz)/action";
 import { JudgeLanguageId, judgeLanguageToMonaco } from "EduSmart/enum/enum";
 import "./code.css";
 import TestCaseComponent, {
@@ -29,6 +29,7 @@ import TestCaseComponent, {
 import { handleEditorWillMount } from "EduSmart/utils/EditorCodeConfig";
 import { CodeLanguageOption, PracticeProblem } from "./CodeEditorContainer";
 import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
 
 const { Header, Content } = Layout;
 const { Option } = Select;
@@ -76,6 +77,7 @@ export default function CodeEditor({
   selectedLanguageId: propSelectedLanguageId,
   activeProblemId: propActiveProblemId,
 }: Props) {
+  const messageApi = useNotification();
   const { isDarkMode } = useTheme();
   const hasProblems = problems.length > 0;
   const getSubmission = usePracticeTestStore((s) => s.getSubmission);
@@ -271,19 +273,19 @@ export default function CodeEditor({
   const runCode = async () => {
     const code = editorRef.current?.getValue() ?? "";
     if (!code.trim()) {
-      message.warning("Bạn chưa nhập code.");
+      messageApi.warning("Bạn chưa nhập code.");
       return;
     }
     clearMarkers();
 
     if (!activeProblem || !activeProblem.problemId) {
-      message.error("Không xác định được bài tập hiện tại.");
+      messageApi.error("Không xác định được bài tập hiện tại.");
       return;
     }
 
     const rawInput = (testInputsByProblem[currentProblemKey] ?? "").trim();
     if (!rawInput) {
-      message.warning("Bạn chưa nhập test case.");
+      messageApi.warning("Bạn chưa nhập test case.");
       return;
     }
 
@@ -565,7 +567,7 @@ export default function CodeEditor({
       }
     } catch (e) {
       console.error("❌ loadUserTemplateCode error:", e);
-      message.warning("Không tải được template code, dùng snippet mặc định.");
+      messageApi.warning("Không tải được template code, dùng snippet mặc định.");
     } finally {
       setTemplateLoading(false);
     }

@@ -30,6 +30,7 @@ import {
   mapBackendDifficulty,
 } from "EduSmart/types/quiz";
 import { learningPathProgress } from "EduSmart/components/LearningPath";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -54,10 +55,9 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
   const router = useRouter();
   const { state, actions } = useQuizTaking();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const messageApi = useNotification();
 
   const handleSubmitTest = useCallback(async () => {
-    console.log("🚀 Preparing quiz data for submission...");
-
     // Set submitting state to show blur overlay with Spin
     setIsSubmitting(true);
 
@@ -90,7 +90,7 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
       console.log("✅ Quiz data prepared:", quizData);
 
       // Show success message
-      message.success({
+      messageApi.success({
         content: "Đã lưu bài kiểm tra! Tiếp tục với bài tập thực hành.",
         duration: 1,
       });
@@ -106,8 +106,8 @@ const QuizTakingScreenNew: React.FC<QuizTakingScreenNewProps> = ({
       console.error("❌ Quiz preparation error:", error);
 
       // Show error message
-      message.error({
-        content: "❌ Đã xảy ra lỗi. Vui lòng thử lại sau.",
+      messageApi.error({
+        content: "Đã xảy ra lỗi. Vui lòng thử lại sau.",
         duration: 6,
       });
 

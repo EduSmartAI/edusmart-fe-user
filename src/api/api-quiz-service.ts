@@ -1323,6 +1323,7 @@ export interface StudentTestInsertCommand {
   answers: StudentAnswerRequest[];
   practiceTestAnswers?: PracticeTestStudentAnswerRequest[];
   otherQuestionAnswerCodes?: OtherQuestionCode[];
+  learningGoal?: LearningGoal;
 }
 
 export interface StudentTestInsertResponse {

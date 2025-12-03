@@ -8,8 +8,10 @@ import PracticeTestSelection from "../PracticeTest/PracticeTestSelection";
 import PracticeTestTaking from "../PracticeTest/PracticeTestTaking";
 import { useLearningPathFlow } from "EduSmart/hooks/useLearningPathFlow";
 import { useQuizStore } from "EduSmart/stores/Quiz/QuizStore";
+import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
 import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
 import { learningPathProgress } from "EduSmart/components/LearningPath";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
 
 export interface QuizState {
   stage: "selection" | "taking" | "practice-selection" | "practice-taking";
@@ -20,6 +22,11 @@ export interface QuizState {
     startedAt: string;
     quizIds: string[];
     answers: Array<{ questionId: string; answerId: string }>;
+    learningGoal?: {
+      learningGoalId?: string;
+      learningGoalType?: number;
+      learningGoalName?: string;
+    };
   };
 }
 
@@ -31,9 +38,11 @@ const QuizMainFlow: React.FC = () => {
     markPracticeTestCompleted,
     canAccessPracticeTest,
   } = useLearningPathFlow();
+  const messageApi = useNotification();
 
   const quizStore = useQuizStore();
   const practiceTestStore = usePracticeTestStore();
+  const { survey1Data, learningGoals } = useSurveyStore();
 
   // Determine initial stage based on flow state
   const getInitialStage = (): QuizState["stage"] => {
@@ -88,10 +97,48 @@ const QuizMainFlow: React.FC = () => {
     // After quiz completion, save data and move to practice test selection
     console.log("Quiz completed, saving data for later submission:", quizData);
     markQuizCompleted();
+
+    // Get learningGoal from survey store
+    let learningGoal:
+      | {
+          learningGoalId?: string;
+          learningGoalType?: number;
+          learningGoalName?: string;
+        }
+      | undefined;
+
+    console.log("📚 Survey1Data:", survey1Data);
+    console.log("📚 Available Learning Goals:", learningGoals);
+
+    if (survey1Data?.learningGoal) {
+      console.log("🔍 Looking for learning goal ID:", survey1Data.learningGoal);
+      const selectedGoal = learningGoals.find(
+        (goal) => goal.learningGoalId === survey1Data.learningGoal,
+      );
+      if (selectedGoal) {
+        learningGoal = {
+          learningGoalId: selectedGoal.learningGoalId,
+          learningGoalType: selectedGoal.learningGoalType,
+          learningGoalName: selectedGoal.learningGoalName,
+        };
+        console.log("✅ Learning Goal Found:", learningGoal);
+      } else {
+        console.warn(
+          "⚠️ Learning goal ID not found in learningGoals array:",
+          survey1Data.learningGoal,
+        );
+      }
+    } else {
+      console.warn("⚠️ No learning goal in survey1Data");
+    }
+
     setQuizState({
       stage: "practice-selection",
       selectedQuizIds: [],
-      quizSubmissionData: quizData,
+      quizSubmissionData: {
+        ...quizData,
+        learningGoal,
+      },
     });
   };
 
@@ -108,7 +155,7 @@ const QuizMainFlow: React.FC = () => {
     // After practice test completion, submit both quiz and practice test together
     console.log("Practice test completed - submitting combined results");
 
-    const hideLoading = message.loading("Đang nộp bài kiểm tra...", 0);
+    const hideLoading = messageApi.loading("Đang nộp bài kiểm tra...", 0);
 
     try {
       // Get quiz submission data from state
@@ -145,7 +192,7 @@ const QuizMainFlow: React.FC = () => {
       hideLoading();
 
       if (result.ok && result.learningPathId) {
-        message.success("Đã nộp bài thành công!");
+        messageApi.success("Đã nộp bài thành công!");
 
         // Mark practice test completed
         markPracticeTestCompleted();
@@ -168,7 +215,7 @@ const QuizMainFlow: React.FC = () => {
     } catch (error) {
       hideLoading();
       console.error("❌ Combined submission error:", error);
-      message.error("Có lỗi khi nộp bài. Vui lòng thử lại.");
+      messageApi.error("Có lỗi khi nộp bài. Vui lòng thử lại.");
     }
   };
 

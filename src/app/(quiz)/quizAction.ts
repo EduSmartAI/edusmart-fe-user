@@ -276,6 +276,11 @@ export async function submitStudentTestAction(testData: {
     languageId: number;
     codeSubmission: string;
   }>;
+  learningGoal?: {
+    learningGoalId?: string;
+    learningGoalType?: number;
+    learningGoalName?: string;
+  };
 }): Promise<
   | { ok: true; data: ApiResponse<{ learningPathId: string }> }
   | { ok: false; error: string; status?: number }
@@ -292,6 +297,11 @@ export async function submitStudentTestAction(testData: {
         languageId: number;
         codeSubmission: string;
       }>;
+      learningGoal?: {
+        learningGoalId?: string;
+        learningGoalType?: number;
+        learningGoalName?: string;
+      };
     } = {
       testId: testData.testId,
       startedAt: testData.startedAt,
@@ -314,6 +324,19 @@ export async function submitStudentTestAction(testData: {
           codeSubmission: answer.codeSubmission,
         }),
       );
+    }
+
+    // Add learningGoal if provided
+    if (testData.learningGoal) {
+      console.log("🎯 Learning Goal Found:", testData.learningGoal);
+      payload.learningGoal = {
+        learningGoalId: testData.learningGoal.learningGoalId,
+        learningGoalType: testData.learningGoal.learningGoalType,
+        learningGoalName: testData.learningGoal.learningGoalName,
+      };
+      console.log("✅ Learning Goal Added to Payload:", payload.learningGoal);
+    } else {
+      console.warn("⚠️ No Learning Goal provided in testData");
     }
 
     console.log("📤 Final payload:", payload);

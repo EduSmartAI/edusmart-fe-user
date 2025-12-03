@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Card, message, Spin, Alert, Checkbox, Divider } from "antd";
+import {
+  Button,
+  Card,
+  message,
+  Spin,
+  Alert,
+  Checkbox,
+  Divider,
+  Space,
+} from "antd";
 import { FiCheckCircle, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
 import { HiDocumentText } from "react-icons/hi";
@@ -14,8 +23,8 @@ import {
   getSurveyByCodeAction,
 } from "EduSmart/app/(survey)/surveyAction";
 import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
-import { notification, Space } from "antd";
 import type { OtherQuestionCode } from "EduSmart/api/api-quiz-service";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
 
 interface LearningGoalOption {
   learningGoalId: string;
@@ -29,7 +38,7 @@ interface OtherQuestion {
 }
 
 function SurveyToQuizTransitionContent() {
-  const [api, contextHolder] = notification.useNotification();
+  const messageApi = useNotification();
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -152,21 +161,16 @@ function SurveyToQuizTransitionContent() {
         );
         localStorage.setItem("learning_path_current_step", "3");
 
-        message.success("Đang chuyển đến bài đánh giá...");
+        messageApi.success("Đang chuyển đến bài đánh giá...");
         router.push("/learning-path/assessment/quiz");
       } else {
-        // message.error(
-        //   result.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
-        // );
-        api.error({
-          message: "Lỗi gửi khảo sát",
-          description:
-            result.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
-        });
+        messageApi.error(
+          result.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
+        );
       }
     } catch (error) {
       console.error("Error submitting survey:", error);
-      message.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      messageApi.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
     }
@@ -186,7 +190,7 @@ function SurveyToQuizTransitionContent() {
 
   const handleUseTranscript = async () => {
     if (!learningGoalDetails) {
-      message.error("Không tìm thấy thông tin mục tiêu học tập");
+      messageApi.error("Không tìm thấy thông tin mục tiêu học tập");
       return;
     }
 
@@ -209,14 +213,9 @@ function SurveyToQuizTransitionContent() {
       console.log("📄 [TRANSITION] Survey result:", surveyResult);
 
       if (!surveyResult.success) {
-        // message.error(
-        //   surveyResult.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
-        // );
-        api.error({
-          message: "Lỗi gửi khảo sát",
-          description:
-            surveyResult.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
-        });
+        messageApi.error(
+          surveyResult.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
+        );
         return;
       }
 
@@ -225,7 +224,7 @@ function SurveyToQuizTransitionContent() {
         surveyResult.learningPathId || surveyResult.surveyId;
 
       if (!learningPathId) {
-        message.error("Không nhận được ID lộ trình học tập");
+        messageApi.error("Không nhận được ID lộ trình học tập");
         console.error("❌ No learningPathId in response:", surveyResult);
         return;
       }
@@ -240,13 +239,13 @@ function SurveyToQuizTransitionContent() {
       localStorage.setItem("learning_path_current_step", "3");
 
       // Success - redirect to processing page
-      message.success("Đang tạo lộ trình học tập từ bảng điểm...");
+      messageApi.success("Đang tạo lộ trình học tập từ bảng điểm...");
       router.push(
         `/learning-path/assessment/processing?learningPathId=${learningPathId}`,
       );
     } catch (error) {
       console.error("Error using transcript:", error);
-      message.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
+      messageApi.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false);
     }
@@ -262,7 +261,6 @@ function SurveyToQuizTransitionContent() {
 
   return (
     <LearningPathGuard requiredStep={1} requiredCompletedSteps={[1]}>
-      {contextHolder}
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Progress Header - Minimal Mode */}
         <div className="sticky top-0 z-10">
