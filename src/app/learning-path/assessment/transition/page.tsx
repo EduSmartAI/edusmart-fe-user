@@ -15,6 +15,7 @@ import {
   Table,
   Tag,
   Collapse,
+  Upload,
 } from "antd";
 import {
   FiCheckCircle,
@@ -24,6 +25,7 @@ import {
   FiChevronUp,
   FiEye,
 } from "react-icons/fi";
+import { UploadOutlined } from "@ant-design/icons";
 import { SiQuizlet } from "react-icons/si";
 import { HiDocumentText } from "react-icons/hi";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
@@ -36,8 +38,10 @@ import {
 import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
 import type { OtherQuestionCode } from "EduSmart/api/api-quiz-service";
 import type { ColumnsType } from "antd/es/table";
+import type { RcFile } from "antd/es/upload";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
+import { uploadTranscriptClient } from "EduSmart/hooks/api-client/studentApiClient";
 
 interface LearningGoalOption {
   learningGoalId: string;
@@ -75,6 +79,7 @@ function SurveyToQuizTransitionContent() {
     StudentTranscriptRecord[]
   >([]);
   const [loadingTranscript, setLoadingTranscript] = useState(false);
+  const [uploadingTranscript, setUploadingTranscript] = useState(false);
 
   // Load learning goal from URL param and fetch learning goals list
   useEffect(() => {
@@ -323,6 +328,73 @@ function SurveyToQuizTransitionContent() {
     return <Tag color={config.color}>{config.label}</Tag>;
   };
 
+  // Handle transcript upload
+  const handleUploadTranscript = async (file: RcFile) => {
+    try {
+      setUploadingTranscript(true);
+      console.log("🔼 [TRANSITION] Starting upload for file:", file.name);
+
+      const result = await uploadTranscriptClient(file);
+      console.log("🔼 [TRANSITION] Upload result:", result);
+
+      if (result.success === true) {
+        console.log("✅ [TRANSITION] Upload success");
+        messageApi.success(result.message || "Upload bảng điểm thành công");
+
+        // Re-check transcript after successful upload
+        const transcriptResult = await getStudentTranscriptServer();
+        if (
+          transcriptResult.success &&
+          transcriptResult.response &&
+          transcriptResult.response.length > 0
+        ) {
+          setHasTranscript(true);
+          // Auto-load other questions after successful upload
+          await loadOtherQuestions();
+        }
+      } else {
+        console.warn("⚠️ [TRANSITION] Upload failed");
+        const errorDetails = result.detailErrors
+          ? typeof result.detailErrors === "string"
+            ? result.detailErrors
+            : JSON.stringify(result.detailErrors)
+          : "";
+
+        messageApi.error({
+          content: (
+            <div>
+              <div className="font-semibold">{result.message}</div>
+              {errorDetails && (
+                <div className="text-sm mt-1">{errorDetails}</div>
+              )}
+            </div>
+          ),
+          duration: 5,
+        });
+      }
+    } catch (error) {
+      console.error("❌ [TRANSITION] Upload exception:", error);
+      messageApi.error({
+        content: (
+          <div>
+            <div className="font-semibold">
+              {error instanceof Error
+                ? error.message
+                : "Có lỗi xảy ra khi upload bảng điểm"}
+            </div>
+            <div className="text-sm mt-1">
+              Vui lòng thử lại hoặc liên hệ với quản trị viên.
+            </div>
+          </div>
+        ),
+        duration: 5,
+      });
+    } finally {
+      setUploadingTranscript(false);
+    }
+    return false; // Prevent default upload behavior
+  };
+
   // Table columns for transcript
   const transcriptColumns: ColumnsType<StudentTranscriptRecord> = [
     {
@@ -418,10 +490,6 @@ function SurveyToQuizTransitionContent() {
                     Thông tin của bạn đã được ghi nhận. Bây giờ, hãy chọn cách
                     bạn muốn tiếp tục
                   </p>
-                  {/* <p className="text-base text-gray-500 dark:text-gray-400">
-                    Bạn có thể sử dụng bảng điểm hiện có hoặc làm bài đánh giá
-                    năng lực
-                  </p> */}
                 </div>
 
                 {/* Choice Cards */}
@@ -491,8 +559,42 @@ function SurveyToQuizTransitionContent() {
                           </p>
                         </div>
                       ) : hasTranscript === false ? (
-                        <div className="space-y-3">
-                          {/* No transcript message */}
+                        <div className="space-y-3 flex flex-col gap-5">
+                          <Alert
+                            message="Chưa có bảng điểm"
+                            type="warning"
+                            showIcon
+                            className="text-xs"
+                          />
+                          <Upload
+                            accept=".xlsx,.xls"
+                            maxCount={1}
+                            beforeUpload={handleUploadTranscript}
+                            showUploadList={false}
+                          >
+                            <Button
+                              icon={
+                                uploadingTranscript ? (
+                                  <Spin size="small" />
+                                ) : (
+                                  <UploadOutlined />
+                                )
+                              }
+                              block
+                              disabled={uploadingTranscript}
+                              size="small"
+                              type="primary"
+                              loading={uploadingTranscript}
+                              className="!bg-[#49BBBD] hover:!bg-[#3da8aa]"
+                            >
+                              {uploadingTranscript
+                                ? "Đang upload..."
+                                : "Upload bảng điểm (.xlsx, .xls)"}
+                            </Button>
+                          </Upload>
+                          {/* <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                            Định dạng: Excel (.xlsx, .xls)
+                          </p> */}
                         </div>
                       ) : (
                         <>
@@ -735,14 +837,6 @@ function SurveyToQuizTransitionContent() {
                             : "Chọn một phương án"}
                     </Button>
                   </div>
-
-                  {/* {selectedOption && !isSubmitting && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-                      {selectedOption === "transcript"
-                        ? "Bạn đã chọn sử dụng bảng điểm"
-                        : "Bạn đã chọn làm bài đánh giá năng lực"}
-                    </p>
-                  )} */}
                 </div>
               </div>
             </div>
