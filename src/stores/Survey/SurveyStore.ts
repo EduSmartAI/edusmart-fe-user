@@ -164,7 +164,10 @@ export interface SurveyActions {
   markDraftSaved: () => void;
 
   // API Actions - Store gọi server actions
-  submitSurvey: (isWantToTakeTest: boolean) => Promise<{
+  submitSurvey: (
+    isWantToTakeTest: boolean,
+    otherQuestionAnswerCodes?: number[],
+  ) => Promise<{
     success: boolean;
     surveyId?: string;
     learningPathId?: string; // When isWantToTakeTest = false
@@ -368,7 +371,10 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
       setRecommendations: (data) => set({ recommendations: data }),
 
       // API Actions - Store gọi server actions
-      submitSurvey: async (isWantToTakeTest: boolean) => {
+      submitSurvey: async (
+        isWantToTakeTest: boolean,
+        otherQuestionAnswerCodes?: number[],
+      ) => {
         const state = get();
         const allData = state;
 
@@ -395,12 +401,14 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             survey2Data: allData.survey2Data || undefined,
             survey3Data: allData.survey3Data || undefined,
             isWantToTakeTest, // ✅ Pass parameter to server action
+            otherQuestionAnswerCodes, // ✅ Pass optional other question answers
           };
 
           // 🔍 DEBUG: Log data being sent to server action
           console.group("🏪 [SURVEY STORE] Calling submitSurveyAction");
           console.log("API Data:", apiData);
           console.log("isWantToTakeTest:", isWantToTakeTest);
+          console.log("otherQuestionAnswerCodes:", otherQuestionAnswerCodes);
           console.log(
             "Survey 1 - Interest Answers:",
             apiData.survey1Data?.interestSurveyAnswers,
@@ -413,7 +421,7 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
 
           const result = await submitSurveyAction(apiData);
 
-          console.log('[SURVEY STORE] submitSurveyAction result:', result);
+          console.log("[SURVEY STORE] submitSurveyAction result:", result);
 
           if (result.ok) {
             // ✅ Handle two cases based on isWantToTakeTest
@@ -423,10 +431,10 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
               console.log(
                 `✅ [SURVEY STORE] Survey submitted (Transcript flow). LearningPathId: ${result.surveyId}`,
               );
-              return { 
-                success: true, 
+              return {
+                success: true,
                 learningPathId: result.surveyId,
-                surveyId: result.surveyId 
+                surveyId: result.surveyId,
               };
             } else if (isWantToTakeTest) {
               // Case 2: Take quiz - response is null, just success

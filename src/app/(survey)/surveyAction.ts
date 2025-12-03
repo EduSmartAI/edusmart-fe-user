@@ -608,6 +608,10 @@ export async function getSurveyByCodeAction(surveyCode: string): Promise<{
       }>;
     }>;
   };
+  otherQuestions?: Array<{
+    otherQuestionCode: number;
+    otherQuestionText: string;
+  }>;
   error?: string;
   status?: number;
 }> {
@@ -680,6 +684,11 @@ export async function getSurveyByCodeAction(surveyCode: string): Promise<{
                     })) || [],
                 })) || [],
             },
+            otherQuestions:
+              detailResponse.data.otherQuestions?.map((oq) => ({
+                otherQuestionCode: oq.otherQuestionCode!,
+                otherQuestionText: oq.otherQuestionText!,
+              })) || [],
           };
         }
       }
@@ -705,6 +714,7 @@ export async function submitSurveyAction(surveyData: {
   survey2Data?: Survey2FormValues;
   survey3Data?: Survey3FormValues;
   isWantToTakeTest: boolean; // ✅ REQUIRED: true = làm test, false = upload transcript
+  otherQuestionAnswerCodes?: number[]; // ✅ OPTIONAL: Other question answer codes
 }): Promise<{
   ok: boolean;
   surveyId?: string;
@@ -712,13 +722,15 @@ export async function submitSurveyAction(surveyData: {
   status?: number;
 }> {
   try {
-    const { survey1Data, survey2Data, survey3Data } = surveyData;
+    const { survey1Data, survey2Data, survey3Data, otherQuestionAnswerCodes } =
+      surveyData;
 
     // 🔍 DEBUG: Log received survey data
     console.group("🔒 [SERVER ACTION] submitSurveyAction - Received Data");
     console.log("Survey 1 Data:", survey1Data);
     console.log("Survey 2 Data:", survey2Data);
     console.log("Survey 3 Data:", survey3Data);
+    console.log("Other Question Answer Codes:", otherQuestionAnswerCodes);
     console.groupEnd();
 
     if (!survey1Data) {
@@ -956,7 +968,7 @@ export async function submitSurveyAction(surveyData: {
       },
       studentSurveys: studentSurveys,
       isWantToTakeTest: surveyData.isWantToTakeTest, // ✅ Use parameter from function argument
-      //   otherQuestionAnswerCodes: [], // Empty array - tạm thời không dùng
+      otherQuestionAnswerCodes: (otherQuestionAnswerCodes || []) as any, // ✅ Include other question answer codes (cast to match API type)
     };
 
     // Validate payload before sending

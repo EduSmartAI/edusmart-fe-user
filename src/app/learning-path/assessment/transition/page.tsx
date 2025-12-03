@@ -2,15 +2,20 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Card, message, Spin, Alert } from "antd";
+import { Button, Card, message, Spin, Alert, Checkbox, Divider } from "antd";
 import { FiCheckCircle, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
 import { HiDocumentText } from "react-icons/hi";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
-import { getLearningGoalAction } from "EduSmart/app/(survey)/surveyAction";
+import {
+  getLearningGoalAction,
+  getSurveyByCodeAction,
+} from "EduSmart/app/(survey)/surveyAction";
 import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
+import { notification, Space } from "antd";
+import type { OtherQuestionCode } from "EduSmart/api/api-quiz-service";
 
 interface LearningGoalOption {
   learningGoalId: string;
@@ -18,7 +23,14 @@ interface LearningGoalOption {
   learningGoalType: number;
 }
 
+interface OtherQuestion {
+  otherQuestionCode: number;
+  otherQuestionText: string;
+}
+
 function SurveyToQuizTransitionContent() {
+  const [api, contextHolder] = notification.useNotification();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const { submitSurvey } = useSurveyStore(); // ✅ Get submitSurvey from store
@@ -30,6 +42,11 @@ function SurveyToQuizTransitionContent() {
   const [checkingTranscript, setCheckingTranscript] = useState(true);
   const [learningGoalDetails, setLearningGoalDetails] =
     useState<LearningGoalOption | null>(null);
+  const [otherQuestions, setOtherQuestions] = useState<OtherQuestion[]>([]);
+  const [selectedOtherQuestions, setSelectedOtherQuestions] = useState<
+    number[]
+  >([]);
+  const [loadingOtherQuestions, setLoadingOtherQuestions] = useState(false);
 
   // Load learning goal from URL param and fetch learning goals list
   useEffect(() => {
@@ -70,7 +87,7 @@ function SurveyToQuizTransitionContent() {
     initializeData();
   }, [searchParams]);
 
-  // Check transcript on mount
+  // Check transcript and load other questions on mount
   useEffect(() => {
     const checkTranscript = async () => {
       try {
@@ -79,6 +96,8 @@ function SurveyToQuizTransitionContent() {
 
         if (result.success && result.response && result.response.length > 0) {
           setHasTranscript(true);
+          // Load other questions when transcript exists
+          await loadOtherQuestions();
         } else {
           setHasTranscript(false);
         }
@@ -93,6 +112,27 @@ function SurveyToQuizTransitionContent() {
     checkTranscript();
   }, []);
 
+  // Load other questions from HABIT survey
+  const loadOtherQuestions = async () => {
+    try {
+      setLoadingOtherQuestions(true);
+      console.log("📋 Loading other questions from HABIT survey...");
+
+      const result = await getSurveyByCodeAction("HABIT");
+
+      if (result.ok && result.data && result.otherQuestions) {
+        console.log("✅ Loaded other questions:", result.otherQuestions);
+        setOtherQuestions(result.otherQuestions);
+      } else {
+        console.warn("No other questions found in HABIT survey");
+      }
+    } catch (error) {
+      console.error("Error loading other questions:", error);
+    } finally {
+      setLoadingOtherQuestions(false);
+    }
+  };
+
   const handleContinueToQuiz = async () => {
     // ✅ Submit survey with isWantToTakeTest = true
     setIsSubmitting(true);
@@ -106,15 +146,23 @@ function SurveyToQuizTransitionContent() {
 
       if (result.success) {
         // Update localStorage
-        localStorage.setItem("learning_path_completed_steps", JSON.stringify([1, 2]));
+        localStorage.setItem(
+          "learning_path_completed_steps",
+          JSON.stringify([1, 2]),
+        );
         localStorage.setItem("learning_path_current_step", "3");
 
         message.success("Đang chuyển đến bài đánh giá...");
         router.push("/learning-path/assessment/quiz");
       } else {
-        message.error(
-          result.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
-        );
+        // message.error(
+        //   result.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
+        // );
+        api.error({
+          message: "Lỗi gửi khảo sát",
+          description:
+            result.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
+        });
       }
     } catch (error) {
       console.error("Error submitting survey:", error);
@@ -124,17 +172,16 @@ function SurveyToQuizTransitionContent() {
     }
   };
 
-  const handleExit = () => {
-    // Clear all learning path related localStorage
-    localStorage.removeItem("learning-path-flow-state");
-    localStorage.removeItem("learning_path_completed_steps");
-    localStorage.removeItem("learning_path_current_step");
-    localStorage.removeItem("practice-test-storage");
-    localStorage.removeItem("quiz-store");
-    localStorage.removeItem("survey-storage");
+  const handleBackToSurvey = () => {
+    // Navigate back to survey step 3 (last step) so user can review/edit
+    console.log("🔙 [TRANSITION] Going back to survey");
 
-    // Redirect to home or profile
-    router.push("/");
+    // Reset transition step but keep survey data
+    localStorage.setItem("learning_path_completed_steps", JSON.stringify([1]));
+    localStorage.setItem("learning_path_current_step", "1");
+
+    // Redirect back to survey flow
+    router.push("/learning-path/assessment/survey");
   };
 
   const handleUseTranscript = async () => {
@@ -145,25 +192,38 @@ function SurveyToQuizTransitionContent() {
 
     setIsSubmitting(true);
     try {
-      // ✅ Submit survey with isWantToTakeTest = false
+      // ✅ Submit survey with isWantToTakeTest = false and optional other question answers
       // Backend will create learning path from transcript and return learningPathId
       console.log(
         "📄 [TRANSITION] Submitting survey with isWantToTakeTest = false (Use Transcript)",
       );
-      const surveyResult = await submitSurvey(false);
+      console.log(
+        "📄 [TRANSITION] Selected other questions:",
+        selectedOtherQuestions,
+      );
+      const surveyResult = await submitSurvey(
+        false,
+        selectedOtherQuestions as OtherQuestionCode[],
+      );
 
       console.log("📄 [TRANSITION] Survey result:", surveyResult);
 
       if (!surveyResult.success) {
-        message.error(
-          surveyResult.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
-        );
+        // message.error(
+        //   surveyResult.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
+        // );
+        api.error({
+          message: "Lỗi gửi khảo sát",
+          description:
+            surveyResult.error || "Không thể gửi khảo sát. Vui lòng thử lại.",
+        });
         return;
       }
 
       // ✅ When isWantToTakeTest = false, response contains learningPathId
-      const learningPathId = surveyResult.learningPathId || surveyResult.surveyId;
-      
+      const learningPathId =
+        surveyResult.learningPathId || surveyResult.surveyId;
+
       if (!learningPathId) {
         message.error("Không nhận được ID lộ trình học tập");
         console.error("❌ No learningPathId in response:", surveyResult);
@@ -173,7 +233,10 @@ function SurveyToQuizTransitionContent() {
       console.log("✅ [TRANSITION] Received learningPathId:", learningPathId);
 
       // Update localStorage
-      localStorage.setItem("learning_path_completed_steps", JSON.stringify([1, 2]));
+      localStorage.setItem(
+        "learning_path_completed_steps",
+        JSON.stringify([1, 2]),
+      );
       localStorage.setItem("learning_path_current_step", "3");
 
       // Success - redirect to processing page
@@ -199,6 +262,7 @@ function SurveyToQuizTransitionContent() {
 
   return (
     <LearningPathGuard requiredStep={1} requiredCompletedSteps={[1]}>
+      {contextHolder}
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Progress Header - Minimal Mode */}
         <div className="sticky top-0 z-10">
@@ -259,7 +323,15 @@ function SurveyToQuizTransitionContent() {
                         ? "border-2 border-[#49BBBD] shadow-sm"
                         : "border border-gray-200 dark:border-gray-700"
                     }`}
-                    onClick={() => {
+                    onClick={(e) => {
+                      // Prevent card click when clicking on checkboxes
+                      if (
+                        (e.target as HTMLElement).closest(
+                          ".other-questions-section",
+                        )
+                      ) {
+                        return;
+                      }
                       if (hasTranscript === true && !checkingTranscript) {
                         setSelectedOption("transcript");
                       }
@@ -306,43 +378,72 @@ function SurveyToQuizTransitionContent() {
                         </div>
                       ) : hasTranscript === false ? (
                         <div className="space-y-3">
-                          {/* <Alert
-                            message="Chưa có bảng điểm"
-                            description="Vui lòng upload bảng điểm để sử dụng tính năng này"
-                            type="warning"
-                            showIcon
-                            className="text-xs"
-                          /> */}
-                          {/* <Spin spinning={uploading}>
-                            <Upload
-                              accept=".xlsx,.xls,.csv"
-                              maxCount={1}
-                              beforeUpload={handleUploadTranscript}
-                              showUploadList={false}
-                            >
-                              <Button
-                                icon={<UploadOutlined />}
-                                block
-                                disabled={uploading}
-                                size="small"
-                              >
-                                {uploading
-                                  ? "Đang upload..."
-                                  : "Upload bảng điểm"}
-                              </Button>
-                            </Upload>
-                          </Spin>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                            Định dạng: Excel (.xlsx)
-                          </p> */}
+                          {/* No transcript message */}
                         </div>
                       ) : (
-                        <Alert
-                          message="Đã có bảng điểm"
-                          type="success"
-                          showIcon
-                          className="text-xs"
-                        />
+                        <>
+                          <Alert
+                            message="Đã có bảng điểm"
+                            type="success"
+                            showIcon
+                            className="text-xs"
+                          />
+
+                          {/* Other Questions Section - Only show when transcript option is selected */}
+                          {selectedOption === "transcript" &&
+                            otherQuestions.length > 0 && (
+                              <div className="other-questions-section mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                                <Divider className="!my-3">
+                                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                                    Câu hỏi bổ sung (Không bắt buộc)
+                                  </span>
+                                </Divider>
+
+                                {loadingOtherQuestions ? (
+                                  <div className="text-center py-2">
+                                    <Spin size="small" />
+                                  </div>
+                                ) : (
+                                  <div className="space-y-2 text-left max-h-48 overflow-y-auto">
+                                    <Checkbox.Group
+                                      value={selectedOtherQuestions}
+                                      onChange={(checkedValues) => {
+                                        setSelectedOtherQuestions(
+                                          checkedValues as number[],
+                                        );
+                                      }}
+                                      className="w-full"
+                                    >
+                                      <Space
+                                        direction="vertical"
+                                        className="w-full"
+                                        size="small"
+                                      >
+                                        {otherQuestions.map((q) => (
+                                          <Checkbox
+                                            key={q.otherQuestionCode}
+                                            value={q.otherQuestionCode}
+                                            className="!items-start"
+                                          >
+                                            <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                                              {q.otherQuestionText}
+                                            </span>
+                                          </Checkbox>
+                                        ))}
+                                      </Space>
+                                    </Checkbox.Group>
+                                  </div>
+                                )}
+
+                                {selectedOtherQuestions.length > 0 && (
+                                  <p className="text-xs text-teal-600 dark:text-teal-400 mt-2 text-center">
+                                    Đã chọn {selectedOtherQuestions.length} câu
+                                    hỏi
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                        </>
                       )}
 
                       {/* Benefits */}
@@ -453,12 +554,12 @@ function SurveyToQuizTransitionContent() {
                   <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
                     <Button
                       size="large"
-                      onClick={handleExit}
+                      onClick={handleBackToSurvey}
                       icon={<FiArrowLeft className="w-6 h-6" />}
                       disabled={isSubmitting}
                       className="!px-8 !py-6 h-auto text-lg font-semibold rounded-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
-                      Thoát
+                      Quay lại khảo sát
                     </Button>
                     <Button
                       type="primary"
