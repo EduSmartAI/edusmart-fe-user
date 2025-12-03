@@ -1467,6 +1467,7 @@ export interface SubjectDetailDto {
   isMandatory?: boolean;
   /** @format int32 */
   positionIndex?: number;
+  prerequisites?: SubjectPrerequisiteDto[] | null;
 }
 
 export interface SubjectDto {
@@ -1490,11 +1491,19 @@ export interface SubjectDtoPagedResult {
   hasNextPage?: boolean;
 }
 
+export interface SubjectPrerequisiteDto {
+  /** @format uuid */
+  subjectId?: string;
+  subjectCode?: string | null;
+  subjectName?: string | null;
+}
+
 export interface SyllabusFullDto {
   /** @format uuid */
   syllabusId?: string;
   /** @format uuid */
   majorId?: string;
+  majorCode?: string | null;
   versionLabel?: string | null;
   /** @format date */
   effectiveFrom?: string;
@@ -2742,12 +2751,16 @@ export class Api<
      * @tags Syllabus
      * @name SyllabusFullDetail
      * @summary Lấy đầy đủ thông tin chương trình đào tạo theo phiên bản
-     * @request GET:/api/Syllabus/full/{versionLabel}
+     * @request GET:/api/Syllabus/full/{versionLabel}/{majorCode}
      * @secure
      */
-    syllabusFullDetail: (versionLabel: string, params: RequestParams = {}) =>
+    syllabusFullDetail: (
+      versionLabel: string,
+      majorCode: string,
+      params: RequestParams = {},
+    ) =>
       this.request<GetFullSyllabusResponse, any>({
-        path: `/api/Syllabus/full/${versionLabel}`,
+        path: `/api/Syllabus/full/${versionLabel}/${majorCode}`,
         method: "GET",
         secure: true,
         format: "json",

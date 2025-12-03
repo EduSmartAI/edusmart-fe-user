@@ -89,11 +89,17 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
       const hideLoading = message.loading("Đang xử lý khảo sát của bạn...", 0);
 
       try {
-        console.log("Submitting data:", {
-          survey1: survey.survey1Data,
-          survey2: survey.survey2Data,
-          survey3: survey.survey3Data,
-        });
+        // 🔍 DEBUG: Log complete survey data
+        console.group("📦 [SURVEY MAIN FLOW] Complete Survey Data");
+        console.log("Survey 1 Data:", survey.survey1Data);
+        console.log("Survey 2 Data:", survey.survey2Data);
+        console.log("Survey 3 Data:", survey.survey3Data);
+        console.log(
+          "Survey 1 Interest Answers:",
+          survey.survey1Data?.interestSurveyAnswers,
+        );
+        console.log("Survey 3 Study Habits:", survey.survey3Data?.studyHabits);
+        console.groupEnd();
 
         const submitResult = await survey.submitSurvey();
         console.log("Submit result:", submitResult);
@@ -119,7 +125,6 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
           // Clear survey data BEFORE redirecting to prevent flash of Survey1
           // Use a small delay to ensure message is visible
           setTimeout(() => {
-
             // Redirect to transition page with learningGoalId
             if (onComplete) {
               console.log(

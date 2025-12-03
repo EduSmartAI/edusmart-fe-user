@@ -395,6 +395,19 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             survey3Data: allData.survey3Data || undefined,
           };
 
+          // 🔍 DEBUG: Log data being sent to server action
+          console.group("🏪 [SURVEY STORE] Calling submitSurveyAction");
+          console.log("API Data:", apiData);
+          console.log(
+            "Survey 1 - Interest Answers:",
+            apiData.survey1Data?.interestSurveyAnswers,
+          );
+          console.log(
+            "Survey 3 - Study Habits:",
+            apiData.survey3Data?.studyHabits,
+          );
+          console.groupEnd();
+
           const result = await submitSurveyAction(apiData);
 
           if (result.ok && result.surveyId) {
