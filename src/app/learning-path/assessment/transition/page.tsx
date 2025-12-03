@@ -11,8 +11,19 @@ import {
   Checkbox,
   Divider,
   Space,
+  Modal,
+  Table,
+  Tag,
+  Collapse,
 } from "antd";
-import { FiCheckCircle, FiArrowRight, FiArrowLeft } from "react-icons/fi";
+import {
+  FiCheckCircle,
+  FiArrowRight,
+  FiArrowLeft,
+  FiChevronDown,
+  FiChevronUp,
+  FiEye,
+} from "react-icons/fi";
 import { SiQuizlet } from "react-icons/si";
 import { HiDocumentText } from "react-icons/hi";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
@@ -24,6 +35,8 @@ import {
 } from "EduSmart/app/(survey)/surveyAction";
 import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
 import type { OtherQuestionCode } from "EduSmart/api/api-quiz-service";
+import type { ColumnsType } from "antd/es/table";
+import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
 
 interface LearningGoalOption {
@@ -56,6 +69,12 @@ function SurveyToQuizTransitionContent() {
     number[]
   >([]);
   const [loadingOtherQuestions, setLoadingOtherQuestions] = useState(false);
+  const [showOtherQuestions, setShowOtherQuestions] = useState(false);
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+  const [transcriptData, setTranscriptData] = useState<
+    StudentTranscriptRecord[]
+  >([]);
+  const [loadingTranscript, setLoadingTranscript] = useState(false);
 
   // Load learning goal from URL param and fetch learning goals list
   useEffect(() => {
@@ -101,17 +120,31 @@ function SurveyToQuizTransitionContent() {
     const checkTranscript = async () => {
       try {
         setCheckingTranscript(true);
+        console.log("🔍 [TRANSITION] Checking transcript...");
         const result = await getStudentTranscriptServer();
 
+        console.log("📊 [TRANSITION] Transcript result:", {
+          success: result.success,
+          hasResponse: !!result.response,
+          responseLength: result.response?.length,
+          message: result.message,
+        });
+
         if (result.success && result.response && result.response.length > 0) {
+          console.log(
+            "✅ [TRANSITION] Transcript found! Setting hasTranscript = true",
+          );
           setHasTranscript(true);
           // Load other questions when transcript exists
           await loadOtherQuestions();
         } else {
+          console.warn(
+            "⚠️ [TRANSITION] No transcript found. Setting hasTranscript = false",
+          );
           setHasTranscript(false);
         }
       } catch (error) {
-        console.error("Error checking transcript:", error);
+        console.error("❌ [TRANSITION] Error checking transcript:", error);
         setHasTranscript(false);
       } finally {
         setCheckingTranscript(false);
@@ -259,6 +292,89 @@ function SurveyToQuizTransitionContent() {
     }
   };
 
+  // Load transcript data for preview
+  const handlePreviewTranscript = async () => {
+    try {
+      setLoadingTranscript(true);
+      setShowTranscriptModal(true);
+      const result = await getStudentTranscriptServer();
+      if (result.success && result.response) {
+        setTranscriptData(result.response);
+      } else {
+        messageApi.error("Không thể tải bảng điểm");
+      }
+    } catch (error) {
+      console.error("Error loading transcript:", error);
+      messageApi.error("Đã xảy ra lỗi khi tải bảng điểm");
+    } finally {
+      setLoadingTranscript(false);
+    }
+  };
+
+  // Get status tag for transcript
+  const getStatusTag = (status: string) => {
+    const statusMap: Record<string, { color: string; label: string }> = {
+      "Not started": { color: "default", label: "Chưa bắt đầu" },
+      Passed: { color: "success", label: "Đã qua" },
+      "Not passed": { color: "error", label: "Không qua" },
+      Studying: { color: "processing", label: "Đang học" },
+    };
+    const config = statusMap[status] || { color: "default", label: status };
+    return <Tag color={config.color}>{config.label}</Tag>;
+  };
+
+  // Table columns for transcript
+  const transcriptColumns: ColumnsType<StudentTranscriptRecord> = [
+    {
+      title: "Kỳ",
+      dataIndex: "semesterNumber",
+      key: "semesterNumber",
+      width: 60,
+      align: "center",
+      render: (num: number) => <span className="font-semibold">{num}</span>,
+    },
+    {
+      title: "Mã môn",
+      dataIndex: "subjectCode",
+      key: "subjectCode",
+      width: 100,
+      render: (code: string) => (
+        <span className="font-mono font-semibold">{code}</span>
+      ),
+    },
+    {
+      title: "Tên môn học",
+      dataIndex: "subjectName",
+      key: "subjectName",
+      ellipsis: true,
+    },
+    {
+      title: "Tín chỉ",
+      dataIndex: "credit",
+      key: "credit",
+      width: 80,
+      align: "center",
+    },
+    {
+      title: "Điểm",
+      dataIndex: "grade",
+      key: "grade",
+      width: 80,
+      align: "center",
+      render: (grade: number) => (
+        <Tag color="blue">{grade > 0 ? grade.toFixed(1) : "-"}</Tag>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 120,
+      align: "center",
+      render: (status: string) => getStatusTag(status),
+    },
+  ];
+
   return (
     <LearningPathGuard requiredStep={1} requiredCompletedSteps={[1]}>
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -385,60 +501,94 @@ function SurveyToQuizTransitionContent() {
                             type="success"
                             showIcon
                             className="text-xs"
+                            action={
+                              <Button
+                                size="small"
+                                type="text"
+                                color="default"
+                                variant="filled"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePreviewTranscript();
+                                }}
+                              >
+                                Xem
+                              </Button>
+                            }
                           />
 
                           {/* Other Questions Section - Only show when transcript option is selected */}
                           {selectedOption === "transcript" &&
                             otherQuestions.length > 0 && (
-                              <div className="other-questions-section mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                                <Divider className="!my-3">
-                                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                    Câu hỏi bổ sung (Không bắt buộc)
-                                  </span>
-                                </Divider>
+                              <div className="other-questions-section mt-4  border-t border-gray-200 dark:border-gray-600">
+                                <Collapse
+                                  ghost
+                                  size="small"
+                                  expandIconPosition="start"
+                                  onChange={(keys) => {
+                                    setShowOtherQuestions(keys.length > 0);
+                                  }}
+                                  items={[
+                                    {
+                                      key: "1",
+                                      label: (
+                                        <span className="text-xs text-gray-600 dark:text-gray-400">
+                                          Câu hỏi bổ sung (Không bắt buộc)
+                                        </span>
+                                      ),
+                                      children: (
+                                        <>
+                                          {loadingOtherQuestions ? (
+                                            <div className="text-center py-2">
+                                              <Spin size="small" />
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-2 text-left max-h-48 overflow-y-auto">
+                                              <Checkbox.Group
+                                                value={selectedOtherQuestions}
+                                                onChange={(checkedValues) => {
+                                                  setSelectedOtherQuestions(
+                                                    checkedValues as number[],
+                                                  );
+                                                }}
+                                                className="w-full"
+                                              >
+                                                <Space
+                                                  direction="vertical"
+                                                  className="w-full"
+                                                  size="small"
+                                                >
+                                                  {otherQuestions.map((q) => (
+                                                    <Checkbox
+                                                      key={q.otherQuestionCode}
+                                                      value={
+                                                        q.otherQuestionCode
+                                                      }
+                                                      className="!items-start"
+                                                    >
+                                                      <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                        {q.otherQuestionText}
+                                                      </span>
+                                                    </Checkbox>
+                                                  ))}
+                                                </Space>
+                                              </Checkbox.Group>
+                                            </div>
+                                          )}
 
-                                {loadingOtherQuestions ? (
-                                  <div className="text-center py-2">
-                                    <Spin size="small" />
-                                  </div>
-                                ) : (
-                                  <div className="space-y-2 text-left max-h-48 overflow-y-auto">
-                                    <Checkbox.Group
-                                      value={selectedOtherQuestions}
-                                      onChange={(checkedValues) => {
-                                        setSelectedOtherQuestions(
-                                          checkedValues as number[],
-                                        );
-                                      }}
-                                      className="w-full"
-                                    >
-                                      <Space
-                                        direction="vertical"
-                                        className="w-full"
-                                        size="small"
-                                      >
-                                        {otherQuestions.map((q) => (
-                                          <Checkbox
-                                            key={q.otherQuestionCode}
-                                            value={q.otherQuestionCode}
-                                            className="!items-start"
-                                          >
-                                            <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
-                                              {q.otherQuestionText}
-                                            </span>
-                                          </Checkbox>
-                                        ))}
-                                      </Space>
-                                    </Checkbox.Group>
-                                  </div>
-                                )}
-
-                                {selectedOtherQuestions.length > 0 && (
-                                  <p className="text-xs text-teal-600 dark:text-teal-400 mt-2 text-center">
-                                    Đã chọn {selectedOtherQuestions.length} câu
-                                    hỏi
-                                  </p>
-                                )}
+                                          {/* {selectedOtherQuestions.length >
+                                            0 && (
+                                            <p className="text-xs text-teal-600 dark:text-teal-400 mt-3 text-center">
+                                              Đã chọn{" "}
+                                              {selectedOtherQuestions.length}{" "}
+                                              câu hỏi
+                                            </p>
+                                          )} */}
+                                        </>
+                                      ),
+                                    },
+                                  ]}
+                                />
                               </div>
                             )}
                         </>
@@ -605,6 +755,49 @@ function SurveyToQuizTransitionContent() {
           <div className="absolute top-40 right-20 w-24 h-24 bg-cyan-200 dark:bg-cyan-800 rounded-full opacity-10 animate-pulse delay-1000"></div>
           <div className="absolute bottom-32 left-1/4 w-20 h-20 bg-green-200 dark:bg-green-800 rounded-full opacity-10 animate-pulse delay-2000"></div>
         </div>
+
+        {/* Transcript Preview Modal */}
+        <Modal
+          title={
+            <div className="flex items-center gap-2">
+              <HiDocumentText className="w-5 h-5 text-[#49BBBD]" />
+              <span>Bảng điểm của bạn</span>
+            </div>
+          }
+          open={showTranscriptModal}
+          onCancel={() => setShowTranscriptModal(false)}
+          footer={[
+            <Button key="close" onClick={() => setShowTranscriptModal(false)}>
+              Đóng
+            </Button>,
+          ]}
+          width={1000}
+          centered
+        >
+          <Spin spinning={loadingTranscript}>
+            <div className="mt-4">
+              {transcriptData.length === 0 && !loadingTranscript ? (
+                <div className="text-center py-8 text-gray-500">
+                  Không có dữ liệu bảng điểm
+                </div>
+              ) : (
+                <Table
+                  columns={transcriptColumns}
+                  dataSource={transcriptData}
+                  rowKey="studentTranscriptId"
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: false,
+                    showTotal: (total) => `Tổng ${total} môn học`,
+                  }}
+                  scroll={{ x: 800 }}
+                  size="small"
+                  bordered
+                />
+              )}
+            </div>
+          </Spin>
+        </Modal>
       </div>
     </LearningPathGuard>
   );

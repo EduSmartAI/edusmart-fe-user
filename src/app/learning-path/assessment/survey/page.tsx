@@ -137,7 +137,7 @@ export default function SurveyAssessmentPage() {
 
   return (
     <LearningPathGuard requiredStep={1} requiredCompletedSteps={[]}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen  dark:bg-gray-900">
         {/* Progress Header - Minimal */}
         <div className="sticky top-0 z-10">
           <LearningPathProgress
