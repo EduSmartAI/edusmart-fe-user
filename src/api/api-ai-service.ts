@@ -11,14 +11,6 @@
  */
 
 /** @format int32 */
-export enum StudentTranscriptStatus {
-  Value0 = 0,
-  Value1 = 1,
-  Value2 = 2,
-  Value3 = 3,
-}
-
-/** @format int32 */
 export enum QuizScope {
   Value1 = 1,
   Value2 = 2,
@@ -137,7 +129,6 @@ export interface AiRecommendImprovementRequest {
   abilityMarks: AbilityMark[];
   majors?: MajorInfo[];
   quizSurvey: QuizSurvey;
-  studentCurriculums?: StudentCurriculumEvent[];
 }
 
 export interface AiRecommendImprovementResponse {
@@ -349,6 +340,8 @@ export interface MajorEvaluation {
 export interface MajorInfo {
   majorCode?: string;
   majorName?: string;
+  /** @format uuid */
+  majorId?: string;
 }
 
 export interface QuestionResult {
@@ -441,11 +434,6 @@ export interface SkillGap {
   /** @format int32 */
   level?: number;
   evidence?: string;
-}
-
-export interface StudentCurriculumEvent {
-  subjectCode?: string;
-  status?: StudentTranscriptStatus;
 }
 
 export interface SubjectAnalysis {
