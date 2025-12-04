@@ -1542,7 +1542,7 @@ const computeMajorProgress = (
         <header className="bg-white/80 dark:bg-slate-900/60 shadow-sm rounded-3xl p-8 border border-orange-100 dark:border-slate-700 space-y-4">
           <div className="flex flex-wrap items-center gap-3">
             <p className="uppercase tracking-[0.2em] text-xs text-orange-500 font-semibold">
-              Lộ trình học full-stack
+              {learningPath?.pathName || "Lộ trình học tập"}
             </p>
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClass}`}
