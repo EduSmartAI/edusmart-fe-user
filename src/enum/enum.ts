@@ -4,6 +4,19 @@ export enum DropdownOptions {
   Popular = 3,
 }
 
+export enum CourseLevel {
+  Beginner = 1,
+  Intermidiate = 2,
+  Advanced = 3,
+}
+
+export enum CourseSortBy {
+  Latest = 1,        // UpdatedAt desc (default)
+	Popular = 2,       // LearnerCount desc
+	TitleAsc = 3,       // Title asc
+	TitleDesc = 4,      // Title desc
+}
+
 export enum UserBehaviourActionType {
   RetryLesson = 16,
   PlayVideo = 20,

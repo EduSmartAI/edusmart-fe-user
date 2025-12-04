@@ -263,6 +263,10 @@ export interface CourseItemDto {
   dealPrice?: number;
   isEnrolled?: boolean;
   isWishList?: boolean;
+  /** @format uuid */
+  teacherId?: string;
+  teacherName?: string;
+  tagNames?: string[];
 }
 
 export interface CreateAiQuizEvaluateResponse {

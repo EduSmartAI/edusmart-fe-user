@@ -674,6 +674,8 @@ export interface CreateMajorDto {
   majorCode?: string | null;
   majorName?: string | null;
   description?: string | null;
+  /** @format int32 */
+  requiredCredits?: number;
 }
 
 export interface CreateMajorResponse {
@@ -759,6 +761,7 @@ export interface CreateSubjectCommand {
 export interface CreateSubjectDto {
   subjectCode?: string | null;
   subjectName?: string | null;
+  subjectDescription?: string | null;
   prerequisiteSubjectIds?: string[] | null;
 }
 
@@ -854,6 +857,27 @@ export interface EnrollInCourseResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: string | null;
+}
+
+export interface EnrolledUsersDto {
+  /** @format uuid */
+  userId?: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+}
+
+export interface EnrolledUsersDtoPaginatedResult {
+  /** @format int32 */
+  pageIndex?: number | null;
+  /** @format int32 */
+  pageSize?: number | null;
+  /** @format int64 */
+  totalCount?: number;
+  data?: EnrolledUsersDto[] | null;
+  /** @format int32 */
+  totalPages?: number;
+  hasPreviousPage?: boolean;
+  hasNextPage?: boolean;
 }
 
 export interface FullSemesterDto {
@@ -1000,6 +1024,14 @@ export interface GetDiscussionThreadResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: DiscussionCommentDtoPagedResult;
+}
+
+export interface GetEnrolledUsersResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: EnrolledUsersDtoPaginatedResult;
 }
 
 export interface GetFullSyllabusResponse {
@@ -1177,6 +1209,8 @@ export interface MajorDto {
   majorCode?: string | null;
   majorName?: string | null;
   description?: string | null;
+  /** @format int32 */
+  creditRequired?: number;
 }
 
 export interface MajorDtoPagedResult {
@@ -1475,6 +1509,7 @@ export interface SubjectDto {
   subjectId?: string;
   subjectCode?: string | null;
   subjectName?: string | null;
+  subjectDescription?: string | null;
 }
 
 export interface SubjectDtoPagedResult {
@@ -3040,6 +3075,35 @@ export class Api<
       this.request<GetCourseBySlugForLectureResponse, any>({
         path: `/api/v1/Courses/auth/slug/${slug}`,
         method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve a paginated list of users enrolled in a specific course.
+     *
+     * @tags Courses
+     * @name V1CoursesGetEnrolledUsersList
+     * @summary Get enrolled users for a course
+     * @request GET:/api/v1/Courses/GetEnrolledUsers
+     * @secure
+     */
+    v1CoursesGetEnrolledUsersList: (
+      query?: {
+        /** @format int32 */
+        "Pagination.PageIndex"?: number;
+        /** @format int32 */
+        "Pagination.PageSize"?: number;
+        /** @format uuid */
+        CourseId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetEnrolledUsersResponse, any>({
+        path: `/api/v1/Courses/GetEnrolledUsers`,
+        method: "GET",
+        query: query,
         secure: true,
         format: "json",
         ...params,
