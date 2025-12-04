@@ -84,6 +84,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     };
 
     loadProblemDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProblem, setCurrentProblemDetail, setLoadingProblemDetail]);
 
   useEffect(() => {
