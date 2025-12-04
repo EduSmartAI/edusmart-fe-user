@@ -233,6 +233,8 @@ export interface CourseGroupDto {
   subjectCode?: string;
   /** @format int32 */
   status?: number;
+  /** @format int32 */
+  semesterPosition?: number;
   analysisMarkdown?: string;
   courses?: CourseItemDto[];
 }

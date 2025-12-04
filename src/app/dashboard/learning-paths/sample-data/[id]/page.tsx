@@ -10,6 +10,7 @@ import React, {
 import { useParams } from "next/navigation";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
+import { learningPathsChooseMajorUpdate } from "EduSmart/app/apiServer/learningPathAction";
 import {
   FiBook,
   FiChevronDown,
@@ -82,6 +83,10 @@ type LearningPathDto = Omit<
   >;
   externalLearningPath?: ExternalLearningPathDto[];
 };
+
+type InternalMajorDto = NonNullable<
+  LearningPathDto["internalLearningPath"]
+>[number];
 
 type LearningPathApiResponse = Omit<LearningPathSelectResponse, "response"> & {
   response?: LearningPathDto;
@@ -356,6 +361,73 @@ const getSemesterNarrative = (groups: ExtendedCourseGroupDto[]) => {
   return "Duy trì nhịp học ổn định ở toàn bộ môn trong kỳ này.";
 };
 
+const normalizeSemesterPosition = (
+  value?: number | null,
+  fallback = 0,
+) => (typeof value === "number" && Number.isFinite(value) ? value : fallback);
+
+const splitGroupBySemester = (
+  group: ExtendedCourseGroupDto,
+  defaultSemester = 0,
+) => {
+  const courseList = group.courses ?? [];
+  const fallbackSemester = normalizeSemesterPosition(
+    group.semesterPosition,
+    defaultSemester,
+  );
+
+  const semesters = new Set<number>();
+
+  if (courseList.length === 0) {
+    semesters.add(fallbackSemester);
+  } else {
+    courseList.forEach((course) => {
+      semesters.add(
+        normalizeSemesterPosition(course.semesterPosition, fallbackSemester),
+      );
+    });
+  }
+
+  if (semesters.size === 0) {
+    semesters.add(fallbackSemester);
+  }
+
+  const entries: Array<{ semester: number; group: ExtendedCourseGroupDto }> =
+    [];
+
+  semesters.forEach((semester) => {
+    const filteredCourses = courseList.filter(
+      (course) =>
+        normalizeSemesterPosition(course.semesterPosition, fallbackSemester) ===
+        semester,
+    );
+
+    entries.push({
+      semester,
+      group: { ...group, courses: filteredCourses },
+    });
+  });
+
+  return entries;
+};
+
+const mapGroupsBySemester = (groups?: ExtendedCourseGroupDto[]) => {
+  if (!groups) return [];
+  const map = new Map<number, ExtendedCourseGroupDto[]>();
+
+  groups.forEach((group) => {
+    splitGroupBySemester(group).forEach(({ semester, group: splitted }) => {
+      const existing = map.get(semester) ?? [];
+      existing.push(splitted);
+      map.set(semester, existing);
+    });
+  });
+
+  return Array.from(map.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([semester, groups]) => ({ semester, groups }));
+};
+
 const consumeSseBuffer = (
   buffer: string,
   onMessage: (payload: string) => void,
@@ -417,6 +489,15 @@ const LearningPathSamplePage = () => {
   const [collapsedTracks, setCollapsedTracks] = useState<
     Record<string, boolean>
   >({});
+  const [selectedMajorIds, setSelectedMajorIds] = useState<string[]>([]);
+  const [draggingMajorId, setDraggingMajorId] = useState<string | null>(null);
+  const [chooseMajorsLoading, setChooseMajorsLoading] = useState(false);
+  const [chooseMajorsError, setChooseMajorsError] = useState<string | null>(
+    null,
+  );
+  const [chooseMajorsSuccess, setChooseMajorsSuccess] = useState<
+    string | null
+  >(null);
 
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
@@ -633,44 +714,10 @@ const LearningPathSamplePage = () => {
     setCollapsedMajors({});
     setCollapsedMajorSemesters({});
     setCollapsedTracks({});
+    setSelectedMajorIds([]);
+    setChooseMajorsError(null);
+    setChooseMajorsSuccess(null);
   }, [pathId]);
-const mapGroupsBySemester = (groups?: ExtendedCourseGroupDto[]) => {
-  if (!groups) return [];
-  const map = new Map<number, ExtendedCourseGroupDto[]>();
-
-  groups.forEach((group) => {
-    const courseList = group.courses ?? [];
-    const semesters = new Set(
-      courseList.map((course) => course.semesterPosition || 0),
-    );
-
-    if (semesters.size === 0) {
-      semesters.add(0);
-    }
-
-    semesters.forEach((semester) => {
-      const filteredCourses =
-        semester === 0
-          ? courseList
-          : courseList.filter((course) => course.semesterPosition === semester);
-
-      if (
-        filteredCourses.length > 0 ||
-        (group as ExtendedCourseGroupDto).analysisMarkdown ||
-        (group as ExtendedCourseGroupDto).insight
-      ) {
-        const existing = map.get(semester) ?? [];
-        existing.push({ ...group, courses: filteredCourses });
-        map.set(semester, existing);
-      }
-    });
-  });
-
-  return Array.from(map.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([semester, groups]) => ({ semester, groups }));
-};
-
 const deriveSemesterMeta = (groups: ExtendedCourseGroupDto[]) => {
   if (!groups.length) {
     return getStatusMeta(0);
@@ -696,29 +743,10 @@ const computeMajorProgress = (
     const map = new Map<number, ExtendedCourseGroupDto[]>();
 
     learningPath.basicLearningPath.courseGroups.forEach((group) => {
-      const courseList = group.courses ?? [];
-      const semesters = new Set(
-        courseList.map((course) => course.semesterPosition || 0),
-      );
-      if (semesters.size === 0) {
-        semesters.add(0);
-      }
-
-      const hasRenderableInsight =
-        Boolean(group.analysisMarkdown?.trim()) || Boolean(group.insight);
-
-      semesters.forEach((semester) => {
+      splitGroupBySemester(group).forEach(({ semester, group: splitted }) => {
         const list = map.get(semester) ?? [];
-        const filteredCourses =
-          semester === 0
-            ? courseList
-            : courseList.filter(
-                (course) => course.semesterPosition === semester,
-              );
-        if (filteredCourses.length > 0 || hasRenderableInsight) {
-          list.push({ ...group, courses: filteredCourses });
-          map.set(semester, list);
-        }
+        list.push(splitted);
+        map.set(semester, list);
       });
     });
 
@@ -734,6 +762,35 @@ const computeMajorProgress = (
       ),
     [learningPath],
   );
+  const majorOptions = useMemo(
+    () =>
+      internalMajors.map((major, idx) => ({
+        key: major.majorId ?? `${major.majorCode ?? "major"}-${idx}`,
+        major,
+      })),
+    [internalMajors],
+  );
+  const majorOptionMap = useMemo(() => {
+    const map = new Map<string, InternalMajorDto>();
+    majorOptions.forEach(({ key, major }) => map.set(key, major));
+    return map;
+  }, [majorOptions]);
+  const defaultMajorIds = useMemo(
+    () => majorOptions.map((option) => option.key),
+    [majorOptions],
+  );
+  useEffect(() => {
+    if (defaultMajorIds.length === 0) {
+      setSelectedMajorIds([]);
+      return;
+    }
+    setSelectedMajorIds((prev) => {
+      if (prev.length === 0) return defaultMajorIds;
+      const sanitized = prev.filter((id) => defaultMajorIds.includes(id));
+      const missing = defaultMajorIds.filter((id) => !sanitized.includes(id));
+      return [...sanitized, ...missing];
+    });
+  }, [defaultMajorIds]);
 
   const externalTracks = learningPath?.externalLearningPath ?? [];
 
@@ -749,6 +806,101 @@ const computeMajorProgress = (
 
   const isPending =
     loading || status === LearningPathStatus.Generating || false;
+  const isChoosingStatus = status === LearningPathStatus.Choosing;
+  const selectedMajors = useMemo<InternalMajorDto[]>(
+    () =>
+      selectedMajorIds
+        .map((id) => majorOptionMap.get(id))
+        .filter((major): major is InternalMajorDto => Boolean(major)),
+    [selectedMajorIds, majorOptionMap],
+  );
+  const displayedInternalMajors = useMemo(
+    () => (isChoosingStatus ? selectedMajors : internalMajors),
+    [isChoosingStatus, selectedMajors, internalMajors],
+  );
+  const handleSlotSelectChange = (slotIndex: number, nextId: string) => {
+    if (!nextId) return;
+    setSelectedMajorIds((prev) => {
+      if (!prev.length) return prev;
+      const current = prev[slotIndex];
+      if (current === nextId) return prev;
+      const nextOrder = [...prev];
+      const existingIndex = nextOrder.indexOf(nextId);
+      if (existingIndex !== -1) {
+        nextOrder[existingIndex] = current;
+      }
+      nextOrder[slotIndex] = nextId;
+      return nextOrder;
+    });
+    setChooseMajorsError(null);
+    setChooseMajorsSuccess(null);
+  };
+  const handleDragStart = (majorId: string) => {
+    setDraggingMajorId(majorId);
+  };
+  const handleDragEnter = (targetId: string) => {
+    if (!draggingMajorId || draggingMajorId === targetId) return;
+    setSelectedMajorIds((prev) => {
+      const fromIndex = prev.indexOf(draggingMajorId);
+      const toIndex = prev.indexOf(targetId);
+      if (fromIndex === -1 || toIndex === -1) {
+        return prev;
+      }
+      const updated = [...prev];
+      updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, draggingMajorId);
+      return updated;
+    });
+    setChooseMajorsError(null);
+    setChooseMajorsSuccess(null);
+  };
+  const handleDragEnd = () => {
+    setDraggingMajorId(null);
+  };
+  const resetMajorSelection = () => {
+    setSelectedMajorIds(defaultMajorIds);
+    setChooseMajorsError(null);
+    setChooseMajorsSuccess(null);
+  };
+  const handleConfirmMajorSelection = async () => {
+    if (!pathId) {
+      setChooseMajorsError("Thiếu thông tin lộ trình.");
+      return;
+    }
+    const orderedIds =
+      selectedMajors
+        .map((major) => major.majorId)
+        .filter((id): id is string => Boolean(id)) ?? [];
+    if (orderedIds.length === 0) {
+      setChooseMajorsError("Vui lòng chọn ít nhất một chuyên ngành hợp lệ.");
+      return;
+    }
+    setChooseMajorsLoading(true);
+    setChooseMajorsError(null);
+    setChooseMajorsSuccess(null);
+    try {
+      const response = await learningPathsChooseMajorUpdate(
+        pathId,
+        orderedIds,
+      );
+      if (!response?.data?.success) {
+        throw new Error(response?.data?.message ?? undefined);
+      }
+      setChooseMajorsSuccess("Đã cập nhật lựa chọn chuyên ngành.");
+      await fetchLearningPath();
+    } catch (error) {
+      setChooseMajorsError(
+        error instanceof Error
+          ? error.message || "Không thể cập nhật chuyên ngành."
+          : "Không thể cập nhật chuyên ngành.",
+      );
+    } finally {
+      setChooseMajorsLoading(false);
+      setTimeout(() => {
+        setChooseMajorsSuccess(null);
+      }, 4000);
+    }
+  };
 
   const renderBasicContent = () => {
     if (!showBasicSection) return null;
@@ -943,10 +1095,10 @@ const computeMajorProgress = (
     );
   };
 
-  const renderInternalContent = () => {
+  const renderInternalContent = (majorsList: InternalMajorDto[]) => {
     if (!showInternalSection) return null;
     if (isPending) return <InternalMajorSkeleton />;
-    if (internalMajors.length === 0) {
+    if (majorsList.length === 0) {
       return (
         <p className="text-sm text-gray-500">
           Chưa có dữ liệu chuyên ngành nội bộ cho lộ trình này.
@@ -956,7 +1108,7 @@ const computeMajorProgress = (
 
     return (
       <div className="space-y-8">
-        {internalMajors.map((major, majorIdx) => {
+        {majorsList.map((major, majorIdx) => {
           const majorKey = major.majorId ?? `major-${majorIdx}`;
           const isMajorCollapsed = Boolean(collapsedMajors[majorKey]);
           const majorOpen = !isMajorCollapsed;
@@ -1028,8 +1180,10 @@ const computeMajorProgress = (
                       <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-cyan-200 via-cyan-100 to-transparent dark:from-cyan-400/40 dark:via-cyan-400/10 dark:to-transparent" />
                       {semesterTimeline.map(({ semester, groups }, idx) => {
                         const semesterKey = `${majorKey}-sem-${semester}`;
-                        const semesterOpen =
-                          !collapsedMajorSemesters[semesterKey];
+                        const isSemesterCollapsed = Boolean(
+                          collapsedMajorSemesters[semesterKey],
+                        );
+                        const semesterOpen = !isSemesterCollapsed;
                         const courseCount = groups.reduce(
                           (sum, group) => sum + (group.courses?.length ?? 0),
                           0,
@@ -1087,7 +1241,7 @@ const computeMajorProgress = (
                                 onClick={() =>
                                   setCollapsedMajorSemesters((prev) => ({
                                     ...prev,
-                                    [semesterKey]: !semesterOpen,
+                                    [semesterKey]: !isSemesterCollapsed,
                                   }))
                                 }
                                 className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600 dark:text-cyan-200"
@@ -1599,7 +1753,123 @@ const computeMajorProgress = (
             </button>
           </div>
 
-          {renderInternalContent()}
+          {isChoosingStatus && (
+            <div className="mb-10 rounded-3xl border border-cyan-100 dark:border-[#1a2d47] bg-white dark:bg-[#030b17] shadow-lg shadow-cyan-100/20 dark:shadow-[0_0_25px_rgba(3,11,23,0.7)] p-6 space-y-6">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-cyan-500 font-semibold">
+                  Tuỳ chỉnh chuyên ngành
+                </p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
+                  Chọn và sắp xếp thứ tự major ưu tiên
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Dùng combobox để đổi major cho từng vị trí hoặc kéo thả để
+                  sắp xếp lại. Nhấn “Xác nhận” để lưu và dựng lại lộ trình theo
+                  thứ tự bạn chọn.
+                </p>
+              </div>
+              <div className="space-y-4">
+                {selectedMajors.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    Chưa có chuyên ngành nào để lựa chọn.
+                  </p>
+                ) : (
+                  <ul className="space-y-3">
+                    {selectedMajors.map((major, idx) => {
+                      const optionKey = selectedMajorIds[idx];
+                      const label =
+                        major.majorCode ??
+                        major.majorId ??
+                        `Major #${idx + 1}`;
+                      return (
+                        <li
+                          key={`selected-major-${optionKey}`}
+                          className={`rounded-2xl border border-cyan-100 dark:border-[#1f3854] bg-white dark:bg-[#0b192d] p-4 space-y-3 shadow-sm ${draggingMajorId === optionKey ? "ring-2 ring-cyan-300" : ""}`}
+                          draggable
+                          onDragStart={() => handleDragStart(optionKey)}
+                          onDragEnter={() => handleDragEnter(optionKey)}
+                          onDragOver={(event) => event.preventDefault()}
+                          onDragEnd={handleDragEnd}
+                        >
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/10 text-cyan-600 text-sm font-bold dark:bg-cyan-500/20 dark:text-cyan-100">
+                              {idx + 1}
+                            </span>
+                            <div className="flex-1 min-w-[220px]">
+                              <label className="text-xs uppercase tracking-[0.2em] text-cyan-500 font-semibold">
+                                Major {idx + 1}
+                              </label>
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                {label}
+                              </p>
+                              <select
+                                value={optionKey}
+                                onChange={(event) =>
+                                  handleSlotSelectChange(idx, event.target.value)
+                                }
+                                className="mt-1 w-full rounded-xl border border-cyan-200 dark:border-cyan-400/30 bg-white dark:bg-[#040d1d] px-3 py-2 text-sm font-semibold text-cyan-700 dark:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                              >
+                                {majorOptions.map(({ key, major: optionMajor }) => (
+                                  <option key={key} value={key}>
+                                    {optionMajor.majorCode ??
+                                      optionMajor.majorId ??
+                                      key}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 flex-1 min-w-[200px]">
+                              {major.reason ??
+                                "Hệ thống chưa cung cấp mô tả cho chuyên ngành này."}
+                            </p>
+                          </div>
+                          <p className="text-xs text-cyan-600 dark:text-cyan-300">
+                            Giữ thả để sắp xếp lại thứ tự ưu tiên
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleConfirmMajorSelection}
+                  disabled={
+                    chooseMajorsLoading ||
+                    selectedMajors.every((major) => !major.majorId)
+                  }
+                  className="inline-flex items-center gap-2 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {chooseMajorsLoading ? (
+                    <>
+                      <FiRefreshCw className="h-4 w-4 animate-spin" />
+                      Đang lưu...
+                    </>
+                  ) : (
+                    "Xác nhận lựa chọn"
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetMajorSelection}
+                  className="inline-flex items-center gap-2 rounded-full border border-cyan-200 dark:border-cyan-500/40 px-4 py-2 text-sm font-semibold text-cyan-600 dark:text-cyan-100 hover:bg-cyan-50 dark:hover:bg-cyan-500/10"
+                >
+                  Phục hồi gợi ý
+                </button>
+                {chooseMajorsError && (
+                  <span className="text-sm text-red-500">{chooseMajorsError}</span>
+                )}
+                {!chooseMajorsError && chooseMajorsSuccess && (
+                  <span className="text-sm text-emerald-500">
+                    {chooseMajorsSuccess}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          {renderInternalContent(displayedInternalMajors)}
         </section>
 
         <section className="bg-white/90 dark:bg-slate-900/70 rounded-3xl p-8 border border-lime-100/70 dark:border-slate-800 shadow-lg shadow-lime-100/30 dark:shadow-none">
