@@ -14,6 +14,7 @@ import {
   FiClock,
   FiArrowLeft,
 } from "react-icons/fi";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getLearningPathAction } from "EduSmart/app/(learning-path)/learningPathAction";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
 import LearningPathProgress from "EduSmart/components/LearningPath/LearningPathProgress";
@@ -25,8 +26,11 @@ export default function ProcessingClient() {
   const learningPathId = searchParams.get("learningPathId");
   const { session, fetchSession, isLoading } = useSessionAuthStore();
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isCompleted, setIsCompleted] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isPolling, setIsPolling] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [pollingAttempts, setPollingAttempts] = useState(0);
   const [aiStage] = useState(3);
   const [isChecking, setIsChecking] = useState(true);
