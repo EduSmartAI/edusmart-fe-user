@@ -190,7 +190,7 @@ export default function LearningPathProgress({
               {/* Home Icon */}
               <button
                 onClick={handleGoHome}
-                className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
+                className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 hover:transition-shadow hover:duration-200 "
                 title="Quay về trang chủ"
               >
                 <HomeOutlined className="text-lg text-gray-600 dark:text-gray-300" />
