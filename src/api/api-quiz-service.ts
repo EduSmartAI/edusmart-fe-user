@@ -32,6 +32,15 @@ export enum ProblemDifficultyLevel {
 }
 
 /** @format int32 */
+export enum OtherQuestionCode {
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+  Value4 = 4,
+  Value5 = 5,
+}
+
+/** @format int32 */
 export enum LearningGoalType {
   Value0 = 0,
   Value2 = 2,
@@ -368,8 +377,7 @@ export interface InsertLearningPathWithPreviousSurveyAndTranscriptResponseEntity
 export interface LearningGoal {
   /** @format uuid */
   learningGoalId?: string;
-  /** @format int32 */
-  learningGoalType?: number;
+  learningGoalType?: LearningGoalType;
   learningGoalName?: string;
 }
 
@@ -422,6 +430,11 @@ export interface ModuleLatestQuizScore {
   latestScore100?: number;
   /** @format int32 */
   attemptCount?: number;
+}
+
+export interface OtherQuestion {
+  otherQuestionCode?: OtherQuestionCode;
+  otherQuestionText?: string;
 }
 
 export interface PracticeTestAdminDeleteRequest {
@@ -1224,6 +1237,7 @@ export interface StudentSurveyInsertCommand {
   studentInformation: StudentInformation;
   studentSurveys: StudentSurveyInsertRequest[];
   isWantToTakeTest: boolean;
+  otherQuestionAnswerCodes?: OtherQuestionCode[];
 }
 
 export interface StudentSurveyInsertRequest {
@@ -1308,6 +1322,8 @@ export interface StudentTestInsertCommand {
   quizIds: string[];
   answers: StudentAnswerRequest[];
   practiceTestAnswers?: PracticeTestStudentAnswerRequest[];
+  otherQuestionAnswerCodes?: OtherQuestionCode[];
+  learningGoal?: LearningGoal;
 }
 
 export interface StudentTestInsertResponse {
@@ -1385,6 +1401,7 @@ export interface SurveyDetailSelectResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: SurveyDetailSelectResponseEntityPagedResult;
+  otherQuestions?: OtherQuestion[];
 }
 
 export interface SurveyDetailSelectResponseEntity {
@@ -2802,6 +2819,8 @@ export class Api<
       query: {
         /** @format uuid */
         SurveyId: string;
+        /** @format int32 */
+        SemesterNumber?: number;
         /** @format int32 */
         PageIndex?: number;
         /** @format int32 */

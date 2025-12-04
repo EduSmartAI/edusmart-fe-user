@@ -8,19 +8,9 @@
   "paths": {
     "/api/AIChatBots": {
       "post": {
-        "tags": [
-          "AIChatBots"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AIChatBots"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -42,19 +32,9 @@
     },
     "/api/AIChatBots/ai-search-assignment": {
       "post": {
-        "tags": [
-          "AIChatBots"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AIChatBots"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -76,19 +56,9 @@
     },
     "/api/AIChatBots/ChatWithAILearningPath": {
       "post": {
-        "tags": [
-          "AIChatBots"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AIChatBots"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -110,14 +80,8 @@
     },
     "/api/AIChatBots/learning-path": {
       "get": {
-        "tags": [
-          "AIChatBots"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AIChatBots"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -130,14 +94,8 @@
     },
     "/api/AIChatBots/learning-path/detail": {
       "get": {
-        "tags": [
-          "AIChatBots"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AIChatBots"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -158,19 +116,9 @@
     },
     "/api/AiQuizEvaluate/evaluate": {
       "post": {
-        "tags": [
-          "AiQuizEvaluate"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiQuizEvaluate"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -192,19 +140,9 @@
     },
     "/api/v1/AiRecommend": {
       "post": {
-        "tags": [
-          "AiRecommend"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiRecommend"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -226,19 +164,9 @@
     },
     "/api/v1/AiRecommend/external-courses": {
       "post": {
-        "tags": [
-          "AiRecommend"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiRecommend"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -260,19 +188,9 @@
     },
     "/api/v1/AiRecommend/improvement-search-ai": {
       "post": {
-        "tags": [
-          "AiRecommend"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiRecommend"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -292,21 +210,35 @@
         }
       }
     },
+    "/api/v1/AiRecommend/GenAnalysis": {
+      "post": {
+        "tags": ["AiRecommend"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AiRecommendImprovementRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AiRecommendImprovementResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/AiSummarys/feedback-course": {
       "post": {
-        "tags": [
-          "AiSummarys"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiSummarys"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -328,21 +260,11 @@
     },
     "/api/AiSummarys/feedback-module": {
       "post": {
-        "tags": [
-          "AiSummarys"
-        ],
+        "tags": ["AiSummarys"],
         "summary": "Generate AI summary feedback module",
         "description": "Generates an AI-powered summary feedback module based on the provided request data. Requires authentication.",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -364,19 +286,9 @@
     },
     "/api/AiTranscript": {
       "post": {
-        "tags": [
-          "AiTranscript"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiTranscript"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -464,6 +376,68 @@
       },
       "additionalProperties": false
     },
+    "AbilityAnalysis": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "analysisMarkdown": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AbilityMark": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "mark": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiAnalysisSubjectAndAbilityDto": {
+      "required": ["abilityAnalyses", "subjectAnalyses"],
+      "type": "object",
+      "properties": {
+        "summaryFeedback": {
+          "type": "string"
+        },
+        "habitAndInterestAnalysis": {
+          "type": "string"
+        },
+        "personality": {
+          "type": "string"
+        },
+        "learningAbility": {
+          "type": "string"
+        },
+        "subjectAnalyses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectAnalysis"
+          }
+        },
+        "abilityAnalyses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AbilityAnalysis"
+          }
+        },
+        "withoutMarkAnalysis": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectWithoutMarkAnalysis"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "AiEvaluateResponse": {
       "type": "object",
       "properties": {
@@ -493,6 +467,7 @@
       "additionalProperties": false
     },
     "AiEvaluateTempRequest": {
+      "required": ["courseImproves"],
       "type": "object",
       "properties": {
         "careerGoal": {
@@ -535,6 +510,12 @@
         "studentLevel": {
           "format": "int32",
           "type": "integer"
+        },
+        "courseImproves": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CourseImprove"
+          }
         }
       },
       "additionalProperties": false
@@ -631,6 +612,67 @@
         },
         "response": {
           "$ref": "#/definitions/AskResponse"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiRecommendImprovementRequest": {
+      "required": ["abilityMarks", "quizSurvey", "subjectMarks"],
+      "type": "object",
+      "properties": {
+        "careerGoal": {
+          "type": "string"
+        },
+        "subjectMarks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectMark"
+          }
+        },
+        "abilityMarks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AbilityMark"
+          }
+        },
+        "majors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MajorInfo"
+          }
+        },
+        "quizSurvey": {
+          "$ref": "#/definitions/QuizSurvey"
+        },
+        "studentCurriculums": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentCurriculumEvent"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiRecommendImprovementResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/AiAnalysisSubjectAndAbilityDto"
         }
       },
       "additionalProperties": false
@@ -921,6 +963,22 @@
       },
       "additionalProperties": false
     },
+    "CourseImprove": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectPrerequisiteCode": {
+          "type": "string"
+        },
+        "level": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
     "CreateTranscriptCommand": {
       "type": "object",
       "properties": {
@@ -991,7 +1049,7 @@
     "EvaluateResult": {
       "type": "object",
       "properties": {
-        "inputs": { },
+        "inputs": {},
         "evaluations": {
           "type": "array",
           "items": {
@@ -1126,6 +1184,18 @@
       },
       "additionalProperties": false
     },
+    "MajorInfo": {
+      "type": "object",
+      "properties": {
+        "majorCode": {
+          "type": "string"
+        },
+        "majorName": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "QuestionResult": {
       "type": "object",
       "properties": {
@@ -1231,14 +1301,52 @@
       },
       "additionalProperties": false
     },
+    "QuizHabit": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuizInterest": {
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string"
+        },
+        "answer": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "QuizScope": {
       "format": "int32",
-      "enum": [
-        1,
-        2,
-        3
-      ],
+      "enum": [1, 2, 3],
       "type": "integer"
+    },
+    "QuizSurvey": {
+      "type": "object",
+      "properties": {
+        "quizInterests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuizInterest"
+          }
+        },
+        "quizHabits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuizHabit"
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "RecommendedAction": {
       "type": "object",
@@ -1323,6 +1431,69 @@
           "type": "integer"
         },
         "evidence": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentCurriculumEvent": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/StudentTranscriptStatus"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentTranscriptStatus": {
+      "format": "int32",
+      "enum": [0, 1, 2, 3],
+      "type": "integer"
+    },
+    "SubjectAnalysis": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "analysisMarkdown": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectMark": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "mark": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectWithoutMarkAnalysis": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "analysisMarkdown": {
           "type": "string"
         }
       },
@@ -1423,7 +1594,7 @@
   },
   "security": [
     {
-      "JWT_Token": [ ]
+      "JWT_Token": []
     }
   ]
 }

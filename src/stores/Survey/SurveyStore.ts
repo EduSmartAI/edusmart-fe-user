@@ -164,9 +164,13 @@ export interface SurveyActions {
   markDraftSaved: () => void;
 
   // API Actions - Store gọi server actions
-  submitSurvey: () => Promise<{
+  submitSurvey: (
+    isWantToTakeTest: boolean,
+    otherQuestionAnswerCodes?: number[],
+  ) => Promise<{
     success: boolean;
     surveyId?: string;
+    learningPathId?: string; // When isWantToTakeTest = false
     error?: string;
   }>;
   loadRecommendations: (
@@ -367,7 +371,10 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
       setRecommendations: (data) => set({ recommendations: data }),
 
       // API Actions - Store gọi server actions
-      submitSurvey: async () => {
+      submitSurvey: async (
+        isWantToTakeTest: boolean,
+        otherQuestionAnswerCodes?: number[],
+      ) => {
         const state = get();
         const allData = state;
 
@@ -393,33 +400,72 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
             survey1Data: allData.survey1Data || undefined,
             survey2Data: allData.survey2Data || undefined,
             survey3Data: allData.survey3Data || undefined,
+            isWantToTakeTest, // ✅ Pass parameter to server action
+            otherQuestionAnswerCodes, // ✅ Pass optional other question answers
           };
+
+          // 🔍 DEBUG: Log data being sent to server action
+          console.group("🏪 [SURVEY STORE] Calling submitSurveyAction");
+          console.log("API Data:", apiData);
+          console.log("isWantToTakeTest:", isWantToTakeTest);
+          console.log("otherQuestionAnswerCodes:", otherQuestionAnswerCodes);
+          console.log(
+            "Survey 1 - Interest Answers:",
+            apiData.survey1Data?.interestSurveyAnswers,
+          );
+          console.log(
+            "Survey 3 - Study Habits:",
+            apiData.survey3Data?.studyHabits,
+          );
+          console.groupEnd();
 
           const result = await submitSurveyAction(apiData);
 
-          if (result.ok && result.surveyId) {
-            set({ surveyId: result.surveyId });
+          console.log("[SURVEY STORE] submitSurveyAction result:", result);
 
-            // ✅ DON'T clear survey data here - let the parent component handle it after redirect
-            // This prevents the UI from flashing back to Survey1 before redirect completes
-            // get().resetSurvey(); // ❌ REMOVED - causes UI flash
-
-            // Auto-load recommendations (optional, don't fail if this fails)
-            try {
-              const loadResult = await getSurveyRecommendationsAction(
-                result.surveyId,
+          if (result.ok) {
+            // ✅ Handle two cases based on isWantToTakeTest
+            if (!isWantToTakeTest && result.surveyId) {
+              // Case 1: Use transcript - response contains learningPathId
+              set({ surveyId: result.surveyId });
+              console.log(
+                `✅ [SURVEY STORE] Survey submitted (Transcript flow). LearningPathId: ${result.surveyId}`,
               );
-              if (loadResult.ok && loadResult.data) {
-                set({ recommendations: loadResult.data.recommendations });
+              return {
+                success: true,
+                learningPathId: result.surveyId,
+                surveyId: result.surveyId,
+              };
+            } else if (isWantToTakeTest) {
+              // Case 2: Take quiz - response is null, just success
+              console.log(
+                `✅ [SURVEY STORE] Survey submitted (Quiz flow). Response: null`,
+              );
+
+              // Auto-load recommendations (optional, don't fail if this fails)
+              // Only for quiz flow
+              if (result.surveyId) {
+                set({ surveyId: result.surveyId });
+                try {
+                  const loadResult = await getSurveyRecommendationsAction(
+                    result.surveyId,
+                  );
+                  if (loadResult.ok && loadResult.data) {
+                    set({ recommendations: loadResult.data.recommendations });
+                  }
+                } catch (recommendationError) {
+                  console.warn(
+                    "Failed to load recommendations:",
+                    recommendationError,
+                  );
+                  // Don't fail the entire submission if recommendations fail
+                }
               }
-            } catch (recommendationError) {
-              console.warn(
-                "Failed to load recommendations:",
-                recommendationError,
-              );
-              // Don't fail the entire submission if recommendations fail
+
+              return { success: true };
             }
 
+            // Fallback - shouldn't reach here
             return { success: true, surveyId: result.surveyId };
           } else {
             // ✅ NEW: Create StoreError from action result

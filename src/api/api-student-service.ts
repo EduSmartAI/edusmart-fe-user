@@ -233,6 +233,7 @@ export interface CourseGroupDto {
   subjectCode?: string;
   /** @format int32 */
   status?: number;
+  analysisMarkdown?: string;
   courses?: CourseItemDto[];
 }
 
@@ -421,6 +422,27 @@ export interface LearningPathCourseUpdateResponse {
   response?: string;
 }
 
+export interface LearningPathRenameCommand {
+  /** @format uuid */
+  learningPathId: string;
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  pathName: string;
+  /** @format uuid */
+  studentId?: string;
+  studentEmail?: string;
+}
+
+export interface LearningPathRenameResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
 export interface LearningPathSelectAllDto {
   /** @format uuid */
   pathId?: string;
@@ -451,6 +473,10 @@ export interface LearningPathSelectDto {
   pathName?: string;
   /** @format double */
   completionPercent?: number;
+  summaryFeedback?: string;
+  habitAndInterestAnalysis?: string;
+  personality?: string;
+  learningAbility?: string;
   basicLearningPath?: BasicLearningPathDto;
   internalLearningPath?: InternalLearningPathDto[];
   externalLearningPath?: ExternalLearningPathDto[];
@@ -462,6 +488,11 @@ export interface LearningPathSelectResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: LearningPathSelectDto;
+}
+
+export interface LearningPathSelectsQuery {
+  /** @format uuid */
+  learningPathId?: string;
 }
 
 export interface LearningStreakItem {
@@ -1327,6 +1358,28 @@ export class Api<
       }),
 
     /**
+     * @description Sử dụng SSE để lấy Learning PathById (POST body).
+     *
+     * @tags LearningPaths
+     * @name LearningPathsStreamByIdCreate
+     * @summary Streaming Learning Path theo Id
+     * @request POST:/api/LearningPaths/stream-by-id
+     * @secure
+     */
+    learningPathsStreamByIdCreate: (
+      body: LearningPathSelectsQuery,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, any>({
+        path: `/api/LearningPaths/stream-by-id`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
      * @description Dùng để đồng bộ dữ liệu từ write-model khi chỉnh data, chỉ dùng cho Backend
      *
      * @tags LearningPaths
@@ -1542,11 +1595,11 @@ export class Api<
       }),
 
     /**
-     * @description Trả về Learning Path theo tham số query. Cần xác thực Bearer.
+     * @description Nếu client gửi Accept: text/event-stream thì server trả SSE realtime, ngược lại trả JSON thông thường.
      *
      * @tags LearningPaths
      * @name LearningPathsList
-     * @summary Lấy Learning Path
+     * @summary Lấy Learning Path (hỗ trợ SSE)
      * @request GET:/api/LearningPaths
      * @secure
      */
@@ -1815,6 +1868,29 @@ export class Api<
     ) =>
       this.request<UpdateStatusLearningPathResponse, any>({
         path: `/api/LearningPaths/choose-major`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Chỉ cập nhật PathName của lộ trình.
+     *
+     * @tags LearningPaths
+     * @name LearningPathsRenameUpdate
+     * @summary Đổi tên Learning Path
+     * @request PUT:/api/LearningPaths/rename
+     * @secure
+     */
+    learningPathsRenameUpdate: (
+      body: LearningPathRenameCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<LearningPathRenameResponse, any>({
+        path: `/api/LearningPaths/rename`,
         method: "PUT",
         body: body,
         secure: true,

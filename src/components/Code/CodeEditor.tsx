@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Layout, message, Select, Spin, Splitter } from "antd";
+import { Card, Layout, message, Select, Spin, Splitter, Button } from "antd";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import Editor, { Monaco, OnMount } from "@monaco-editor/react";
 import React, {
@@ -10,7 +10,7 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import { FiChevronDown } from "react-icons/fi";
+import { FiChevronDown, FiPlay } from "react-icons/fi";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -20,7 +20,7 @@ import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
 import {
   selectUserTemplateCodeList,
   checkPracticeTestCodeCreate,
-} from "../../app/(codeQuiz)/action";
+} from "EduSmart/app/(codeQuiz)/action";
 import { JudgeLanguageId, judgeLanguageToMonaco } from "EduSmart/enum/enum";
 import "./code.css";
 import TestCaseComponent, {
@@ -29,6 +29,7 @@ import TestCaseComponent, {
 import { handleEditorWillMount } from "EduSmart/utils/EditorCodeConfig";
 import { CodeLanguageOption, PracticeProblem } from "./CodeEditorContainer";
 import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
 
 const { Header, Content } = Layout;
 const { Option } = Select;
@@ -69,13 +70,14 @@ type Props = {
 export default function CodeEditor({
   languages,
   problems,
-  onSubmit,
+  onSubmit, // eslint-disable-line @typescript-eslint/no-unused-vars
   onCodeChange,
   onProblemChange,
   onLanguageChange,
   selectedLanguageId: propSelectedLanguageId,
   activeProblemId: propActiveProblemId,
 }: Props) {
+  const messageApi = useNotification();
   const { isDarkMode } = useTheme();
   const hasProblems = problems.length > 0;
   const getSubmission = usePracticeTestStore((s) => s.getSubmission);
@@ -135,14 +137,10 @@ export default function CodeEditor({
     Record<string, string>
   >(() => {
     const map: Record<string, string> = {};
+    // Don't auto-load test inputs - let user type manually
     if (hasProblems) {
       problems.forEach((p) => {
-        const defaultInput =
-          (p.testCases ?? [])
-            .map((tc) => tc.inputData ?? "")
-            .filter((x) => x && x.trim().length > 0)
-            .join("\n\n") || "";
-        map[p.problemId] = defaultInput;
+        map[p.problemId] = ""; // Empty by default
       });
     } else {
       map["default"] = "";
@@ -185,7 +183,7 @@ export default function CodeEditor({
       return map;
     });
 
-    // giữ test input cũ nếu có, không thì build lại từ testCases
+    // giữ test input cũ nếu có, không thì để trống cho user nhập
     setTestInputsByProblem((prev) => {
       const map: Record<string, string> = {};
       problems.forEach((p) => {
@@ -194,12 +192,8 @@ export default function CodeEditor({
           map[p.problemId] = existing;
           return;
         }
-        const defaultInput =
-          (p.testCases ?? [])
-            .map((tc) => tc.inputData ?? "")
-            .filter((x) => x && x.trim().length > 0)
-            .join("\n\n") || "";
-        map[p.problemId] = defaultInput;
+        // Don't auto-fill from testCases - let user type manually
+        map[p.problemId] = "";
       });
       return map;
     });
@@ -276,24 +270,22 @@ export default function CodeEditor({
     ]);
   };
 
-  // Unused function - kept for future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const runCode = async () => {
     const code = editorRef.current?.getValue() ?? "";
     if (!code.trim()) {
-      message.warning("Bạn chưa nhập code.");
+      messageApi.warning("Bạn chưa nhập code.");
       return;
     }
     clearMarkers();
 
     if (!activeProblem || !activeProblem.problemId) {
-      message.error("Không xác định được bài tập hiện tại.");
+      messageApi.error("Không xác định được bài tập hiện tại.");
       return;
     }
 
     const rawInput = (testInputsByProblem[currentProblemKey] ?? "").trim();
     if (!rawInput) {
-      message.warning("Bạn chưa nhập test case.");
+      messageApi.warning("Bạn chưa nhập test case.");
       return;
     }
 
@@ -446,37 +438,35 @@ export default function CodeEditor({
     }
   };
 
-  // Unused function - kept for future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSubmit = () => {
-    const currentKey = activeProblem?.problemId ?? activeProblemId ?? "default";
-    const currentCode = editorRef.current?.getValue() ?? "";
+  // const handleSubmit = () => {
+  //   const currentKey = activeProblem?.problemId ?? activeProblemId ?? "default";
+  //   const currentCode = editorRef.current?.getValue() ?? "";
 
-    // merge code hiện tại vào state
-    const mergedCodes: Record<string, string> = {
-      ...codeByProblem,
-      [currentKey]: currentCode,
-    };
+  //   // merge code hiện tại vào state
+  //   const mergedCodes: Record<string, string> = {
+  //     ...codeByProblem,
+  //     [currentKey]: currentCode,
+  //   };
 
-    // build mảng [ { languageId, sourceCode }, ... ]
-    const payload: SubmitPayload = hasProblems
-      ? problems.map((p) => ({
-          languageId: selectedLangId,
-          sourceCode: mergedCodes[p.problemId] ?? "",
-        }))
-      : [
-          {
-            languageId: selectedLangId,
-            sourceCode: mergedCodes[currentKey] ?? "",
-          },
-        ];
+  //   // build mảng [ { languageId, sourceCode }, ... ]
+  //   const payload: SubmitPayload = hasProblems
+  //     ? problems.map((p) => ({
+  //         languageId: selectedLangId,
+  //         sourceCode: mergedCodes[p.problemId] ?? "",
+  //       }))
+  //     : [
+  //         {
+  //           languageId: selectedLangId,
+  //           sourceCode: mergedCodes[currentKey] ?? "",
+  //         },
+  //       ];
 
-    if (onSubmit) {
-      onSubmit(payload);
-    } else {
-      console.log("[SUBMIT inside Client]:", payload);
-    }
-  };
+  //   if (onSubmit) {
+  //     onSubmit(payload);
+  //   } else {
+  //     console.log("[SUBMIT inside Client]:", payload);
+  //   }
+  // };
 
   const handleChangeProblem = (problemId: string) => {
     if (!hasProblems) return;
@@ -577,7 +567,7 @@ export default function CodeEditor({
       }
     } catch (e) {
       console.error("❌ loadUserTemplateCode error:", e);
-      message.warning("Không tải được template code, dùng snippet mặc định.");
+      messageApi.warning("Không tải được template code, dùng snippet mặc định.");
     } finally {
       setTemplateLoading(false);
     }
@@ -686,7 +676,7 @@ export default function CodeEditor({
           </div>
 
           <div className="flex gap-3 items-center">
-            {/* <Button
+            <Button
               type="primary"
               icon={<FiPlay />}
               onClick={runCode}
@@ -694,7 +684,7 @@ export default function CodeEditor({
               className="font-medium"
             >
               Run
-            </Button> */}
+            </Button>
 
             {/* <Button
               type="default"
@@ -774,7 +764,7 @@ export default function CodeEditor({
                                     ex.inputData ?? "",
                                     "```",
                                     "",
-                                    "**Đầu ra::**",
+                                    "**Đầu ra:**",
                                     "```text",
                                     ex.outputData ?? "",
                                     "```",

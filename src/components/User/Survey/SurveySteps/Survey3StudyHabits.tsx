@@ -294,7 +294,7 @@ const Survey3StudyHabits: React.FC<Survey3StudyHabitsProps> = ({
                 disabled={!isFormComplete() || isSubmitting}
                 className={`px-8 py-3 h-auto rounded-xl ${isFormComplete() && `!bg-gradient-to-r from-[#49BBBD] to-cyan-600 hover:from-[#3da8aa] hover:to-cyan-700`}  border-0 shadow-lg hover:shadow-xl transition-all duration-200`}
               >
-                {isSubmitting ? "Đang xử lý..." : "Hoàn thành khảo sát"}
+                {isSubmitting ? "Đang lưu..." : "Tiếp tục"}
               </Button>
             </div>
           </Form>

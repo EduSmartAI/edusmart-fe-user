@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Layout, Steps, Card, message } from "antd";
 import {
   SurveyStep,
@@ -17,7 +18,7 @@ import { throwStoreError } from "EduSmart/types/errors";
 const { Content } = Layout;
 
 interface SurveyMainFlowProps {
-  onComplete?: () => void;
+  onComplete?: (learningGoalId?: string) => void;
   onBack?: (
     data: Survey1FormValues | Survey2FormValues | Survey3FormValues,
   ) => void;
@@ -29,6 +30,9 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
   onBack,
   showProgress,
 }) => {
+  // ✅ Initialize router
+  const router = useRouter();
+
   // Sử dụng hook thay vì local state
   const survey = useSurvey();
 
@@ -82,71 +86,43 @@ const SurveyMainFlow: React.FC<SurveyMainFlowProps> = ({
     if (step < 3) {
       survey.goToNextStep();
     } else {
-      // Bước cuối - submit toàn bộ survey
-      console.log("🚀 Submitting complete survey...");
+      // ✅ Bước cuối - KHÔNG SUBMIT, redirect to transition page với learningGoalId
+      console.log("✅ Survey 3 completed, redirecting to transition page...");
 
-      // Show loading message
-      const hideLoading = message.loading("Đang xử lý khảo sát của bạn...", 0);
+      // Lấy learningGoalId từ survey1Data
+      const learningGoalId = survey.survey1Data?.learningGoal;
 
-      try {
-        console.log("Submitting data:", {
-          survey1: survey.survey1Data,
-          survey2: survey.survey2Data,
-          survey3: survey.survey3Data,
-        });
-
-        const submitResult = await survey.submitSurvey();
-        console.log("Submit result:", submitResult);
-
-        if (submitResult.success) {
-          console.log("✅ Survey submitted successfully:", {
-            surveyId: submitResult.surveyId,
-          });
-
-          // Hide loading message BEFORE redirect
-          hideLoading();
-
-          // Show success message (briefly visible)
-          message.success({
-            content: "Khảo sát đã được gửi thành công!",
-            duration: 1,
-          });
-
-          // Clear survey data BEFORE redirecting to prevent flash of Survey1
-          // Use a small delay to ensure message is visible
-          setTimeout(() => {
-            // Clear survey store data
-            survey.resetSurvey();
-
-            // Redirect to transition page
-            if (onComplete) {
-              console.log("Redirecting to transition page...");
-              onComplete();
-            }
-          }, 300);
-        } else {
-          // Hide loading message
-          hideLoading();
-          console.error("❌ Survey submission failed:", submitResult.error);
-
-          // Show error message
-          message.error({
-            content: `❌ Gửi khảo sát thất bại: ${submitResult.error || "Vui lòng thử lại sau."}`,
-            duration: 6,
-          });
-        }
-      } catch (error) {
-        console.error("❌ Survey submission error:", error);
-
-        // Hide loading message
-        hideLoading();
-
-        // Show error message
-        message.error({
-          content: "❌ Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.",
-          duration: 6,
-        });
+      if (!learningGoalId) {
+        message.error(
+          "Không tìm thấy thông tin mục tiêu học tập. Vui lòng thử lại.",
+        );
+        console.error("❌ learningGoalId not found in survey1Data");
+        return;
       }
+
+      console.log("📍 Redirecting with learningGoalId:", learningGoalId);
+
+      // ✅ Set completed steps in localStorage for LearningPathGuard
+      try {
+        localStorage.setItem(
+          "learning_path_completed_steps",
+          JSON.stringify([1]),
+        );
+        localStorage.setItem("learning_path_current_step", "2");
+        console.log("✅ Saved completed steps to localStorage: [1]");
+      } catch (error) {
+        console.warn("⚠️ Failed to save to localStorage:", error);
+      }
+
+      message.success({
+        content: "Khảo sát đã được lưu! Vui lòng chọn bước tiếp theo.",
+        duration: 2,
+      });
+
+      // Redirect to transition page with learningGoalId parameter
+      router.push(
+        `/learning-path/assessment/transition?learningGoalId=${learningGoalId}`,
+      );
     }
   };
 

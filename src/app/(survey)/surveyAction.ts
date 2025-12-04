@@ -7,6 +7,7 @@ import {
 } from "EduSmart/types";
 import { normalizeFetchError } from "EduSmart/app/(quiz)/quizAction";
 import apiServer from "EduSmart/lib/apiServer";
+import type { OtherQuestionCode } from "EduSmart/api/api-quiz-service";
 
 // ======================== API RESPONSE TYPES ========================
 export interface SurveySubmissionResponse {
@@ -58,62 +59,130 @@ function isValidUUID(uuid: string): boolean {
 }
 
 /**
- * Log payload structure for debugging
+ * Log payload structure for debugging - DETAILED VERSION
  */
 function logPayloadStructure(
   payload: {
     studentInformation?: {
       majorId?: string;
       semesterId?: string;
-      technologies?: Array<unknown>;
+      technologies?: Array<{
+        technologyId?: string;
+        technologyName?: string;
+        technologyType?: number;
+      }>;
       learningGoal?: {
         learningGoalId?: string;
         learningGoalType?: number;
+        learningGoalName?: string;
       };
     };
     studentSurveys?: Array<{
       surveyId?: string;
       surveyCode?: string;
-      answers?: Array<unknown>;
+      answers?: Array<{
+        questionId?: string;
+        answerId?: string;
+      }>;
     }>;
+    isWantToTakeTest?: boolean;
+    otherQuestionAnswerCodes?: OtherQuestionCode[];
   },
   title: string = "Payload Structure",
 ): void {
-  console.log(`\n🔍 ${title}:`);
-  console.log("├── studentInformation:");
+  console.log(`\n🔍 ========== ${title} ==========`);
+
+  // Student Information
+  console.log("\n📋 STUDENT INFORMATION:");
   console.log(
-    "│   ├── majorId:",
-    payload.studentInformation?.majorId ? "✅" : "❌",
+    "  ├─ majorId:",
+    payload.studentInformation?.majorId || "❌ MISSING",
   );
   console.log(
-    "│   ├── semesterId:",
-    payload.studentInformation?.semesterId ? "✅" : "❌",
+    "  ├─ semesterId:",
+    payload.studentInformation?.semesterId || "❌ MISSING",
+  );
+
+  // Technologies
+  console.log(
+    `  ├─ technologies: [${payload.studentInformation?.technologies?.length || 0} items]`,
+  );
+  if (
+    payload.studentInformation?.technologies &&
+    payload.studentInformation.technologies.length > 0
+  ) {
+    payload.studentInformation.technologies.forEach((tech, idx) => {
+      console.log(`  │   ├─ Technology ${idx + 1}:`);
+      console.log(`  │   │   ├─ technologyId: ${tech.technologyId || "❌"}`);
+      console.log(
+        `  │   │   ├─ technologyName: ${tech.technologyName || "❌"}`,
+      );
+      console.log(
+        `  │   │   └─ technologyType: ${tech.technologyType ?? "❌"}`,
+      );
+    });
+  } else {
+    console.log("  │   └─ (empty array)");
+  }
+
+  // Learning Goal
+  console.log("  └─ learningGoal:");
+  console.log(
+    "      ├─ learningGoalId:",
+    payload.studentInformation?.learningGoal?.learningGoalId || "❌ MISSING",
   );
   console.log(
-    "│   ├── technologies:",
-    `[${payload.studentInformation?.technologies?.length || 0} items]`,
-  );
-  console.log("│   └── learningGoal:");
-  console.log(
-    "│       ├── learningGoalId:",
-    payload.studentInformation?.learningGoal?.learningGoalId ? "✅" : "❌",
+    "      ├─ learningGoalType:",
+    payload.studentInformation?.learningGoal?.learningGoalType ?? "❌ MISSING",
   );
   console.log(
-    "│       └── learningGoalType:",
-    payload.studentInformation?.learningGoal?.learningGoalType,
+    "      └─ learningGoalName:",
+    payload.studentInformation?.learningGoal?.learningGoalName || "❌ MISSING",
+  );
+
+  // Student Surveys
+  console.log(
+    `\n📝 STUDENT SURVEYS: [${payload.studentSurveys?.length || 0} surveys]`,
+  );
+  if (payload.studentSurveys && payload.studentSurveys.length > 0) {
+    payload.studentSurveys.forEach((survey, surveyIdx) => {
+      console.log(`  ├─ Survey ${surveyIdx + 1}:`);
+      console.log(`  │   ├─ surveyId: ${survey.surveyId || "❌ MISSING"}`);
+      console.log(`  │   ├─ surveyCode: ${survey.surveyCode || "❌ MISSING"}`);
+      console.log(`  │   └─ answers: [${survey.answers?.length || 0} answers]`);
+
+      if (survey.answers && survey.answers.length > 0) {
+        survey.answers.forEach((answer, answerIdx) => {
+          console.log(`  │       ├─ Answer ${answerIdx + 1}:`);
+          console.log(
+            `  │       │   ├─ questionId: ${answer.questionId || "❌"}`,
+          );
+          console.log(`  │       │   └─ answerId: ${answer.answerId || "❌"}`);
+        });
+      } else {
+        console.log("  │       └─ (no answers)");
+      }
+    });
+  } else {
+    console.log("  └─ (no surveys)");
+  }
+
+  // Additional Fields
+  console.log("\n⚙️ ADDITIONAL FIELDS:");
+  console.log(
+    "  ├─ isWantToTakeTest:",
+    payload.isWantToTakeTest ?? "❌ MISSING",
   );
   console.log(
-    "└── studentSurveys:",
-    `[${payload.studentSurveys?.length || 0} surveys]`,
+    "  └─ otherQuestionAnswerCodes:",
+    payload.otherQuestionAnswerCodes
+      ? `[${payload.otherQuestionAnswerCodes.length} items]`
+      : "❌ MISSING",
   );
-  payload.studentSurveys?.forEach((survey, index) => {
-    console.log(`    ├── Survey ${index + 1}:`);
-    console.log(`    │   ├── surveyId: ${survey.surveyId ? "✅" : "❌"}`);
-    console.log(`    │   ├── surveyCode: ${survey.surveyCode}`);
-    console.log(
-      `    │   └── answers: [${survey.answers?.length || 0} answers]`,
-    );
-  });
+
+  console.log(
+    "\n🔍 ========== END OF " + title.toUpperCase() + " ==========\n",
+  );
 }
 
 /**
@@ -540,6 +609,10 @@ export async function getSurveyByCodeAction(surveyCode: string): Promise<{
       }>;
     }>;
   };
+  otherQuestions?: Array<{
+    otherQuestionCode: number;
+    otherQuestionText: string;
+  }>;
   error?: string;
   status?: number;
 }> {
@@ -552,10 +625,31 @@ export async function getSurveyByCodeAction(surveyCode: string): Promise<{
     const listResponse = await apiServer.quiz.api.v1SurveyList();
 
     if (listResponse.data?.success && listResponse.data?.response) {
-      // Find survey with matching code
-      const targetSurvey = listResponse.data.response.find(
+      // Find ALL surveys with matching code
+      const matchingSurveys = listResponse.data.response.filter(
         (survey) => survey.surveyCode === surveyCode,
       );
+
+      // Ưu tiên lấy survey có title (survey mới hơn) hoặc survey cuối cùng
+      const targetSurvey =
+        matchingSurveys.length > 0
+          ? matchingSurveys.find((s) => s.title) ||
+            matchingSurveys[matchingSurveys.length - 1]
+          : null;
+
+      console.log(
+        `🔍 [getSurveyByCodeAction] Found ${matchingSurveys.length} surveys with code "${surveyCode}":`,
+        matchingSurveys.map((s) => ({
+          surveyId: s.surveyId,
+          title: s.title,
+          description: s.description,
+        })),
+      );
+      console.log(`✅ [getSurveyByCodeAction] Selected survey:`, {
+        surveyId: targetSurvey?.surveyId,
+        title: targetSurvey?.title,
+        description: targetSurvey?.description,
+      });
 
       if (targetSurvey?.surveyId) {
         // Now get detail for this survey
@@ -591,6 +685,11 @@ export async function getSurveyByCodeAction(surveyCode: string): Promise<{
                     })) || [],
                 })) || [],
             },
+            otherQuestions:
+              detailResponse.data.otherQuestions?.map((oq) => ({
+                otherQuestionCode: oq.otherQuestionCode!,
+                otherQuestionText: oq.otherQuestionText!,
+              })) || [],
           };
         }
       }
@@ -615,6 +714,8 @@ export async function submitSurveyAction(surveyData: {
   survey1Data?: Survey1FormValues;
   survey2Data?: Survey2FormValues;
   survey3Data?: Survey3FormValues;
+  isWantToTakeTest: boolean; // ✅ REQUIRED: true = làm test, false = upload transcript
+  otherQuestionAnswerCodes?: number[]; // ✅ OPTIONAL: Other question answer codes
 }): Promise<{
   ok: boolean;
   surveyId?: string;
@@ -622,7 +723,16 @@ export async function submitSurveyAction(surveyData: {
   status?: number;
 }> {
   try {
-    const { survey1Data, survey2Data, survey3Data } = surveyData;
+    const { survey1Data, survey2Data, survey3Data, otherQuestionAnswerCodes } =
+      surveyData;
+
+    // 🔍 DEBUG: Log received survey data
+    console.group("🔒 [SERVER ACTION] submitSurveyAction - Received Data");
+    console.log("Survey 1 Data:", survey1Data);
+    console.log("Survey 2 Data:", survey2Data);
+    console.log("Survey 3 Data:", survey3Data);
+    console.log("Other Question Answer Codes:", otherQuestionAnswerCodes);
+    console.groupEnd();
 
     if (!survey1Data) {
       return { ok: false, error: "Survey 1 data is required" };
@@ -741,31 +851,29 @@ export async function submitSurveyAction(surveyData: {
       }>;
     }> = [];
 
-    // Add INTEREST survey if we have interest survey answers
-    if (
-      survey1Data.interestSurveyAnswers &&
-      survey1Data.interestSurveyAnswers.length > 0
-    ) {
-      // Get INTEREST survey ID dynamically
-      const interestSurveyResult = await getSurveyByCodeAction("INTEREST");
-      if (!interestSurveyResult.ok || !interestSurveyResult.data?.surveyId) {
+    // ===== LUÔN LUÔN ADD HABIT SURVEY TRƯỚC (theo thứ tự request mẫu) =====
+    // Add HABIT survey nếu có survey 3 data (luôn luôn có vì đã bắt buộc)
+    console.log(
+      "🔍 Checking HABIT survey (studyHabits):",
+      survey3Data?.studyHabits,
+    );
+    if (survey3Data?.studyHabits && survey3Data.studyHabits.length > 0) {
+      // GỌI API LẤY HABIT SURVEY TRƯỚC - Đảm bảo lấy surveyId mới nhất
+      const habitSurveyResult = await getSurveyByCodeAction("HABIT");
+      console.log("🔍 [HABIT SURVEY] API Result:", {
+        ok: habitSurveyResult.ok,
+        surveyId: habitSurveyResult.data?.surveyId,
+        surveyCode: habitSurveyResult.data?.surveyCode,
+        questionsCount: habitSurveyResult.data?.questions?.length,
+        error: habitSurveyResult.error,
+      });
+
+      if (!habitSurveyResult.ok || !habitSurveyResult.data?.surveyId) {
         throw new Error(
-          interestSurveyResult.error || "Failed to get INTEREST survey",
+          habitSurveyResult.error || "Failed to get HABIT survey",
         );
       }
 
-      studentSurveys.push({
-        surveyId: interestSurveyResult.data.surveyId,
-        surveyCode: "INTEREST",
-        answers: survey1Data.interestSurveyAnswers.map((answer) => ({
-          questionId: answer.questionId,
-          answerId: answer.selectedAnswerId,
-        })),
-      });
-    }
-
-    // Add HABIT survey if we have survey 3 data
-    if (survey3Data?.studyHabits && survey3Data.studyHabits.length > 0) {
       // Convert studyHabits to API format
       const habitAnswers: Array<{ questionId: string; answerId: string }> = [];
 
@@ -792,19 +900,59 @@ export async function submitSurveyAction(surveyData: {
       });
 
       if (habitAnswers.length > 0) {
-        const habitSurveyResult = await getSurveyByCodeAction("HABIT");
-        if (!habitSurveyResult.ok || !habitSurveyResult.data?.surveyId) {
-          throw new Error(
-            habitSurveyResult.error || "Failed to get HABIT survey",
-          );
-        }
-
-        studentSurveys.push({
+        const habitSurvey = {
           surveyId: habitSurveyResult.data.surveyId,
           surveyCode: "HABIT",
           answers: habitAnswers,
-        });
+        };
+
+        console.log("✅ Adding HABIT survey:", habitSurvey);
+        console.log(
+          "🔍 [VALIDATION] HABIT Survey has",
+          habitSurveyResult.data.questions?.length,
+          "questions but submitting",
+          habitAnswers.length,
+          "answers",
+        );
+        studentSurveys.push(habitSurvey);
+      } else {
+        console.warn("⚠️ No valid HABIT answers after filtering!");
       }
+    } else {
+      console.warn("⚠️ No HABIT survey (studyHabits) found!");
+    }
+
+    // ===== LUÔN LUÔN ADD INTEREST SURVEY SAU =====
+    // Add INTEREST survey nếu có interest survey answers (luôn luôn có vì đã bắt buộc)
+    console.log(
+      "🔍 Checking INTEREST survey answers:",
+      survey1Data.interestSurveyAnswers,
+    );
+    if (
+      survey1Data.interestSurveyAnswers &&
+      survey1Data.interestSurveyAnswers.length > 0
+    ) {
+      // Get INTEREST survey ID dynamically
+      const interestSurveyResult = await getSurveyByCodeAction("INTEREST");
+      if (!interestSurveyResult.ok || !interestSurveyResult.data?.surveyId) {
+        throw new Error(
+          interestSurveyResult.error || "Failed to get INTEREST survey",
+        );
+      }
+
+      const interestSurvey = {
+        surveyId: interestSurveyResult.data.surveyId,
+        surveyCode: "INTEREST",
+        answers: survey1Data.interestSurveyAnswers.map((answer) => ({
+          questionId: answer.questionId,
+          answerId: answer.selectedAnswerId,
+        })),
+      };
+
+      console.log("✅ Adding INTEREST survey:", interestSurvey);
+      studentSurveys.push(interestSurvey);
+    } else {
+      console.warn("⚠️ No INTEREST survey answers found!");
     }
 
     // Prepare final payload
@@ -820,7 +968,8 @@ export async function submitSurveyAction(surveyData: {
         },
       },
       studentSurveys: studentSurveys,
-      isWantToTakeTest: true, // hard code
+      isWantToTakeTest: surveyData.isWantToTakeTest, // ✅ Use parameter from function argument
+      otherQuestionAnswerCodes: (otherQuestionAnswerCodes || []) as OtherQuestionCode[], // ✅ Cast number array to enum array
     };
 
     // Validate payload before sending
@@ -854,8 +1003,13 @@ export async function submitSurveyAction(surveyData: {
       "  - Learning Goal Type:",
       finalPayload.studentInformation.learningGoal.learningGoalType,
     );
+    console.log(
+      "  - Learning Goal Name:",
+      finalPayload.studentInformation.learningGoal.learningGoalName,
+    );
 
     console.log("📝 Student Surveys:");
+    console.log("  - Total Surveys Count:", finalPayload.studentSurveys.length);
     finalPayload.studentSurveys.forEach((survey, index) => {
       console.log(`  📖 Survey ${index + 1}:`);
       console.log(`    - Survey ID: ${survey.surveyId}`);

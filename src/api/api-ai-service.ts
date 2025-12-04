@@ -11,6 +11,14 @@
  */
 
 /** @format int32 */
+export enum StudentTranscriptStatus {
+  Value0 = 0,
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+}
+
+/** @format int32 */
 export enum QuizScope {
   Value1 = 1,
   Value2 = 2,
@@ -41,6 +49,27 @@ export interface AIChatBotResponse {
   response?: ChatResponseDto;
 }
 
+export interface AbilityAnalysis {
+  name?: string;
+  analysisMarkdown?: string;
+}
+
+export interface AbilityMark {
+  name?: string;
+  /** @format double */
+  mark?: number;
+}
+
+export interface AiAnalysisSubjectAndAbilityDto {
+  summaryFeedback?: string;
+  habitAndInterestAnalysis?: string;
+  personality?: string;
+  learningAbility?: string;
+  subjectAnalyses: SubjectAnalysis[];
+  abilityAnalyses: AbilityAnalysis[];
+  withoutMarkAnalysis?: SubjectWithoutMarkAnalysis[];
+}
+
 export interface AiEvaluateResponse {
   success?: boolean;
   messageId?: string;
@@ -67,6 +96,7 @@ export interface AiEvaluateTempRequest {
   semesterId?: string;
   /** @format int32 */
   studentLevel?: number;
+  courseImproves: CourseImprove[];
 }
 
 export interface AiEvaluationDto {
@@ -99,6 +129,23 @@ export interface AiExternalCourseResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: AskResponse;
+}
+
+export interface AiRecommendImprovementRequest {
+  careerGoal?: string;
+  subjectMarks: SubjectMark[];
+  abilityMarks: AbilityMark[];
+  majors?: MajorInfo[];
+  quizSurvey: QuizSurvey;
+  studentCurriculums?: StudentCurriculumEvent[];
+}
+
+export interface AiRecommendImprovementResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AiAnalysisSubjectAndAbilityDto;
 }
 
 export interface AiSearchChatBotRequest {
@@ -218,6 +265,13 @@ export interface ChatSummaryDto {
   messageCount?: number;
 }
 
+export interface CourseImprove {
+  subjectCode?: string;
+  subjectPrerequisiteCode?: string;
+  /** @format int32 */
+  level?: number;
+}
+
 export interface CreateTranscriptCommand {
   createTranscriptionReq?: CreateTranscriptionReq;
 }
@@ -292,6 +346,11 @@ export interface MajorEvaluation {
   reasons?: string;
 }
 
+export interface MajorInfo {
+  majorCode?: string;
+  majorName?: string;
+}
+
 export interface QuestionResult {
   /** @format uuid */
   questionId?: string;
@@ -335,6 +394,21 @@ export interface QuizEvaluateResponse {
   response?: AiEvaluationDto;
 }
 
+export interface QuizHabit {
+  question?: string;
+  answer?: string;
+}
+
+export interface QuizInterest {
+  question?: string;
+  answer?: string;
+}
+
+export interface QuizSurvey {
+  quizInterests?: QuizInterest[];
+  quizHabits?: QuizHabit[];
+}
+
 export interface RecommendedAction {
   title?: string;
   kind?: string;
@@ -367,6 +441,30 @@ export interface SkillGap {
   /** @format int32 */
   level?: number;
   evidence?: string;
+}
+
+export interface StudentCurriculumEvent {
+  subjectCode?: string;
+  status?: StudentTranscriptStatus;
+}
+
+export interface SubjectAnalysis {
+  subjectCode?: string;
+  subjectName?: string;
+  analysisMarkdown?: string;
+}
+
+export interface SubjectMark {
+  subjectCode?: string;
+  subjectName?: string;
+  /** @format double */
+  mark?: number;
+}
+
+export interface SubjectWithoutMarkAnalysis {
+  subjectCode?: string;
+  subjectName?: string;
+  analysisMarkdown?: string;
 }
 
 export interface SuggestedCoursePayload {
@@ -847,6 +945,28 @@ export class Api<
     ) =>
       this.request<AiSearchResponse, any>({
         path: `/api/v1/AiRecommend/improvement-search-ai`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AiRecommend
+     * @name V1AiRecommendGenAnalysisCreate
+     * @request POST:/api/v1/AiRecommend/GenAnalysis
+     * @secure
+     */
+    v1AiRecommendGenAnalysisCreate: (
+      body: AiRecommendImprovementRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<AiRecommendImprovementResponse, any>({
+        path: `/api/v1/AiRecommend/GenAnalysis`,
         method: "POST",
         body: body,
         secure: true,

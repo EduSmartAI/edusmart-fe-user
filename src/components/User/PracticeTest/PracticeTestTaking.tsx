@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Button, Spin, message, Modal } from "antd";
+import { Button, Spin, Modal } from "antd";
 import {
   FiCheckCircle,
   FiChevronLeft,
@@ -18,6 +18,7 @@ import {
   CodeLanguageOption,
   PracticeProblem,
 } from "EduSmart/components/Code/CodeEditorContainer";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
 
 interface PracticeTestTakingProps {
   onComplete: () => void;
@@ -51,6 +52,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentCode, setCurrentCode] = useState("");
+  const messageApi = useNotification();
 
   const currentProblem = getCurrentProblem();
 
@@ -70,11 +72,11 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
         if (detail?.response) {
           setCurrentProblemDetail(detail.response);
         } else {
-          message.error("Không thể tải chi tiết bài tập");
+          messageApi.error("Không thể tải chi tiết bài tập");
         }
       } catch (error) {
         console.error("Error loading problem detail:", error);
-        message.error("Có lỗi khi tải chi tiết bài tập");
+        messageApi.error("Có lỗi khi tải chi tiết bài tập");
       } finally {
         setIsLoadingDetail(false);
         setLoadingProblemDetail(false);
@@ -130,7 +132,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     };
 
     loadTemplate();
-  }, [currentProblem, selectedLanguageId, getSubmission]);
+  }, [currentProblem, selectedLanguageId, getSubmission, messageApi]);
 
   const handleCodeChange = (code: string) => {
     setCurrentCode(code);
@@ -180,7 +182,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     if (!currentProblem) return;
 
     if (!currentCode || currentCode.trim().length === 0) {
-      message.warning("Vui lòng viết code trước khi đánh dấu hoàn thành");
+      messageApi.warning("Vui lòng viết code trước khi đánh dấu hoàn thành");
       return;
     }
 
@@ -189,7 +191,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     }
 
     markProblemCompleted(currentProblem.problemId);
-    message.success(
+    messageApi.success(
       `Đã hoàn thành bài ${currentProblemIndex + 1}/${problems.length}`,
     );
 
@@ -222,7 +224,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
           });
         }
 
-        message.success({
+        messageApi.success({
           content: "Đã lưu code của bạn!",
           duration: 1,
         });

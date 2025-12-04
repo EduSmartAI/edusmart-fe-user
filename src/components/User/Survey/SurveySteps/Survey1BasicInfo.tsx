@@ -155,28 +155,46 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
   };
 
   const onFinish = (values: Survey1FormValues) => {
-    // Nếu chọn "Chưa có định hướng", cần validate khảo sát sở thích
+    // Old: Chỉ validate khảo sát sở thích INTEREST khi learning goal là "Chưa có định hướng"
+
+    // New: Luôn yêu cầu hoàn thành khảo sát INTEREST nếu có.
     if (shouldShowInterestSurvey()) {
       if (interestSurveyAnswers.length < interestSurveyQuestions.length) {
         // Show a more user-friendly notification
         const unansweredCount =
           interestSurveyQuestions.length - interestSurveyAnswers.length;
         alert(
-          `⚠️ Vui lòng hoàn thành thêm ${unansweredCount} câu hỏi khảo sát để tiếp tục!`,
+          `⚠️ Vui lòng hoàn thành thêm ${unansweredCount} câu hỏi khảo sát sở thích để tiếp tục!`,
         );
         return;
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
-      // Gửi data với interestSurveyAnswers
-      onComplete({
+
+      // 🔍 DEBUG: Log Survey 1 data trước khi gửi
+      const survey1Payload = {
         ...values,
         interestSurveyAnswers,
-      });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      // Gửi data bình thường
-      onComplete(values);
+      };
+      console.group("📋 [SURVEY 1] Data being sent");
+      console.log("Form Values:", values);
+      console.log(
+        "Interest Survey Answers Count:",
+        interestSurveyAnswers.length,
+      );
+      console.log("Interest Survey Answers:", interestSurveyAnswers);
+      console.log("Complete Survey 1 Payload:", survey1Payload);
+      console.groupEnd();
+
+      // Gửi data với interestSurveyAnswers
+      onComplete(survey1Payload);
     }
+    // else {
+    //   window.scrollTo({ top: 0, behavior: "smooth" });
+    //   // Gửi data bình thường
+    //   onComplete({
+    //     ...values,
+    //   });
+    // }
   };
 
   const handleBack = () => {
@@ -204,15 +222,20 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
     return hasSpecializations;
   };
 
-  // Kiểm tra nếu cần hiển thị khảo sát sở thích (khi chọn "Chưa có định hướng")
+  // Old: Chỉ hiển thị khảo sát sở thích INTEREST nếu chọn learning goal "Chưa có định hướng"
+  // New: Luôn hiển thị khảo sát sở thích INTEREST bất kể định hướng gì
   const shouldShowInterestSurvey = () => {
-    if (!selectedLearningGoal) return false;
-    const selectedGoal = learningGoals.find(
-      (g) => g.learningGoalId === selectedLearningGoal,
-    );
-    return (
-      selectedGoal && selectedGoal.learningGoalName === "Chưa có định hướng"
-    );
+    // // Hiển thị khảo sát sở thích INTEREST chỉ khi learning goal là "Chưa có định hướng"
+    // if (!selectedLearningGoal) return false;
+    // const selectedGoal = learningGoals.find(
+    //   (g) => g.learningGoalId === selectedLearningGoal,
+    // );
+    // return (
+    //   selectedGoal && selectedGoal.learningGoalName === "Chưa có định hướng"
+    // );
+    // Chỉ cần có learning goal được chọn và có câu hỏi
+    // return !!selectedLearningGoal && interestSurveyQuestions.length > 0;
+    return true;
   };
 
   const handleInterestSurveyAnswer = (questionId: string, answerId: string) => {
@@ -479,7 +502,8 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                     <Paragraph className="!text-base !text-gray-600 dark:text-gray-300 !mb-4 max-w-2xl mx-auto leading-relaxed">
                       Hãy trả lời các câu hỏi dưới đây để chúng tôi hiểu rõ hơn
                       về sở thích, phong cách học tập và mục tiêu nghề nghiệp
-                      của bạn
+                      của bạn. Thông tin này giúp hệ thống đề xuất lộ trình học
+                      tập phù hợp nhất.
                     </Paragraph>
                     {/* Progress Indicator */}
                     <div className="max-w-md mx-auto">

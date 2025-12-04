@@ -30,6 +30,9 @@ export default function SurveyAssessmentPage() {
     };
 
     checkAuth();
+
+    // Clear any previous assessment completion flag when starting new assessment
+    sessionStorage.removeItem("learning-path-assessment-completed");
   }, [fetchSession]);
 
   useEffect(() => {
@@ -73,8 +76,8 @@ export default function SurveyAssessmentPage() {
     return null;
   }
 
-  const handleSurveyComplete = () => {
-    console.log("Survey completed!");
+  const handleSurveyComplete = (learningGoalId?: string) => {
+    console.log("Survey completed! learningGoalId:", learningGoalId);
 
     // Mark step 1 as completed
     learningPathProgress.completeStep(1);
@@ -82,16 +85,14 @@ export default function SurveyAssessmentPage() {
     // Mark survey completed in flow state
     markSurveyCompleted();
 
-    // Get learningGoalId from survey data
-    const learningGoalId = survey.survey1Data?.learningGoal;
-
     // Redirect to transition page with learningGoalId param
     if (learningGoalId) {
+      console.log("✅ Redirecting with learningGoalId:", learningGoalId);
       router.push(
         `/learning-path/assessment/transition?learningGoalId=${learningGoalId}`,
       );
     } else {
-      console.warn("No learningGoalId found in survey data");
+      console.warn("⚠️ No learningGoalId provided, redirecting without it");
       router.push("/learning-path/assessment/transition");
     }
   };
@@ -136,7 +137,7 @@ export default function SurveyAssessmentPage() {
 
   return (
     <LearningPathGuard requiredStep={1} requiredCompletedSteps={[]}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen  dark:bg-gray-900">
         {/* Progress Header - Minimal */}
         <div className="sticky top-0 z-10">
           <LearningPathProgress

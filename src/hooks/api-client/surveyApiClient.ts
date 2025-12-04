@@ -7,6 +7,7 @@
 
 // import { Api } from "EduSmart/api/api-quiz-service";
 import apiClient from "EduSmart/hooks/apiClient";
+import { LearningGoalType } from "EduSmart/api/api-quiz-service";
 
 // ===== TYPES =====
 export interface SemesterSelectResponse {
@@ -390,7 +391,7 @@ export async function submitSurveyClient(
           technologies: [],
           learningGoal: {
             learningGoalId: "default-goal",
-            learningGoalType: 1,
+            learningGoalType: LearningGoalType.Value0, // Use enum value instead of number
             learningGoalName: "Default Goal",
           },
         },

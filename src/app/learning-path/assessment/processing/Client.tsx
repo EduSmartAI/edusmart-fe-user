@@ -12,6 +12,7 @@ import {
   FiUser,
   FiArrowRight,
   FiClock,
+  FiArrowLeft,
 } from "react-icons/fi";
 import { getLearningPathAction } from "EduSmart/app/(learning-path)/learningPathAction";
 import { LearningPathGuard } from "EduSmart/components/LearningPath";
@@ -29,6 +30,7 @@ export default function ProcessingClient() {
   const [pollingAttempts, setPollingAttempts] = useState(0);
   const [aiStage] = useState(3);
   const [isChecking, setIsChecking] = useState(true);
+  const [hasValidAccess, setHasValidAccess] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -50,6 +52,31 @@ export default function ProcessingClient() {
       }, 500);
     }
   }, [isChecking, session, router]);
+
+  // Check valid access - prevent direct URL access
+  useEffect(() => {
+    // Check if user came from proper flow (has referrer or session storage flag)
+    const validEntry = sessionStorage.getItem(
+      "learning-path-assessment-completed",
+    );
+    const hasReferrer =
+      document.referrer &&
+      (document.referrer.includes("/learning-path/assessment/test") ||
+        document.referrer.includes("/learning-path/assessment/survey"));
+
+    if (!validEntry && !hasReferrer && !learningPathId) {
+      setHasValidAccess(false);
+      message.warning({
+        content: "Vui lòng hoàn thành khảo sát và bài kiểm tra trước",
+        duration: 4,
+      });
+      setTimeout(() => {
+        router.push("/learning-path/overview");
+      }, 1500);
+    }
+    // Note: Flag will be cleared when user navigates to dashboard or when completed
+    // This allows user to reload processing page if needed
+  }, [learningPathId, router]);
 
   useEffect(() => {
     if (!learningPathId) {
@@ -83,6 +110,10 @@ export default function ProcessingClient() {
           clearInterval(pollInterval);
           setIsPolling(false);
           setIsCompleted(true);
+
+          // Clear the assessment completion flag when processing is done
+          sessionStorage.removeItem("learning-path-assessment-completed");
+
           setTimeout(() => {
             router.push(`/dashboard/learning-paths/${learningPathId}`);
           }, 2000);
@@ -122,7 +153,7 @@ export default function ProcessingClient() {
     );
   }
 
-  if (!session) return null;
+  if (!session || !hasValidAccess) return null;
 
   return (
     <LearningPathGuard requiredStep={3} requiredCompletedSteps={[1, 2]}>
@@ -254,6 +285,35 @@ export default function ProcessingClient() {
                     <div className="mt-6 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
                       <FiClock className="w-4 h-4 mr-2 animate-pulse" />
                       <span>Đã xử lý {pollingAttempts * 3} giây...</span>
+                    </div>
+
+                    {/* Navigation buttons while waiting */}
+                    <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Bạn có thể rời khỏi trang này. Hệ thống sẽ tiếp tục xử
+                        lý.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                        <Button
+                          size="large"
+                          icon={<FiArrowLeft className="w-4 h-4" />}
+                          onClick={() => router.push("/")}
+                          className="!px-8 !py-3 h-auto rounded-xl border-2 !border-gray-300 dark:!border-gray-600 !text-gray-700 dark:!text-gray-300 hover:!border-gray-400 dark:hover:!border-gray-500 hover:!text-gray-900 dark:hover:!text-white transition-all duration-300 w-full sm:w-auto font-medium"
+                        >
+                          Về trang chủ
+                        </Button>
+                        <Button
+                          size="large"
+                          icon={<FiArrowRight className="w-4 h-4" />}
+                          iconPosition="end"
+                          onClick={() =>
+                            router.push("/dashboard/learning-paths")
+                          }
+                          className="!px-8 !py-3 h-auto rounded-xl !bg-gradient-to-r from-[#49BBBD] to-[#2DD4BF] !border-none !text-white hover:from-[#3da8aa] hover:to-[#25b9b5] shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-auto font-medium"
+                        >
+                          Tất cả lộ trình
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
