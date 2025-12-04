@@ -78,6 +78,28 @@ export default function ProcessingClient() {
     // This allows user to reload processing page if needed
   }, [learningPathId, router]);
 
+  // ✅ NEW: Direct redirect to dashboard (real-time processing handled there)
+  useEffect(() => {
+    if (!learningPathId) {
+      message.error("Không tìm thấy ID lộ trình học tập");
+      router.push("/learning-path/overview");
+      return;
+    }
+
+    // Clear the assessment completion flag
+    sessionStorage.removeItem("learning-path-assessment-completed");
+
+    // Direct redirect to dashboard - real-time processing handled there
+    console.log(
+      "✅ Redirecting to dashboard with learningPathId:",
+      learningPathId,
+    );
+    setTimeout(() => {
+      router.push(`/dashboard/learning-paths/${learningPathId}`);
+    }, 1500);
+  }, [learningPathId, router]);
+
+  /* ❌ OLD: Polling logic (commented out - keeping for reference)
   useEffect(() => {
     if (!learningPathId) {
       message.error("Không tìm thấy ID lộ trình học tập");
@@ -129,6 +151,7 @@ export default function ProcessingClient() {
 
     return () => clearInterval(pollInterval);
   }, [learningPathId, router]);
+  */
 
   const aiStages = [
     { id: 1, name: "Phân tích khảo sát", icon: <FiUser className="w-5 h-5" /> },
