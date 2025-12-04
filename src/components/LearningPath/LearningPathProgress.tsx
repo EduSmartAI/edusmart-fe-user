@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import {  Progress as AntProgress } from "antd";
+import { Progress as AntProgress, Modal } from "antd";
+import { HomeOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { useRouter } from "next/navigation";
 import {
   FiUser,
   FiTarget,
@@ -10,6 +12,7 @@ import {
   FiClock,
   FiZap,
 } from "react-icons/fi";
+import { clearLearningPathData } from "EduSmart/utils/learningPathCleanup";
 
 interface LearningPathProgressProps {
   currentStep: number; // 1, 2, or 3
@@ -59,6 +62,38 @@ export default function LearningPathProgress({
   compact = false,
   minimal = false,
 }: LearningPathProgressProps) {
+  const router = useRouter();
+
+  const handleGoHome = () => {
+    Modal.confirm({
+      title: "Xác nhận quay về trang chủ",
+      icon: <ExclamationCircleOutlined />,
+      content:
+        "Bạn có chắc chắn muốn quay về trang chủ? Toàn bộ dữ liệu/tiến độ hiện tại sẽ bị mất.",
+      okText: "Có, quay về",
+      cancelText: "Hủy",
+      okType: "danger",
+      centered: true,
+      onOk() {
+        // Clear all learning path data using centralized utility
+        clearLearningPathData({
+          clearStores: true,
+          clearLocalStorage: true,
+          clearSessionStorage: true,
+          verbose: true,
+          onComplete: () => {
+            router.push("/");
+          },
+          onError: (error) => {
+            console.error("Failed to clear data:", error);
+            // Still navigate even if cleanup fails
+            router.push("/");
+          },
+        });
+      },
+    });
+  };
+
   const getStepStatus = (stepId: number) => {
     if (completedSteps.includes(stepId)) return "finish";
     if (stepId === currentStep) return "process";
@@ -91,8 +126,17 @@ export default function LearningPathProgress({
       //   <div className="bg-gradient-to-r from-teal-50/30 via-white to-cyan-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 border-teal-100 dark:border-gray-700 py-4 px-4 shadow-sm">
       <div className="bg-white/80 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900   dark:border-gray-700 py-4 px-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
-          {/* Left: Step Info */}
-          <div className="flex items-center gap-4 min-w-0">
+          {/* Left: Home Icon */}
+          <button
+            onClick={handleGoHome}
+            className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-colors duration-200 shadow-sm hover:shadow-md"
+            title="Quay về trang chủ"
+          >
+            <HomeOutlined className="text-lg text-gray-600 dark:text-gray-300" />
+          </button>
+
+          {/* Center: Step Info */}
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             {/* Step Counter with Accent */}
             <div className="flex items-center gap-2.5">
               <div className="flex items-center gap-2 bg-gradient-to-r from-[#49BBBD] to-cyan-600 px-5 py-3 rounded-lg shadow-md">
@@ -143,6 +187,14 @@ export default function LearningPathProgress({
           {/* Header with Icons */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
+              {/* Home Icon */}
+              <button
+                onClick={handleGoHome}
+                className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
+                title="Quay về trang chủ"
+              >
+                <HomeOutlined className="text-lg text-gray-600 dark:text-gray-300" />
+              </button>
               <div
                 className={`w-10 h-10 rounded-xl bg-gradient-to-br ${currentStepData?.gradient} flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300`}
               >
@@ -234,6 +286,15 @@ export default function LearningPathProgress({
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex items-center space-x-4">
+            {/* Home Icon */}
+            <button
+              onClick={handleGoHome}
+              className="flex items-center justify-center w-14 h-14 rounded-2xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-110"
+              title="Quay về trang chủ"
+            >
+              <HomeOutlined className="text-2xl text-gray-600 dark:text-gray-300" />
+            </button>
+
             <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl transform hover:scale-110 transition-transform duration-300">
               <FiZap className="w-7 h-7 text-white" />
             </div>
