@@ -15,7 +15,7 @@ import { SiQuizlet } from "react-icons/si";
 import { FaMapLocationDot } from "react-icons/fa6";
 import { GiArtificialIntelligence } from "react-icons/gi";
 import { MdMoreTime } from "react-icons/md";
-import { Button, Collapse, message } from "antd";
+import { Button, Collapse } from "antd";
 import { learningPathProgress } from "EduSmart/components/LearningPath";
 import { useSessionAuthStore } from "EduSmart/stores/Auth/SessionAuthStore";
 import { useSurvey } from "EduSmart/hooks/survey";
@@ -155,6 +155,7 @@ export default function LearningPathOverview() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const { session, fetchSession } = useSessionAuthStore();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const survey = useSurvey();
   const messageApi = useNotification();
 

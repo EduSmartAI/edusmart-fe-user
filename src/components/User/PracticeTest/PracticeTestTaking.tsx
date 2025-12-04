@@ -84,7 +84,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
     };
 
     loadProblemDetail();
-  }, [currentProblem, setCurrentProblemDetail, setLoadingProblemDetail]);
+  }, [currentProblem, setCurrentProblemDetail, setLoadingProblemDetail, messageApi]);
 
   useEffect(() => {
     const loadTemplate = async () => {

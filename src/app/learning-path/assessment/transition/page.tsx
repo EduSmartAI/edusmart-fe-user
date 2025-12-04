@@ -15,11 +15,7 @@ import {
   Collapse,
   Upload,
 } from "antd";
-import {
-  FiCheckCircle,
-  FiArrowRight,
-  FiArrowLeft,
-} from "react-icons/fi";
+import { FiCheckCircle, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { UploadOutlined } from "@ant-design/icons";
 import { SiQuizlet } from "react-icons/si";
 import { HiDocumentText } from "react-icons/hi";

@@ -969,7 +969,8 @@ export async function submitSurveyAction(surveyData: {
       },
       studentSurveys: studentSurveys,
       isWantToTakeTest: surveyData.isWantToTakeTest, // ✅ Use parameter from function argument
-      otherQuestionAnswerCodes: (otherQuestionAnswerCodes || []) as OtherQuestionCode[], // ✅ Cast number array to enum array
+      otherQuestionAnswerCodes: (otherQuestionAnswerCodes ||
+        []) as OtherQuestionCode[], // ✅ Cast number array to enum array
     };
 
     // Validate payload before sending
