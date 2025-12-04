@@ -1,10 +1,12 @@
-// import { CourseSortBy } from "EduSmart/api/api-course-service";
 import {
   CourseDetailForGuestDto,
   CourseDetailForStudentDto,
+  CourseTagDto,
   GetCourseBySlugForGuestResponse,
   GetDetailsProgressByCourseSlugForStudentResponse,
+  CourseSortBy as ApiCourseSortBy,
 } from "EduSmart/api/api-course-service";
+import { CourseSortBy as UiCourseSortBy } from "EduSmart/enum/enum";
 import apiServer from "EduSmart/lib/apiServer";
 
 export type Course = {
@@ -18,7 +20,15 @@ export type Course = {
   price?: number;
   dealPrice?: number | null;
   routerPush: string;
+  tagNames: string[];
+  level: number | null;
+  learnerCount: number | null;
 };
+
+const mapTagNames = (tags?: CourseTagDto[] | null): string[] =>
+  (tags ?? [])
+    .map((tag) => tag.tagName?.trim())
+    .filter((tagName): tagName is string => Boolean(tagName));
 
 export async function GetAllCourses() {
   try {
@@ -44,6 +54,9 @@ export async function GetAllCourses() {
         dealPrice: courseDto.dealPrice ?? null, 
         // routerPush: `/courses/${courseDto.slug || courseDto.courseId}`,
         routerPush: `/course/${courseDto.courseId}`,
+        tagNames: mapTagNames(courseDto.tags),
+        level: courseDto.level ?? null,
+        learnerCount: courseDto.learnerCount ?? null,
       }));
 
       return courses;
@@ -60,6 +73,7 @@ export async function fetchCourseByQuery(
   searchQuery: string,
   pageIndex: number,
   pageSize: number,
+  sortBy: UiCourseSortBy = UiCourseSortBy.Latest,
 ): Promise<{ data: Course[]; totalPages: number; totalCount: number }> {
   try {
     const res = await apiServer.course.api.v1CoursesList({
@@ -67,6 +81,7 @@ export async function fetchCourseByQuery(
       "Pagination.PageIndex": pageIndex - 1,
       "Pagination.PageSize": pageSize,
       "Filter.IsActive": true,
+      "Filter.SortBy": sortBy as unknown as ApiCourseSortBy,
     });
 
     if (res.data?.success && res.data.response?.data) {
@@ -80,10 +95,13 @@ export async function fetchCourseByQuery(
           courseDto.shortDescription || "",
           courseDto.description || "",
         ].filter((line: string) => line.length > 0),
-        instructor: "Instructor Name",
+        instructor: courseDto.teacherName || "Untitled Instructor",
         price: courseDto.price ?? undefined,
         dealPrice: courseDto.dealPrice ?? null,
         routerPush: `/course/${courseDto.courseId}`,
+        tagNames: mapTagNames(courseDto.tags),
+        level: courseDto.level ?? null,
+        learnerCount: courseDto.learnerCount ?? null,
       }));
       return {
         data: courses,
@@ -102,6 +120,7 @@ export async function fetchCourseByQueryForSlug(
   searchQuery: string,
   pageIndex: number,
   pageSize: number,
+  sortBy: UiCourseSortBy = UiCourseSortBy.Latest,
 ): Promise<{ data: Course[]; totalPages: number; totalCount: number }> {
   try {
     const res = await apiServer.course.api.v1CoursesList({
@@ -109,6 +128,7 @@ export async function fetchCourseByQueryForSlug(
       "Pagination.PageIndex": pageIndex - 1,
       "Pagination.PageSize": pageSize,
       "Filter.IsActive": true,
+      "Filter.SortBy": sortBy as unknown as ApiCourseSortBy,
     });
 
     if (res.data?.success && res.data.response?.data) {
@@ -126,6 +146,9 @@ export async function fetchCourseByQueryForSlug(
         price: courseDto.price ?? undefined,
         dealPrice: courseDto.dealPrice ?? null,
         routerPush: `/course/${courseDto.slug || courseDto.courseId}`,
+        tagNames: mapTagNames(courseDto.tags),
+        level: courseDto.level ?? null,
+        learnerCount: courseDto.learnerCount ?? null,
       }));
       return {
         data: courses,

@@ -11,10 +11,10 @@ interface BaseScreenProps {
 
 const BaseScreenWhiteNav: FC<BaseScreenProps> = ({ children }) => {
   return (
-    <div className="flex flex-col min-h-screen overflow-x-clip md:scroll-smooth">
+    <div className="flex min-h-screen flex-col overflow-x-clip md:scroll-smooth">
       <NavigationbarWhite />
       <GlobalMessage />
-      <main className="relative isolate flex-grow pt-24 text-slate-900 dark:text-slate-100 overflow-x-clip">
+      <main className="relative isolate flex-1 w-full pt-24 text-slate-900 dark:text-slate-100 overflow-x-clip min-h-[calc(100vh-6rem)]">
         <Loading />
         {/* BASE */}
         <div className="absolute inset-0 -z-50">

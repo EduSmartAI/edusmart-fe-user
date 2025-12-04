@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { Metadata } from "next";
 import CourseListPage from "./Client";
 import { fetchCourseByQuery, GetAllCourses } from "../apiServer/courseAction";
+import { CourseSortBy } from "EduSmart/enum/enum";
 export const metadata: Metadata = {
   title: "EduSmart – Khóa học",
   description:
@@ -39,6 +40,12 @@ export const metadata: Metadata = {
 
 type SP = Record<string, string | string[] | undefined>;
 const PAGE_SIZE = 9 as const;
+const VALID_SORTS = new Set<CourseSortBy>([
+  CourseSortBy.Latest,
+  CourseSortBy.Popular,
+  CourseSortBy.TitleAsc,
+  CourseSortBy.TitleDesc,
+]);
 
 export default async function Page({
   searchParams,
@@ -51,8 +58,18 @@ export default async function Page({
     Array.isArray(v) ? v[0] : v;
   const page = Number(pick(sp.page) ?? 1) || 1;
   const search = pick(sp.search) ?? "";
+  const rawSort = Number(pick(sp.sortBy));
+  const sortBy =
+    Number.isInteger(rawSort) && VALID_SORTS.has(rawSort as CourseSortBy)
+      ? (rawSort as CourseSortBy)
+      : CourseSortBy.Latest;
 
-  const { data, totalCount } = await fetchCourseByQuery(search, page, PAGE_SIZE);
+  const { data, totalCount } = await fetchCourseByQuery(
+    search,
+    page,
+    PAGE_SIZE,
+    sortBy,
+  );
   const searchCoursedata = await GetAllCourses();
 
   return (
@@ -62,6 +79,7 @@ export default async function Page({
       page={page}
       size={PAGE_SIZE}
       searchCoursedata={searchCoursedata}
+      sortBy={sortBy}
     />
   );
 }
