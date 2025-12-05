@@ -267,11 +267,15 @@ function SurveyToQuizTransitionContent() {
       );
       localStorage.setItem("learning_path_current_step", "3");
 
-      // Success - redirect to processing page
+      // ✅ NEW: Direct redirect to dashboard (real-time processing handled there)
       messageApi.success("Đang tạo lộ trình học tập từ bảng điểm...");
+      router.push(`/dashboard/learning-paths/${learningPathId}`);
+
+      /* ❌ OLD: Redirect to processing page (commented out)
       router.push(
         `/learning-path/assessment/processing?learningPathId=${learningPathId}`,
       );
+      */
     } catch (error) {
       console.error("Error using transcript:", error);
       messageApi.error("Đã xảy ra lỗi. Vui lòng thử lại sau.");
