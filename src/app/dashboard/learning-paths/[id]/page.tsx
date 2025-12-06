@@ -8,15 +8,20 @@ import React, {
   useState,
 } from "react";
 import { useParams } from "next/navigation";
+import { Card, Tabs, Tag } from "antd";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
 import { learningPathsChooseMajorUpdate } from "EduSmart/app/apiServer/learningPathAction";
 import {
-  FiBook,
+  FiCheck,
+  FiPlus,
+  FiMinus,
+  FiMove,
   FiChevronDown,
   FiChevronUp,
-  FiExternalLink,
   FiRefreshCw,
+  FiBook,
+  FiExternalLink,
   FiStar,
 } from "react-icons/fi";
 import {
@@ -77,7 +82,9 @@ type LearningPathDto = Omit<
     courseGroups?: ExtendedCourseGroupDto[];
   };
   internalLearningPath?: Array<
-    NonNullable<GeneratedLearningPathSelectDto["internalLearningPath"]>[number] & {
+    NonNullable<
+      GeneratedLearningPathSelectDto["internalLearningPath"]
+    >[number] & {
       majorCourseGroups?: ExtendedCourseGroupDto[];
     }
   >;
@@ -137,9 +144,7 @@ const AI_CARD_CONFIG: Array<{
     fallbackTitle: "Đang phân tích năng lực",
     fallbackSummary:
       "Dữ liệu năng lực học tập đang được tổng hợp và chuẩn hoá.",
-    fallbackBullets: [
-      "Thực hiện các bài kiểm tra nhanh để cập nhật năng lực.",
-    ],
+    fallbackBullets: ["Thực hiện các bài kiểm tra nhanh để cập nhật năng lực."],
   },
 ];
 
@@ -260,7 +265,8 @@ const CORE_SKILL_STATUS = [
     label: "Cơ sở dữ liệu",
     score: 62,
     target: 75,
-    status: "Hiểu query cơ bản nhưng chưa tối ưu hoá, thiếu trải nghiệm thiết kế chuẩn 3NF.",
+    status:
+      "Hiểu query cơ bản nhưng chưa tối ưu hoá, thiếu trải nghiệm thiết kế chuẩn 3NF.",
     summary:
       "Điểm mạnh là viết được trigger/procedure đơn giản, tuy nhiên phần index & transaction isolation còn yếu.",
   },
@@ -361,10 +367,8 @@ const getSemesterNarrative = (groups: ExtendedCourseGroupDto[]) => {
   return "Duy trì nhịp học ổn định ở toàn bộ môn trong kỳ này.";
 };
 
-const normalizeSemesterPosition = (
-  value?: number | null,
-  fallback = 0,
-) => (typeof value === "number" && Number.isFinite(value) ? value : fallback);
+const normalizeSemesterPosition = (value?: number | null, fallback = 0) =>
+  typeof value === "number" && Number.isFinite(value) ? value : fallback;
 
 const splitGroupBySemester = (
   group: ExtendedCourseGroupDto,
@@ -489,15 +493,19 @@ const LearningPathSamplePage = () => {
   const [collapsedTracks, setCollapsedTracks] = useState<
     Record<string, boolean>
   >({});
-  const [selectedMajorIds, setSelectedMajorIds] = useState<string[]>([]);
-  const [draggingMajorId, setDraggingMajorId] = useState<string | null>(null);
+  // State cho việc chọn và sắp xếp chuyên ngành (khi status = 1)
+  // Mặc định rỗng - người dùng tự chọn
+  const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
+  const [majorOrder, setMajorOrder] = useState<string[]>([]);
+  const [draggedMajor, setDraggedMajor] = useState<string | null>(null);
+  const [viewingMajorId, setViewingMajorId] = useState<string | null>(null);
   const [chooseMajorsLoading, setChooseMajorsLoading] = useState(false);
   const [chooseMajorsError, setChooseMajorsError] = useState<string | null>(
     null,
   );
-  const [chooseMajorsSuccess, setChooseMajorsSuccess] = useState<
-    string | null
-  >(null);
+  const [chooseMajorsSuccess, setChooseMajorsSuccess] = useState<string | null>(
+    null,
+  );
 
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
@@ -544,8 +552,7 @@ const LearningPathSamplePage = () => {
   const handleStreamPayload = useCallback(
     (payload: LearningPathDto) => {
       setLearningPath(payload);
-      const nextStatus =
-        (payload.status ?? null) as LearningPathStatus | null;
+      const nextStatus = (payload.status ?? null) as LearningPathStatus | null;
       setStatus(nextStatus);
       if (nextStatus !== LearningPathStatus.Generating) {
         stopStream();
@@ -674,8 +681,8 @@ const LearningPathSamplePage = () => {
         const payload = data.response;
         setLearningPath(payload);
 
-        const nextStatus =
-          (payload.status ?? null) as LearningPathStatus | null;
+        const nextStatus = (payload.status ??
+          null) as LearningPathStatus | null;
         setStatus(nextStatus);
 
         if (nextStatus === LearningPathStatus.Generating) {
@@ -714,29 +721,30 @@ const LearningPathSamplePage = () => {
     setCollapsedMajors({});
     setCollapsedMajorSemesters({});
     setCollapsedTracks({});
-    setSelectedMajorIds([]);
+    setSelectedMajors([]);
+    setMajorOrder([]);
     setChooseMajorsError(null);
     setChooseMajorsSuccess(null);
   }, [pathId]);
-const deriveSemesterMeta = (groups: ExtendedCourseGroupDto[]) => {
-  if (!groups.length) {
-    return getStatusMeta(0);
-  }
-  const minStatus = Math.min(
-    ...groups.map((group) => (group.status ?? 0) as number),
-  );
-  return getStatusMeta(minStatus);
-};
+  const deriveSemesterMeta = (groups: ExtendedCourseGroupDto[]) => {
+    if (!groups.length) {
+      return getStatusMeta(0);
+    }
+    const minStatus = Math.min(
+      ...groups.map((group) => (group.status ?? 0) as number),
+    );
+    return getStatusMeta(minStatus);
+  };
 
-const computeMajorProgress = (
-  timeline: Array<{ semester: number; groups: ExtendedCourseGroupDto[] }>,
-) => {
-  if (timeline.length === 0) return 0;
-  const completed = timeline.filter(({ groups }) =>
-    groups.every((group) => (group.status ?? 0) >= 2),
-  ).length;
-  return Math.round((completed / timeline.length) * 100);
-};
+  const computeMajorProgress = (
+    timeline: Array<{ semester: number; groups: ExtendedCourseGroupDto[] }>,
+  ) => {
+    if (timeline.length === 0) return 0;
+    const completed = timeline.filter(({ groups }) =>
+      groups.every((group) => (group.status ?? 0) >= 2),
+    ).length;
+    return Math.round((completed / timeline.length) * 100);
+  };
 
   const basicSemesters = useMemo(() => {
     if (!learningPath?.basicLearningPath?.courseGroups) return [];
@@ -779,110 +787,51 @@ const computeMajorProgress = (
     () => majorOptions.map((option) => option.key),
     [majorOptions],
   );
-  useEffect(() => {
-    if (defaultMajorIds.length === 0) {
-      setSelectedMajorIds([]);
-      return;
-    }
-    setSelectedMajorIds((prev) => {
-      if (prev.length === 0) return defaultMajorIds;
-      const sanitized = prev.filter((id) => defaultMajorIds.includes(id));
-      const missing = defaultMajorIds.filter((id) => !sanitized.includes(id));
-      return [...sanitized, ...missing];
-    });
-  }, [defaultMajorIds]);
-
   const externalTracks = learningPath?.externalLearningPath ?? [];
 
   const statusLabel =
     status != null
-      ? LEARNING_PATH_STATUS_LABEL[status] ?? "Không xác định"
+      ? (LEARNING_PATH_STATUS_LABEL[status] ?? "Không xác định")
       : "Không xác định";
 
   const statusBadgeClass =
     status != null
-      ? LEARNING_PATH_STATUS_STYLE[status] ?? "bg-slate-100 text-slate-700"
+      ? (LEARNING_PATH_STATUS_STYLE[status] ?? "bg-slate-100 text-slate-700")
       : "bg-slate-100 text-slate-700";
 
   const isPending =
     loading || status === LearningPathStatus.Generating || false;
   const isChoosingStatus = status === LearningPathStatus.Choosing;
-  const selectedMajors = useMemo<InternalMajorDto[]>(
-    () =>
-      selectedMajorIds
-        .map((id) => majorOptionMap.get(id))
-        .filter((major): major is InternalMajorDto => Boolean(major)),
-    [selectedMajorIds, majorOptionMap],
-  );
+
+  // Lấy danh sách majors đã chọn theo thứ tự (giống sample)
+  const orderedMajors = useMemo(() => {
+    return majorOrder
+      .map((id) => internalMajors.find((m) => m.majorId === id))
+      .filter((m): m is InternalMajorDto => Boolean(m));
+  }, [majorOrder, internalMajors]);
+
+  // displayedInternalMajors: Nếu đang chọn thì hiển thị tất cả, nếu không thì hiển thị theo thứ tự đã chọn
   const displayedInternalMajors = useMemo(
-    () => (isChoosingStatus ? selectedMajors : internalMajors),
-    [isChoosingStatus, selectedMajors, internalMajors],
+    () => (isChoosingStatus ? internalMajors : internalMajors),
+    [isChoosingStatus, internalMajors],
   );
-  const handleSlotSelectChange = (slotIndex: number, nextId: string) => {
-    if (!nextId) return;
-    setSelectedMajorIds((prev) => {
-      if (!prev.length) return prev;
-      const current = prev[slotIndex];
-      if (current === nextId) return prev;
-      const nextOrder = [...prev];
-      const existingIndex = nextOrder.indexOf(nextId);
-      if (existingIndex !== -1) {
-        nextOrder[existingIndex] = current;
-      }
-      nextOrder[slotIndex] = nextId;
-      return nextOrder;
-    });
-    setChooseMajorsError(null);
-    setChooseMajorsSuccess(null);
-  };
-  const handleDragStart = (majorId: string) => {
-    setDraggingMajorId(majorId);
-  };
-  const handleDragEnter = (targetId: string) => {
-    if (!draggingMajorId || draggingMajorId === targetId) return;
-    setSelectedMajorIds((prev) => {
-      const fromIndex = prev.indexOf(draggingMajorId);
-      const toIndex = prev.indexOf(targetId);
-      if (fromIndex === -1 || toIndex === -1) {
-        return prev;
-      }
-      const updated = [...prev];
-      updated.splice(fromIndex, 1);
-      updated.splice(toIndex, 0, draggingMajorId);
-      return updated;
-    });
-    setChooseMajorsError(null);
-    setChooseMajorsSuccess(null);
-  };
-  const handleDragEnd = () => {
-    setDraggingMajorId(null);
-  };
-  const resetMajorSelection = () => {
-    setSelectedMajorIds(defaultMajorIds);
-    setChooseMajorsError(null);
-    setChooseMajorsSuccess(null);
-  };
+
+  // Confirm major selection - gọi API
   const handleConfirmMajorSelection = async () => {
     if (!pathId) {
       setChooseMajorsError("Thiếu thông tin lộ trình.");
       return;
     }
-    const orderedIds =
-      selectedMajors
-        .map((major) => major.majorId)
-        .filter((id): id is string => Boolean(id)) ?? [];
+    const orderedIds = majorOrder.filter((id) => selectedMajors.includes(id));
     if (orderedIds.length === 0) {
-      setChooseMajorsError("Vui lòng chọn ít nhất một chuyên ngành hợp lệ.");
+      setChooseMajorsError("Vui lòng chọn ít nhất một chuyên ngành.");
       return;
     }
     setChooseMajorsLoading(true);
     setChooseMajorsError(null);
     setChooseMajorsSuccess(null);
     try {
-      const response = await learningPathsChooseMajorUpdate(
-        pathId,
-        orderedIds,
-      );
+      const response = await learningPathsChooseMajorUpdate(pathId, orderedIds);
       if (!response?.data?.success) {
         throw new Error(response?.data?.message ?? undefined);
       }
@@ -902,10 +851,46 @@ const computeMajorProgress = (
     }
   };
 
+  // Helper: Status label và màu sắc (giống sample)
+  const getStatusInfo = (statusValue: number | undefined) => {
+    switch (statusValue) {
+      case 0:
+        return {
+          label: "Chưa học",
+          color: "default",
+          bgClass: "bg-slate-100 dark:bg-slate-800",
+        };
+      case 1:
+        return {
+          label: "Đang học",
+          color: "processing",
+          bgClass: "bg-blue-50 dark:bg-blue-950/30",
+        };
+      case 2:
+        return {
+          label: "Đã hoàn thành",
+          color: "success",
+          bgClass: "bg-green-50 dark:bg-green-950/30",
+        };
+      default:
+        return {
+          label: "Chưa xác định",
+          color: "default",
+          bgClass: "bg-slate-100 dark:bg-slate-800",
+        };
+    }
+  };
+
   const renderBasicContent = () => {
-    if (!showBasicSection) return null;
     if (isPending) return <BasicTimelineSkeleton />;
-    if (basicSemesters.length === 0) {
+
+    // Flatten all groups from all semesters and sort by semesterPosition
+    const allGroups = basicSemesters.flatMap(({ groups }) => groups);
+    const sortedGroups = [...allGroups].sort(
+      (a, b) => (a.semesterPosition ?? 0) - (b.semesterPosition ?? 0),
+    );
+
+    if (sortedGroups.length === 0) {
       return (
         <p className="text-sm text-gray-500">
           Chưa có dữ liệu học phần nền tảng cho lộ trình này.
@@ -914,174 +899,703 @@ const computeMajorProgress = (
     }
 
     return (
-              <div className="relative pl-10">
-              <div className="absolute left-5 top-0 bottom-0 w-px bg-orange-200 dark:bg-orange-400/30" />
-        {basicSemesters.map(({ semester, groups }) => {
-          const isCollapsed = Boolean(collapsedSemesters[semester]);
-          const semesterOpen = !isCollapsed;
+      <div className="space-y-3">
+        {sortedGroups.map((group) => {
+          const statusInfo = getStatusInfo(group.status);
+          const key = `basic-${group.subjectCode ?? group.subjectId ?? "SUB"}`;
+          const isExpanded = Boolean(expandedBasic[key]);
+          const analysisMarkdown = (group as ExtendedCourseGroupDto)
+            .analysisMarkdown;
+          const courseCount = group.courses?.length ?? 0;
 
           return (
-                <div key={semester} className="relative mb-14 pl-10">
-                  <div className="absolute left-0 top-2 w-16 h-16 rounded-full bg-white border-4 border-orange-300 shadow-md flex items-center justify-center text-sm font-black text-orange-600 dark:bg-[#0f1d33] dark:text-orange-100 dark:border-orange-400/40">
-                Kỳ {semester}
+            <div
+              key={key}
+              className={`rounded-lg border overflow-hidden transition-all ${
+                isExpanded
+                  ? "border-gray-300 dark:border-gray-600 shadow-md"
+                  : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+              }`}
+            >
+              {/* Subject Row - Clickable */}
+              <div
+                className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
+                  isExpanded
+                    ? "bg-gray-50 dark:bg-gray-800"
+                    : "bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-800"
+                }`}
+                onClick={() =>
+                  setExpandedBasic((prev) => ({
+                    ...prev,
+                    [key]: !prev[key],
+                  }))
+                }
+              >
+                {/* Semester Badge */}
+                <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 flex-shrink-0">
+                  Kỳ {group.semesterPosition ?? 0}
+                </span>
+
+                {/* Subject Code */}
+                <span className="font-semibold text-gray-900 dark:text-white flex-shrink-0">
+                  {group.subjectCode ?? "SUB"}
+                </span>
+
+                {/* Subject Name */}
+                <span className="text-sm text-gray-600 dark:text-gray-400 flex-1 min-w-0 truncate">
+                  {(group as ExtendedCourseGroupDto).subjectName ?? ""}
+                </span>
+
+                {/* Course count + Status */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {courseCount > 0 && (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {courseCount} khóa học
+                    </span>
+                  )}
+                  <Tag color={statusInfo.color as string} className="text-xs">
+                    {statusInfo.label}
+                  </Tag>
+                </div>
+
+                {/* Expand indicator */}
+                <span
+                  className={`text-gray-400 transition-transform text-sm flex-shrink-0 ${
+                    isExpanded ? "rotate-180" : ""
+                  }`}
+                >
+                  ▼
+                </span>
               </div>
-                  <div className="bg-white dark:bg-[#081229] rounded-2xl border border-orange-100 dark:border-orange-400/20 p-6 shadow-sm dark:shadow-[0_0_20px_rgba(8,18,41,0.6)]">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                  <div>
-                    <p className="text-xs uppercase tracking-wide text-orange-500 font-semibold mb-1">
-                      Đánh giá kỳ {semester}
-                    </p>
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {getSemesterNarrative(groups)}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {groups
-                        .map(
-                          (group) =>
-                            `${group.subjectCode ?? "SUB"} · ${
-                              getStatusMeta(group.status).label
-                            }`,
-                        )
-                        .join(" • ")}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <FiStar className="text-orange-500" />
-                    {groups.reduce(
-                      (sum, group) => sum + (group.courses?.length ?? 0),
-                      0,
-                    )}{" "}
-                    khóa học gợi ý
-                        <button
-                      type="button"
-                      onClick={() =>
-                        setCollapsedSemesters((prev) => ({
-                          ...prev,
-                          [semester]: !Boolean(prev[semester]),
-                        }))
-                      }
-                          className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1 text-xs font-semibold text-orange-600 hover:bg-orange-50 transition dark:border-orange-400/40 dark:text-orange-100 dark:bg-transparent dark:hover:bg-orange-500/10"
+
+              {/* Expanded Content */}
+              {isExpanded && (
+                <div className="border-t border-gray-200 dark:border-gray-700">
+                  {/* Analysis Markdown */}
+                  {analysisMarkdown && (
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50">
+                      <div className="prose prose-sm max-w-none dark:prose-invert text-gray-700 dark:text-gray-300 prose-headings:text-gray-800 dark:prose-headings:text-gray-200 prose-strong:text-gray-700 dark:prose-strong:text-gray-300 prose-h2:text-base prose-h3:text-sm prose-h2:mb-3 prose-h3:mb-2 prose-ul:my-2 prose-li:my-0.5">
+                        <MarkdownBlock markdown={analysisMarkdown} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No analysis message */}
+                  {!analysisMarkdown && (
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 text-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Môn học này không có phân tích chi tiết.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Courses */}
+                  {courseCount > 0 && (
+                    <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-1 h-5 bg-gradient-to-b from-orange-500 to-amber-500 rounded-full"></div>
+                          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            Khóa học đề xuất
+                          </span>
+                        </div>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                          {courseCount} khóa học
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        {(group.courses ?? []).map((course, idx) => (
+                          <div
+                            key={course.courseId ?? `${key}-course-${idx}`}
+                            className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 p-3 hover:border-orange-200 dark:hover:border-orange-800 hover:shadow-sm transition-all duration-200"
+                          >
+                            <CourseCard
+                              id={course.courseId ?? ""}
+                              imageUrl={
+                                course.courseImageUrl ??
+                                "https://via.placeholder.com/600x400?text=EduSmart"
+                              }
+                              title={course.title ?? "Khóa học"}
+                              descriptionLines={
+                                course.shortDescription
+                                  ? [course.shortDescription]
+                                  : []
+                              }
+                              instructor={course.teacherName ?? "Giảng viên"}
+                              level={course.level}
+                              price={course.price}
+                              dealPrice={course.dealPrice}
+                              routerPush={`/course/${course.courseId}`}
+                              isHorizontal={true}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Helper: Lấy danh sách kỳ từ majorCourseGroups
+  const getSemestersFromGroups = (
+    groups: ExtendedCourseGroupDto[] | undefined,
+  ) => {
+    if (!groups) return [];
+    const set = new Set<number>();
+    groups.forEach((g) => {
+      const sem = g.semesterPosition ?? 0;
+      if (sem > 0) set.add(sem);
+    });
+    return Array.from(set).sort((a, b) => a - b);
+  };
+
+  // Helper: Lọc groups theo kỳ
+  const filterGroupsBySemester = (
+    groups: ExtendedCourseGroupDto[] | undefined,
+    sem: number,
+  ) => {
+    if (!groups) return [];
+    return groups.filter((g) => (g.semesterPosition ?? 0) === sem);
+  };
+
+  // Helper: Đếm tổng số khóa học trong major
+  const getTotalCourses = (major: InternalMajorDto) => {
+    return (major.majorCourseGroups ?? []).reduce(
+      (acc, cg) => acc + (cg.courses?.length ?? 0),
+      0,
+    );
+  };
+
+  // Handle major toggle for selection (giống sample)
+  const handleMajorToggle = (majorId: string) => {
+    if (!majorId) return;
+    if (selectedMajors.includes(majorId)) {
+      setSelectedMajors((prev) => prev.filter((id) => id !== majorId));
+      setMajorOrder((prev) => prev.filter((id) => id !== majorId));
+    } else {
+      setSelectedMajors((prev) => [...prev, majorId]);
+      setMajorOrder((prev) => [...prev, majorId]);
+    }
+  };
+
+  // Move major up in order (giống sample)
+  const moveMajorUp = (majorId: string) => {
+    const i = majorOrder.indexOf(majorId);
+    if (i > 0) {
+      const arr = [...majorOrder];
+      [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+      setMajorOrder(arr);
+    }
+  };
+
+  // Move major down in order (giống sample)
+  const moveMajorDown = (majorId: string) => {
+    const i = majorOrder.indexOf(majorId);
+    if (i !== -1 && i < majorOrder.length - 1) {
+      const arr = [...majorOrder];
+      [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+      setMajorOrder(arr);
+    }
+  };
+
+  // Enhanced drag handlers (giống sample)
+  const handleDragStartEnhanced = (e: React.DragEvent, majorId: string) => {
+    setDraggedMajor(majorId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/html", majorId);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDropEnhanced = (e: React.DragEvent, targetMajorId: string) => {
+    e.preventDefault();
+    if (!draggedMajor || draggedMajor === targetMajorId) {
+      setDraggedMajor(null);
+      return;
+    }
+    const draggedIndex = majorOrder.indexOf(draggedMajor);
+    const targetIndex = majorOrder.indexOf(targetMajorId);
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedMajor(null);
+      return;
+    }
+    const arr = [...majorOrder];
+    arr.splice(draggedIndex, 1);
+    arr.splice(targetIndex, 0, draggedMajor);
+    setMajorOrder(arr);
+    setDraggedMajor(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedMajor(null);
+  };
+
+  const renderInternalContent = (majorsList: InternalMajorDto[]) => {
+    if (isPending) return <InternalMajorSkeleton />;
+    if (majorsList.length === 0) {
+      return (
+        <p className="text-sm text-gray-500">
+          Chưa có dữ liệu chuyên ngành nội bộ cho lộ trình này.
+        </p>
+      );
+    }
+
+    const isChoosingMode = status === LearningPathStatus.Choosing;
+
+    // ========== MODE: CHOOSING (status = 1) ==========
+    if (isChoosingMode) {
+      return (
+        <>
+          {/* Grid cards để chọn */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {majorsList.map((major, idx) => {
+              const id = major.majorId ?? `major-${idx}`;
+              const total = getTotalCourses(major);
+              const isViewing = viewingMajorId === id;
+              const isSelected = selectedMajors.includes(id);
+
+              return (
+                <div
+                  key={id}
+                  onClick={() => setViewingMajorId(isViewing ? null : id)}
+                  className={`relative cursor-pointer rounded-lg p-4 transition-all duration-300 border ${
+                    isViewing
+                      ? "bg-gradient-to-r from-[#49BBBD] to-cyan-600 text-white border-[#49BBBD] shadow-lg"
+                      : "bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-teal-300 dark:hover:border-cyan-600 hover:shadow-md"
+                  }`}
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <h3
+                      className={`font-bold text-base leading-tight ${isViewing ? "text-white" : "text-gray-900 dark:text-white"}`}
                     >
-                      {semesterOpen ? "Thu gọn kỳ" : "Mở kỳ"}
-                      {semesterOpen ? (
-                        <FiChevronUp className="h-4 w-4" />
+                      {major.majorCode ?? major.majorId ?? "Chuyên ngành"}
+                    </h3>
+                    <div
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${isViewing ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300"}`}
+                    >
+                      {total} khóa học
+                    </div>
+                  </div>
+
+                  {/* Reason */}
+                  <p
+                    className={`text-sm mb-3 transition-all duration-300 ${isViewing ? "" : "line-clamp-2"} ${isViewing ? "text-white/90" : "text-gray-600 dark:text-gray-300"}`}
+                  >
+                    {major.reason || `${total} khóa học chuyên sâu`}
+                  </p>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMajorToggle(id);
+                      }}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        isSelected
+                          ? isViewing
+                            ? "bg-white text-black hover:bg-gray-50 shadow-sm"
+                            : "bg-teal-100 text-teal-700 hover:bg-teal-200 dark:bg-teal-800 dark:text-teal-100"
+                          : isViewing
+                            ? "bg-white/20 text-white hover:bg-white/30 border border-white/40"
+                            : "bg-teal-50 text-teal-600 hover:bg-teal-100 dark:bg-teal-900/20 dark:text-teal-400"
+                      }`}
+                    >
+                      {isSelected ? (
+                        <span className="flex items-center space-x-1 text-black">
+                          <FiCheck className="w-4 h-4" />
+                          <span>Đã chọn</span>
+                        </span>
                       ) : (
-                        <FiChevronDown className="h-4 w-4" />
+                        <span className="flex items-center space-x-1">
+                          <FiPlus className="w-4 h-4" />
+                          <span>Chọn combo</span>
+                        </span>
                       )}
                     </button>
+                    <div
+                      className={`text-xs ${isViewing ? "text-white/70" : "text-gray-500 dark:text-gray-400"}`}
+                    >
+                      {isViewing ? "Đang xem" : "Nhấn để xem"}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Chi tiết major đang xem */}
+          {viewingMajorId &&
+            (() => {
+              const selectedMajor = majorsList.find(
+                (m) => m.majorId === viewingMajorId,
+              );
+              if (!selectedMajor) return null;
+              const sems = getSemestersFromGroups(
+                selectedMajor.majorCourseGroups as ExtendedCourseGroupDto[],
+              );
+
+              return (
+                <div className="mb-8">
+                  {sems.map((sem) => {
+                    const groupsForSem = filterGroupsBySemester(
+                      selectedMajor.majorCourseGroups as ExtendedCourseGroupDto[],
+                      sem,
+                    );
+                    if (groupsForSem.length === 0) return null;
+                    return (
+                      <div
+                        key={`view-${viewingMajorId}-sem-${sem}`}
+                        className="mb-10"
+                      >
+                        <div className="flex items-center mb-5">
+                          <div>
+                            <h4 className="text-xl font-bold text-gray-900 dark:text-white">
+                              Kỳ {sem}
+                            </h4>
+                            <div className="w-full h-0.5 bg-gradient-to-r from-orange-500 to-amber-400 rounded-full mt-1.5"></div>
+                          </div>
+                        </div>
+                        <div className="space-y-6">
+                          {groupsForSem.map((cg) => {
+                            const courseCount = cg.courses?.length ?? 0;
+                            return (
+                              <div key={cg.subjectCode} className="mb-6">
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className="flex items-center gap-3">
+                                    <div className="px-2 py-1 rounded-md bg-[#49BBBD] text-white text-xs font-bold">
+                                      {cg.subjectCode ?? "SUB"}
+                                    </div>
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-semibold ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                                    >
+                                      {cg.status === 0
+                                        ? "Chưa bắt đầu"
+                                        : cg.status === 1
+                                          ? "Đang học"
+                                          : cg.status === 2
+                                            ? "Hoàn thành"
+                                            : "Bỏ qua"}
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {courseCount} khóa học
+                                  </span>
+                                </div>
+                                {courseCount > 0 && (
+                                  <div className="space-y-3">
+                                    {(cg.courses ?? []).map((course, i) => (
+                                      <div
+                                        key={`${cg.subjectCode}-${i}`}
+                                        className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 p-3 hover:border-teal-200 dark:hover:border-teal-800 hover:shadow-sm transition-all duration-200"
+                                      >
+                                        <CourseCard
+                                          id={course.courseId ?? ""}
+                                          imageUrl={
+                                            course.courseImageUrl ??
+                                            "https://via.placeholder.com/600x400?text=EduSmart"
+                                          }
+                                          title={course.title ?? "Khóa học"}
+                                          descriptionLines={
+                                            course.shortDescription
+                                              ? [course.shortDescription]
+                                              : []
+                                          }
+                                          instructor={
+                                            course.teacherName ?? "Giảng viên"
+                                          }
+                                          level={course.level}
+                                          price={course.price}
+                                          dealPrice={course.dealPrice}
+                                          routerPush={`/course/${course.courseId}`}
+                                          isHorizontal={true}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                {courseCount === 0 && (
+                                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                    Chưa có khóa học cho môn này
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+          {/* Empty state */}
+          {selectedMajors.length === 0 && !viewingMajorId && (
+            <div className="p-6 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                <FiPlus className="w-8 h-8 text-teal-500" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Chưa chọn chuyên ngành nào
+              </h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                Hãy nhấn vào các thẻ chuyên ngành ở trên để xem chi tiết, sau đó
+                nhấn &quot;Chọn combo&quot; để thêm vào lộ trình học của bạn.
+              </p>
+            </div>
+          )}
+
+          {/* Selected Order Management */}
+          {selectedMajors.length > 0 && (
+            <div className="pt-8 border-t border-gray-200 dark:border-gray-700">
+              <div className="mb-6">
+                <h4 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+                  <span className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400">
+                    Thứ tự học đã chọn
+                  </span>
+                  <span className="ml-3 text-base font-medium text-gray-500 dark:text-gray-400">
+                    ({selectedMajors.length} combo)
+                  </span>
+                </h4>
+              </div>
+              <div className="space-y-3">
+                {majorOrder.map((majorId, index) => {
+                  const major = majorsList.find((m) => m.majorId === majorId);
+                  if (!major) return null;
+                  const total = getTotalCourses(major);
+                  const isDragging = draggedMajor === majorId;
+
+                  return (
+                    <div
+                      key={majorId}
+                      draggable
+                      onDragStart={(e) => handleDragStartEnhanced(e, majorId)}
+                      onDragOver={handleDragOver}
+                      onDragEnter={handleDragEnter}
+                      onDrop={(e) => handleDropEnhanced(e, majorId)}
+                      onDragEnd={handleDragEnd}
+                      className={`flex items-center justify-between p-4 border rounded-lg transition-all cursor-move ${
+                        isDragging
+                          ? "bg-teal-100 dark:bg-teal-900/30 border-teal-300 dark:border-cyan-600 opacity-50 scale-105 shadow-lg"
+                          : "bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-cyan-700 hover:shadow-md hover:bg-teal-100 dark:hover:bg-teal-900/30"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3 flex-1">
+                        <div className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-grab active:cursor-grabbing">
+                          <FiMove className="w-5 h-5" />
+                        </div>
+                        <div className="w-8 h-8 bg-[#49BBBD] text-white rounded-full flex items-center justify-center text-sm font-bold">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-gray-900 dark:text-white">
+                            {major.majorCode ?? "Chuyên ngành"}
+                          </h5>
+                          <p className="text-xs text-gray-600 dark:text-gray-400">
+                            {total} khóa học
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => moveMajorUp(majorId)}
+                          disabled={index === 0}
+                          className="p-2 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          title="Di chuyển lên"
+                        >
+                          <FiChevronUp className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                        </button>
+                        <button
+                          onClick={() => moveMajorDown(majorId)}
+                          disabled={index === majorOrder.length - 1}
+                          className="p-2 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          title="Di chuyển xuống"
+                        >
+                          <FiChevronDown className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+                        </button>
+                        <button
+                          onClick={() => handleMajorToggle(majorId)}
+                          className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 text-red-500 transition-colors"
+                          title="Xóa khỏi danh sách"
+                        >
+                          <FiMinus className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </>
+      );
+    }
+
+    // ========== MODE: IN PROGRESS (status = 2) - Timeline View ==========
+    return (
+      <div className="space-y-6">
+        {majorsList.map((major, index) => {
+          const id = major.majorId ?? `major-${index}`;
+          const sems = getSemestersFromGroups(
+            major.majorCourseGroups as ExtendedCourseGroupDto[],
+          );
+          const totalCourses = getTotalCourses(major);
+          const isExpanded = !collapsedMajors[id];
+
+          return (
+            <div key={id} className="relative">
+              <div
+                onClick={() =>
+                  setCollapsedMajors((prev) => ({ ...prev, [id]: !prev[id] }))
+                }
+                className={`cursor-pointer rounded-xl p-6 transition-all duration-300 border ${
+                  isExpanded
+                    ? "border-[#49BBBD] bg-teal-50/50 dark:bg-teal-900/20 shadow-lg"
+                    : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700/50 hover:border-teal-200 dark:hover:border-cyan-600 hover:shadow-md"
+                }`}
+              >
+                {/* Header */}
+                <div className="flex items-start gap-4 mb-4">
+                  <div
+                    className={`flex-shrink-0 w-14 h-14 rounded-lg flex items-center justify-center text-2xl font-black shadow-md ${index === 0 ? "bg-gradient-to-br from-[#49BBBD] to-cyan-600 text-white" : "bg-gradient-to-br from-teal-400 to-cyan-500 text-white"}`}
+                  >
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                      {major.majorCode ?? major.majorId ?? "Chuyên ngành"}
+                    </h3>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                      {totalCourses} khóa học
+                    </span>
                   </div>
                 </div>
 
-                {semesterOpen && (
-                  <div className="space-y-6">
-                    {groups.map((group) => {
-                      const statusMeta = getStatusMeta(group.status);
-                      const key = `${semester}-${group.subjectCode ?? "SUB"}`;
-                      const isOpen = Boolean(expandedBasic[key]);
-                      const insight =
-                        (group as ExtendedCourseGroupDto).insight;
-                      const analysisMarkdown =
-                        (group as ExtendedCourseGroupDto).analysisMarkdown;
-                      const courseCount = group.courses?.length ?? 0;
-                      const canToggleCourses = courseCount > 0;
+                {/* Reason */}
+                {major.reason && (
+                  <p
+                    className={`text-sm leading-relaxed ${isExpanded ? "text-gray-700 dark:text-gray-300 mb-4" : "text-gray-600 dark:text-gray-400 line-clamp-2 mb-1"}`}
+                  >
+                    {major.reason}
+                  </p>
+                )}
 
+                {/* CTA collapsed */}
+                {!isExpanded && (
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <span className="text-[#49BBBD] dark:text-cyan-400 text-sm font-semibold">
+                      Xem chi tiết theo kỳ
+                    </span>
+                    <FiChevronDown className="w-5 h-5 text-gray-400" />
+                  </div>
+                )}
+
+                {/* Expanded content */}
+                {isExpanded && (
+                  <div className="mt-4 pt-4 border-t border-teal-200 dark:border-cyan-800">
+                    {sems.map((sem) => {
+                      const groupsForSem = filterGroupsBySemester(
+                        major.majorCourseGroups as ExtendedCourseGroupDto[],
+                        sem,
+                      );
+                      if (groupsForSem.length === 0) return null;
                       return (
-                        <div
-                          key={key}
-                          className={`rounded-2xl border ${statusMeta.toneClass} p-5 transition shadow-sm`}
-                        >
-                          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div key={`major-${id}-sem-${sem}`} className="mb-10">
+                          <div className="flex items-center mb-5">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-lg flex items-center justify-center text-base font-bold mr-4 shadow-md">
+                              {sem}
+                            </div>
                             <div>
-                              <p className="text-sm uppercase tracking-wide text-gray-400">
-                                {group.subjectCode ?? "Môn học"}
-                              </p>
-                              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {statusMeta.review}
-                              </p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {courseCount > 0
-                                  ? `${courseCount} lựa chọn khóa học`
-                                  : "Chưa có khóa học gợi ý"}
-                              </p>
+                              <h4 className="text-xl font-bold text-gray-900 dark:text-white">
+                                Kỳ {sem}
+                              </h4>
+                              <div className="w-full h-0.5 bg-gradient-to-r from-orange-500 to-amber-400 rounded-full mt-1.5"></div>
                             </div>
-                            <span
-                              className={`self-start md:self-auto px-3 py-1 rounded-full text-xs font-semibold ${statusMeta.badgeClass}`}
-                            >
-                              {statusMeta.label}
-                            </span>
                           </div>
-                          {insight && (
-                            <div className="mt-4 rounded-2xl border border-orange-100 bg-white/80 dark:bg-slate-900/80 p-4 text-sm text-gray-600 dark:text-gray-300 space-y-2">
-                              <div className="flex items-center gap-3">
-                                <div className="text-2xl font-black text-orange-500">
-                                  {insight.score ?? "--"}
-                                </div>
-                                <div>
-                                  <p className="text-xs uppercase tracking-widest text-gray-400">
-                                    Điểm hiện tại
-                                  </p>
-                                  <p className="text-sm text-gray-500">
-                                    Chuẩn mục tiêu {insight.target ?? "--"}+
-                                  </p>
-                                </div>
-                              </div>
-                              {insight.summary && <p>{insight.summary}</p>}
-                              {insight.reasons && insight.reasons.length > 0 && (
-                                <ul className="list-disc list-inside space-y-1 text-gray-500 dark:text-gray-400">
-                                  {insight.reasons.map(
-                                    (reason: string, idx: number) => (
-                                      <li key={`${key}-reason-${idx}`}>
-                                        {reason}
-                                      </li>
-                                    ),
+                          <div className="space-y-6">
+                            {groupsForSem.map((cg) => {
+                              const courseCount = cg.courses?.length ?? 0;
+                              return (
+                                <div
+                                  key={cg.subjectCode ?? `${id}-${sem}`}
+                                  className="mb-6"
+                                >
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className="px-2 py-1 rounded-md bg-[#49BBBD] text-white text-xs font-bold">
+                                        {cg.subjectCode ?? "SUB"}
+                                      </div>
+                                      <span
+                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                                      >
+                                        {cg.status === 0
+                                          ? "Chưa bắt đầu"
+                                          : cg.status === 1
+                                            ? "Đang học"
+                                            : cg.status === 2
+                                              ? "Hoàn thành"
+                                              : "Bỏ qua"}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {courseCount} khóa học
+                                    </span>
+                                  </div>
+                                  {courseCount > 0 && (
+                                    <div className="space-y-3 mt-3">
+                                      {(cg.courses ?? []).map((course, i) => (
+                                        <div
+                                          key={`${cg.subjectCode}-${i}`}
+                                          className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 p-3 hover:border-teal-200 dark:hover:border-teal-800 hover:shadow-sm transition-all duration-200"
+                                        >
+                                          <CourseCard
+                                            id={course.courseId ?? ""}
+                                            imageUrl={
+                                              course.courseImageUrl ??
+                                              "https://via.placeholder.com/600x400?text=EduSmart"
+                                            }
+                                            title={course.title ?? "Khóa học"}
+                                            descriptionLines={
+                                              course.shortDescription
+                                                ? [course.shortDescription]
+                                                : []
+                                            }
+                                            instructor={
+                                              course.teacherName ?? "Giảng viên"
+                                            }
+                                            level={course.level}
+                                            price={course.price}
+                                            dealPrice={course.dealPrice}
+                                            routerPush={`/course/${course.courseId}`}
+                                            isHorizontal={true}
+                                          />
+                                        </div>
+                                      ))}
+                                    </div>
                                   )}
-                                </ul>
-                              )}
-                            </div>
-                          )}
-                          {analysisMarkdown && (
-                            <MarkdownBlock
-                              markdown={analysisMarkdown}
-                              className="mt-4 rounded-2xl border border-orange-100 bg-white/70 dark:bg-slate-900/70 p-4 prose prose-sm max-w-none text-gray-600 dark:text-gray-300 prose-p:my-2 prose-ul:list-disc prose-ul:pl-5 prose-li:my-1"
-                            />
-                          )}
-                          {canToggleCourses && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setExpandedBasic((prev) => ({
-                                    ...prev,
-                                    [key]: !prev[key],
-                                  }))
-                                }
-                                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-orange-600 dark:text-orange-100"
-                              >
-                                {isOpen
-                                  ? "Thu gọn khóa học"
-                                  : "Xem chi tiết khóa"}
-                                {isOpen ? (
-                                  <FiChevronUp className="h-4 w-4" />
-                                ) : (
-                                  <FiChevronDown className="h-4 w-4" />
-                                )}
-                              </button>
-
-                              {isOpen && (
-                                <div className="flex flex-col gap-4">
-                                  {(group.courses ?? []).map((course, idx) => (
-                                    <CourseCard
-                                      key={
-                                        course.courseId ??
-                                        `${key}-course-${idx}`
-                                      }
-                                      {...toCourseCardProps(course)}
-                                    />
-                                  ))}
+                                  {courseCount === 0 && (
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                      Chưa có khóa học cho môn này
+                                    </p>
+                                  )}
                                 </div>
-                              )}
-                            </>
-                          )}
+                              );
+                            })}
+                          </div>
                         </div>
                       );
                     })}
@@ -1095,316 +1609,7 @@ const computeMajorProgress = (
     );
   };
 
-  const renderInternalContent = (majorsList: InternalMajorDto[]) => {
-    if (!showInternalSection) return null;
-    if (isPending) return <InternalMajorSkeleton />;
-    if (majorsList.length === 0) {
-      return (
-        <p className="text-sm text-gray-500">
-          Chưa có dữ liệu chuyên ngành nội bộ cho lộ trình này.
-        </p>
-      );
-    }
-
-    return (
-      <div className="space-y-8">
-        {majorsList.map((major, majorIdx) => {
-          const majorKey = major.majorId ?? `major-${majorIdx}`;
-          const isMajorCollapsed = Boolean(collapsedMajors[majorKey]);
-          const majorOpen = !isMajorCollapsed;
-          const semesterTimeline = mapGroupsBySemester(
-            major.majorCourseGroups,
-          );
-          const progressPercent = computeMajorProgress(semesterTimeline);
-
-          return (
-            <div
-              key={major.majorId ?? `major-${majorIdx}`}
-              className="rounded-3xl border border-cyan-100 dark:border-[#122138] p-6 bg-white dark:bg-[#040b17] shadow-sm dark:shadow-[0_0_30px_rgba(4,11,23,0.8)] space-y-6"
-            >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-[0.2em] text-cyan-500 font-semibold">
-                    Major {majorIdx + 1}
-                  </p>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {major.majorCode ?? major.majorId ?? "Chuyên ngành"}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {major.reason ??
-                      "Hệ thống chưa cung cấp lý do đề xuất cho chuyên ngành này."}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCollapsedMajors((prev) => ({
-                      ...prev,
-                      [majorKey]: !Boolean(prev[majorKey]),
-                    }))
-                  }
-                  className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-white px-3 py-2 text-xs font-semibold text-cyan-600 hover:bg-cyan-50 transition self-start lg:self-auto"
-                >
-                  {majorOpen ? "Thu gọn major" : "Mở major"}
-                  {majorOpen ? (
-                    <FiChevronUp className="h-4 w-4" />
-                  ) : (
-                    <FiChevronDown className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-
-              {majorOpen && (
-                <div className="rounded-3xl border border-cyan-50 dark:border-[#1a2d47] bg-gradient-to-br from-white via-cyan-50/60 to-white dark:from-[#061126] dark:via-[#081b33] dark:to-[#051327] p-6 space-y-8">
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-cyan-600">
-                      <span>Tiến độ chuyên ngành</span>
-                      <span className="px-3 py-1 rounded-full bg-white text-cyan-600 shadow-sm">
-                        {progressPercent}% hoàn thành
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-white/60 dark:bg-[#0d1f36] overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 dark:from-cyan-400 dark:to-emerald-300 transition-all duration-500"
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {semesterTimeline.length === 0 ? (
-                    <p className="text-sm text-gray-500">
-                      Chưa có dữ liệu học phần cho chuyên ngành này.
-                    </p>
-                  ) : (
-                    <div className="relative pl-10">
-                      <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-cyan-200 via-cyan-100 to-transparent dark:from-cyan-400/40 dark:via-cyan-400/10 dark:to-transparent" />
-                      {semesterTimeline.map(({ semester, groups }, idx) => {
-                        const semesterKey = `${majorKey}-sem-${semester}`;
-                        const isSemesterCollapsed = Boolean(
-                          collapsedMajorSemesters[semesterKey],
-                        );
-                        const semesterOpen = !isSemesterCollapsed;
-                        const courseCount = groups.reduce(
-                          (sum, group) => sum + (group.courses?.length ?? 0),
-                          0,
-                        );
-                        const semesterMeta = deriveSemesterMeta(groups);
-
-                        return (
-                          <div
-                            key={semesterKey}
-                            className="relative mb-12 pl-10 last:mb-0"
-                          >
-                            <div className="absolute left-0 top-0 flex flex-col items-center">
-                              <div className="w-12 h-12 rounded-full bg-white border-4 border-cyan-300 shadow flex items-center justify-center text-sm font-black text-cyan-600 dark:bg-[#051121] dark:border-cyan-500/40 dark:text-cyan-100">
-                                {semester > 0 ? `K${semester}` : "Δ"}
-                              </div>
-                              {idx !== semesterTimeline.length - 1 && (
-                                <div className="flex-1 w-px bg-gradient-to-b from-cyan-200 to-transparent" />
-                              )}
-                            </div>
-                            <div className="bg-white dark:bg-[#091627] rounded-2xl border border-cyan-100 dark:border-[#18314a] p-5 shadow-sm space-y-5">
-                              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                                <div>
-                                  <p className="text-xs uppercase tracking-[0.2em] text-cyan-500 font-semibold">
-                                    {semester > 0
-                                      ? `Kỳ ${semester}`
-                                      : "Gợi ý mở rộng"}
-                                  </p>
-                                  <h4 className="text-xl font-bold text-gray-900 dark:text-white">
-                                    {getSemesterNarrative(groups)}
-                                  </h4>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    {courseCount} khóa • {groups.length} môn
-                                  </p>
-                                </div>
-                                <span
-                                  className={`px-3 py-1 rounded-full text-xs font-semibold ${semesterMeta.badgeClass}`}
-                                >
-                                  {semesterMeta.label}
-                                </span>
-                              </div>
-
-                              <p className="text-sm text-gray-500 dark:text-gray-300">
-                                {groups
-                                  .map(
-                                    (group) =>
-                                      `${group.subjectCode ?? "SUB"} · ${
-                                        getStatusMeta(group.status).label
-                                      }`,
-                                  )
-                                  .join(" • ")}
-                              </p>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setCollapsedMajorSemesters((prev) => ({
-                                    ...prev,
-                                    [semesterKey]: !isSemesterCollapsed,
-                                  }))
-                                }
-                                className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600 dark:text-cyan-200"
-                              >
-                                {semesterOpen
-                                  ? "Thu gọn môn trong kỳ"
-                                  : "Xem môn trong kỳ"}
-                                {semesterOpen ? (
-                                  <FiChevronUp className="h-4 w-4" />
-                                ) : (
-                                  <FiChevronDown className="h-4 w-4" />
-                                )}
-                              </button>
-
-                              {semesterOpen && (
-                                <div className="space-y-5 pt-2">
-                                  {groups.map((group) => {
-                                    const statusMeta = getStatusMeta(
-                                      group.status,
-                                    );
-                                    const groupKey = `${
-                                      major.majorId ?? majorIdx
-                                    }-${group.subjectCode ?? "SUB"}-${semester}`;
-                                    const isOpen =
-                                      Boolean(expandedInternal[groupKey]);
-                                    const insight = (
-                                      group as ExtendedCourseGroupDto
-                                    ).insight;
-                                    const analysisMarkdown = (
-                                      group as ExtendedCourseGroupDto
-                                    ).analysisMarkdown;
-                                    const groupCourseCount =
-                                      group.courses?.length ?? 0;
-                                    const canToggleCourses =
-                                      groupCourseCount > 0;
-
-                                    return (
-                                      <div
-                                        key={groupKey}
-                                        className="rounded-2xl border border-cyan-100 dark:border-[#1f3854] bg-white/80 dark:bg-[#0b192d] p-4 space-y-4 shadow-sm"
-                                      >
-                                        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                                          <div>
-                                            <p className="text-base font-semibold text-gray-900 dark:text-white">
-                                              {group.subjectCode ?? "Môn học"}
-                                            </p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                              {statusMeta.review}
-                                            </p>
-                                          </div>
-                                          <span
-                                            className={`px-3 py-1 rounded-full text-xs font-semibold ${statusMeta.badgeClass}`}
-                                          >
-                                            {statusMeta.label}
-                                          </span>
-                                        </div>
-
-                                        {insight && (
-                                          <div className="rounded-2xl border border-cyan-50 dark:border-[#1c3250] bg-white dark:bg-[#0f2139] p-4 text-sm text-gray-600 dark:text-gray-200 space-y-2">
-                                            <div className="flex items-center gap-3">
-                                              <div className="text-2xl font-black text-cyan-500">
-                                                {insight.score ?? "--"}
-                                              </div>
-                                              <div>
-                                                <p className="text-xs uppercase tracking-widest text-gray-400">
-                                                  Điểm hiện tại
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                  Chuẩn mục tiêu{" "}
-                                                  {insight.target ?? "--"}+
-                                                </p>
-                                              </div>
-                                            </div>
-                                            {insight.summary && (
-                                              <p>{insight.summary}</p>
-                                            )}
-                                            {insight.reasons &&
-                                              insight.reasons.length > 0 && (
-                                                <ul className="list-disc list-inside space-y-1 text-gray-500 dark:text-gray-400">
-                                                  {insight.reasons.map(
-                                                    (reason: string, idx: number) => (
-                                                      <li
-                                                        key={`${groupKey}-reason-${idx}`}
-                                                      >
-                                                        {reason}
-                                                      </li>
-                                                    ),
-                                                  )}
-                                                </ul>
-                                              )}
-                                          </div>
-                                        )}
-
-                                        {analysisMarkdown && (
-                                          <MarkdownBlock
-                                            markdown={analysisMarkdown}
-                                            className="rounded-2xl border border-cyan-100 bg-white/70 dark:bg-[#0f1e33]/90 p-4 prose prose-sm max-w-none text-gray-600 dark:text-gray-300 prose-p:my-2 prose-ul:list-disc prose-ul:pl-5 prose-li:my-1"
-                                          />
-                                        )}
-
-                                        {canToggleCourses && (
-                                          <>
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                setExpandedInternal((prev) => ({
-                                                  ...prev,
-                                                  [groupKey]: !prev[groupKey],
-                                                }))
-                                              }
-                                              className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-600 dark:text-cyan-200"
-                                            >
-                                              {isOpen
-                                                ? "Thu gọn khóa học"
-                                                : "Xem chi tiết khóa"}
-                                              {isOpen ? (
-                                                <FiChevronUp className="h-4 w-4" />
-                                              ) : (
-                                                <FiChevronDown className="h-4 w-4" />
-                                              )}
-                                            </button>
-
-                                            {isOpen && (
-                                              <div className="flex flex-col gap-3">
-                                                {(group.courses ?? []).map(
-                                                  (course, idx) => (
-                                                    <CourseCard
-                                                      key={
-                                                        course.courseId ??
-                                                        `${groupKey}-course-${idx}`
-                                                      }
-                                                      {...toCourseCardProps(
-                                                        course,
-                                                      )}
-                                                    />
-                                                  ),
-                                                )}
-                                              </div>
-                                            )}
-                                          </>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
   const renderExternalContent = () => {
-    if (!showExternalSection) return null;
     if (isPending) return <ExternalTrackSkeleton />;
     if (externalTracks.length === 0) {
       return (
@@ -1415,117 +1620,118 @@ const computeMajorProgress = (
     }
 
     return (
-      <div className="space-y-10">
-        {externalTracks.map((track, trackIdx) => {
-          const trackKey = track.majorId ?? `external-${trackIdx}`;
-          const isTrackCollapsed = Boolean(collapsedTracks[trackKey]);
-          const trackOpen = !isTrackCollapsed;
-
-          return (
-            <div
-              key={track.majorId ?? `external-${trackIdx}`}
-              className="rounded-3xl border border-lime-100 dark:border-[#1d2f22] bg-white dark:bg-[#030b13] shadow-sm dark:shadow-[0_0_25px_rgba(3,11,19,0.8)] p-6"
-            >
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="lg:w-1/3 space-y-3">
-                  <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-lime-50 text-lime-700 text-sm font-semibold dark:bg-lime-500/15 dark:text-lime-200">
-                    <FiBook /> Track {trackIdx + 1}
+      <div className="space-y-6">
+        {externalTracks.map((track, trackIdx) => (
+          <div
+            key={track.majorId ?? `external-${trackIdx}`}
+            className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+          >
+            {/* Track Header */}
+            <div className="bg-gray-50 dark:bg-gray-800 px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                  {trackIdx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-bold text-gray-900 dark:text-white">
+                      {(track.majorCode ?? "TRACK").replace(/_/g, " ")}
+                    </h4>
+                    <Tag color="purple" className="text-xs">
+                      {(track.steps ?? []).length} bước
+                    </Tag>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {track.majorCode ?? "TRACK"}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {track.reason ??
                       "Hệ thống chưa cung cấp mô tả chi tiết cho track này."}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCollapsedTracks((prev) => ({
-                        ...prev,
-                        [trackKey]: !Boolean(prev[trackKey]),
-                      }))
-                    }
-                    className="inline-flex items-center gap-2 rounded-full border border-lime-200 bg-white px-3 py-1 text-xs font-semibold text-lime-600 hover:bg-lime-50 transition dark:border-lime-400/30 dark:text-lime-200 dark:bg-transparent dark:hover:bg-lime-500/10"
-                  >
-                    {trackOpen ? "Thu gọn track" : "Mở track"}
-                    {trackOpen ? (
-                      <FiChevronUp className="h-4 w-4" />
-                    ) : (
-                      <FiChevronDown className="h-4 w-4" />
-                    )}
-                  </button>
                 </div>
-
-                {trackOpen && (
-                  <div className="flex-1 relative pl-10">
-                    <div className="absolute left-4 top-0 bottom-0 w-px bg-lime-200 dark:bg-lime-400/30" />
-                    {(track.steps ?? []).map((step, stepIdx) => (
-                      <div
-                        key={`${track.majorId ?? trackIdx}-${stepIdx}`}
-                        className="relative mb-10 pl-6"
-                      >
-                        <div className="absolute -left-6 top-0 w-10 h-10 rounded-full bg-white border-2 border-lime-300 flex items-center justify-center text-lime-600 font-semibold shadow dark:bg-[#07120d] dark:border-lime-400/40 dark:text-lime-200">
-                          {stepIdx + 1}
-                        </div>
-                        <div className="rounded-2xl border border-lime-100 dark:border-[#1c3822] bg-lime-50/60 dark:bg-[#0a1b10] p-5">
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                            <div>
-                              <p className="text-sm uppercase tracking-wide text-lime-500 font-semibold">
-                                Bước {stepIdx + 1}
-                              </p>
-                              <h4 className="text-xl font-bold text-gray-900 dark:text-white">
-                                {step.title ?? "Nội dung"}
-                              </h4>
-                            </div>
-                            {step.duration_Weeks && step.duration_Weeks > 0 && (
-                              <span className="text-sm text-gray-600 dark:text-gray-400">
-                                ≈ {step.duration_Weeks} tuần
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="mt-4 space-y-4">
-                            {(step.suggested_Courses ?? []).map((course) => (
-                              <a
-                                key={course.link ?? course.title}
-                                href={course.link ?? "#"}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex flex-col sm:flex-row sm:items-start gap-4 border border-lime-100 dark:border-lime-400/20 rounded-2xl p-4 bg-white dark:bg-[#04120c] hover:shadow-md transition dark:hover:shadow-[0_0_15px_rgba(100,255,205,0.2)]"
-                              >
-                                <div className="flex-1">
-                                  <p className="text-base font-semibold text-gray-900 dark:text-white">
-                                    {course.title}
-                                  </p>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {course.provider ?? "Đối tác"} •{" "}
-                                    {course.level ?? "N/A"}
-                                  </p>
-                                  {course.reason && (
-                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                                      {course.reason}
-                                    </p>
-                                  )}
-                                </div>
-                                <span className="inline-flex items-center gap-2 text-lime-600 font-semibold dark:text-lime-300">
-                                  Mở khóa học
-                                  <FiExternalLink />
-                                </span>
-                              </a>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
-          );
-        })}
+
+            {/* Steps Timeline */}
+            <div className="p-5 bg-white dark:bg-gray-900">
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
+
+                <div className="space-y-6">
+                  {(track.steps ?? []).map((step, stepIdx) => (
+                    <div
+                      key={`${track.majorId ?? trackIdx}-step-${stepIdx}`}
+                      className="relative pl-10"
+                    >
+                      {/* Step dot */}
+                      <div className="absolute left-2 top-1 w-5 h-5 rounded-full bg-purple-500 border-4 border-white dark:border-gray-900 flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-white">
+                          {stepIdx + 1}
+                        </span>
+                      </div>
+
+                      {/* Step Content */}
+                      <div>
+                        <h5 className="font-semibold text-gray-900 dark:text-white mb-3">
+                          {step.title ?? "Nội dung"}
+                        </h5>
+
+                        {/* Courses Grid */}
+                        <div className="grid gap-3">
+                          {(step.suggested_Courses ?? []).map(
+                            (course, courseIdx) => (
+                              <a
+                                key={
+                                  course.link ??
+                                  `${stepIdx}-course-${courseIdx}`
+                                }
+                                href={course.link ?? "#"}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-all group"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                                      {course.title}
+                                    </div>
+                                    {course.reason && (
+                                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                        {course.reason}
+                                      </p>
+                                    )}
+                                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
+                                        {course.provider ?? "Đối tác"}
+                                      </span>
+                                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        {course.level ?? "N/A"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-800/50 transition-colors">
+                                    <FiExternalLink className="text-purple-600 dark:text-purple-400 w-4 h-4" />
+                                  </div>
+                                </div>
+                              </a>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
+  };
+
+  const [activeTab, setActiveTab] = useState("analysis");
+
+  // Helper function để loại bỏ heading ## từ markdown
+  const removeMarkdownHeading = (markdown: string) => {
+    return markdown.replace(/^##\s+[^\n]+\n+/, "").trim();
   };
 
   if (!pathId) {
@@ -1537,373 +1743,352 @@ const computeMajorProgress = (
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fff9f4] via-white to-[#f2fbfb] dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <header className="bg-white/80 dark:bg-slate-900/60 shadow-sm rounded-3xl p-8 border border-orange-100 dark:border-slate-700 space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="uppercase tracking-[0.2em] text-xs text-orange-500 font-semibold">
-              {learningPath?.pathName || "Lộ trình học tập"}
-            </p>
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusBadgeClass}`}
-            >
-              {statusLabel}
-            </span>
-            {isStreaming && (
-              <span className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                Đang nhận dữ liệu realtime
-              </span>
-            )}
+    <div className="min-h-screen bg-gradient-to-br p-6">
+      <div className="max-w-6xl mx-auto flex flex-col gap-6">
+        {/* Header Card - Combined */}
+        <Card className="mb-6 overflow-hidden border-0 shadow-lg">
+          {/* Top Section - Title & Status */}
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 border-b border-orange-100 dark:border-orange-900">
+            <div className="flex items-start justify-between gap-4 my-1">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                    Lộ trình đề xuất
+                  </div>
+                  {isStreaming && (
+                    <span className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      Đang cập nhật
+                    </span>
+                  )}
+                </div>
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+                  {learningPath?.pathName || "Lộ trình học tập"}
+                </h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <Tag
+                  color={
+                    status != null
+                      ? ["orange", "cyan", "blue", "green", "default", "gold"][
+                          status
+                        ] || "default"
+                      : "default"
+                  }
+                >
+                  {statusLabel}
+                </Tag>
+                <button
+                  type="button"
+                  onClick={() =>
+                    fetchLearningPath(
+                      status === LearningPathStatus.Choosing ? "text" : "json",
+                    )
+                  }
+                  className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1.5 text-sm font-semibold text-orange-600 hover:bg-orange-50 transition"
+                  disabled={loading}
+                >
+                  <FiRefreshCw
+                    className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                  />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-gray-900 dark:text-white mb-3">
-                Dựa trên kết quả khảo sát năng lực của bạn
-              </h1>
+
+          {/* Bottom Section - Summary */}
+          <div className="p-6 bg-white dark:bg-slate-800">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-3">
+              Tóm tắt kết quả học tập
+            </h3>
+            <div className="prose prose-sm max-w-none dark:prose-invert text-slate-700 dark:text-slate-300 leading-relaxed">
               {summaryFeedback ? (
-                <MarkdownBlock
-                  markdown={summaryFeedback}
-                  className="mt-2 text-lg text-gray-600 dark:text-gray-300 max-w-3xl prose prose-sm sm:prose-base prose-p:my-2 prose-ul:my-2 prose-li:my-1"
-                />
+                <MarkdownBlock markdown={summaryFeedback} />
               ) : isPending ? (
-                <SkeletonParagraph className="mt-4 max-w-3xl" lines={3} />
+                <SkeletonParagraph lines={3} />
               ) : (
-                <>
-                  <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl">
-                    Hệ thống đang tổng hợp phản hồi cá nhân hoá cho lộ trình của
-                    bạn...
-                  </p>
-                  <p className="mt-2 text-sm text-gray-400 dark:text-gray-500 italic">
-                    Đang phân tích chi tiết từng học phần, vui lòng chờ thêm ít phút.
-                  </p>
-                </>
+                <p className="text-gray-500 italic">
+                  Hệ thống đang tổng hợp phản hồi cá nhân hoá cho lộ trình của
+                  bạn...
+                </p>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() =>
-                fetchLearningPath(
-                  status === LearningPathStatus.Choosing ? "text" : "json",
-                )
-              }
-              className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50 transition"
-              disabled={loading}
-            >
-              <FiRefreshCw
-                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-              />
-              Làm mới
-            </button>
+            {error && (
+              <div className="mt-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
           </div>
-          {error && (
-            <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
-        </header>
+        </Card>
 
         {loading && (
-          <div className="rounded-3xl border border-orange-100 bg-white px-6 py-4 text-sm text-gray-600 shadow-sm">
+          <div className="rounded-xl border border-orange-100 bg-white px-6 py-4 text-sm text-gray-600 shadow-sm">
             Đang tải dữ liệu lộ trình...
           </div>
         )}
 
-        <section className="grid gap-6 lg:grid-cols-3">
-          {aiProfileCards.map((card) => (
-            <div
-              key={card.id}
-              className="rounded-3xl border border-orange-100/60 dark:border-slate-800 bg-white/90 dark:bg-slate-900/70 p-6 shadow-sm"
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-400">
-                {card.badge}
-              </p>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-3">
-                {card.title}
-              </h3>
-              {card.markdown ? (
-                <MarkdownBlock
-                  markdown={card.markdown}
-                  className="mt-3 prose prose-sm max-w-none text-gray-600 dark:text-gray-300 prose-p:my-2 prose-ul:list-disc prose-ul:pl-5 prose-li:my-1"
-                />
-              ) : isPending ? (
-                <SkeletonParagraph className="mt-4" lines={4} />
-              ) : (
-                <>
-                  <p
-                    className={`text-sm mt-2 ${
-                      card.isLoading
-                        ? "text-gray-400 dark:text-gray-500 animate-pulse"
-                        : "text-gray-600 dark:text-gray-300"
-                    }`}
-                  >
-                    {card.summary}
-                  </p>
-
-                  <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                    {card.bullets.map((bullet, idx) => (
-                      <li key={`${card.id}-bullet-${idx}`} className="flex gap-2">
-                        <span className="mt-1 h-1.5 w-1.5 rounded-full bg-orange-400" />
-                        <span>{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {card.tags.map((tag) => (
-                  <span
-                    key={`${card.id}-${tag}`}
-                    className="px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-xs font-semibold"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </section>
-
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {CORE_SKILL_STATUS.map((skill) => (
-            <div
-              key={skill.key}
-              className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-gradient-to-br from-white to-orange-50/60 dark:from-slate-900 dark:to-slate-900/60 p-5"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400 font-semibold">
-                    Năng lực trọng tâm
-                  </p>
-                  <h4 className="text-lg font-bold text-gray-900 dark:text-white mt-1">
-                    {skill.label}
-                  </h4>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-black text-orange-500">
-                    {skill.score}
+        {/* Main Tabs */}
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          size="large"
+          items={[
+            {
+              key: "analysis",
+              label: "Phân tích chung",
+              children: (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Tính cách học tập */}
+                  <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
+                      <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                        Tính cách
+                      </span>
+                    </div>
+                    <div className="p-5 flex-1">
+                      {personality ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
+                          <MarkdownBlock
+                            markdown={removeMarkdownHeading(personality)}
+                          />
+                        </div>
+                      ) : isPending ? (
+                        <SkeletonParagraph lines={5} />
+                      ) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                          Đang phân tích tính cách học tập của bạn...
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    /100 · Chuẩn {skill.target}+
-                  </p>
+
+                  {/* Thói quen & sở thích học tập */}
+                  <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
+                      <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                        Thói quen & Sở thích
+                      </span>
+                    </div>
+                    <div className="p-5 flex-1">
+                      {habitAnalysis ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
+                          <MarkdownBlock
+                            markdown={removeMarkdownHeading(habitAnalysis)}
+                          />
+                        </div>
+                      ) : isPending ? (
+                        <SkeletonParagraph lines={5} />
+                      ) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                          Đang phân tích thói quen học tập của bạn...
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Năng lực học tập */}
+                  <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
+                      <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                        Năng lực học tập
+                      </span>
+                    </div>
+                    <div className="p-5 flex-1">
+                      {learningAbility ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
+                          <MarkdownBlock
+                            markdown={removeMarkdownHeading(learningAbility)}
+                          />
+                        </div>
+                      ) : isPending ? (
+                        <SkeletonParagraph lines={5} />
+                      ) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                          Đang đánh giá năng lực học tập của bạn...
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <p className="mt-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
-                {skill.status}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                {skill.summary}
-              </p>
-            </div>
-          ))}
-        </section>
-
-        <section className="bg-white/90 dark:bg-slate-900/70 rounded-3xl p-8 border border-orange-100/70 dark:border-slate-800 shadow-lg shadow-orange-100/40 dark:shadow-none">
-          <div className="bg-gradient-to-r from-[#ffe9d3] to-white dark:from-orange-900/30 dark:to-transparent rounded-3xl p-6 mb-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-3xl font-extrabold text-orange-600 mb-2">
-                Lộ trình khởi đầu
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 max-w-3xl">
-                Các môn học nền tảng được đề xuất dựa trên năng lực hiện tại của
-                bạn. Nếu hệ thống chưa trả dữ liệu, vui lòng thử lại sau ít phút.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowBasicSection((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50 transition self-start"
-            >
-              {showBasicSection ? "Thu gọn" : "Xem nội dung"}
-              {showBasicSection ? (
-                <FiChevronUp className="h-4 w-4" />
-              ) : (
-                <FiChevronDown className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-
-          {renderBasicContent()}
-        </section>
-
-        <section className="bg-white/90 dark:bg-slate-900/70 rounded-3xl p-8 border border-cyan-100/70 dark:border-slate-800 shadow-lg shadow-cyan-100/30 dark:shadow-none">
-          <div className="bg-gradient-to-r from-[#d9f8f5] to-white dark:from-cyan-900/30 dark:to-transparent rounded-3xl p-6 mb-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-3xl font-extrabold text-[#20c997] mb-2">
-                Chuyên ngành hẹp
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 max-w-3xl">
-                Bạn đã chọn các major nội bộ phù hợp. Học theo thứ tự đã sắp xếp
-                để tối ưu hiệu quả và có thể bật/tắt từng cụm môn để xem CourseCard
-                tương ứng.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowInternalSection((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-full border border-cyan-200 bg-white px-4 py-2 text-sm font-semibold text-cyan-600 hover:bg-cyan-50 transition self-start"
-            >
-              {showInternalSection ? "Thu gọn" : "Xem nội dung"}
-              {showInternalSection ? (
-                <FiChevronUp className="h-4 w-4" />
-              ) : (
-                <FiChevronDown className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-
-          {isChoosingStatus && (
-            <div className="mb-10 rounded-3xl border border-cyan-100 dark:border-[#1a2d47] bg-white dark:bg-[#030b17] shadow-lg shadow-cyan-100/20 dark:shadow-[0_0_25px_rgba(3,11,23,0.7)] p-6 space-y-6">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-cyan-500 font-semibold">
-                  Tuỳ chỉnh chuyên ngành
-                </p>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
-                  Chọn và sắp xếp thứ tự major ưu tiên
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                  Dùng combobox để đổi major cho từng vị trí hoặc kéo thả để
-                  sắp xếp lại. Nhấn “Xác nhận” để lưu và dựng lại lộ trình theo
-                  thứ tự bạn chọn.
-                </p>
-              </div>
-              <div className="space-y-4">
-                {selectedMajors.length === 0 ? (
-                  <p className="text-sm text-gray-500">
-                    Chưa có chuyên ngành nào để lựa chọn.
-                  </p>
-                ) : (
-                  <ul className="space-y-3">
-                    {selectedMajors.map((major, idx) => {
-                      const optionKey = selectedMajorIds[idx];
-                      const label =
-                        major.majorCode ??
-                        major.majorId ??
-                        `Major #${idx + 1}`;
-                      return (
-                        <li
-                          key={`selected-major-${optionKey}`}
-                          className={`rounded-2xl border border-cyan-100 dark:border-[#1f3854] bg-white dark:bg-[#0b192d] p-4 space-y-3 shadow-sm ${draggingMajorId === optionKey ? "ring-2 ring-cyan-300" : ""}`}
-                          draggable
-                          onDragStart={() => handleDragStart(optionKey)}
-                          onDragEnter={() => handleDragEnter(optionKey)}
-                          onDragOver={(event) => event.preventDefault()}
-                          onDragEnd={handleDragEnd}
-                        >
-                          <div className="flex flex-wrap items-center gap-3">
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-cyan-500/10 text-cyan-600 text-sm font-bold dark:bg-cyan-500/20 dark:text-cyan-100">
-                              {idx + 1}
+              ),
+            },
+            {
+              key: "roadmap",
+              label: "Lộ trình học tập",
+              children: (
+                <div className="space-y-5">
+                  {/* Section 1: Lộ trình khởi đầu */}
+                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+                    <div
+                      className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      onClick={() => setShowBasicSection((prev) => !prev)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                              Phần 1
                             </span>
-                            <div className="flex-1 min-w-[220px]">
-                              <label className="text-xs uppercase tracking-[0.2em] text-cyan-500 font-semibold">
-                                Major {idx + 1}
-                              </label>
-                              <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                                {label}
-                              </p>
-                              <select
-                                value={optionKey}
-                                onChange={(event) =>
-                                  handleSlotSelectChange(idx, event.target.value)
-                                }
-                                className="mt-1 w-full rounded-xl border border-cyan-200 dark:border-cyan-400/30 bg-white dark:bg-[#040d1d] px-3 py-2 text-sm font-semibold text-cyan-700 dark:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                              >
-                                {majorOptions.map(({ key, major: optionMajor }) => (
-                                  <option key={key} value={key}>
-                                    {optionMajor.majorCode ??
-                                      optionMajor.majorId ??
-                                      key}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 flex-1 min-w-[200px]">
-                              {major.reason ??
-                                "Hệ thống chưa cung cấp mô tả cho chuyên ngành này."}
-                            </p>
+                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {basicSemesters.reduce(
+                                (acc, s) => acc + s.groups.length,
+                                0,
+                              )}{" "}
+                              môn học
+                            </span>
                           </div>
-                          <p className="text-xs text-cyan-600 dark:text-cyan-300">
-                            Giữ thả để sắp xếp lại thứ tự ưu tiên
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                            Lộ trình khởi đầu
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Dựa trên năng lực hiện tại của bạn, hệ thống đề xuất
+                            các môn học nền tảng sau
                           </p>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </div>
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleConfirmMajorSelection}
-                  disabled={
-                    chooseMajorsLoading ||
-                    selectedMajors.every((major) => !major.majorId)
-                  }
-                  className="inline-flex items-center gap-2 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {chooseMajorsLoading ? (
-                    <>
-                      <FiRefreshCw className="h-4 w-4 animate-spin" />
-                      Đang lưu...
-                    </>
-                  ) : (
-                    "Xác nhận lựa chọn"
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetMajorSelection}
-                  className="inline-flex items-center gap-2 rounded-full border border-cyan-200 dark:border-cyan-500/40 px-4 py-2 text-sm font-semibold text-cyan-600 dark:text-cyan-100 hover:bg-cyan-50 dark:hover:bg-cyan-500/10"
-                >
-                  Phục hồi gợi ý
-                </button>
-                {chooseMajorsError && (
-                  <span className="text-sm text-red-500">{chooseMajorsError}</span>
-                )}
-                {!chooseMajorsError && chooseMajorsSuccess && (
-                  <span className="text-sm text-emerald-500">
-                    {chooseMajorsSuccess}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
-          {renderInternalContent(displayedInternalMajors)}
-        </section>
+                        </div>
+                        <span
+                          className={`text-gray-400 text-lg transition-transform duration-200 ${showBasicSection ? "rotate-180" : ""}`}
+                        >
+                          ▼
+                        </span>
+                      </div>
+                    </div>
+                    {showBasicSection && (
+                      <div className="p-6">{renderBasicContent()}</div>
+                    )}
+                  </section>
 
-        <section className="bg-white/90 dark:bg-slate-900/70 rounded-3xl p-8 border border-lime-100/70 dark:border-slate-800 shadow-lg shadow-lime-100/30 dark:shadow-none">
-          <div className="bg-gradient-to-r from-[#e8ffe0] to-white dark:from-lime-900/30 dark:to-transparent rounded-3xl p-6 mb-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h2 className="text-3xl font-extrabold text-lime-600 mb-2">
-                Đề xuất lộ trình ngoài
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300 max-w-3xl">
-                Các track bổ sung từ nền tảng đối tác để bù lấp lỗ hổng kỹ năng.
-                UI mô phỏng timeline với icon giống mockup: mỗi bước hiển thị khóa
-                học gợi ý cùng nút mở link.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowExternalSection((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-full border border-lime-200 bg-white px-4 py-2 text-sm font-semibold text-lime-600 hover:bg-lime-50 transition self-start"
-            >
-              {showExternalSection ? "Thu gọn" : "Xem nội dung"}
-              {showExternalSection ? (
-                <FiChevronUp className="h-4 w-4" />
-              ) : (
-                <FiChevronDown className="h-4 w-4" />
-              )}
-            </button>
-          </div>
+                  {/* Section 2: Chuyên ngành hẹp */}
+                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+                    <div
+                      className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      onClick={() => setShowInternalSection((prev) => !prev)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-semibold text-[#49BBBD] dark:text-cyan-400 uppercase tracking-wider">
+                              Phần 2
+                            </span>
+                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {internalMajors.length} chuyên ngành
+                            </span>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                            {isChoosingStatus
+                              ? "Chuyên ngành hẹp phù hợp"
+                              : "Chuyên ngành hẹp"}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {isChoosingStatus
+                              ? "Hệ thống đề xuất các chuyên ngành phù hợp với năng lực của bạn"
+                              : "Học theo thứ tự đã sắp xếp để hiệu quả nhất"}
+                          </p>
+                        </div>
+                        <span
+                          className={`text-gray-400 text-lg transition-transform duration-200 ${showInternalSection ? "rotate-180" : ""}`}
+                        >
+                          ▼
+                        </span>
+                      </div>
+                    </div>
+                    {showInternalSection && (
+                      <div className="p-6">
+                        {/* {isChoosingStatus && (
+                          <div className="mb-6 p-4 rounded-xl border border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-900/20">
+                            <p className="text-sm text-cyan-700 dark:text-cyan-300 font-medium mb-3">
+                              Chọn và sắp xếp thứ tự major ưu tiên, sau đó nhấn
+                              &quot;Xác nhận&quot;
+                            </p>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={handleConfirmMajorSelection}
+                                disabled={
+                                  chooseMajorsLoading ||
+                                  selectedMajors.every((m) => !m.majorId)
+                                }
+                                className="inline-flex items-center gap-2 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                              >
+                                {chooseMajorsLoading ? (
+                                  <>
+                                    <FiRefreshCw className="h-4 w-4 animate-spin" />
+                                    Đang lưu...
+                                  </>
+                                ) : (
+                                  "Xác nhận lựa chọn"
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={resetMajorSelection}
+                                className="text-sm text-cyan-600 dark:text-cyan-400 hover:underline"
+                              >
+                                Phục hồi gợi ý
+                              </button>
+                              {chooseMajorsError && (
+                                <span className="text-sm text-red-500">
+                                  {chooseMajorsError}
+                                </span>
+                              )}
+                              {chooseMajorsSuccess && (
+                                <span className="text-sm text-emerald-500">
+                                  {chooseMajorsSuccess}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )} */}
+                        {renderInternalContent(displayedInternalMajors)}
+                      </div>
+                    )}
+                  </section>
 
-          {renderExternalContent()}
-        </section>
+                  {/* Section 3: Khóa học bên ngoài */}
+                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+                    <div
+                      className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      onClick={() => setShowExternalSection((prev) => !prev)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                              Phần 3
+                            </span>
+                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {externalTracks.length} track
+                            </span>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                            Đề xuất khóa học bên ngoài
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Các khóa học bổ sung từ nền tảng ngoài để bù lấp lỗ
+                            hổng kỹ năng
+                          </p>
+                        </div>
+                        <span
+                          className={`text-gray-400 text-lg transition-transform duration-200 ${showExternalSection ? "rotate-180" : ""}`}
+                        >
+                          ▼
+                        </span>
+                      </div>
+                    </div>
+                    {showExternalSection && (
+                      <div className="p-6">{renderExternalContent()}</div>
+                    )}
+                  </section>
+                </div>
+              ),
+            },
+          ]}
+        />
       </div>
     </div>
   );
 };
 
 export default LearningPathSamplePage;
-
