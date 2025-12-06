@@ -1770,20 +1770,20 @@ const LearningPathSamplePage = () => {
                 </p>
               )}
               <div className="flex items-center justify-end">
-              {/* <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                {/* <h3 className="text-base font-semibold text-slate-900 dark:text-white">
                 Tóm tắt kết quả học tập
               </h3> */}
-              {hasTranscript && (
-                <button
-                  type="button"
-                  onClick={handlePreviewTranscript}
-                  className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-[#49BBBD] hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-[#49BBBD]/30 transition-colors"
-                >
-                  <FiFileText className="w-4 h-4" />
-                  Bảng điểm
-                </button>
-              )}
-            </div>
+                {hasTranscript && (
+                  <button
+                    type="button"
+                    onClick={handlePreviewTranscript}
+                    className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-[#49BBBD] hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-[#49BBBD]/30 transition-colors"
+                  >
+                    <FiFileText className="w-4 h-4" />
+                    Bảng điểm
+                  </button>
+                )}
+              </div>
             </div>
             {error && (
               <div className="mt-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -1944,7 +1944,7 @@ const LearningPathSamplePage = () => {
                               •
                             </span>
                             <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                              {isChoosingStatus
+                              {isChoosingStatus || isPending
                                 ? `${internalMajors.length} chuyên ngành đề xuất`
                                 : `${internalMajors.length} chuyên ngành đã chọn`}
                             </span>
