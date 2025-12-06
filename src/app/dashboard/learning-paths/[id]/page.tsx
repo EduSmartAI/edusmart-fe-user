@@ -250,46 +250,6 @@ const ExternalTrackSkeleton = () => (
   </div>
 );
 
-const CORE_SKILL_STATUS = [
-  {
-    key: "dsa",
-    label: "Cấu trúc dữ liệu & giải thuật",
-    score: 48,
-    target: 70,
-    status: "Thiếu 22 điểm so với chuẩn tuyển dụng Fresher Backend.",
-    summary:
-      "Nhanh ở bài toán tuyến tính nhưng mất điểm ở dạng đồ thị & phân tích độ phức tạp. Cần luyện thêm 3-4 tuần với bài tập chuẩn hoá.",
-  },
-  {
-    key: "db",
-    label: "Cơ sở dữ liệu",
-    score: 62,
-    target: 75,
-    status:
-      "Hiểu query cơ bản nhưng chưa tối ưu hoá, thiếu trải nghiệm thiết kế chuẩn 3NF.",
-    summary:
-      "Điểm mạnh là viết được trigger/procedure đơn giản, tuy nhiên phần index & transaction isolation còn yếu.",
-  },
-  {
-    key: "oop",
-    label: "Lập trình hướng đối tượng",
-    score: 58,
-    target: 80,
-    status: "Chưa thành thạo SOLID, refactor còn lúng túng khi scale module.",
-    summary:
-      "Bạn xử lý inheritance tốt nhưng chưa biết đo đạc cohesion/coupling để tái cấu trúc class.",
-  },
-  {
-    key: "htmlcss",
-    label: "Lập trình web HTML & CSS cơ bản",
-    score: 54,
-    target: 75,
-    status: "Thiếu cảm giác spacing, layout responsive chưa vững.",
-    summary:
-      "Nắm được flexbox ở mức cơ bản nhưng grid system và accessibility (semantic tag) dưới mức yêu cầu.",
-  },
-];
-
 const SUBJECT_STATUS_META = {
   0: {
     label: "Ưu tiên học",
@@ -478,9 +438,9 @@ const LearningPathSamplePage = () => {
   const [expandedInternal, setExpandedInternal] = useState<
     Record<string, boolean>
   >({});
-  const [showBasicSection, setShowBasicSection] = useState(true);
-  const [showInternalSection, setShowInternalSection] = useState(true);
-  const [showExternalSection, setShowExternalSection] = useState(true);
+  const [showBasicSection, setShowBasicSection] = useState(false);
+  const [showInternalSection, setShowInternalSection] = useState(false);
+  const [showExternalSection, setShowExternalSection] = useState(false);
   const [collapsedSemesters, setCollapsedSemesters] = useState<
     Record<number, boolean>
   >({});
@@ -714,18 +674,26 @@ const LearningPathSamplePage = () => {
   useEffect(() => {
     setExpandedBasic({});
     setExpandedInternal({});
-    setShowBasicSection(true);
-    setShowInternalSection(true);
-    setShowExternalSection(true);
+    setShowBasicSection(false);
+    setShowInternalSection(false);
+    setShowExternalSection(false);
     setCollapsedSemesters({});
-    setCollapsedMajors({});
+    // Initialize all majors as collapsed (closed) by default
+    const initialCollapsedMajors: Record<string, boolean> = {};
+    if (learningPath?.internalLearningPath) {
+      learningPath.internalLearningPath.forEach((major, idx) => {
+        const id = major.majorId ?? `major-${idx}`;
+        initialCollapsedMajors[id] = true; // true = collapsed/closed
+      });
+    }
+    setCollapsedMajors(initialCollapsedMajors);
     setCollapsedMajorSemesters({});
     setCollapsedTracks({});
     setSelectedMajors([]);
     setMajorOrder([]);
     setChooseMajorsError(null);
     setChooseMajorsSuccess(null);
-  }, [pathId]);
+  }, [pathId, learningPath?.internalLearningPath]);
   const deriveSemesterMeta = (groups: ExtendedCourseGroupDto[]) => {
     if (!groups.length) {
       return getStatusMeta(0);
@@ -1364,7 +1332,7 @@ const LearningPathSamplePage = () => {
             <div className="pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="mb-6">
                 <h4 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-                  <span className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400">
+                  <span className="text-xl text-[#49BBBD] dark:text-cyan-400">
                     Thứ tự học đã chọn
                   </span>
                   <span className="ml-3 text-base font-medium text-gray-500 dark:text-gray-400">
@@ -1439,6 +1407,52 @@ const LearningPathSamplePage = () => {
                   );
                 })}
               </div>
+
+              {/* Action Buttons */}
+              <div className="mt-6 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedMajors([]);
+                    setMajorOrder([]);
+                    setViewingMajorId(null);
+                  }}
+                  className="px-5 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Đặt lại
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmMajorSelection}
+                  disabled={chooseMajorsLoading || selectedMajors.length === 0}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold !text-white bg-[#49BBBD] hover:bg-[#3da9ab] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {chooseMajorsLoading ? (
+                    <>
+                      <FiRefreshCw className="w-4 h-4 animate-spin" />
+                      Đang xử lý...
+                    </>
+                  ) : (
+                    <>
+                      <FiCheck className="w-4 h-4 text-white" />
+                      Xác nhận ({selectedMajors.length} chuyên ngành)
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Error/Success Messages */}
+              {chooseMajorsError && (
+                <p className="mt-3 text-sm text-red-500 dark:text-red-400 text-right">
+                  {chooseMajorsError}
+                </p>
+              )}
+              {chooseMajorsSuccess && (
+                <p className="mt-3 text-sm text-emerald-500 dark:text-emerald-400 text-right flex items-center justify-end gap-1">
+                  <FiCheck className="w-4 h-4" />
+                  {chooseMajorsSuccess}
+                </p>
+              )}
             </div>
           )}
         </>
@@ -1446,15 +1460,23 @@ const LearningPathSamplePage = () => {
     }
 
     // ========== MODE: IN PROGRESS (status = 2) - Timeline View ==========
+    // Sort by positionIndex to display in correct order
+    const sortedMajors = [...majorsList].sort(
+      (a, b) => (a.positionIndex ?? 0) - (b.positionIndex ?? 0),
+    );
+
     return (
       <div className="space-y-6">
-        {majorsList.map((major, index) => {
-          const id = major.majorId ?? `major-${index}`;
+        {/* Summary header */}
+
+        {sortedMajors.map((major) => {
+          const id = major.majorId ?? `major-${major.positionIndex}`;
           const sems = getSemestersFromGroups(
             major.majorCourseGroups as ExtendedCourseGroupDto[],
           );
           const totalCourses = getTotalCourses(major);
           const isExpanded = !collapsedMajors[id];
+          const displayIndex = major.positionIndex ?? 1;
 
           return (
             <div key={id} className="relative">
@@ -1471,37 +1493,34 @@ const LearningPathSamplePage = () => {
                 {/* Header */}
                 <div className="flex items-start gap-4 mb-4">
                   <div
-                    className={`flex-shrink-0 w-14 h-14 rounded-lg flex items-center justify-center text-2xl font-black shadow-md ${index === 0 ? "bg-gradient-to-br from-[#49BBBD] to-cyan-600 text-white" : "bg-gradient-to-br from-teal-400 to-cyan-500 text-white"}`}
+                    className={`flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-2xl font-black shadow-md ${displayIndex === 1 ? "bg-gradient-to-br from-[#49BBBD] to-cyan-600 text-white" : "bg-gradient-to-br from-teal-400 to-cyan-500 text-white"}`}
                   >
-                    {index + 1}
+                    {displayIndex}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">
-                      {major.majorCode ?? major.majorId ?? "Chuyên ngành"}
-                    </h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate">
+                        {major.majorCode ?? major.majorId ?? "Chuyên ngành"}
+                      </h3>
+                    </div>
                     <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                      {totalCourses} khóa học
+                      {totalCourses} khóa học • {sems.length} kỳ học
                     </span>
+                  </div>
+                  <div
+                    className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                  >
+                    <FiChevronDown className="w-5 h-5 text-gray-400" />
                   </div>
                 </div>
 
                 {/* Reason */}
                 {major.reason && (
                   <p
-                    className={`text-sm leading-relaxed ${isExpanded ? "text-gray-700 dark:text-gray-300 mb-4" : "text-gray-600 dark:text-gray-400 line-clamp-2 mb-1"}`}
+                    className={`text-sm leading-relaxed ${isExpanded ? "text-gray-700 dark:text-gray-300" : "text-gray-600 dark:text-gray-400 line-clamp-2"}`}
                   >
                     {major.reason}
                   </p>
-                )}
-
-                {/* CTA collapsed */}
-                {!isExpanded && (
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <span className="text-[#49BBBD] dark:text-cyan-400 text-sm font-semibold">
-                      Xem chi tiết theo kỳ
-                    </span>
-                    <FiChevronDown className="w-5 h-5 text-gray-400" />
-                  </div>
                 )}
 
                 {/* Expanded content */}
@@ -1516,9 +1535,9 @@ const LearningPathSamplePage = () => {
                       return (
                         <div key={`major-${id}-sem-${sem}`} className="mb-10">
                           <div className="flex items-center mb-5">
-                            <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-lg flex items-center justify-center text-base font-bold mr-4 shadow-md">
+                            {/* <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-lg flex items-center justify-center text-base font-bold mr-4 shadow-md">
                               {sem}
-                            </div>
+                            </div> */}
                             <div>
                               <h4 className="text-xl font-bold text-gray-900 dark:text-white">
                                 Kỳ {sem}
@@ -1798,9 +1817,9 @@ const LearningPathSamplePage = () => {
 
           {/* Bottom Section - Summary */}
           <div className="p-6 bg-white dark:bg-slate-800">
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-3">
+            {/* <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-3">
               Tóm tắt kết quả học tập
-            </h3>
+            </h3> */}
             <div className="prose prose-sm max-w-none dark:prose-invert text-slate-700 dark:text-slate-300 leading-relaxed">
               {summaryFeedback ? (
                 <MarkdownBlock markdown={summaryFeedback} />
@@ -1943,7 +1962,7 @@ const LearningPathSamplePage = () => {
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             Dựa trên năng lực hiện tại của bạn, hệ thống đề xuất
-                            các môn học nền tảng sau
+                            bạn nên củng cố các môn nền tảng dưới đây
                           </p>
                         </div>
                         <span
@@ -1972,18 +1991,20 @@ const LearningPathSamplePage = () => {
                             </span>
                             <span className="text-xs text-gray-400">•</span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {internalMajors.length} chuyên ngành
+                              {isChoosingStatus
+                                ? `${internalMajors.length} chuyên ngành đề xuất`
+                                : `${internalMajors.length} chuyên ngành đã chọn`}
                             </span>
                           </div>
                           <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                             {isChoosingStatus
-                              ? "Chuyên ngành hẹp phù hợp"
+                              ? "Chuyên ngành hẹp"
                               : "Chuyên ngành hẹp"}
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             {isChoosingStatus
-                              ? "Hệ thống đề xuất các chuyên ngành phù hợp với năng lực của bạn"
-                              : "Học theo thứ tự đã sắp xếp để hiệu quả nhất"}
+                              ? "Chọn và sắp xếp thứ tự các chuyên ngành bạn muốn học"
+                              : "Học theo thứ tự đã sắp xếp để đạt hiệu quả tốt nhất"}
                           </p>
                         </div>
                         <span
@@ -1995,51 +2016,6 @@ const LearningPathSamplePage = () => {
                     </div>
                     {showInternalSection && (
                       <div className="p-6">
-                        {/* {isChoosingStatus && (
-                          <div className="mb-6 p-4 rounded-xl border border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-900/20">
-                            <p className="text-sm text-cyan-700 dark:text-cyan-300 font-medium mb-3">
-                              Chọn và sắp xếp thứ tự major ưu tiên, sau đó nhấn
-                              &quot;Xác nhận&quot;
-                            </p>
-                            <div className="flex flex-wrap items-center gap-3">
-                              <button
-                                type="button"
-                                onClick={handleConfirmMajorSelection}
-                                disabled={
-                                  chooseMajorsLoading ||
-                                  selectedMajors.every((m) => !m.majorId)
-                                }
-                                className="inline-flex items-center gap-2 rounded-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
-                              >
-                                {chooseMajorsLoading ? (
-                                  <>
-                                    <FiRefreshCw className="h-4 w-4 animate-spin" />
-                                    Đang lưu...
-                                  </>
-                                ) : (
-                                  "Xác nhận lựa chọn"
-                                )}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={resetMajorSelection}
-                                className="text-sm text-cyan-600 dark:text-cyan-400 hover:underline"
-                              >
-                                Phục hồi gợi ý
-                              </button>
-                              {chooseMajorsError && (
-                                <span className="text-sm text-red-500">
-                                  {chooseMajorsError}
-                                </span>
-                              )}
-                              {chooseMajorsSuccess && (
-                                <span className="text-sm text-emerald-500">
-                                  {chooseMajorsSuccess}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )} */}
                         {renderInternalContent(displayedInternalMajors)}
                       </div>
                     )}
