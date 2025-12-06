@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, Tabs, Tag, Button } from "antd";
+import { Card, Tabs, Tag } from "antd";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import {
@@ -686,9 +686,6 @@ function AnalysisTab({ data }: { data: typeof sampleData }) {
 function RoadmapTab() {
   const [expandedSubject, setExpandedSubject] = useState<string | null>(null);
   const [expandedMajor, setExpandedMajor] = useState<string | null>(null);
-  const [expandedSemesters, setExpandedSemesters] = useState<number[]>([
-    1, 2, 3, 4,
-  ]); // Mặc định mở tất cả
 
   // State để đóng/mở từng section
   const [sectionsOpen, setSectionsOpen] = useState({
@@ -708,46 +705,8 @@ function RoadmapTab() {
     setSectionsOpen((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const toggleSemester = (semester: number) => {
-    setExpandedSemesters((prev) =>
-      prev.includes(semester)
-        ? prev.filter((s) => s !== semester)
-        : [...prev, semester],
-    );
-  };
-
-  // Toggle chọn chuyên ngành
-  const toggleMajorSelection = (majorId: string) => {
-    setSelectedMajors((prev) =>
-      prev.includes(majorId)
-        ? prev.filter((id) => id !== majorId)
-        : [...prev, majorId],
-    );
-  };
-
-  // Drag & Drop handlers
-  const handleDragStart = (majorId: string) => {
-    setDraggedMajor(majorId);
-  };
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-  };
-
-  const handleDrop = (targetMajorId: string) => {
-    if (!draggedMajor || draggedMajor === targetMajorId) return;
-
-    setMajorOrder((prev) => {
-      const newOrder = [...prev];
-      const draggedIndex = newOrder.indexOf(draggedMajor);
-      const targetIndex = newOrder.indexOf(targetMajorId);
-
-      newOrder.splice(draggedIndex, 1);
-      newOrder.splice(targetIndex, 0, draggedMajor);
-
-      return newOrder;
-    });
-    setDraggedMajor(null);
   };
 
   const handleDragEnd = () => {
@@ -814,11 +773,6 @@ function RoadmapTab() {
     setMajorOrder(arr);
     setDraggedMajor(null);
   };
-
-  // Lấy danh sách majors theo thứ tự đã sắp xếp
-  const orderedMajors = majorOrder
-    .map((id) => sampleData.internalLearningPath.find((m) => m.majorId === id))
-    .filter(Boolean);
 
   // Đếm tổng số khóa học trong một major
   const getTotalCourses = (
@@ -933,7 +887,7 @@ function RoadmapTab() {
 
               return (
                 <div className="space-y-3">
-                  {sortedGroups.map((group, index) => {
+                  {sortedGroups.map((group) => {
                     const statusInfo = getStatusInfo(group.status);
                     const isExpanded = expandedSubject === group.subjectCode;
 

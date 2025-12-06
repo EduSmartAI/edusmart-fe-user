@@ -20,9 +20,7 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiRefreshCw,
-  FiBook,
   FiExternalLink,
-  FiStar,
 } from "react-icons/fi";
 import {
   CourseGroupDto as GeneratedCourseGroupDto,
@@ -51,15 +49,6 @@ const LEARNING_PATH_STATUS_LABEL: Record<LearningPathStatus, string> = {
   [LearningPathStatus.Completed]: "Đã hoàn thành",
   [LearningPathStatus.Closed]: "Đã đóng",
   [LearningPathStatus.Paused]: "Tạm dừng",
-};
-
-const LEARNING_PATH_STATUS_STYLE: Record<LearningPathStatus, string> = {
-  [LearningPathStatus.Generating]: "bg-orange-100 text-orange-700",
-  [LearningPathStatus.Choosing]: "bg-cyan-100 text-cyan-700",
-  [LearningPathStatus.InProgress]: "bg-blue-100 text-blue-700",
-  [LearningPathStatus.Completed]: "bg-emerald-100 text-emerald-700",
-  [LearningPathStatus.Closed]: "bg-slate-100 text-slate-700",
-  [LearningPathStatus.Paused]: "bg-amber-100 text-amber-700",
 };
 
 interface SubjectInsight {
@@ -250,83 +239,6 @@ const ExternalTrackSkeleton = () => (
   </div>
 );
 
-const SUBJECT_STATUS_META = {
-  0: {
-    label: "Ưu tiên học",
-    badgeClass:
-      "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-50",
-    toneClass:
-      "border-orange-200 bg-orange-50/60 dark:border-orange-500/30 dark:bg-orange-500/5",
-    review: "Môn nền tảng, nên bắt đầu sớm để giữ tiến độ chung.",
-  },
-  1: {
-    label: "Đang học",
-    badgeClass:
-      "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-50",
-    toneClass:
-      "border-blue-200 bg-blue-50/60 dark:border-blue-500/30 dark:bg-blue-500/5",
-    review: "Bạn đang theo học, tiếp tục duy trì nhịp độ hiện tại.",
-  },
-  2: {
-    label: "Đã vững",
-    badgeClass:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-50",
-    toneClass:
-      "border-emerald-200 bg-emerald-50/60 dark:border-emerald-500/30 dark:bg-emerald-500/5",
-    review: "Đã hoàn thành tốt, có thể chuyển sang nội dung nâng cao.",
-  },
-  3: {
-    label: "Nâng cao",
-    badgeClass:
-      "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-50",
-    toneClass:
-      "border-teal-200 bg-teal-50/60 dark:border-teal-500/30 dark:bg-teal-500/5",
-    review: "Đủ nền tảng để thử các khóa chuyên sâu hoặc luyện thi.",
-  },
-} as const;
-
-const getStatusMeta = (status?: number) =>
-  SUBJECT_STATUS_META[(status as keyof typeof SUBJECT_STATUS_META) ?? 0] ??
-  SUBJECT_STATUS_META[0];
-
-const toCourseCardProps = (course: CourseItemDto) => {
-  const descriptionSource =
-    course.shortDescription ||
-    course.description?.replace(/<[^>]+>/g, " ") ||
-    "";
-  const descriptionLines = descriptionSource
-    .split(/[.•]| - |:/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .slice(0, 3);
-
-  return {
-    id: course.courseId ?? crypto.randomUUID(),
-    imageUrl:
-      course.courseImageUrl ??
-      "https://via.placeholder.com/600x400?text=EduSmart",
-    title: course.title ?? "Khoá học",
-    descriptionLines,
-    instructor: course.teacherName ?? "",
-    price: course.price ?? undefined,
-    dealPrice: course.dealPrice ?? undefined,
-    isEnrolled: Boolean(course.isEnrolled),
-    isWishList: Boolean(course.isWishList),
-    routerPush: `/courses/${course.slug ?? course.courseId ?? ""}`,
-    tagNames: course.tagNames ?? [],
-    level: course.level ?? undefined,
-    isHorizontal: true,
-  };
-};
-
-const getSemesterNarrative = (groups: ExtendedCourseGroupDto[]) => {
-  const priority = groups.find((g) => (g.status ?? 0) === 0);
-  if (priority) {
-    return `Ưu tiên củng cố ${priority.subjectCode} và hoàn thiện các môn còn lại.`;
-  }
-  return "Duy trì nhịp học ổn định ở toàn bộ môn trong kỳ này.";
-};
-
 const normalizeSemesterPosition = (value?: number | null, fallback = 0) =>
   typeof value === "number" && Number.isFinite(value) ? value : fallback;
 
@@ -375,23 +287,6 @@ const splitGroupBySemester = (
   return entries;
 };
 
-const mapGroupsBySemester = (groups?: ExtendedCourseGroupDto[]) => {
-  if (!groups) return [];
-  const map = new Map<number, ExtendedCourseGroupDto[]>();
-
-  groups.forEach((group) => {
-    splitGroupBySemester(group).forEach(({ semester, group: splitted }) => {
-      const existing = map.get(semester) ?? [];
-      existing.push(splitted);
-      map.set(semester, existing);
-    });
-  });
-
-  return Array.from(map.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([semester, groups]) => ({ semester, groups }));
-};
-
 const consumeSseBuffer = (
   buffer: string,
   onMessage: (payload: string) => void,
@@ -435,22 +330,10 @@ const LearningPathSamplePage = () => {
   const [expandedBasic, setExpandedBasic] = useState<Record<string, boolean>>(
     {},
   );
-  const [expandedInternal, setExpandedInternal] = useState<
-    Record<string, boolean>
-  >({});
   const [showBasicSection, setShowBasicSection] = useState(false);
   const [showInternalSection, setShowInternalSection] = useState(false);
   const [showExternalSection, setShowExternalSection] = useState(false);
-  const [collapsedSemesters, setCollapsedSemesters] = useState<
-    Record<number, boolean>
-  >({});
   const [collapsedMajors, setCollapsedMajors] = useState<
-    Record<string, boolean>
-  >({});
-  const [collapsedMajorSemesters, setCollapsedMajorSemesters] = useState<
-    Record<string, boolean>
-  >({});
-  const [collapsedTracks, setCollapsedTracks] = useState<
     Record<string, boolean>
   >({});
   // State cho việc chọn và sắp xếp chuyên ngành (khi status = 1)
@@ -472,7 +355,7 @@ const LearningPathSamplePage = () => {
   const habitAnalysis = learningPath?.habitAndInterestAnalysis;
   const learningAbility = learningPath?.learningAbility;
 
-  const aiProfileCards = useMemo(() => {
+  useMemo(() => {
     const source: Record<AiFieldKey, string | null | undefined> = {
       personality,
       habitAndInterestAnalysis: habitAnalysis,
@@ -673,11 +556,9 @@ const LearningPathSamplePage = () => {
 
   useEffect(() => {
     setExpandedBasic({});
-    setExpandedInternal({});
     setShowBasicSection(false);
     setShowInternalSection(false);
     setShowExternalSection(false);
-    setCollapsedSemesters({});
     // Initialize all majors as collapsed (closed) by default
     const initialCollapsedMajors: Record<string, boolean> = {};
     if (learningPath?.internalLearningPath) {
@@ -687,32 +568,11 @@ const LearningPathSamplePage = () => {
       });
     }
     setCollapsedMajors(initialCollapsedMajors);
-    setCollapsedMajorSemesters({});
-    setCollapsedTracks({});
     setSelectedMajors([]);
     setMajorOrder([]);
     setChooseMajorsError(null);
     setChooseMajorsSuccess(null);
   }, [pathId, learningPath?.internalLearningPath]);
-  const deriveSemesterMeta = (groups: ExtendedCourseGroupDto[]) => {
-    if (!groups.length) {
-      return getStatusMeta(0);
-    }
-    const minStatus = Math.min(
-      ...groups.map((group) => (group.status ?? 0) as number),
-    );
-    return getStatusMeta(minStatus);
-  };
-
-  const computeMajorProgress = (
-    timeline: Array<{ semester: number; groups: ExtendedCourseGroupDto[] }>,
-  ) => {
-    if (timeline.length === 0) return 0;
-    const completed = timeline.filter(({ groups }) =>
-      groups.every((group) => (group.status ?? 0) >= 2),
-    ).length;
-    return Math.round((completed / timeline.length) * 100);
-  };
 
   const basicSemesters = useMemo(() => {
     if (!learningPath?.basicLearningPath?.courseGroups) return [];
@@ -738,23 +598,6 @@ const LearningPathSamplePage = () => {
       ),
     [learningPath],
   );
-  const majorOptions = useMemo(
-    () =>
-      internalMajors.map((major, idx) => ({
-        key: major.majorId ?? `${major.majorCode ?? "major"}-${idx}`,
-        major,
-      })),
-    [internalMajors],
-  );
-  const majorOptionMap = useMemo(() => {
-    const map = new Map<string, InternalMajorDto>();
-    majorOptions.forEach(({ key, major }) => map.set(key, major));
-    return map;
-  }, [majorOptions]);
-  const defaultMajorIds = useMemo(
-    () => majorOptions.map((option) => option.key),
-    [majorOptions],
-  );
   const externalTracks = learningPath?.externalLearningPath ?? [];
 
   const statusLabel =
@@ -762,21 +605,9 @@ const LearningPathSamplePage = () => {
       ? (LEARNING_PATH_STATUS_LABEL[status] ?? "Không xác định")
       : "Không xác định";
 
-  const statusBadgeClass =
-    status != null
-      ? (LEARNING_PATH_STATUS_STYLE[status] ?? "bg-slate-100 text-slate-700")
-      : "bg-slate-100 text-slate-700";
-
   const isPending =
     loading || status === LearningPathStatus.Generating || false;
   const isChoosingStatus = status === LearningPathStatus.Choosing;
-
-  // Lấy danh sách majors đã chọn theo thứ tự (giống sample)
-  const orderedMajors = useMemo(() => {
-    return majorOrder
-      .map((id) => internalMajors.find((m) => m.majorId === id))
-      .filter((m): m is InternalMajorDto => Boolean(m));
-  }, [majorOrder, internalMajors]);
 
   // displayedInternalMajors: Nếu đang chọn thì hiển thị tất cả, nếu không thì hiển thị theo thứ tự đã chọn
   const displayedInternalMajors = useMemo(
@@ -870,7 +701,7 @@ const LearningPathSamplePage = () => {
       <div className="space-y-3">
         {sortedGroups.map((group) => {
           const statusInfo = getStatusInfo(group.status);
-          const key = `basic-${group.subjectCode ?? group.subjectId ?? "SUB"}`;
+          const key = `basic-${group.subjectCode ?? "SUB"}`;
           const isExpanded = Boolean(expandedBasic[key]);
           const analysisMarkdown = (group as ExtendedCourseGroupDto)
             .analysisMarkdown;
@@ -911,7 +742,7 @@ const LearningPathSamplePage = () => {
 
                 {/* Subject Name */}
                 <span className="text-sm text-gray-600 dark:text-gray-400 flex-1 min-w-0 truncate">
-                  {(group as ExtendedCourseGroupDto).subjectName ?? ""}
+                  {group.subjectCode ?? ""}
                 </span>
 
                 {/* Course count + Status */}
@@ -1841,8 +1672,8 @@ const LearningPathSamplePage = () => {
         </Card>
 
         {loading && (
-          <div className="rounded-xl border border-orange-100 bg-white px-6 py-4 text-sm text-gray-600 shadow-sm">
-            Đang tải dữ liệu lộ trình...
+          <div className="">
+            {/* Đang tải dữ liệu lộ trình... */}
           </div>
         )}
 

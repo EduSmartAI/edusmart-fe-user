@@ -12,7 +12,7 @@ import {
   Divider,
   Spin,
 } from "antd";
-import { ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowRightOutlined } from "@ant-design/icons";
 import {
   Survey1FormValues,
   SemesterOption,
@@ -197,6 +197,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
     // }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBack = () => {
     // Gửi data hiện tại trước khi back
     if (onBack) {
