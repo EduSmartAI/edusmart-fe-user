@@ -11,6 +11,7 @@ import {
   UserOutlined,
   RobotOutlined,
   ShoppingOutlined,
+  BookOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Menu, Layout, theme } from "antd";
@@ -55,6 +56,13 @@ const navItems: NavMenuItem[] = [
     <PieChartOutlined />,
     undefined,
     "/dashboard/learning-paths",
+  ),
+  getItem(
+    "Khóa học của tôi",
+    "dashboard-my-courses",
+    <BookOutlined />,
+    undefined,
+    "/dashboard/my-courses",
   ),
   getItem(
     "Hồ sơ của tôi",

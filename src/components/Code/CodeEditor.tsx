@@ -567,7 +567,9 @@ export default function CodeEditor({
       }
     } catch (e) {
       console.error("❌ loadUserTemplateCode error:", e);
-      messageApi.warning("Không tải được template code, dùng snippet mặc định.");
+      messageApi.warning(
+        "Không tải được template code, dùng snippet mặc định.",
+      );
     } finally {
       setTemplateLoading(false);
     }

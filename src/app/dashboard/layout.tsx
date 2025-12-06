@@ -22,7 +22,9 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   const isDynamicRoute = Object.keys(params).length > 0;
-  const id = isDynamicRoute ? params["id"] || params["slug"] || params["orderId"] : "";
+  const id = isDynamicRoute
+    ? params["id"] || params["slug"] || params["orderId"]
+    : "";
 
   const DASHBOARD_ROUTES = [
     {
@@ -37,9 +39,13 @@ export default function DashboardLayout({
       ],
     },
     {
+      path: `/dashboard/my-courses`,
+      breadcrumbTitle: [{ title: "Khóa Học Của Tôi" }],
+    },
+    {
       path: `/dashboard/my-courses/${id}/performance`,
       breadcrumbTitle: [
-        { title: "Tất Cả Lộ Trình" },
+        { title: "Khóa Học Của Tôi" },
         { title: "Hiệu Suất Học Tập" },
       ],
     },

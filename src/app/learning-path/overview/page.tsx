@@ -15,10 +15,12 @@ import { SiQuizlet } from "react-icons/si";
 import { FaMapLocationDot } from "react-icons/fa6";
 import { GiArtificialIntelligence } from "react-icons/gi";
 import { MdMoreTime } from "react-icons/md";
-import { Button, Collapse, message } from "antd";
+import { Button, Collapse } from "antd";
 import { learningPathProgress } from "EduSmart/components/LearningPath";
 import { useSessionAuthStore } from "EduSmart/stores/Auth/SessionAuthStore";
 import { useSurvey } from "EduSmart/hooks/survey";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
+import { clearLearningPathData } from "EduSmart/utils/learningPathCleanup";
 
 const steps = [
   {
@@ -153,7 +155,9 @@ export default function LearningPathOverview() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const { session, fetchSession } = useSessionAuthStore();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const survey = useSurvey();
+  const messageApi = useNotification();
 
   useEffect(() => {
     // Fetch session to check authentication
@@ -166,7 +170,7 @@ export default function LearningPathOverview() {
 
   const handleStartSurvey = () => {
     if (!session) {
-      message.warning({
+      messageApi.warning({
         content:
           "Bạn cần đăng nhập để bắt đầu khảo sát và nhận đề xuất lộ trình học tập",
         duration: 4,
@@ -177,45 +181,17 @@ export default function LearningPathOverview() {
       return;
     }
 
-    console.log("🔄 Starting assessment flow - cleaning up previous data...");
+    // Use centralized cleanup utility
+    const cleanupResult = clearLearningPathData({
+      clearStores: true,
+      clearLocalStorage: true,
+      clearSessionStorage: true,
+      verbose: true,
+    });
 
-    try {
-      // 1. Clear all learning path progress
-      learningPathProgress.clearProgress();
-      console.log("✅ Learning path progress cleared");
-
-      // 2. Reset survey store (clears survey1Data, survey2Data, survey3Data, etc.)
-      survey.resetSurvey();
-      console.log("✅ Survey store reset");
-
-      // 3. Clear quiz data from localStorage
-      localStorage.removeItem("quiz-store");
-      console.log("✅ Quiz store cleared");
-
-      // 4. Clear learning path progress keys
-      const learningPathKeys = [
-        "learning_path_current_step",
-        "learning_path_completed_steps",
-        "survey_completed",
-        "quiz_completed",
-        "learning_path_id",
-      ];
-      learningPathKeys.forEach((key) => {
-        localStorage.removeItem(key);
-      });
-      console.log("✅ Learning path keys cleared");
-
-      // 5. Clear survey-related localStorage keys
-      localStorage.removeItem("survey_data");
-      localStorage.removeItem("survey_step");
-      localStorage.removeItem("survey-storage");
-      console.log("✅ Survey localStorage keys cleared");
-
-      console.log(
-        "✅ All previous data cleaned up successfully - ready for fresh assessment",
-      );
-    } catch (error) {
-      console.error("Error during cleanup:", error);
+    if (!cleanupResult.success) {
+      console.error("Some cleanup operations failed:", cleanupResult.errors);
+      // Continue anyway - partial cleanup is better than none
     }
 
     // Navigate to survey assessment page
@@ -271,32 +247,6 @@ export default function LearningPathOverview() {
                       Khám phá ngay
                     </Button>
                   </div>
-                  {/* Show continue button if has existing progress */}
-                  {/* {hasExistingProgress && (
-                    <div className="mb-4 p-4 bg-teal-50 dark:bg-teal-900/20 rounded-xl border border-teal-200 dark:border-teal-800">
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="flex items-start gap-3">
-                          <FiCheckCircle className="w-5 h-5 text-[#49BBBD] dark:text-teal-400 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="font-semibold text-teal-900 dark:text-teal-300 mb-1">
-                              Bạn có tiến độ chưa hoàn thành
-                            </p>
-                            <p className="text-sm text-teal-700 dark:text-teal-400">
-                              Tiếp tục từ nơi bạn đã dừng lại hoặc bắt đầu lại
-                              từ đầu
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          type="default"
-                          onClick={handleContinue}
-                          className="whitespace-nowrap"
-                        >
-                          Tiếp tục
-                        </Button>
-                      </div>
-                    </div>
-                  )} */}
                 </div>
               </div>
             </div>

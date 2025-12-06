@@ -429,7 +429,7 @@ export default function CoursePerformanceClient({
                 <div className="bg-gray-50 dark:bg-gray-800/30 rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                      Bài kiểm tra đã làm
+                      Bài kiểm tra
                     </div>
                   </div>
                   <div className="text-xl font-bold text-gray-900 dark:text-white">
@@ -710,7 +710,7 @@ export default function CoursePerformanceClient({
 
                             <div className="bg-gray-50 dark:bg-gray-800/30 rounded-lg p-3">
                               <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                Bài kiểm tra đã làm
+                                Bài kiểm tra
                               </div>
                               <div className="text-lg font-bold text-gray-900 dark:text-white">
                                 {lesson.lessonQuizCount}
