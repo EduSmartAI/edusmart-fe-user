@@ -1937,19 +1937,21 @@ const LearningPathSamplePage = () => {
               children: (
                 <div className="space-y-5">
                   {/* Section 1: Lộ trình khởi đầu */}
-                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
                     <div
-                      className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      className="px-6 py-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       onClick={() => setShowBasicSection((prev) => !prev)}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-xs font-semibold text-orange-500 dark:text-orange-400 uppercase tracking-wide">
                               Phần 1
                             </span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-gray-300 dark:text-gray-600">
+                              •
+                            </span>
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                               {basicSemesters.reduce(
                                 (acc, s) => acc + s.groups.length,
                                 0,
@@ -1957,7 +1959,7 @@ const LearningPathSamplePage = () => {
                               môn học
                             </span>
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                             Lộ trình khởi đầu
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -1965,11 +1967,9 @@ const LearningPathSamplePage = () => {
                             bạn nên củng cố các môn nền tảng dưới đây
                           </p>
                         </div>
-                        <span
-                          className={`text-gray-400 text-lg transition-transform duration-200 ${showBasicSection ? "rotate-180" : ""}`}
-                        >
-                          ▼
-                        </span>
+                        <FiChevronDown
+                          className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${showBasicSection ? "rotate-180" : ""}`}
+                        />
                       </div>
                     </div>
                     {showBasicSection && (
@@ -1978,28 +1978,28 @@ const LearningPathSamplePage = () => {
                   </section>
 
                   {/* Section 2: Chuyên ngành hẹp */}
-                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
                     <div
-                      className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      className="px-6 py-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       onClick={() => setShowInternalSection((prev) => !prev)}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-semibold text-[#49BBBD] dark:text-cyan-400 uppercase tracking-wider">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-xs font-semibold text-[#49BBBD] dark:text-cyan-400 uppercase tracking-wide">
                               Phần 2
                             </span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-gray-300 dark:text-gray-600">
+                              •
+                            </span>
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                               {isChoosingStatus
                                 ? `${internalMajors.length} chuyên ngành đề xuất`
                                 : `${internalMajors.length} chuyên ngành đã chọn`}
                             </span>
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                            {isChoosingStatus
-                              ? "Chuyên ngành hẹp"
-                              : "Chuyên ngành hẹp"}
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                            Chuyên ngành hẹp
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             {isChoosingStatus
@@ -2007,11 +2007,9 @@ const LearningPathSamplePage = () => {
                               : "Học theo thứ tự đã sắp xếp để đạt hiệu quả tốt nhất"}
                           </p>
                         </div>
-                        <span
-                          className={`text-gray-400 text-lg transition-transform duration-200 ${showInternalSection ? "rotate-180" : ""}`}
-                        >
-                          ▼
-                        </span>
+                        <FiChevronDown
+                          className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${showInternalSection ? "rotate-180" : ""}`}
+                        />
                       </div>
                     </div>
                     {showInternalSection && (
@@ -2022,23 +2020,25 @@ const LearningPathSamplePage = () => {
                   </section>
 
                   {/* Section 3: Khóa học bên ngoài */}
-                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden">
+                  <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
                     <div
-                      className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      className="px-6 py-5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                       onClick={() => setShowExternalSection((prev) => !prev)}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-xs font-semibold text-purple-500 dark:text-purple-400 uppercase tracking-wide">
                               Phần 3
                             </span>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-gray-300 dark:text-gray-600">
+                              •
+                            </span>
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                               {externalTracks.length} track
                             </span>
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                             Đề xuất khóa học bên ngoài
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -2046,11 +2046,9 @@ const LearningPathSamplePage = () => {
                             hổng kỹ năng
                           </p>
                         </div>
-                        <span
-                          className={`text-gray-400 text-lg transition-transform duration-200 ${showExternalSection ? "rotate-180" : ""}`}
-                        >
-                          ▼
-                        </span>
+                        <FiChevronDown
+                          className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${showExternalSection ? "rotate-180" : ""}`}
+                        />
                       </div>
                     </div>
                     {showExternalSection && (
