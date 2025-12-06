@@ -8,7 +8,8 @@ import React, {
   useState,
 } from "react";
 import { useParams } from "next/navigation";
-import { Card, Tabs, Tag } from "antd";
+import { Card, Tabs, Tag, Modal, Table, Spin, Button } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
 import { learningPathsChooseMajorUpdate } from "EduSmart/app/apiServer/learningPathAction";
@@ -21,7 +22,10 @@ import {
   FiChevronUp,
   FiRefreshCw,
   FiExternalLink,
+  FiFileText,
 } from "react-icons/fi";
+import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
+import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
 import {
   CourseGroupDto as GeneratedCourseGroupDto,
   CourseItemDto,
@@ -350,6 +354,14 @@ const LearningPathSamplePage = () => {
     null,
   );
 
+  // Transcript modal states
+  const [hasTranscript, setHasTranscript] = useState<boolean>(false);
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+  const [transcriptData, setTranscriptData] = useState<
+    StudentTranscriptRecord[]
+  >([]);
+  const [loadingTranscript, setLoadingTranscript] = useState(false);
+
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
   const habitAnalysis = learningPath?.habitAndInterestAnalysis;
@@ -573,6 +585,104 @@ const LearningPathSamplePage = () => {
     setChooseMajorsError(null);
     setChooseMajorsSuccess(null);
   }, [pathId, learningPath?.internalLearningPath]);
+
+  // Check if student has transcript on mount
+  useEffect(() => {
+    const checkTranscript = async () => {
+      try {
+        const result = await getStudentTranscriptServer();
+        if (result.success && result.response && result.response.length > 0) {
+          setHasTranscript(true);
+        } else {
+          setHasTranscript(false);
+        }
+      } catch (error) {
+        console.error("Error checking transcript:", error);
+        setHasTranscript(false);
+      }
+    };
+    checkTranscript();
+  }, []);
+
+  // Load transcript data for preview
+  const handlePreviewTranscript = async () => {
+    try {
+      setLoadingTranscript(true);
+      setShowTranscriptModal(true);
+      const result = await getStudentTranscriptServer();
+      if (result.success && result.response) {
+        setTranscriptData(result.response);
+      }
+    } catch (error) {
+      console.error("Error loading transcript:", error);
+    } finally {
+      setLoadingTranscript(false);
+    }
+  };
+
+  // Get status tag for transcript
+  const getTranscriptStatusTag = (status: string) => {
+    const statusMap: Record<string, { color: string; label: string }> = {
+      "Not started": { color: "default", label: "Chưa bắt đầu" },
+      Passed: { color: "success", label: "Đã qua" },
+      "Not passed": { color: "error", label: "Không qua" },
+      Studying: { color: "processing", label: "Đang học" },
+    };
+    const config = statusMap[status] || { color: "default", label: status };
+    return <Tag color={config.color}>{config.label}</Tag>;
+  };
+
+  // Transcript table columns
+  const transcriptColumns: ColumnsType<StudentTranscriptRecord> = [
+    {
+      title: "STT",
+      dataIndex: "semesterNumber",
+      key: "semesterNumber",
+      width: 60,
+      align: "center",
+      render: (num: number) => <span className="font-semibold">{num}</span>,
+    },
+    {
+      title: "Mã môn",
+      dataIndex: "subjectCode",
+      key: "subjectCode",
+      width: 100,
+      render: (code: string) => (
+        <span className="font-mono font-semibold">{code}</span>
+      ),
+    },
+    {
+      title: "Tên môn học",
+      dataIndex: "subjectName",
+      key: "subjectName",
+      ellipsis: true,
+    },
+    {
+      title: "Tín chỉ",
+      dataIndex: "credit",
+      key: "credit",
+      width: 80,
+      align: "center",
+    },
+    {
+      title: "Điểm",
+      dataIndex: "grade",
+      key: "grade",
+      width: 80,
+      align: "center",
+      render: (grade: number) => (
+        <Tag color="blue">{grade > 0 ? grade.toFixed(1) : "-"}</Tag>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 120,
+      align: "center",
+      render: (status: string) => getTranscriptStatusTag(status),
+    },
+  ];
 
   const basicSemesters = useMemo(() => {
     if (!learningPath?.basicLearningPath?.courseGroups) return [];
@@ -1648,9 +1758,6 @@ const LearningPathSamplePage = () => {
 
           {/* Bottom Section - Summary */}
           <div className="p-6 bg-white dark:bg-slate-800">
-            {/* <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-3">
-              Tóm tắt kết quả học tập
-            </h3> */}
             <div className="prose prose-sm max-w-none dark:prose-invert text-slate-700 dark:text-slate-300 leading-relaxed">
               {summaryFeedback ? (
                 <MarkdownBlock markdown={summaryFeedback} />
@@ -1662,6 +1769,21 @@ const LearningPathSamplePage = () => {
                   bạn...
                 </p>
               )}
+              <div className="flex items-center justify-end">
+              {/* <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+                Tóm tắt kết quả học tập
+              </h3> */}
+              {hasTranscript && (
+                <button
+                  type="button"
+                  onClick={handlePreviewTranscript}
+                  className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-[#49BBBD] hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-[#49BBBD]/30 transition-colors"
+                >
+                  <FiFileText className="w-4 h-4" />
+                  Bảng điểm
+                </button>
+              )}
+            </div>
             </div>
             {error && (
               <div className="mt-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -1672,9 +1794,7 @@ const LearningPathSamplePage = () => {
         </Card>
 
         {loading && (
-          <div className="">
-            {/* Đang tải dữ liệu lộ trình... */}
-          </div>
+          <div className="">{/* Đang tải dữ liệu lộ trình... */}</div>
         )}
 
         {/* Main Tabs */}
@@ -1892,6 +2012,49 @@ const LearningPathSamplePage = () => {
           ]}
         />
       </div>
+
+      {/* Transcript Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FiFileText className="w-5 h-5 text-[#49BBBD]" />
+            <span>Bảng điểm của bạn</span>
+          </div>
+        }
+        open={showTranscriptModal}
+        onCancel={() => setShowTranscriptModal(false)}
+        footer={[
+          <Button key="close" onClick={() => setShowTranscriptModal(false)}>
+            Đóng
+          </Button>,
+        ]}
+        width={1000}
+        centered
+      >
+        <Spin spinning={loadingTranscript}>
+          <div className="mt-4">
+            {transcriptData.length === 0 && !loadingTranscript ? (
+              <div className="text-center py-8 text-gray-500">
+                Không có dữ liệu bảng điểm
+              </div>
+            ) : (
+              <Table
+                columns={transcriptColumns}
+                dataSource={transcriptData}
+                rowKey="studentTranscriptId"
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: false,
+                  showTotal: (total) => `Tổng ${total} môn học`,
+                }}
+                scroll={{ x: 800 }}
+                size="small"
+                bordered
+              />
+            )}
+          </div>
+        </Spin>
+      </Modal>
     </div>
   );
 };
