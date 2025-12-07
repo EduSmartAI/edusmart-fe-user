@@ -12,7 +12,7 @@ import {
   Divider,
   Spin,
 } from "antd";
-import { ArrowRightOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowRightOutlined } from "@ant-design/icons";
 import {
   Survey1FormValues,
   SemesterOption,
@@ -197,6 +197,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
     // }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBack = () => {
     // Gửi data hiện tại trước khi back
     if (onBack) {
@@ -568,8 +569,8 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                 </div>
               )}
 
-              <div className="flex justify-between mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
-                <Button
+              <div className="flex justify-end mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                {/* <Button
                   type="default"
                   onClick={handleBack}
                   icon={<ArrowLeftOutlined />}
@@ -578,7 +579,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
                   className="px-6 py-3 h-auto rounded-xl border-red-200 hover:border-red-400 text-red-600 hover:text-red-700 dark:hover:text-red-400 transition-all duration-200"
                 >
                   Thoát
-                </Button>
+                </Button> */}
 
                 <Button
                   type="primary"

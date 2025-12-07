@@ -5,6 +5,7 @@ import {
   GetCourseBySlugForGuestResponse,
   GetDetailsProgressByCourseSlugForStudentResponse,
   CourseSortBy as ApiCourseSortBy,
+  InProgressCourseDto,
 } from "EduSmart/api/api-course-service";
 import { CourseSortBy as UiCourseSortBy } from "EduSmart/enum/enum";
 import apiServer from "EduSmart/lib/apiServer";
@@ -51,7 +52,7 @@ export async function GetAllCourses() {
         ].filter((line) => line.length > 0),
         instructor: "Instructor Name",
         price: courseDto.price ?? undefined,
-        dealPrice: courseDto.dealPrice ?? null, 
+        dealPrice: courseDto.dealPrice ?? null,
         // routerPush: `/courses/${courseDto.slug || courseDto.courseId}`,
         routerPush: `/course/${courseDto.courseId}`,
         tagNames: mapTagNames(courseDto.tags),
@@ -163,9 +164,7 @@ export async function fetchCourseByQueryForSlug(
   }
 }
 
-export async function fetchCourseById(
-  id: string,
-): Promise<{
+export async function fetchCourseById(id: string): Promise<{
   data: CourseDetailForGuestDto;
   modulesCount: number;
   lessonsCount: number;
@@ -194,10 +193,7 @@ export async function fetchCourseById(
   }
 }
 
-
-export async function fetchCourseBySlug(
-  slug: string,
-): Promise<{
+export async function fetchCourseBySlug(slug: string): Promise<{
   data: GetCourseBySlugForGuestResponse;
   modulesCount: number;
   lessonsCount: number;
@@ -234,17 +230,15 @@ export async function fetchCourseBySlug(
   }
 }
 
-
-export async function CheckCourseById(
-  id: string,
-): Promise<{
+export async function CheckCourseById(id: string): Promise<{
   data: boolean;
 }> {
   try {
-    const res = await apiServer.course.api.studentLessonProgressEnrollmentList(id);
+    const res =
+      await apiServer.course.api.studentLessonProgressEnrollmentList(id);
     if (res.data?.success && res.data.response === true) {
-      console.log("CheckCourseById - res:", res.data.response)
-      console.log("CheckCourseById - res:", res.data.success)
+      console.log("CheckCourseById - res:", res.data.response);
+      console.log("CheckCourseById - res:", res.data.success);
       return {
         data: res.data.response ?? {},
       };
@@ -260,16 +254,14 @@ export async function CheckCourseById(
   }
 }
 
-export async function GetStudentCourseProgressByCourseId(
-  id: string,
-): Promise<{
+export async function GetStudentCourseProgressByCourseId(id: string): Promise<{
   data: CourseDetailForStudentDto;
 }> {
   try {
     const res = await apiServer.course.api.studentLessonProgressDetail(id);
     if (res.data?.success && res.data.response) {
-      console.log("CheckCourseById - res:", res.data.response)
-      console.log("CheckCourseById - res:", res.data.success)
+      console.log("CheckCourseById - res:", res.data.response);
+      console.log("CheckCourseById - res:", res.data.success);
       return {
         data: res.data.response ?? {},
       };
@@ -293,8 +285,8 @@ export async function GetStudentCourseProgressByCourseSlug(
   try {
     const res = await apiServer.course.api.studentLessonProgressDetail2(id);
     if (res.data?.success && res.data.response) {
-      console.log("CheckCourseById - res:", res.data.response)
-      console.log("CheckCourseById - res:", res.data.success)
+      console.log("CheckCourseById - res:", res.data.response);
+      console.log("CheckCourseById - res:", res.data.success);
       return {
         data: res.data ?? {},
       };
@@ -318,16 +310,19 @@ export async function GetStudentCourseProgressByCourseSlug(
 export async function fetchModulePerformance(courseId: string) {
   try {
     console.log("fetchModulePerformance - courseId:", courseId);
-    const res = await apiServer.student.api.studentDashboardsGetModuleDashboardProcessList({ CourseId: courseId });
+    const res =
+      await apiServer.student.api.studentDashboardsGetModuleDashboardProcessList(
+        { CourseId: courseId },
+      );
     console.log("fetchModulePerformance - res:", res);
-    
+
     if (res.data?.success && res.data.response) {
       return {
         success: true,
         data: res.data.response,
       };
     }
-    
+
     return {
       success: false,
       data: null,
@@ -351,16 +346,19 @@ export async function fetchModulePerformance(courseId: string) {
 export async function fetchLessonPerformance(courseId: string) {
   try {
     console.log("fetchLessonPerformance - courseId:", courseId);
-    const res = await apiServer.student.api.studentDashboardsGetLessonDashboardProcessList({ CourseId: courseId });
+    const res =
+      await apiServer.student.api.studentDashboardsGetLessonDashboardProcessList(
+        { CourseId: courseId },
+      );
     console.log("fetchLessonPerformance - res:", res);
-    
+
     if (res.data?.success && res.data.response) {
       return {
         success: true,
         data: res.data.response,
       };
     }
-    
+
     return {
       success: false,
       data: null,
@@ -384,13 +382,13 @@ export async function fetchLessonPerformance(courseId: string) {
 export async function fetchAllCoursePerformance(courseId: string) {
   try {
     console.log("fetchAllCoursePerformance - courseId:", courseId);
-    
+
     // Call both APIs in parallel
     const [modulePerf, lessonPerf] = await Promise.all([
       fetchModulePerformance(courseId),
       fetchLessonPerformance(courseId),
     ]);
-    
+
     return {
       success: modulePerf.success && lessonPerf.success,
       modulePerformance: modulePerf.data,
@@ -419,16 +417,19 @@ export async function fetchAllCoursePerformance(courseId: string) {
 export async function fetchOverallPerformance(courseId: string) {
   try {
     console.log("fetchOverallPerformance - courseId:", courseId);
-    const res = await apiServer.student.api.studentDashboardsGetOverviewCourseDashboardProcessList({ CourseId: courseId });
+    const res =
+      await apiServer.student.api.studentDashboardsGetOverviewCourseDashboardProcessList(
+        { CourseId: courseId },
+      );
     console.log("fetchOverallPerformance - res:", res);
-    
+
     if (res.data?.success && res.data.response) {
       return {
         success: true,
         data: res.data.response,
       };
     }
-    
+
     return {
       success: false,
       data: null,
@@ -452,9 +453,12 @@ export async function fetchOverallPerformance(courseId: string) {
 export async function fetchImprovementContent(improvementId: string) {
   try {
     console.log("fetchImprovementContent - improvementId:", improvementId);
-    const res = await apiServer.student.api.studentDashboardsGenAndInsertImprovementByAiCreate({
-      ImprovementId: improvementId,
-    });
+    const res =
+      await apiServer.student.api.studentDashboardsGenAndInsertImprovementByAiCreate(
+        {
+          ImprovementId: improvementId,
+        },
+      );
     console.log("fetchImprovementContent - res:", res);
 
     if (res.data?.success && res.data.response) {
@@ -479,3 +483,46 @@ export async function fetchImprovementContent(improvementId: string) {
   }
 }
 
+// ============================================================================
+// MY COURSES (In Progress Courses)
+// ============================================================================
+
+export interface FetchMyCoursesResult {
+  success: boolean;
+  data: InProgressCourseDto[];
+  error?: string;
+}
+
+/**
+ * Fetch in-progress courses for the current user
+ * @returns List of in-progress courses
+ */
+export async function fetchMyCourses(): Promise<FetchMyCoursesResult> {
+  try {
+    const res =
+      await apiServer.course.api.v1CoursesGetInProgressCourseByStudentIdList();
+
+    if (res.data?.success && res.data.response) {
+      return {
+        success: true,
+        data: res.data.response,
+      };
+    }
+
+    return {
+      success: false,
+      data: [],
+      error: res.data?.message || "Không thể tải danh sách khóa học.",
+    };
+  } catch (error) {
+    console.error("fetchMyCourses error:", error);
+    return {
+      success: false,
+      data: [],
+      error:
+        error instanceof Error
+          ? error.message
+          : "Đã xảy ra lỗi khi tải danh sách khóa học.",
+    };
+  }
+}
