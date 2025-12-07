@@ -1534,6 +1534,10 @@
           "format": "int32",
           "type": "integer"
         },
+        "semesterPosition": {
+          "format": "int32",
+          "type": "integer"
+        },
         "analysisMarkdown": {
           "type": "string"
         },
@@ -2220,6 +2224,12 @@
         "learningAbility": {
           "type": "string"
         },
+        "praticalAbilityFeedbacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PraticalAbilityFeedback"
+          }
+        },
         "basicLearningPath": {
           "$ref": "#/definitions/BasicLearningPathDto"
         },
@@ -2788,6 +2798,12 @@
         },
         "learningBehavior": {
           "$ref": "#/definitions/LearningBehaviorSection"
+        },
+        "suggestedCourses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SuggestedCourseDetailsDto"
+          }
         }
       },
       "additionalProperties": false
@@ -2812,6 +2828,15 @@
           "type": "integer"
         },
         "analysis": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PraticalAbilityFeedback": {
+      "type": "object",
+      "properties": {
+        "analysisMarkDown": {
           "type": "string"
         }
       },
@@ -3268,6 +3293,47 @@
         },
         "createdAt": {
           "format": "date-time",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SuggestedCourseDetailsDto": {
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "shortDescription": {
+          "type": "string"
+        },
+        "courseImageUrl": {
+          "type": "string"
+        },
+        "level": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "price": {
+          "format": "double",
+          "type": "number"
+        },
+        "dealPrice": {
+          "format": "double",
+          "type": "number"
+        },
+        "teacherId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "teacherName": {
+          "type": "string"
+        },
+        "subjectCode": {
           "type": "string"
         }
       },

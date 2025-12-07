@@ -67,6 +67,37 @@ export interface DetailError {
   errorMessage?: string;
 }
 
+export interface ForgotPasswordCommand {
+  /** @minLength 1 */
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface ResetPasswordCommand {
+  /** @minLength 1 */
+  key: string;
+  /**
+   * @minLength 6
+   * @maxLength 100
+   */
+  newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
 export interface TokenVerifyResponse {
   success?: boolean;
   messageId?: string;
@@ -82,6 +113,26 @@ export interface TokenVerifyResponseEntity {
   email?: string;
   role?: string;
   avatarUrl?: string;
+}
+
+export interface UpdatePasswordCommand {
+  /** @minLength 1 */
+  currentPassword: string;
+  /**
+   * @minLength 6
+   * @maxLength 100
+   */
+  newPassword: string;
+  /** @minLength 1 */
+  confirmPassword: string;
+}
+
+export interface UpdatePasswordResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -351,6 +402,28 @@ export class Api<
      * No description
      *
      * @tags Account
+     * @name V1AccountForgotPasswordCreate
+     * @request POST:/api/v1/Account/forgot-password
+     * @secure
+     */
+    v1AccountForgotPasswordCreate: (
+      body: ForgotPasswordCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<ForgotPasswordResponse, any>({
+        path: `/api/v1/Account/forgot-password`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Account
      * @name V1AccountInsertAccountCreate
      * @request POST:/api/v1/Account/insert-account
      * @secure
@@ -361,6 +434,50 @@ export class Api<
     ) =>
       this.request<AccountInsertResponse, any>({
         path: `/api/v1/Account/insert-account`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Account
+     * @name V1AccountResetPasswordCreate
+     * @request POST:/api/v1/Account/reset-password
+     * @secure
+     */
+    v1AccountResetPasswordCreate: (
+      body: ResetPasswordCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<ResetPasswordResponse, any>({
+        path: `/api/v1/Account/reset-password`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Account
+     * @name V1AccountUpdatePasswordCreate
+     * @request POST:/api/v1/Account/update-password
+     * @secure
+     */
+    v1AccountUpdatePasswordCreate: (
+      body: UpdatePasswordCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdatePasswordResponse, any>({
+        path: `/api/v1/Account/update-password`,
         method: "POST",
         body: body,
         secure: true,

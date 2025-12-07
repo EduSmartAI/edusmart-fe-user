@@ -326,6 +326,40 @@
         }
       }
     },
+    "/api/v1/AiRecommend/subject-course-match": {
+      "post": {
+        "tags": [
+          "AiRecommend"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AiSubjectCourseRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AiSubjectCourseResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/AiSummarys/feedback-course": {
       "post": {
         "tags": [
@@ -844,6 +878,55 @@
         },
         "response": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiSubjectCourseRequest": {
+      "required": [
+        "subjectCode"
+      ],
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectTitle": {
+          "type": "string"
+        },
+        "subjectDescription": {
+          "type": "string"
+        },
+        "topK": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "showSources": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiSubjectCourseResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/SubjectCourseMatchResult"
         }
       },
       "additionalProperties": false
@@ -1580,6 +1663,90 @@
         },
         "analysisMarkdown": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectCourseMatchItem": {
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "string"
+        },
+        "estimatedWeeks": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "score": {
+          "format": "double",
+          "type": "number"
+        },
+        "snippet": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectCourseMatchResult": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectTitle": {
+          "type": "string"
+        },
+        "courses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectCourseMatchItem"
+          }
+        },
+        "showSources": {
+          "type": "boolean"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectCourseSource"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectCourseSource": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "contentPreview": {
+          "type": "string"
+        },
+        "score": {
+          "format": "double",
+          "type": "number"
         }
       },
       "additionalProperties": false

@@ -483,6 +483,7 @@ export interface LearningPathSelectDto {
   habitAndInterestAnalysis?: string;
   personality?: string;
   learningAbility?: string;
+  praticalAbilityFeedbacks?: PraticalAbilityFeedback[];
   basicLearningPath?: BasicLearningPathDto;
   internalLearningPath?: InternalLearningPathDto[];
   externalLearningPath?: ExternalLearningPathDto[];
@@ -716,6 +717,7 @@ export interface OverviewCourseContract {
   aiEvaluationMarkdown?: string;
   performance?: PerformanceSection;
   learningBehavior?: LearningBehaviorSection;
+  suggestedCourses?: SuggestedCourseDetailsDto[];
 }
 
 export interface PerformanceSection {
@@ -728,6 +730,10 @@ export interface PerformanceSection {
   /** @format int32 */
   slowerCount?: number;
   analysis?: string;
+}
+
+export interface PraticalAbilityFeedback {
+  analysisMarkDown?: string;
 }
 
 export interface ProgressSection {
@@ -895,6 +901,24 @@ export interface StudentTranscriptSelectResponseEntity {
   status?: string;
   /** @format date-time */
   createdAt?: string;
+}
+
+export interface SuggestedCourseDetailsDto {
+  /** @format uuid */
+  courseId?: string;
+  title?: string;
+  shortDescription?: string;
+  courseImageUrl?: string;
+  /** @format int32 */
+  level?: number;
+  /** @format double */
+  price?: number;
+  /** @format double */
+  dealPrice?: number;
+  /** @format uuid */
+  teacherId?: string;
+  teacherName?: string;
+  subjectCode?: string;
 }
 
 export interface SuggestedCourseDto {

@@ -11,13 +11,6 @@
  */
 
 /** @format int32 */
-export enum TestType {
-  Value1 = 1,
-  Value2 = 2,
-  Value3 = 3,
-}
-
-/** @format int32 */
 export enum QuestionType {
   Value1 = 1,
   Value2 = 2,
@@ -60,6 +53,13 @@ export enum AnswerRuleUnit {
   Value2 = 2,
   Value3 = 3,
   Value4 = 4,
+}
+
+export interface AdminPracticeSolution {
+  /** @format uuid */
+  solutionId?: string;
+  language?: LanguageInfo;
+  solutionCode?: string;
 }
 
 export interface AdminPracticeTestExample {
@@ -107,6 +107,7 @@ export interface AdminPracticeTestSelectResponseEntity {
   examples?: AdminPracticeTestExample[];
   testCases?: AdminPracticeTestTestCase[];
   templates?: AdminPracticeTestTemplate[];
+  solutions?: AdminPracticeSolution[];
   /** @format date-time */
   createdAt?: string;
 }
@@ -148,43 +149,54 @@ export interface AdminPracticeTestsSelectResponseEntity {
   pageSize?: number;
 }
 
-export interface AdminQuizItem {
+export interface AdminSelectAnswerDetailResponse {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
+  isCorrect?: boolean;
+}
+
+export interface AdminSelectPlacementTestQueryResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminSelectPlacementTestQueryResponseEntity;
+}
+
+export interface AdminSelectPlacementTestQueryResponseEntity {
+  /** @format uuid */
+  testId?: string;
+  testName?: string;
+  description?: string;
+  /** @format int32 */
+  totalStudentAnswered?: number;
+  quizzes?: AdminSelectQuizDetailResponse[];
+}
+
+export interface AdminSelectQuestionDetailResponse {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  /** @format int32 */
+  questionType?: number;
+  questionTypeName?: string;
+  /** @format int32 */
+  difficultyLevel?: number;
+  answers?: AdminSelectAnswerDetailResponse[];
+}
+
+export interface AdminSelectQuizDetailResponse {
   /** @format uuid */
   quizId?: string;
-  /** @format int32 */
-  quizType?: number;
-  quizTypeName?: string;
   title?: string;
   description?: string;
   /** @format uuid */
   subjectCode?: string;
   subjectCodeName?: string;
-  surveyCode?: string;
   /** @format int32 */
   totalQuestions?: number;
-  /** @format int32 */
-  totalStudentsTaken?: number;
-  isActive?: boolean;
-  /** @format date-time */
-  createdAt?: string;
-}
-
-export interface AdminQuizzesSelectResponse {
-  success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: AdminQuizzesSelectResponseEntity;
-}
-
-export interface AdminQuizzesSelectResponseEntity {
-  quizzes?: AdminQuizItem[];
-  /** @format int32 */
-  totalCount?: number;
-  /** @format int32 */
-  pageNumber?: number;
-  /** @format int32 */
-  pageSize?: number;
+  questions?: AdminSelectQuestionDetailResponse[];
 }
 
 export interface AdminStudentSurveyItem {
@@ -204,6 +216,31 @@ export interface AdminStudentSurveyItem {
   totalAnswers?: number;
   /** @format date-time */
   createdAt?: string;
+}
+
+export interface AdminStudentSurveySelectDetailResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminStudentSurveySelectDetailResponseEntity;
+}
+
+export interface AdminStudentSurveySelectDetailResponseEntity {
+  /** @format uuid */
+  studentQuizId?: string;
+  /** @format uuid */
+  studentId?: string;
+  studentName?: string;
+  studentEmail?: string;
+  /** @format uuid */
+  surveyId?: string;
+  surveyTitle?: string;
+  surveyDescription?: string;
+  surveyCode?: string;
+  /** @format date-time */
+  createdAt?: string;
+  questionResults?: SurveyQuestionResultResponseEntity[];
 }
 
 export interface AdminStudentSurveysSelectResponse {
@@ -276,6 +313,50 @@ export interface AdminStudentTestsSelectResponseEntity {
   pageSize?: number;
 }
 
+export interface AdminSurveyAnswerDetailResponse {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
+  selectedByStudent?: boolean;
+}
+
+export interface AdminSurveyItem {
+  /** @format uuid */
+  surveyId?: string;
+  /** @format int32 */
+  surveyType?: number;
+  surveyQuizSetting?: SurveyQuizSettingDto;
+  questions?: QuestionDto[];
+  /** @format int32 */
+  totalQuestions?: number;
+  /** @format int32 */
+  totalStudentsTaken?: number;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+}
+
+export interface AdminSurveysSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: AdminSurveysSelectResponseEntity;
+}
+
+export interface AdminSurveysSelectResponseEntity {
+  surveys?: AdminSurveyItem[];
+  /** @format int32 */
+  totalCount?: number;
+  /** @format int32 */
+  pageNumber?: number;
+  /** @format int32 */
+  pageSize?: number;
+}
+
 export interface AnswerAddRequest {
   /** @minLength 1 */
   answerText: string;
@@ -286,6 +367,19 @@ export interface AnswerDetailResponse {
   /** @format uuid */
   answerId?: string;
   answerText?: string;
+}
+
+export interface AnswerDto {
+  /** @format uuid */
+  answerId?: string;
+  answerText?: string;
+  isCorrect?: boolean;
+}
+
+export interface AnswerInsertDto {
+  /** @minLength 1 */
+  answerText: string;
+  isCorrect?: boolean;
 }
 
 export interface AnswerRuleRequest {
@@ -308,12 +402,6 @@ export interface AnswerSurveySelects {
 export interface AnswerUpdateRequest {
   /** @format uuid */
   answerId?: string;
-  /** @minLength 1 */
-  answerText: string;
-  isCorrect: boolean;
-}
-
-export interface Answers {
   /** @minLength 1 */
   answerText: string;
   isCorrect: boolean;
@@ -372,6 +460,12 @@ export interface InsertLearningPathWithPreviousSurveyAndTranscriptResponse {
 export interface InsertLearningPathWithPreviousSurveyAndTranscriptResponseEntity {
   /** @format uuid */
   learningPathId?: string;
+}
+
+export interface LanguageInfo {
+  /** @format int32 */
+  languageId?: number;
+  languageName?: string;
 }
 
 export interface LearningGoal {
@@ -834,12 +928,36 @@ export interface QuestionDetailResponse {
   answers?: AnswerDetailResponse[];
 }
 
+export interface QuestionDto {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  explanation?: string;
+  /** @format int32 */
+  questionType?: number;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string;
+  answers?: AnswerDto[];
+}
+
 export interface QuestionInsertCommand {
   /** @format uuid */
   quizId?: string;
   questionText?: string;
   explanation?: string;
   answers?: InsertAnswers[];
+}
+
+export interface QuestionInsertDto {
+  /** @minLength 1 */
+  questionText: string;
+  questionType: QuestionType;
+  /** @format int32 */
+  difficultyLevel?: number;
+  /** @minItems 1 */
+  answers: AnswerInsertDto[];
 }
 
 export interface QuestionInsertResponse {
@@ -883,17 +1001,6 @@ export interface QuestionUpdateResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: string;
-}
-
-export interface Questions {
-  /** @minLength 1 */
-  questionText: string;
-  /** @format int32 */
-  difficultyLevel: number;
-  /** @format int32 */
-  questionType?: number;
-  explanation?: string;
-  answers: Answers[];
 }
 
 export interface QuestionsCourseResultSelectResponseEntity {
@@ -1063,6 +1170,16 @@ export interface QuizCourseUpdateResponse {
   response?: string;
 }
 
+export interface QuizInsertDto {
+  /** @format uuid */
+  subjectCode: string;
+  /** @minLength 1 */
+  title: string;
+  description?: string;
+  /** @minItems 1 */
+  questions: QuestionInsertDto[];
+}
+
 export interface QuizResultSelectResponseEntity {
   /** @format uuid */
   quizId?: string;
@@ -1122,16 +1239,6 @@ export interface QuizzDetailResponse {
   /** @format int32 */
   totalQuestions?: number;
   questions?: QuestionDetailResponse[];
-}
-
-export interface Quizzes {
-  /** @minLength 1 */
-  title: string;
-  /** @minLength 1 */
-  description: string;
-  /** @format uuid */
-  subjectCode: string;
-  questions: Questions[];
 }
 
 export interface SemesterSelectsEventResponse {
@@ -1461,6 +1568,24 @@ export interface SurveyQuestionRequest {
   answers: SurveyAnswerRequest[];
 }
 
+export interface SurveyQuestionResultResponseEntity {
+  /** @format uuid */
+  questionId?: string;
+  questionText?: string;
+  /** @format int32 */
+  questionType?: number;
+  answers?: AdminSurveyAnswerDetailResponse[];
+}
+
+export interface SurveyQuizSettingDto {
+  /** @format int32 */
+  surveyTypeId?: number;
+  surveyTypeName?: string;
+  surveyCode?: string;
+  title?: string;
+  description?: string;
+}
+
 export interface SurveySelectsResponse {
   success?: boolean;
   messageId?: string;
@@ -1519,15 +1644,63 @@ export interface TestCaseExecutionResult {
   memory?: number;
 }
 
-export interface TestInsertCommand {
-  /** @minLength 1 */
-  testName: string;
-  /** @minLength 1 */
-  description: string;
-  quizzes: Quizzes[];
+export interface TestQuizDeleteCommand {
+  /** @format uuid */
+  testId: string;
+  /** @format uuid */
+  quizId: string;
 }
 
-export interface TestInsertResponse {
+export interface TestQuizDeleteResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface TestQuizInsertCommand {
+  /** @format uuid */
+  testId: string;
+  /** @minItems 1 */
+  quizzes: QuizInsertDto[];
+}
+
+export interface TestQuizInsertResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface TestQuizQuestionsDeleteCommand {
+  /** @format uuid */
+  testId: string;
+  /** @format uuid */
+  quizId: string;
+  /** @minItems 1 */
+  questionIds: string[];
+}
+
+export interface TestQuizQuestionsDeleteResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface TestQuizQuestionsInsertCommand {
+  /** @format uuid */
+  testId: string;
+  /** @format uuid */
+  quizId: string;
+  /** @minItems 1 */
+  questions: QuestionInsertDto[];
+}
+
+export interface TestQuizQuestionsInsertResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
@@ -1955,20 +2128,43 @@ export class Api<
       }),
 
     /**
-     * @description Cần cấp quyền Admin cho API
+     * @description Thêm một hoặc nhiều quiz vào bài test đã tồn tại. Cần cấp quyền Admin cho API
      *
      * @tags Admin
-     * @name V1AdminInsertTestCreate
-     * @summary Tạo bài kiểm tra đầu vào mới
-     * @request POST:/api/v1/Admin/InsertTest
+     * @name V1AdminInsertTestQuizCreate
+     * @summary Thêm quiz vào bài kiểm tra đầu vào
+     * @request POST:/api/v1/Admin/InsertTestQuiz
      * @secure
      */
-    v1AdminInsertTestCreate: (
-      body: TestInsertCommand,
+    v1AdminInsertTestQuizCreate: (
+      body: TestQuizInsertCommand,
       params: RequestParams = {},
     ) =>
-      this.request<TestInsertResponse, any>({
-        path: `/api/v1/Admin/InsertTest`,
+      this.request<TestQuizInsertResponse, any>({
+        path: `/api/v1/Admin/InsertTestQuiz`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Thêm một hoặc nhiều câu hỏi vào quiz trong bài test. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminInsertTestQuizQuestionsCreate
+     * @summary Thêm câu hỏi vào quiz
+     * @request POST:/api/v1/Admin/InsertTestQuizQuestions
+     * @secure
+     */
+    v1AdminInsertTestQuizQuestionsCreate: (
+      body: TestQuizQuestionsInsertCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<TestQuizQuestionsInsertResponse, any>({
+        path: `/api/v1/Admin/InsertTestQuizQuestions`,
         method: "POST",
         body: body,
         secure: true,
@@ -2259,6 +2455,24 @@ export class Api<
       }),
 
     /**
+     * @description Lấy toàn bộ thông tin chi tiết của một bài kiểm tra đầu vào cho sinh viên
+     *
+     * @tags Admin
+     * @name V1AdminSelectPlacementTestDetailList
+     * @summary Chi tiết một bài kiểm tra đầu vào
+     * @request GET:/api/v1/Admin/SelectPlacementTestDetail
+     * @secure
+     */
+    v1AdminSelectPlacementTestDetailList: (params: RequestParams = {}) =>
+      this.request<AdminSelectPlacementTestQueryResponse, any>({
+        path: `/api/v1/Admin/SelectPlacementTestDetail`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Lấy toàn bộ thông tin chi tiết bao gồm test cases, templates, examples. Cần cấp quyền Admin cho API
      *
      * @tags Admin
@@ -2313,29 +2527,23 @@ export class Api<
       }),
 
     /**
-     * @description Hỗ trợ phân trang và lọc theo QuizType, SubjectCode, SurveyCode
+     * @description Lấy toàn bộ thông tin chi tiết của một khảo sát bao gồm câu hỏi và câu trả lời của sinh viên
      *
      * @tags Admin
-     * @name V1AdminSelectQuizzesList
-     * @summary Lấy danh sách tất cả quiz/survey
-     * @request GET:/api/v1/Admin/SelectQuizzes
+     * @name V1AdminSelectStudentSurveyDetailList
+     * @summary Chi tiết một khảo sát của sinh viên
+     * @request GET:/api/v1/Admin/SelectStudentSurveyDetail
      * @secure
      */
-    v1AdminSelectQuizzesList: (
-      query?: {
-        /** @format int32 */
-        PageNumber?: number;
-        /** @format int32 */
-        PageSize?: number;
-        QuizType?: any;
+    v1AdminSelectStudentSurveyDetailList: (
+      query: {
         /** @format uuid */
-        SubjectCode?: string;
-        SurveyCode?: string;
+        StudentQuizId: string;
       },
       params: RequestParams = {},
     ) =>
-      this.request<AdminQuizzesSelectResponse, any>({
-        path: `/api/v1/Admin/SelectQuizzes`,
+      this.request<AdminStudentSurveySelectDetailResponse, any>({
+        path: `/api/v1/Admin/SelectStudentSurveyDetail`,
         method: "GET",
         query: query,
         secure: true,
@@ -2358,6 +2566,7 @@ export class Api<
         StudentId?: string;
         /** @format uuid */
         SurveyId?: string;
+        SurveyCode?: string;
         /** @format int32 */
         PageNumber?: number;
         /** @format int32 */
@@ -2423,6 +2632,37 @@ export class Api<
     ) =>
       this.request<AdminStudentTestsSelectResponse, any>({
         path: `/api/v1/Admin/SelectStudentTests`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Hỗ trợ phân trang và lọc theo SurveyTypeId, SurveyCode, tìm kiếm theo Title. Trả về thông tin chi tiết bao gồm Questions và Answers. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminSelectSurveysList
+     * @summary Lấy danh sách tất cả surveys
+     * @request GET:/api/v1/Admin/SelectSurveys
+     * @secure
+     */
+    v1AdminSelectSurveysList: (
+      query?: {
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+        /** @format int32 */
+        SurveyTypeId?: number;
+        SurveyCode?: string;
+        SearchTitle?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<AdminSurveysSelectResponse, any>({
+        path: `/api/v1/Admin/SelectSurveys`,
         method: "GET",
         query: query,
         secure: true,
@@ -2922,6 +3162,52 @@ export class Api<
     ) =>
       this.request<PracticeTestAdminDeleteResponse, any>({
         path: `/api/v1/Admin/DeletePracticeTest`,
+        method: "DELETE",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Xóa (soft delete) một quiz khỏi bài test. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminDeleteTestQuizDelete
+     * @summary Xóa quiz khỏi bài test
+     * @request DELETE:/api/v1/Admin/DeleteTestQuiz
+     * @secure
+     */
+    v1AdminDeleteTestQuizDelete: (
+      body: TestQuizDeleteCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<TestQuizDeleteResponse, any>({
+        path: `/api/v1/Admin/DeleteTestQuiz`,
+        method: "DELETE",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Xóa (soft delete) một hoặc nhiều câu hỏi khỏi quiz. Cần cấp quyền Admin cho API
+     *
+     * @tags Admin
+     * @name V1AdminDeleteTestQuizQuestionsDelete
+     * @summary Xóa nhiều câu hỏi khỏi quiz
+     * @request DELETE:/api/v1/Admin/DeleteTestQuizQuestions
+     * @secure
+     */
+    v1AdminDeleteTestQuizQuestionsDelete: (
+      body: TestQuizQuestionsDeleteCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<TestQuizQuestionsDeleteResponse, any>({
+        path: `/api/v1/Admin/DeleteTestQuizQuestions`,
         method: "DELETE",
         body: body,
         secure: true,

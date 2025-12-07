@@ -6,6 +6,40 @@
   },
   "basePath": "/auth",
   "paths": {
+    "/api/v1/Account/forgot-password": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/ForgotPasswordCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ForgotPasswordResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Account/insert-account": {
       "post": {
         "tags": [
@@ -35,6 +69,74 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/AccountInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Account/reset-password": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/ResetPasswordCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ResetPasswordResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Account/update-password": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdatePasswordCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UpdatePasswordResponse"
             }
           }
         }
@@ -235,6 +337,86 @@
       },
       "additionalProperties": false
     },
+    "ForgotPasswordCommand": {
+      "required": [
+        "email"
+      ],
+      "type": "object",
+      "properties": {
+        "email": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ForgotPasswordResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ResetPasswordCommand": {
+      "required": [
+        "key",
+        "newPassword"
+      ],
+      "type": "object",
+      "properties": {
+        "key": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "newPassword": {
+          "maxLength": 100,
+          "minLength": 6,
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ResetPasswordResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "TokenVerifyResponse": {
       "type": "object",
       "properties": {
@@ -276,6 +458,54 @@
           "type": "string"
         },
         "avatarUrl": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdatePasswordCommand": {
+      "required": [
+        "confirmPassword",
+        "currentPassword",
+        "newPassword"
+      ],
+      "type": "object",
+      "properties": {
+        "currentPassword": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "newPassword": {
+          "maxLength": 100,
+          "minLength": 6,
+          "type": "string"
+        },
+        "confirmPassword": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdatePasswordResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
           "type": "string"
         }
       },
