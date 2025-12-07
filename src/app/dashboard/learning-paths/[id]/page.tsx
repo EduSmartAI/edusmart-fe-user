@@ -8,7 +8,17 @@ import React, {
   useState,
 } from "react";
 import { useParams } from "next/navigation";
-import { Card, Tabs, Tag, Modal, Table, Spin, Button } from "antd";
+import {
+  Card,
+  Tabs,
+  Tag,
+  Modal,
+  Table,
+  Spin,
+  Button,
+  Carousel,
+  ConfigProvider,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
@@ -23,6 +33,8 @@ import {
   FiRefreshCw,
   FiExternalLink,
   FiFileText,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
@@ -62,6 +74,10 @@ interface SubjectInsight {
   reasons?: string[];
 }
 
+interface PraticalAbilityFeedback {
+  analysisMarkDown?: string;
+}
+
 type ExtendedCourseGroupDto = GeneratedCourseGroupDto & {
   insight?: SubjectInsight;
   courses?: CourseItemDto[];
@@ -82,6 +98,7 @@ type LearningPathDto = Omit<
     }
   >;
   externalLearningPath?: ExternalLearningPathDto[];
+  praticalAbilityFeedbacks?: PraticalAbilityFeedback[];
 };
 
 type InternalMajorDto = NonNullable<
@@ -366,6 +383,7 @@ const LearningPathSamplePage = () => {
   const personality = learningPath?.personality;
   const habitAnalysis = learningPath?.habitAndInterestAnalysis;
   const learningAbility = learningPath?.learningAbility;
+  const praticalAbilityFeedbacks = learningPath?.praticalAbilityFeedbacks;
 
   useMemo(() => {
     const source: Record<AiFieldKey, string | null | undefined> = {
@@ -1807,79 +1825,275 @@ const LearningPathSamplePage = () => {
               key: "analysis",
               label: "Phân tích chung",
               children: (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Tính cách học tập */}
-                  <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
-                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
-                      <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
-                        Tính cách
-                      </span>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Tính cách học tập */}
+                    <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
+                      <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
+                        <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                          Tính cách
+                        </span>
+                      </div>
+                      <div className="p-5 flex-1">
+                        {personality ? (
+                          <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
+                            <MarkdownBlock
+                              markdown={removeMarkdownHeading(personality)}
+                            />
+                          </div>
+                        ) : isPending ? (
+                          <SkeletonParagraph lines={5} />
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                            Đang phân tích tính cách học tập của bạn...
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="p-5 flex-1">
-                      {personality ? (
-                        <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
-                          <MarkdownBlock
-                            markdown={removeMarkdownHeading(personality)}
-                          />
-                        </div>
-                      ) : isPending ? (
-                        <SkeletonParagraph lines={5} />
-                      ) : (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                          Đang phân tích tính cách học tập của bạn...
-                        </p>
-                      )}
+
+                    {/* Thói quen & sở thích học tập */}
+                    <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
+                      <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
+                        <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                          Thói quen & Sở thích
+                        </span>
+                      </div>
+                      <div className="p-5 flex-1">
+                        {habitAnalysis ? (
+                          <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
+                            <MarkdownBlock
+                              markdown={removeMarkdownHeading(habitAnalysis)}
+                            />
+                          </div>
+                        ) : isPending ? (
+                          <SkeletonParagraph lines={5} />
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                            Đang phân tích thói quen học tập của bạn...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Năng lực học tập */}
+                    <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
+                      <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
+                        <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                          Năng lực học tập
+                        </span>
+                      </div>
+                      <div className="p-5 flex-1">
+                        {learningAbility ? (
+                          <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
+                            <MarkdownBlock
+                              markdown={removeMarkdownHeading(learningAbility)}
+                            />
+                          </div>
+                        ) : isPending ? (
+                          <SkeletonParagraph lines={5} />
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                            Đang đánh giá năng lực học tập của bạn...
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Thói quen & sở thích học tập */}
-                  <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
-                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
-                      <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
-                        Thói quen & Sở thích
-                      </span>
-                    </div>
-                    <div className="p-5 flex-1">
-                      {habitAnalysis ? (
-                        <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
-                          <MarkdownBlock
-                            markdown={removeMarkdownHeading(habitAnalysis)}
-                          />
-                        </div>
-                      ) : isPending ? (
-                        <SkeletonParagraph lines={5} />
-                      ) : (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                          Đang phân tích thói quen học tập của bạn...
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  {/* Phân tích năng lực thực hành - Carousel */}
+                  {praticalAbilityFeedbacks &&
+                    praticalAbilityFeedbacks.length > 0 && (
+                      <>
+                        <style>{`
+                          /* Ẩn default arrow icon (::before pseudo-element) */
+                          .pratical-ability-carousel .slick-prev::before,
+                          .pratical-ability-carousel .slick-next::before {
+                            content: '' !important;
+                            opacity: 0 !important;
+                          }
+                          
+                          /* Style cho custom arrow buttons */
+                          .pratical-ability-carousel .slick-prev,
+                          .pratical-ability-carousel .slick-next {
+                            width: 40px !important;
+                            height: 0px !important;
+                            z-index: 10 !important;
+                          }
+                          
+                          .pratical-ability-carousel .slick-prev {
+                            left: 10px !important;
+                          }
+                          
+                          .pratical-ability-carousel .slick-next {
+                            right: 10px !important;
+                          }
+                        `}</style>
+                        <div className="mt-8">
+                          <Carousel
+                            arrows
+                            autoplay
+                            autoplaySpeed={5000}
+                            dots={{
+                              className:
+                                "!bottom-4 [&_li_button]:!bg-orange-300 [&_li.slick-active_button]:!bg-orange-600",
+                            }}
+                            className="pratical-ability-carousel"
+                            prevArrow={
+                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg hover:bg-orange-50 dark:hover:bg-slate-700 transition-colors">
+                                <FiChevronLeft className="text-orange-500 text-2xl" />
+                              </div>
+                            }
+                            nextArrow={
+                              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/90 dark:bg-slate-800/90 shadow-lg hover:bg-orange-50 dark:hover:bg-slate-700 transition-colors">
+                                <FiChevronRight className="text-orange-500 text-2xl" />
+                              </div>
+                            }
+                          >
+                            {praticalAbilityFeedbacks.map((feedback, index) => {
+                              // Tách metadata và markdown content
+                              const fullText = feedback.analysisMarkDown || "";
 
-                  {/* Năng lực học tập */}
-                  <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col">
-                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-3 border-b border-orange-100 dark:border-orange-900/50">
-                      <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
-                        Năng lực học tập
-                      </span>
-                    </div>
-                    <div className="p-5 flex-1">
-                      {learningAbility ? (
-                        <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
-                          <MarkdownBlock
-                            markdown={removeMarkdownHeading(learningAbility)}
-                          />
+                              // Tìm vị trí của "##" để tách phần metadata và markdown
+                              const markdownStartIndex = fullText.indexOf("##");
+                              let testInfo = "";
+                              let markdownContent = fullText;
+
+                              if (markdownStartIndex > 0) {
+                                // Phần trước "##" là testInfo
+                                testInfo = fullText
+                                  .substring(0, markdownStartIndex)
+                                  .trim();
+                                // Loại bỏ dấu ":" cuối cùng nếu có
+                                testInfo = testInfo
+                                  .replace(/:+\s*$/, "")
+                                  .trim();
+                                // Phần từ "##" trở đi là markdown
+                                markdownContent = fullText
+                                  .substring(markdownStartIndex)
+                                  .trim();
+                              }
+
+                              // Kiểm tra nếu là bài test PE (thực hành) - có chứa "Bài test tự luận"
+                              const isPracticalTest =
+                                testInfo
+                                  .toLowerCase()
+                                  .includes("bài test tự luận") ||
+                                testInfo.toLowerCase().includes("với độ khó");
+
+                              // Trích xuất heading ## đầu tiên (tên tiếng Việt)
+                              const headingMatch =
+                                markdownContent.match(/^##\s+([^\n]+)/);
+                              const vietnameseName = headingMatch
+                                ? headingMatch[1].trim()
+                                : null;
+
+                              // Nếu là bài test PE, lược bỏ heading ## đầu tiên (vì nó bị lặp)
+                              // Nếu là bài test TE, cũng lược bỏ heading ## (vì sẽ hiển thị trong parenthesis)
+                              if (vietnameseName) {
+                                markdownContent = markdownContent
+                                  .replace(/^##\s+[^\n]+\n/, "")
+                                  .trim();
+                              }
+
+                              // Với bài test TE, thêm tên tiếng Việt vào testInfo
+                              if (!isPracticalTest && vietnameseName) {
+                                testInfo = `${testInfo} (${vietnameseName})`;
+                              }
+
+                              // Trích xuất độ khó (Easy/Medium/Hard) nếu có
+                              const difficultyMatch = testInfo.match(
+                                /với độ khó:\s*(Easy|Medium|Hard)/i,
+                              );
+                              const difficulty = difficultyMatch
+                                ? difficultyMatch[1]
+                                : null;
+
+                              // Xác định màu cho difficulty badge
+                              const difficultyColor =
+                                difficulty === "Easy"
+                                  ? "green"
+                                  : difficulty === "Medium"
+                                    ? "orange"
+                                    : difficulty === "Hard"
+                                      ? "red"
+                                      : "default";
+
+                              return (
+                                <div
+                                  key={`pratical-feedback-${index}`}
+                                  className=""
+                                >
+                                  {/* Card giống 3 card phân tích */}
+                                  <div className="rounded-2xl border border-orange-100 dark:border-orange-900/50 bg-white dark:bg-slate-900 overflow-hidden flex flex-col shadow-sm">
+                                    {/* Header */}
+                                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 px-5 py-4 border-b border-orange-100 dark:border-orange-900/50">
+                                      <div className="flex items-start gap-3 mb-3">
+                                        {/* <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white text-sm font-bold flex-shrink-0 shadow-md">
+                                        {index + 1}
+                                      </span> */}
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                                              Bài đánh giá {index + 1} /{" "}
+                                              {praticalAbilityFeedbacks.length}
+                                            </span>
+                                            {isPracticalTest && (
+                                              <Tag
+                                                color="purple"
+                                                className="text-xs m-0"
+                                              >
+                                                Thực hành
+                                              </Tag>
+                                            )}
+                                            {!isPracticalTest && (
+                                              <Tag
+                                                color="green"
+                                                className="text-xs m-0"
+                                              >
+                                                Lý thuyết
+                                              </Tag>
+                                            )}
+                                            {/* {difficulty && (
+                                              <Tag
+                                                color={difficultyColor}
+                                                className="text-xs m-0"
+                                              >
+                                                {difficulty}
+                                              </Tag>
+                                            )} */}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      {testInfo && (
+                                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
+                                          {testInfo}
+                                        </h4>
+                                      )}
+                                    </div>
+
+                                    {/* Body */}
+                                    <div className="py-6 px-15 flex-1">
+                                      {markdownContent ? (
+                                        <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400 prose-h3:text-sm prose-h3:font-semibold prose-h3:mb-2 prose-h3:text-orange-700 dark:prose-h3:text-orange-400 prose-ul:my-2 prose-li:my-0.5 prose-li:text-sm">
+                                          <MarkdownBlock
+                                            markdown={markdownContent}
+                                          />
+                                        </div>
+                                      ) : (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                          Không có dữ liệu phân tích
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </Carousel>
                         </div>
-                      ) : isPending ? (
-                        <SkeletonParagraph lines={5} />
-                      ) : (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                          Đang đánh giá năng lực học tập của bạn...
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                      </>
+                    )}
+                </>
               ),
             },
             {
