@@ -17,7 +17,6 @@ import {
   Spin,
   Button,
   Carousel,
-  ConfigProvider,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
@@ -1999,24 +1998,6 @@ const LearningPathSamplePage = () => {
                               if (!isPracticalTest && vietnameseName) {
                                 testInfo = `${testInfo} (${vietnameseName})`;
                               }
-
-                              // Trích xuất độ khó (Easy/Medium/Hard) nếu có
-                              const difficultyMatch = testInfo.match(
-                                /với độ khó:\s*(Easy|Medium|Hard)/i,
-                              );
-                              const difficulty = difficultyMatch
-                                ? difficultyMatch[1]
-                                : null;
-
-                              // Xác định màu cho difficulty badge
-                              const difficultyColor =
-                                difficulty === "Easy"
-                                  ? "green"
-                                  : difficulty === "Medium"
-                                    ? "orange"
-                                    : difficulty === "Hard"
-                                      ? "red"
-                                      : "default";
 
                               return (
                                 <div
