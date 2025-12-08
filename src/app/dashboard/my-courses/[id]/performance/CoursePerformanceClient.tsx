@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, Tabs, Tag, Collapse, Modal, Spin, Row, Col } from "antd";
 import { MarkdownView } from "EduSmart/components/MarkDown/MarkdownView";
 import type { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 import type { OverviewCourseContract } from "EduSmart/api/api-student-service";
 import { fetchImprovementContentClient } from "EduSmart/hooks/api-client/courseApiClient";
+import CourseCard from "EduSmart/components/CourseCard/CourseCard";
+import BaseControlCarousel from "EduSmart/components/Carousel/BaseControlCarousel";
+import StreakChart from "./StreakChart";
 import {
   FiTrendingUp,
   FiActivity,
@@ -892,8 +895,66 @@ export default function CoursePerformanceClient({
     return slotMap[slot || ""] || "Chưa xác định";
   };
 
+  const formatDate = (value: string | null | undefined) => {
+    if (!value) return "—";
+    const parsed = new Date(value);
+    const year = parsed.getFullYear();
+    if (Number.isNaN(parsed.getTime()) || year < 2000) return "—";
+    return parsed.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+  };
+
+  const formatDateShort = (value: string | null | undefined) => {
+    if (!value) return "";
+    const parsed = new Date(value);
+    const year = parsed.getFullYear();
+    if (Number.isNaN(parsed.getTime()) || year < 2000) return "";
+    return parsed.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+  };
+
   // Overall Performance Component
   const OverallPerformance = () => {
+    // Calculate streaks data before early return to ensure hooks are called consistently
+    const streaks = overallPerformance?.learningBehavior?.streaks || [];
+    const getDateValue = (value?: string) => {
+      const parsed = value ? new Date(value).getTime() : 0;
+      return Number.isNaN(parsed) ? 0 : parsed;
+    };
+    const sortedStreaks = [...streaks].sort(
+      (a, b) =>
+        getDateValue(b.endDate || b.startDate) -
+        getDateValue(a.endDate || a.startDate),
+    );
+    const longestStreak =
+      sortedStreaks.reduce(
+        (best, streak) =>
+          (streak.days ?? 0) > (best?.days ?? 0) ? streak : best,
+        null as (typeof sortedStreaks)[number] | null,
+      ) || null;
+    const currentStreak = sortedStreaks[0] || null;
+    const recentStreaks = sortedStreaks.slice(0, 7).reverse();
+    const maxStreakDays = longestStreak?.days ?? 1;
+    
+    // useMemo must be called before any early returns
+    const streakChartData = useMemo(
+      () =>
+        recentStreaks.map((streak, idx) => {
+          const days = typeof streak.days === "number" ? streak.days : 0;
+          const label =
+            formatDateShort(streak.endDate || streak.startDate) ||
+            `#${idx + 1}`;
+          return { label, days };
+        }),
+      [recentStreaks],
+    );
+    const hasChartData = streakChartData.some((item) => item.days > 0);
+
     if (!overallPerformance) {
       return (
         <div className="text-center py-12 px-4">
@@ -1176,6 +1237,103 @@ export default function CoursePerformanceClient({
             </Col>
           </Row>
 
+          <div className="mt-6">
+            {sortedStreaks.length > 0 ? (
+              <div className="bg-gradient-to-br from-emerald-50 via-cyan-50 to-white dark:from-gray-800 dark:via-gray-800/90 dark:to-gray-800/80 border border-emerald-200/70 dark:border-gray-700 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center justify-between gap-3 mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-white shadow-sm dark:bg-gray-800/70">
+                      <FiActivity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <span className="block text-sm font-semibold text-gray-900 dark:text-white">
+                        Chuỗi ngày học
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Giữ nhịp đều đặn để không mất streak
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-xs text-emerald-700 dark:text-emerald-300 font-semibold bg-white/70 dark:bg-gray-800/70 px-3 py-1 rounded-full shadow-sm">
+                    Duy trì streak để giữ nhịp học
+                  </span>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-5">
+                  <div className="bg-white dark:bg-gray-900/70 border border-emerald-100 dark:border-emerald-800/50 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
+                    <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mb-3 uppercase tracking-wide">
+                      Chuỗi hiện tại
+                    </div>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {currentStreak?.days ?? 0}
+                      </span>
+                      <span className="text-base text-gray-600 dark:text-gray-400 font-medium">
+                        ngày
+                      </span>
+                    </div>
+                    {currentStreak?.startDate || currentStreak?.endDate ? (
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                        {formatDate(currentStreak?.startDate)} →{" "}
+                        {formatDate(currentStreak?.endDate || currentStreak?.startDate)}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-400 dark:text-gray-500">Chưa có ngày</div>
+                    )}
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-900/70 border border-cyan-100 dark:border-cyan-900/50 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
+                    <div className="text-xs font-semibold text-cyan-600 dark:text-cyan-300 mb-3 uppercase tracking-wide">
+                      Chuỗi dài nhất
+                    </div>
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <span className="text-4xl font-bold text-cyan-600 dark:text-cyan-300">
+                        {longestStreak?.days ?? 0}
+                      </span>
+                      <span className="text-base text-gray-600 dark:text-gray-400 font-medium">
+                        ngày
+                      </span>
+                    </div>
+                    {longestStreak?.startDate || longestStreak?.endDate ? (
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                        {formatDate(longestStreak?.startDate)} →{" "}
+                        {formatDate(longestStreak?.endDate || longestStreak?.startDate)}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-gray-400 dark:text-gray-500">Chưa có ngày</div>
+                    )}
+                  </div>
+
+                  <div className="bg-white dark:bg-gray-900/70 border border-emerald-100 dark:border-emerald-800/50 rounded-xl p-5 shadow-md hover:shadow-lg transition-shadow">
+                    <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
+                      <div className="p-1.5 rounded-md bg-emerald-50 dark:bg-emerald-900/30">
+                        <FiTrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <span>Xu hướng streak gần đây</span>
+                    </div>
+                    <StreakChart
+                      data={streakChartData}
+                      maxStreakDays={maxStreakDays}
+                      hasData={hasChartData}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-center">
+                <div className="mb-3">
+                  <FiActivity className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto" />
+                </div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Chưa có dữ liệu streak
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Hãy học đều đặn để tạo chuỗi ngày học đầu tiên.
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Charts Placeholder */}
           {/* <div className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/30 dark:to-gray-800/50 rounded-lg p-6 border border-dashed border-gray-300 dark:border-gray-700">
             <div className="text-center text-gray-500 dark:text-gray-400">
@@ -1248,6 +1406,73 @@ export default function CoursePerformanceClient({
             </div>
           </Card>
         )}
+
+        {/* ===== SECTION 4: KHUYẾN NGHỊ KHÓA HỌC ===== */}
+        {overallPerformance?.suggestedCourses &&
+          overallPerformance.suggestedCourses.length > 0 && (
+            <Card
+              title={
+                <div className="flex items-center space-x-2">
+                  <FiTrendingUp className="w-5 h-5 text-[#49BBBD]" />
+                  <span className="text-[#49BBBD] dark:text-cyan-400 font-semibold">
+                    Khóa học đề xuất
+                  </span>
+                </div>
+              }
+              className="border-0 shadow-md"
+              style={{ borderRadius: "8px" }}
+            >
+              <style dangerouslySetInnerHTML={{
+                __html: `
+                  .course-suggestions-wrapper .ant-carousel .slick-slide > div > div.flex {
+                    gap: 0.75rem !important;
+                    justify-content: flex-start !important;
+                  }
+                  .course-suggestions-wrapper .ant-card {
+                    width: 100% !important;
+                    max-width: 22rem;
+                  }
+                `
+              }} />
+              <div className="course-suggestions-wrapper">
+                <BaseControlCarousel
+                  totalItemsPerSlide={3}
+                  classItemStyle="w-full max-w-[22rem] flex-shrink-0"
+                  dots={true}
+                  autoplay={false}
+                >
+                  {overallPerformance.suggestedCourses.map((course) => {
+                  const descriptionLines = course.shortDescription
+                    ? course.shortDescription
+                        .split(/[.!?]\s+/)
+                        .filter((line) => line.trim().length > 0)
+                        .slice(0, 3)
+                    : [];
+
+                  return (
+                    <CourseCard
+                      key={course.courseId}
+                      id={course.courseId}
+                      imageUrl={course.courseImageUrl || undefined}
+                      title={course.title || "Khóa học"}
+                      descriptionLines={descriptionLines}
+                      level={course.level ?? null}
+                      instructor={course.teacherName || "Giảng viên"}
+                      price={course.price}
+                      dealPrice={course.dealPrice ?? null}
+                      routerPush={
+                        course.courseId
+                          ? `/course/${course.courseId}`
+                          : undefined
+                      }
+                      tagNames={course.subjectCode ? [course.subjectCode] : []}
+                    />
+                  );
+                })}
+              </BaseControlCarousel>
+              </div>
+            </Card>
+          )}
       </div>
     );
   };
