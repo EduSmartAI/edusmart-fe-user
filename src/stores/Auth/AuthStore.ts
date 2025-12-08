@@ -10,7 +10,7 @@ import {
   logoutAction,
   refreshAction,
 } from "EduSmart/app/(auth)/action";
-import { TokenVerifyResponse } from "EduSmart/api/api-auth-service";
+import { ForgotPasswordResponse, ResetPasswordResponse, TokenVerifyResponse } from "EduSmart/api/api-auth-service";
 import { BasicUser } from "EduSmart/lib/authServer";
 
 export interface AuthState {
@@ -20,6 +20,8 @@ export interface AuthState {
   refreshTokenValue: string | null;
   isOtherSystem: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  forgotPassword: (email: string) => Promise<ForgotPasswordResponse>;
+  resetPassword: (key: string, newPassword: string) => Promise<ResetPasswordResponse>;
   refreshToken: () => Promise<void>;
   logout: () => void;
   getAuthen: () => Promise<boolean>;
@@ -102,6 +104,22 @@ export const useAuthStore = create<AuthState>()(
         } catch {
           return false;
         }
+      },
+
+      forgotPassword: async (email) => {
+        const resp =
+          await apiClient.authEduService.api.v1AccountForgotPasswordCreate({
+            email,
+          });
+        return resp.data;
+      },
+      resetPassword: async (key, newPassword) => {
+        const resp =
+          await apiClient.authEduService.api.v1AccountResetPasswordCreate({
+            key: key,
+            newPassword: newPassword,
+          });
+        return resp.data;
       },
 
       // 2) Refresh token và revoke khi cần

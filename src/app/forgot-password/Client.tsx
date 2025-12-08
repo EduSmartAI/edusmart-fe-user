@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Button, Form, Segmented, Tooltip } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { Button, Form, Tooltip } from "antd";
 import Image from "next/image";
 import { useSpring, useTrail, animated, easings } from "@react-spring/web";
 import { gsap } from "gsap";
@@ -10,46 +10,84 @@ import bgQuestion from "EduSmart/assets/FPT_Logo_Background.jpg";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { isAxiosError } from "axios";
 import BubbleBackground from "EduSmart/components/Bubble/BubbleBackground";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import Loading from "EduSmart/components/Loading/Loading";
 import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
 import { Lobster } from "next/font/google";
-import "./styles/login.styles.css";
-import { FiArrowLeft } from "react-icons/fi";
+import "./styles/forgot.styles.css";
+import { FiArrowLeft, FiMail, FiShield } from "react-icons/fi";
 
-const xmlColumns = {
+const emailFieldKeys = ["email"] as const;
+const resetFieldKeys = ["password", "confirmPassword"] as const;
+type EmailFieldKey = (typeof emailFieldKeys)[number];
+type ResetFieldKey = (typeof resetFieldKeys)[number];
+type FieldKey = EmailFieldKey | ResetFieldKey;
+
+const xmlColumns: Record<FieldKey, { id: FieldKey; name: string; rules: string }> = {
   email: { id: "email", name: "Email", rules: "required" },
-  password: { id: "password", name: "Mật khẩu", rules: "required" },
-} as const;
+  password: { id: "password", name: "Mật khẩu mới", rules: "required" },
+  confirmPassword: {
+    id: "confirmPassword",
+    name: "Xác nhận mật khẩu",
+    rules: "required|confirm_password:password",
+  },
+};
 
-type LoginFormValues = { email: string; password: string };
+const fieldMeta: Record<
+  FieldKey,
+  { placeholder: string; type: "text" | "email" | "password"; maxLength: number }
+> = {
+  email: {
+    placeholder: "Nhập email",
+    type: "email",
+    maxLength: 50,
+  },
+  password: {
+    placeholder: "Nhập mật khẩu mới",
+    type: "password",
+    maxLength: 50,
+  },
+  confirmPassword: {
+    placeholder: "Nhập lại mật khẩu mới",
+    type: "password",
+    maxLength: 50,
+  },
+};
+
+type ForgotPasswordFormValues = {
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+};
 
 const lobster = Lobster({
   weight: "400",
   subsets: ["latin"],
 });
 
-export default function LoginPage() {
+type ForgotPasswordPageProps = {
+  isReset?: boolean;
+  resetKey?: string;
+};
+
+export default function ForgotPasswordPage({
+  isReset = false,
+  resetKey = "",
+}: ForgotPasswordPageProps) {
   const messageApi = useNotification();
-  const [form] = Form.useForm<LoginFormValues>();
-  const login = useAuthStore((state) => state.login);
+  const [form] = Form.useForm<ForgotPasswordFormValues>();
+  const requestForgotPassword = useAuthStore((state) => state.forgotPassword);
+  const resetPassword = useAuthStore((state) => state.resetPassword);
   const isOtherSystem = useAuthStore((state) => state.isOtherSystem);
   const router = useRouter();
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [activeKey, setActiveKey] = useState<"login" | "register">("login");
   const [skipMountAnim, setSkipMountAnim] = useState(false);
   const [showFormBySwipeRun, setShowFormBySwipeRun] = useState<boolean>(true);
   const [showWipe, setShowWipe] = useState(false);
   const [wipeStyles, wipeApi] = useSpring<{ y: number }>(() => ({ y: 100 }));
   const didRunRef = useRef(false);
-  const transitionLayerRef = useRef<HTMLDivElement | null>(null);
-  const searchParams = useSearchParams();
-  const rawRedirect = searchParams.get("redirect") || "";
-  const redirect =
-    rawRedirect && rawRedirect.startsWith("/")
-      ? decodeURIComponent(rawRedirect)
-      : "";
+  const entryTransitionRef = useRef<HTMLDivElement | null>(null);
   const [waitingSeconds, setWaitingSeconds] = useState(0);
 
   useEffect(() => {
@@ -83,6 +121,28 @@ export default function LoginPage() {
   useEffect(() => {
     router.prefetch("/Register"); // tải sẵn chunk của trang Register
   }, [router]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem("routeTransition") !== "login-to-forgot") {
+      return;
+    }
+    sessionStorage.removeItem("routeTransition");
+    const layer = entryTransitionRef.current;
+    if (!layer) return;
+    gsap.set(layer, {
+      opacity: 1,
+      scaleY: 1,
+      transformOrigin: "bottom",
+      pointerEvents: "none",
+    });
+    gsap.to(layer, {
+      opacity: 0,
+      scaleY: 0,
+      duration: 0.5,
+      ease: "power2.inOut",
+    });
+  }, []);
 
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
@@ -128,66 +188,55 @@ export default function LoginPage() {
     }, 500);
   }, [wipeApi]);
 
-  const navigateWithTransition = useCallback(
-    (target: string, sessionFlag?: string) => {
-      if (sessionFlag && typeof window !== "undefined") {
-        sessionStorage.setItem("routeTransition", sessionFlag);
-      }
-      const layer = transitionLayerRef.current;
-      if (!layer) {
-        router.push(target);
-        return;
-      }
-      gsap.killTweensOf(layer);
-      gsap.set(layer, {
-        pointerEvents: "auto",
-        transformOrigin: "top",
-      });
-      gsap
-        .timeline({
-          onComplete: () => {
-            router.push(target);
-          },
-        })
-        .fromTo(
-          layer,
-          { scaleY: 0, opacity: 0 },
-          { scaleY: 1, opacity: 1, duration: 0.45, ease: "power2.out" },
-        );
-    },
-    [router],
-  );
-
-  const onFinish = async (values: LoginFormValues) => {
+  const onFinish = async (values: ForgotPasswordFormValues) => {
     try {
       useLoadingStore.getState().showLoading();
-      const isOK = await login(values.email, values.password);
-      if (useAuthStore.getState().isOtherSystem) {
-        useLoadingStore.getState().hideLoading();
+      if (isReset) {
+        if (!resetKey) {
+          throw new Error("Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+        }
+        const password = values.password?.trim() ?? "";
+        if (!password) {
+          throw new Error("Vui lòng nhập mật khẩu mới.");
+        }
+        const resp = await resetPassword(resetKey, password);
+        if (!resp?.success) {
+          throw new Error(
+            resp?.message || "Đặt lại mật khẩu thất bại, vui lòng thử lại.",
+          );
+        }
+        messageApi.success("Đặt lại mật khẩu thành công! Vui lòng đăng nhập.");
+        router.push("/Login");
         return;
       }
-      const target = redirect || "/";
-      console.log("Redirecting to:", target);
-      if (isOK) {
-        messageApi.success("Đăng nhập thành công!");
-        router.push(target);
-        useLoadingStore.getState().hideLoading();
-        return;
+
+      const email = values.email?.trim() ?? "";
+      if (!email) {
+        throw new Error("Vui lòng nhập email để nhận liên kết đặt lại.");
       }
-      messageApi.error(
-        "Đăng nhập thất bại, vui lòng kiểm tra lại email/mật khẩu",
+      const res = await requestForgotPassword(email);
+      if (!res?.success) {
+        throw new Error(
+          res?.message || "Quên mật khẩu thất bại, vui lòng thử lại sau.",
+        );
+      }
+      messageApi.success("Vui lòng kiểm tra email để đặt lại mật khẩu.");
+      router.push(
+        `/forgot-password/has-sent?email=${encodeURIComponent(email)}`,
       );
-      useLoadingStore.getState().hideLoading();
     } catch (error: unknown) {
-      useLoadingStore.getState().hideLoading();
       let errorMessage =
-        "Đăng nhập thất bại, vui lòng kiểm tra lại email/mật khẩu.";
+        error instanceof Error && error.message
+          ? error.message
+          : "Có lỗi xảy ra, vui lòng thử lại.";
       if (isAxiosError(error)) {
         const serverMsg =
           error.response?.data?.errors || error.response?.data?.error;
         if (typeof serverMsg === "string") errorMessage = serverMsg;
       }
       messageApi.error(errorMessage);
+    } finally {
+      useLoadingStore.getState().hideLoading();
     }
   };
 
@@ -207,14 +256,29 @@ export default function LoginPage() {
     config: { mass: 1, tension: 240, friction: 22 },
   });
 
+  const visibleFieldKeys = isReset ? resetFieldKeys : emailFieldKeys;
+
   // 2) Trail cho các input field
-  const fieldKeys = ["email", "password"] as const;
-  const trail = useTrail(showForm ? fieldKeys.length : 0, {
+  const trail = useTrail(showForm ? visibleFieldKeys.length : 0, {
     from: { opacity: 0, transform: "translate3d(0,20px,0)" },
     to: { opacity: 1, transform: "translate3d(0,0,0)" },
     config: { mass: 1, tension: 200, friction: 20 },
     delay: 600,
   });
+  const goToLogin = () => {
+    sessionStorage.setItem("authMountOnce", "1");
+    router.push("/Login");
+  };
+
+  const titleText = isReset ? "Đặt lại mật khẩu" : "Quên mật khẩu";
+  const descriptionText = isReset
+    ? "Tạo mật khẩu mới đủ mạnh để bảo vệ tài khoản của bạn."
+    : "Nhập email đã đăng ký để nhận liên kết đặt lại mật khẩu. Chúng tôi sẽ gửi trong vòng vài giây.";
+  const highlightTitle = isReset ? "Thiết lập mật khẩu mới" : "Gửi liên kết đặt lại";
+  const highlightDescription = isReset
+    ? "Mật khẩu nên dài ít nhất 8 ký tự và chứa cả chữ lẫn số."
+    : "Liên kết sẽ hết hạn sau 15 phút để đảm bảo an toàn.";
+  const primaryButtonLabel = isReset ? "Đặt lại mật khẩu" : "Quên mật khẩu";
 
   const FormCard = (
     <animated.div
@@ -222,105 +286,97 @@ export default function LoginPage() {
       className="relative w-full max-w-md isolate"
     >
       <BubbleBackground />
-      <div className="relative z-10 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8">
-        {/* <h2
-          className={`${knewave.className} text-xl sm:text-2xl md:text-3xl font-light tracking-wide text-center px-4 text-[#4a2580]`}
-        >
-          Welcome to EduSmart
-        </h2> */}
-        <div className="mx-auto mt-2 w-full">
-          <Segmented
-            block
-            value={activeKey}
-            onChange={(val) => {
-              const v = val as "login" | "register";
-              if (v !== activeKey) {
-                setActiveKey(v);
-                sessionStorage.setItem("authMountOnce", "1");
-                setTimeout(() => {
-                  const target = v === "login" ? "/Login" : "/Register";
-                  router.push(target, { scroll: false });
-                }, 220);
-              }
-            }}
-            options={[
-              {
-                label: (
-                  <span className="text-slate-900 dark:text-white">
-                    Đăng Nhập
-                  </span>
-                ),
-                value: "login",
-              },
-              {
-                label: (
-                  <span className="text-slate-700 dark:text-slate-300">
-                    Đăng kí
-                  </span>
-                ),
-                value: "register",
-              },
-            ]}
-            className="auth-segmented"
-          />
-          <div className="mt-2 flex justify-center"></div>
-        </div>
-
-        {/* Heading thay đổi theo tab */}
-        <div
-          className={`${lobster.className} flex justify-center items-center h-full
-              text-black text-2xl md:text-3xl font-semibold my-6 dark:text-white`}
-        >
-          Đăng Nhập ngay
-        </div>
-        <Form<LoginFormValues>
-          form={form}
-          onFinish={onFinish}
-          layout="vertical"
-        >
-          {trail.map((style, idx) => {
-            const key = fieldKeys[idx];
-            return (
-              <animated.div key={key} style={style} className="mb-4">
-                <BaseControlTextField
-                  xmlColumn={xmlColumns[key]}
-                  maxlength={50}
-                  placeholder={key === "email" ? "Nhập email" : "Nhập mật khẩu"}
-                  type={key === "password" ? "password" : undefined}
-                />
-                {key === "password" && (
-                  <div className="mt-2 flex items-center justify-end gap-2 text-right text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">
-                      Quên mật khẩu?
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        navigateWithTransition(
-                          "/forgot-password",
-                          "login-to-forgot",
-                        )
-                      }
-                      className="text-sm font-semibold text-teal-600 hover:text-teal-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/60 transition-colors underline-offset-2 hover:underline cursor-pointer"
-                    >
-                      Đặt lại ngay
-                    </button>
-                  </div>
-                )}
-              </animated.div>
-            );
-          })}
-          <div className="mt-6 sm:mt-8">
-            {/* Đổi hover scale sang CSS */}
-            <button
-              type="submit"
-              className="w-full py-4 font-semibold text-white rounded-full bg-gradient-to-r from-teal-400 to-blue-500 
-                         hover:scale-[1.05] transition-transform duration-200"
-            >
-              Đăng nhập
-            </button>
+      <div className="relative z-10 rounded-[32px] p-[1px] bg-gradient-to-br from-white/40 via-cyan-300/40 to-blue-500/40 shadow-[0_30px_80px_rgba(15,23,42,0.18)]">
+        <div className="rounded-[30px] bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl p-6 sm:p-8">
+          <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-400 dark:text-slate-500">
+            <span>EduSmart</span>
+            <span>An Toàn</span>
           </div>
-        </Form>
+          <div className="mt-5 text-center space-y-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1 rounded-full text-xs font-semibold text-teal-600 bg-teal-50/80 border border-teal-100/70 dark:bg-teal-500/10 dark:text-teal-200 dark:border-teal-400/30">
+              <FiShield className="text-base" />
+              {isReset ? "Bảo vệ tài khoản" : "Khôi phục tài khoản"}
+            </span>
+            <div
+              className={`${lobster.className} text-black text-2xl md:text-3xl font-semibold dark:text-white`}
+            >
+              {titleText}
+            </div>
+            <p className="text-sm text-slate-500 dark:text-slate-300">
+              {descriptionText}
+            </p>
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-slate-100/80 dark:border-white/10 bg-gradient-to-r from-slate-50/95 via-white/95 to-slate-50/95 dark:from-slate-800/70 dark:via-slate-900/70 dark:to-slate-800/70 p-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-md shadow-slate-200/70 dark:bg-slate-900/80 dark:shadow-none">
+                {isReset ? (
+                  <FiShield className="text-lg text-teal-500" />
+                ) : (
+                  <FiMail className="text-lg text-teal-500" />
+                )}
+              </span>
+              <div className="text-left">
+                <p className="text-sm font-semibold text-slate-700 dark:text-white">
+                  {highlightTitle}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-300">
+                  {highlightDescription}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <Form<ForgotPasswordFormValues>
+            form={form}
+            onFinish={onFinish}
+            layout="vertical"
+            className="mt-6"
+          >
+            {trail.map((style, idx) => {
+              const key = visibleFieldKeys[idx];
+              if (!key) return null;
+              const meta = fieldMeta[key];
+              return (
+                <animated.div key={key} style={style} className="mb-4">
+                  <BaseControlTextField
+                    xmlColumn={xmlColumns[key]}
+                    maxlength={meta.maxLength}
+                    placeholder={meta.placeholder}
+                    type={meta.type}
+                  />
+                </animated.div>
+              );
+            })}
+            <div className="mt-4 sm:mt-6 flex flex-col gap-4">
+              <button
+                type="submit"
+                className="w-full py-4 font-semibold text-white rounded-2xl bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500 shadow-lg shadow-cyan-200/40 dark:shadow-none hover:scale-[1.02] transition-all duration-200"
+              >
+                {primaryButtonLabel}
+              </button>
+              <button
+                type="button"
+                onClick={goToLogin}
+                className="w-full py-3 font-semibold rounded-2xl border border-slate-200 text-slate-600 bg-white/80 dark:bg-slate-900/60 dark:border-slate-700 dark:text-slate-200 shadow-sm hover:border-teal-200 hover:text-teal-600 hover:bg-white hover:-translate-y-0.5 dark:hover:border-teal-500 dark:hover:text-teal-300 dark:hover:bg-slate-900 transition-all duration-200"
+              >
+                Quay lại đăng nhập
+              </button>
+            </div>
+          </Form>
+
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <span className="inline-flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              Hỗ trợ 24/7: support@edusmart.vn
+            </span>
+            {isReset ? (
+              <span>Liên kết đặt lại chỉ sử dụng một lần để đảm bảo an toàn.</span>
+            ) : (
+              <span>Mật khẩu được bảo vệ theo chuẩn OWASP.</span>
+            )}
+          </div>
+        </div>
       </div>
     </animated.div>
   );
@@ -463,10 +519,12 @@ export default function LoginPage() {
   return (
     <>
       <div
-        ref={transitionLayerRef}
-        className="fixed inset-0 z-[70] bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600 pointer-events-none"
-        style={{ transform: "scaleY(0)", transformOrigin: "top", opacity: 0 }}
+        ref={entryTransitionRef}
+        className="fixed inset-0 z-[65] bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600 pointer-events-none"
+        style={{ transformOrigin: "bottom", transform: "scaleY(0)", opacity: 0 }}
       />
+      {showWipe && ShowSwipeEffect}
+      <Loading />
       {/* Back floating button */}
       <div
         className="fixed left-3 top-3 md:left-6 md:top-6 z-50"
@@ -507,61 +565,38 @@ export default function LoginPage() {
         </Tooltip>
       </div>
 
-      <div className="flex flex-col md:flex-row min-h-screen">
-        {showWipe && ShowSwipeEffect}
-        <Loading />
-        {/* Left: background + mobile form */}
-        <div className="relative flex-1 h-screen md:h-auto overflow-hidden">
-          <Image
-            src={bgQuestion}
-            alt="Hero"
-            fill
-            priority
-            placeholder="blur"
-            fetchPriority="high"
-            sizes="100vw"
-            className="object-cover object-right brightness-90 dark:brightness-75"
-          />
-          <div className="absolute inset-0 bg-gradient-to-tr from-teal-400 via-cyan-300 to-blue-300 opacity-50 dark:opacity-40" />
-          <div className="absolute bottom-8 left-6 md:bottom-12 md:left-12 text-white z-10">
-            <p
-              className={`hidden xs:block text-3xl sm:text-4xl md:text-5xl font-extrabold drop-shadow-2xl !m-2 lg:m-4`}
-            >
-              EduSmart
-            </p>
-            <p className="mt-2 sm:mt-3 text-base sm:text-lg md:text-xl drop-shadow-lg">
-              Nền tảng học tập cho sinh viên FPT{" "}
-              <span className="pl-4">
-                {" "}
-                <ThemeSwitch />
-              </span>
-            </p>
-          </div>
-          {/* Mobile */}
-          <div className="absolute inset-0 md:hidden">
-            <div className="relative w-full h-screen">
-              <BubbleBackground />
-              <div className="absolute inset-0 flex items-center justify-center p-4">
-                {showFormBySwipeRun && FormCard}
-              </div>
-            </div>
-          </div>
+      <div className="relative min-h-screen w-full overflow-hidden bg-slate-950">
+        <Image
+          src={bgQuestion}
+          alt="Hero"
+          fill
+          priority
+          placeholder="blur"
+          fetchPriority="high"
+          sizes="100vw"
+          className="object-cover object-center brightness-90 dark:brightness-75"
+        />
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/60 via-cyan-500/30 to-blue-500/30 dark:from-slate-900/80 dark:via-cyan-600/40 dark:to-blue-700/40" />
+        <div className="absolute inset-0 pointer-events-none">
+          <BubbleBackground />
         </div>
 
-        {/* Desktop */}
-        <div
-          className="hidden md:flex flex-1 items-center justify-center
-             bg-gradient-to-br from-blue-50 to-indigo-50
-             dark:from-gray-900 dark:to-gray-800"
-        >
-          <div className="relative w-full h-full">
-            {" "}
-            {/* <-- đảm bảo cao bằng màn hình */}
-            <BubbleBackground /> {/* <-- chạy full vùng này */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              {showFormBySwipeRun && FormCard}
-            </div>
-          </div>
+        <div className="absolute bottom-8 left-6 md:bottom-12 md:left-12 text-white z-30 pointer-events-auto max-w-xl space-y-2 drop-shadow-2xl hidden xs:block">
+          <p
+            className={`hidden xs:block text-3xl sm:text-4xl md:text-5xl font-extrabold !m-0`}
+          >
+            EduSmart
+          </p>
+          <p className="mt-2 sm:mt-3 text-base sm:text-lg md:text-xl flex items-center gap-3">
+            Nền tảng học tập cho sinh viên FPT
+            <span className="inline-flex">
+              <ThemeSwitch />
+            </span>
+          </p>
+        </div>
+
+        <div className="relative z-10 flex min-h-screen w-full items-center justify-center px-4 sm:px-6 md:px-10 py-12">
+          {showFormBySwipeRun && FormCard}
         </div>
       </div>
     </>

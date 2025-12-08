@@ -2,6 +2,7 @@
 import React from "react";
 import { verifyAccountAction } from "../(auth)/verifyAction";
 import ResultScreen from "./Client";
+import ForgotPasswordPage from "../forgot-password/Client";
 
 type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -9,9 +10,19 @@ type Props = {
 
 export default async function VerifyPage({ searchParams }: Props) {
   const params = await searchParams;
-  const key = Array.isArray(params?.key) ? params!.key![0] : (params?.key ?? "");
-  console.log("key", key.trim());
-  const result = await verifyAccountAction(key);
+  const keyParam = Array.isArray(params?.key)
+    ? params?.key?.[0] ?? ""
+    : params?.key ?? "";
+  const typeParam = Array.isArray(params?.type)
+    ? params?.type?.[0] ?? ""
+    : params?.type ?? "";
+
+  if (typeParam === "resetPassword") {
+    return <ForgotPasswordPage isReset resetKey={keyParam.trim()} />;
+  }
+
+  console.log("key", keyParam.trim());
+  const result = await verifyAccountAction(keyParam.trim());
   const isSuccess = result.ok;
   const title = isSuccess ? "XÁC MINH THÀNH CÔNG" : "XÁC MINH THẤT BẠI";
   const description = isSuccess
