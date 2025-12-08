@@ -6,8 +6,6 @@ import type {
   PaymentCallbackResponse,
 } from "EduSmart/api/api-payment-service";
 
-export const dynamic = "force-dynamic";
-
 type SearchParams = Record<string, string | string[] | undefined>;
 
 type PaymentPageProps = {

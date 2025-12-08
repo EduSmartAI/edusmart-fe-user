@@ -17,6 +17,7 @@ import {
 } from "antd";
 import { PaymentClient, CourseClient } from "EduSmart/hooks/apiClient";
 import type { SelectOrderResponseEntity } from "EduSmart/api/api-payment-service";
+import { usePaymentStore } from "EduSmart/stores/payment/paymentStore";
 
 const { Text } = Typography;
 
@@ -30,6 +31,7 @@ const ORDER_STATUS = {
 
 export default function OrderDetailPage() {
   const params = useParams();
+  const rePayment = usePaymentStore((state) => state.rePayment);
   const router = useRouter();
   const orderId = params?.orderId as string;
 
@@ -37,6 +39,18 @@ export default function OrderDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [courseNames, setCourseNames] = useState<Record<string, string>>({});
+  const isProcessing = usePaymentStore((state) => state.isProcessing);
+
+  const handleRePayment = async () => {
+    try {
+      const response = await rePayment(orderId);
+      if (response?.success && response.response?.paymentUrl) {
+        window.location.href = response.response.paymentUrl;
+      }
+    } catch (error) {
+      console.error("Failed to process repayment:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchOrderDetail = async () => {
@@ -340,7 +354,27 @@ export default function OrderDetailPage() {
       </Card>
 
       {/* Actions */}
-      {/* {order.status === 2 && (
+      {order.status === 1 && (
+        <Card>
+          <div className="text-center">
+            <Text type="secondary" className="block mb-4">
+              Đơn hàng đang chờ thanh toán. Vui lòng hoàn tất thanh toán để bắt
+              đầu học.
+            </Text>
+            <Button
+              type="primary"
+              size="large"
+              onClick={handleRePayment}
+              loading={isProcessing}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Đang xử lý..." : "Thanh toán lại"}
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {order.status === 2 && (
         <Card>
           <div className="text-center">
             <Text type="secondary" className="block mb-4">
@@ -356,25 +390,7 @@ export default function OrderDetailPage() {
             </Button>
           </div>
         </Card>
-      )} */}
-
-      {/* {order.status === 1 && (
-        <Card>
-          <div className="text-center">
-            <Text type="secondary" className="block mb-4">
-              Đơn hàng đang chờ thanh toán. Vui lòng hoàn tất thanh toán để bắt
-              đầu học.
-            </Text>
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => router.push("/cart")}
-            >
-              Tiếp tục thanh toán
-            </Button>
-          </div>
-        </Card>
-      )} */}
+      )}
     </div>
   );
 }
