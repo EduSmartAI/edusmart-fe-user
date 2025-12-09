@@ -130,6 +130,24 @@ export interface CourseAudienceDto {
   isActive?: boolean;
 }
 
+export interface CourseBasicInfoDto {
+  /** @format uuid */
+  courseId?: string;
+  title?: string | null;
+  shortDescription?: string | null;
+  courseImageUrl?: string | null;
+  /** @format int32 */
+  level?: number;
+  /** @format double */
+  price?: number;
+  /** @format double */
+  dealPrice?: number | null;
+  /** @format uuid */
+  teacherId?: string;
+  teacherName?: string | null;
+  subjectCode?: string | null;
+}
+
 export interface CourseCommentDetailsDto {
   /** @format uuid */
   commentId?: string;
@@ -896,6 +914,14 @@ export interface FullSubjectDto {
   isMandatory?: boolean;
   /** @format int32 */
   positionIndex?: number;
+}
+
+export interface GetCourseBasicInfoResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseBasicInfoDto[] | null;
 }
 
 export interface GetCourseByIdForGuestResponse {
@@ -1753,6 +1779,34 @@ export interface UpdateNoteDto {
 }
 
 export interface UpdateNoteResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface UpdateSemesterSubjectsDto {
+  /** @format uuid */
+  semesterId?: string;
+  subjects?: UpdateSubjectDto[] | null;
+}
+
+export interface UpdateSubjectDto {
+  /** @format uuid */
+  subjectId?: string;
+  /** @format int32 */
+  credit?: number | null;
+  isMandatory?: boolean;
+}
+
+export interface UpdateSyllabusSubjectsCommand {
+  /** @format uuid */
+  syllabusId?: string;
+  semesters?: UpdateSemesterSubjectsDto[] | null;
+}
+
+export interface UpdateSyllabusSubjectsResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
@@ -3081,6 +3135,29 @@ export class Api<
       }),
 
     /**
+     * No description
+     *
+     * @tags Courses
+     * @name V1CoursesBasicInfoList
+     * @request GET:/api/v1/Courses/basic-info
+     * @secure
+     */
+    v1CoursesBasicInfoList: (
+      query?: {
+        CourseIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetCourseBasicInfoResponse, any>({
+        path: `/api/v1/Courses/basic-info`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Retrieve a paginated list of users enrolled in a specific course.
      *
      * @tags Courses
@@ -3290,6 +3367,29 @@ export class Api<
     ) =>
       this.request<UpsertUserLessonProgressResponse, any>({
         path: `/api/StudentLessonProgress`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cập nhật môn học cho chương trình đào tạo. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusUpdate
+     * @summary Cập nhật môn học cho chương trình đào tạo
+     * @request PUT:/api/Syllabus
+     * @secure
+     */
+    syllabusUpdate: (
+      data: UpdateSyllabusSubjectsCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateSyllabusSubjectsResponse, any>({
+        path: `/api/Syllabus`,
         method: "PUT",
         body: data,
         secure: true,
