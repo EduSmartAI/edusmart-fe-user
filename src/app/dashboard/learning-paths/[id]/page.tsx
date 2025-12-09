@@ -19,6 +19,7 @@ import {
   Carousel,
   Select,
   message,
+  Collapse,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
@@ -48,8 +49,8 @@ import {
   LearningPathSelectDto as GeneratedLearningPathSelectDto,
   LearningPathSelectResponse,
   CourseBasicInfoDto,
+  AddLearningPathCourseCommand,
 } from "EduSmart/api/api-student-service";
-import { SubjectCourseMatchItem } from "EduSmart/api/api-ai-service";
 import { StudentClient, AIClient } from "EduSmart/hooks/apiClient";
 
 const SNAPSHOT_ENDPOINT = "/api/learning-paths";
@@ -72,6 +73,40 @@ const LEARNING_PATH_STATUS_LABEL: Record<LearningPathStatus, string> = {
   [LearningPathStatus.Closed]: "Đã đóng",
   [LearningPathStatus.Paused]: "Tạm dừng",
 };
+
+// Level mapping và config
+const LEVEL_CONFIG = {
+  1: {
+    label: "Cơ bản",
+    color: "green",
+    bgGradient:
+      "from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30",
+    borderColor: "border-green-200 dark:border-green-800",
+    badgeColor:
+      "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
+    iconColor: "text-green-600 dark:text-green-400",
+  },
+  2: {
+    label: "Trung cấp",
+    color: "blue",
+    bgGradient:
+      "from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30",
+    borderColor: "border-blue-200 dark:border-blue-800",
+    badgeColor:
+      "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+    iconColor: "text-blue-600 dark:text-blue-400",
+  },
+  3: {
+    label: "Nâng cao",
+    color: "purple",
+    bgGradient:
+      "from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30",
+    borderColor: "border-purple-200 dark:border-purple-800",
+    badgeColor:
+      "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300",
+    iconColor: "text-purple-600 dark:text-purple-400",
+  },
+} as const;
 
 interface SubjectInsight {
   score?: number;
@@ -113,17 +148,6 @@ type InternalMajorDto = NonNullable<
 
 type LearningPathApiResponse = Omit<LearningPathSelectResponse, "response"> & {
   response?: LearningPathDto;
-};
-
-type ExternalCourseRecommendation = {
-  title: string;
-  provider: string;
-  link: string;
-  level?: string | null;
-  estimatedWeeks?: number | null;
-  snippet?: string | null;
-  score?: number | null;
-  rating?: number | null;
 };
 
 type AiFieldKey =
@@ -407,7 +431,9 @@ const LearningPathSamplePage = () => {
   );
   const [selectedMajorId, setSelectedMajorId] = useState<string | null>(null);
   const [suggestionType, setSuggestionType] = useState<1 | 2>(1); // 1 = Easier, 2 = Harder
-  const [suggestedCourses, setSuggestedCourses] = useState<any[]>([]);
+  const [suggestedCourses, setSuggestedCourses] = useState<
+    CourseBasicInfoDto[]
+  >([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
 
@@ -757,9 +783,7 @@ const LearningPathSamplePage = () => {
       );
 
       if (response.data?.success && response.data?.response?.courses) {
-        const courses =
-          response.data.response.courses as ExternalCourseRecommendation[];
-        setExternalCourses(courses);
+        setExternalCourses(response.data.response.courses);
         if (response.data.response.courses.length === 0) {
           message.info("Không tìm thấy khóa học bên ngoài phù hợp");
         }
@@ -2395,6 +2419,64 @@ const LearningPathSamplePage = () => {
                         </div>
                       </>
                     )}
+
+                  {/* Level Assessment - Collapse */}
+                  {learningPath?.level && (
+                    <div className="mt-8">
+                      <Collapse
+                        ghost
+                        expandIconPosition="end"
+                        items={[
+                          {
+                            key: "level-detail",
+                            label: (
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                                  Đánh giá trình độ của bạn:
+                                </span>
+                                <span
+                                  className={`inline-flex items-center rounded-full text-sm  font-bold ${
+                                    LEVEL_CONFIG[
+                                      learningPath.level as 1 | 2 | 3
+                                    ]
+                                  }`}
+                                >
+                                  {LEVEL_CONFIG[learningPath.level as 1 | 2 | 3]
+                                    ?.label || `Level ${learningPath.level}`}
+                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  (Click để xem chi tiết)
+                                </span>
+                              </div>
+                            ),
+                            children: (
+                              <div className="pt-2 pb-4">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                  Dựa trên kết quả bài kiểm tra lý thuyết và
+                                  thực hành
+                                </p>
+                                {learningPath?.levelReason ? (
+                                  <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
+                                    <MarkdownBlock
+                                      markdown={learningPath.levelReason.replace(
+                                        /\n---\n*$/,
+                                        "",
+                                      )}
+                                    />
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                    Đang phân tích kết quả đánh giá của bạn...
+                                  </p>
+                                )}
+                              </div>
+                            ),
+                          },
+                        ]}
+                        className="bg-white dark:bg-slate-900 rounded-2xl border border-orange-100 dark:border-orange-900/50 overflow-hidden shadow-sm [&_.ant-collapse-header]:!bg-gradient-to-r [&_.ant-collapse-header]:!from-orange-50 [&_.ant-collapse-header]:!to-amber-50 dark:[&_.ant-collapse-header]:!from-orange-950/30 dark:[&_.ant-collapse-header]:!to-amber-950/30 [&_.ant-collapse-header]:!px-6 [&_.ant-collapse-header]:!py-6 [&_.ant-collapse-content-box]:!px-6 [&_.ant-collapse-expand-icon]:!text-orange-600 dark:[&_.ant-collapse-expand-icon]:!text-orange-400"
+                      />
+                    </div>
+                  )}
                 </>
               ),
             },
@@ -2672,7 +2754,7 @@ const LearningPathSamplePage = () => {
                   </p>
                 </div>
               ) : (
-                externalCourses.map((course: any, index) => (
+                externalCourses.map((course, index) => (
                   <div
                     key={index}
                     className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hover:border-[#FF6B6B] dark:hover:border-orange-600 hover:shadow-md transition-all duration-200"
