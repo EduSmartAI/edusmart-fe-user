@@ -8,7 +8,18 @@ import React, {
   useState,
 } from "react";
 import { useParams } from "next/navigation";
-import { Card, Tabs, Tag, Modal, Table, Spin, Button, Carousel } from "antd";
+import {
+  Card,
+  Tabs,
+  Tag,
+  Modal,
+  Table,
+  Spin,
+  Button,
+  Carousel,
+  Select,
+  message,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
@@ -25,6 +36,7 @@ import {
   FiFileText,
   FiChevronLeft,
   FiChevronRight,
+  FiSearch,
 } from "react-icons/fi";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
@@ -34,7 +46,10 @@ import {
   ExternalLearningPathDto,
   LearningPathSelectDto as GeneratedLearningPathSelectDto,
   LearningPathSelectResponse,
+  CourseBasicInfoDto,
+  AddLearningPathCourseCommand,
 } from "EduSmart/api/api-student-service";
+import { StudentClient } from "EduSmart/hooks/apiClient";
 
 const SNAPSHOT_ENDPOINT = "/api/learning-paths";
 const STREAM_ENDPOINT = "/api/learning-paths/stream";
@@ -369,6 +384,21 @@ const LearningPathSamplePage = () => {
   >([]);
   const [loadingTranscript, setLoadingTranscript] = useState(false);
 
+  // Course suggestion modal states
+  const [showCourseSuggestionModal, setShowCourseSuggestionModal] =
+    useState(false);
+  const [selectedSubjectCode, setSelectedSubjectCode] = useState<string | null>(
+    null,
+  );
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
+    null,
+  );
+  const [selectedMajorId, setSelectedMajorId] = useState<string | null>(null);
+  const [suggestionType, setSuggestionType] = useState<1 | 2>(1); // 1 = Easier, 2 = Harder
+  const [suggestedCourses, setSuggestedCourses] = useState<any[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
+
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
   const habitAnalysis = learningPath?.habitAndInterestAnalysis;
@@ -625,6 +655,101 @@ const LearningPathSamplePage = () => {
       console.error("Error loading transcript:", error);
     } finally {
       setLoadingTranscript(false);
+    }
+  };
+
+  // Open course suggestion modal
+  const handleOpenCourseSuggestion = (
+    subjectCode: string,
+    subjectId: string,
+    majorId: string,
+  ) => {
+    setSelectedSubjectCode(subjectCode);
+    setSelectedSubjectId(subjectId);
+    setSelectedMajorId(majorId);
+    setSuggestionType(1); // Default to Easier
+    setShowCourseSuggestionModal(true);
+    // Auto-fetch on open
+    fetchSuggestedCourses(subjectCode, 1);
+  };
+
+  // Fetch suggested courses
+  const fetchSuggestedCourses = async (subjectCode: string, type: 1 | 2) => {
+    if (!pathId) return;
+
+    try {
+      setLoadingSuggestions(true);
+      setSuggestedCourses([]);
+
+      const response =
+        await StudentClient.api.learningPathsSuggestedCoursesSubjectsRecommendList(
+          pathId,
+          subjectCode,
+          { type },
+        );
+
+      if (response.data?.success && response.data?.response) {
+        setSuggestedCourses(response.data.response);
+        if (response.data.response.length === 0) {
+          message.info("Không tìm thấy khóa học phù hợp");
+        }
+      } else {
+        message.error(
+          response.data?.message || "Không thể tải danh sách khóa học",
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching suggested courses:", error);
+      message.error("Đã xảy ra lỗi khi tải danh sách khóa học");
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // Handle suggestion type change
+  const handleSuggestionTypeChange = (type: 1 | 2) => {
+    setSuggestionType(type);
+    if (selectedSubjectCode) {
+      fetchSuggestedCourses(selectedSubjectCode, type);
+    }
+  };
+
+  // Add course to learning path
+  const handleAddCourseToPath = async (courseId: string) => {
+    if (!selectedMajorId || !selectedSubjectId || !selectedSubjectCode) {
+      message.error("Thiếu thông tin cần thiết để thêm khóa học");
+      return;
+    }
+
+    try {
+      setAddingCourseId(courseId);
+
+      const response =
+        await StudentClient.api.learningPathsAddSuggestedCoursePartialUpdate({
+          learningPathMajorId: selectedMajorId,
+          internalCourseId: courseId,
+          learningPathSubjectCodeId: selectedSubjectId,
+          subjectCode: selectedSubjectCode,
+        });
+
+      if (response.data?.success) {
+        message.success("Đã thêm khóa học vào lộ trình thành công!");
+        // Refresh learning path data
+        fetchLearningPath();
+        // Close modal after successful add
+        setTimeout(() => {
+          setShowCourseSuggestionModal(false);
+        }, 1000);
+      } else {
+        message.error(
+          response.data?.message || "Không thể thêm khóa học vào lộ trình",
+        );
+      }
+    } catch (error) {
+      console.error("Error adding course to path:", error);
+      message.error("Đã xảy ra lỗi khi thêm khóa học");
+    } finally {
+      setAddingCourseId(null);
     }
   };
 
@@ -1208,10 +1333,33 @@ const LearningPathSamplePage = () => {
                                             : "Bỏ qua"}
                                     </span>
                                   </div>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {/* <span className="text-xs text-gray-500 dark:text-gray-400">
                                     {courseCount} khóa học
-                                  </span>
+                                  </span> */}
+                                  <Button
+                                    size="small"
+                                    type="default"
+                                    icon={<FiSearch className="w-3.5 h-3.5" />}
+                                    onClick={() => {
+                                      handleOpenCourseSuggestion(
+                                        cg.subjectCode ?? "",
+                                        cg.subjectId ?? "",
+                                        selectedMajor.majorId ?? "",
+                                      );
+                                    }}
+                                    style={{
+                                      borderColor: "#49BBBD",
+                                      color: "#49BBBD",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: "4px",
+                                    }}
+                                    className="hover:bg-[#49BBBD] hover:text-white transition-colors"
+                                  >
+                                    Tìm thêm khóa ở mức độ khác
+                                  </Button>
                                 </div>
+
                                 {courseCount > 0 && (
                                   <div className="space-y-3">
                                     {(cg.courses ?? []).map((course, i) => (
@@ -1502,26 +1650,52 @@ const LearningPathSamplePage = () => {
                                   key={cg.subjectCode ?? `${id}-${sem}`}
                                   className="mb-6"
                                 >
-                                  <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                      <div className="px-2 py-1 rounded-md bg-[#49BBBD] text-white text-xs font-bold">
-                                        {cg.subjectCode ?? "SUB"}
+                                  <div className="mb-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center gap-3 flex-wrap">
+                                        <div className="px-2 py-1 rounded-md bg-[#49BBBD] text-white text-xs font-bold">
+                                          {cg.subjectCode ?? "SUB"}
+                                        </div>
+                                        <span
+                                          className={`px-2 py-1 rounded-full text-xs font-semibold ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                                        >
+                                          {cg.status === 0
+                                            ? "Chưa bắt đầu"
+                                            : cg.status === 1
+                                              ? "Đang học"
+                                              : cg.status === 2
+                                                ? "Hoàn thành"
+                                                : "Bỏ qua"}
+                                        </span>
                                       </div>
-                                      <span
-                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
-                                      >
-                                        {cg.status === 0
-                                          ? "Chưa bắt đầu"
-                                          : cg.status === 1
-                                            ? "Đang học"
-                                            : cg.status === 2
-                                              ? "Hoàn thành"
-                                              : "Bỏ qua"}
+                                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        {courseCount} khóa học
                                       </span>
                                     </div>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                      {courseCount} khóa học
-                                    </span>
+                                    <Button
+                                      size="small"
+                                      type="default"
+                                      icon={
+                                        <FiSearch className="w-3.5 h-3.5" />
+                                      }
+                                      onClick={() => {
+                                        handleOpenCourseSuggestion(
+                                          cg.subjectCode ?? "",
+                                          cg.subjectId ?? "",
+                                          major.majorId ?? "",
+                                        );
+                                      }}
+                                      style={{
+                                        borderColor: "#49BBBD",
+                                        color: "#49BBBD",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                      }}
+                                      className="hover:bg-[#49BBBD] hover:text-white transition-colors"
+                                    >
+                                      Tìm thêm khóa ở mức độ khác
+                                    </Button>
                                   </div>
                                   {courseCount > 0 && (
                                     <div className="space-y-3 mt-3">
@@ -2232,6 +2406,104 @@ const LearningPathSamplePage = () => {
           ]}
         />
       </div>
+
+      {/* Course Suggestion Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FiSearch className="w-5 h-5 text-[#49BBBD]" />
+            <span className="font-bold">
+              Tìm khóa học khác - {selectedSubjectCode}
+            </span>
+          </div>
+        }
+        open={showCourseSuggestionModal}
+        onCancel={() => setShowCourseSuggestionModal(false)}
+        footer={null}
+        width={1100}
+        centered
+      >
+        <div className="space-y-4">
+          {/* Filter Section */}
+          <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Độ khó:
+            </span>
+            <Select
+              value={suggestionType}
+              onChange={handleSuggestionTypeChange}
+              className="w-48"
+              options={[
+                { value: 1, label: "Dễ hơn" },
+                { value: 2, label: "Khó hơn" },
+              ]}
+            />
+            <div className="flex-1" />
+            <Tag color="blue" className="text-xs">
+              {suggestedCourses.length} khóa học
+            </Tag>
+          </div>
+
+          {/* Courses List */}
+          <Spin spinning={loadingSuggestions}>
+            <div className="space-y-3 max-h-[500px] overflow-y-auto">
+              {suggestedCourses.length === 0 && !loadingSuggestions ? (
+                <div className="text-center py-12">
+                  <FiSearch className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Không tìm thấy khóa học phù hợp
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Thử chọn độ khó khác hoặc quay lại sau
+                  </p>
+                </div>
+              ) : (
+                suggestedCourses.map((course: CourseBasicInfoDto, index) => (
+                  <div
+                    key={course.courseId ?? index}
+                    className="rounded-xl p-4 transition-all duration-200 flex gap-5"
+                  >
+                    <CourseCard
+                      id={course.courseId ?? ""}
+                      imageUrl={
+                        course.courseImageUrl ??
+                        "https://via.placeholder.com/600x400?text=EduSmart"
+                      }
+                      title={course.title ?? "Khóa học"}
+                      descriptionLines={
+                        course.shortDescription ? [course.shortDescription] : []
+                      }
+                      instructor={course.teacherName ?? "Giảng viên"}
+                      level={course.level}
+                      price={course.price}
+                      dealPrice={course.dealPrice}
+                      routerPush={`/course/${course.courseId}`}
+                      isHorizontal={true}
+                    />
+                    <div className="mt-3 flex flex-1 items-center justify-center ">
+                      <Button
+                        type="primary"
+                        size="middle"
+                        icon={<FiPlus className="w-4 h-4" />}
+                        loading={addingCourseId === course.courseId}
+                        disabled={addingCourseId !== null}
+                        onClick={() =>
+                          handleAddCourseToPath(course.courseId ?? "")
+                        }
+                        className="bg-[#49BBBD] hover:bg-cyan-600 border-none"
+                      >
+                        {addingCourseId === course.courseId
+                          ? "Đang thêm..."
+                          : "Thêm vào lộ trình"}
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Spin>
+        </div>
+      </Modal>
 
       {/* Transcript Modal */}
       <Modal

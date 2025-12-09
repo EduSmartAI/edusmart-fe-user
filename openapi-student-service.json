@@ -8,19 +8,9 @@
   "paths": {
     "/api/AiQuizEvaluate": {
       "post": {
-        "tags": [
-          "AiQuizEvaluate"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiQuizEvaluate"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -40,14 +30,8 @@
         }
       },
       "get": {
-        "tags": [
-          "AiQuizEvaluate"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiQuizEvaluate"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -82,18 +66,28 @@
         }
       }
     },
+    "/api/LearningPaths/ReGenerateLearningPath": {
+      "post": {
+        "tags": ["LearningPaths"],
+        "summary": "Tạo lại Learning Path, Khi student chưa ưng ý lộ trình học tập vừa tạo",
+        "description": "API này cho phép sinh viên tạo lại lộ trình học tập của mình.",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/RegenerateLearningPathCommandResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/LearningPaths/stream-by-id": {
       "post": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Streaming Learning Path theo Id",
         "description": "Sử dụng SSE để lấy Learning PathById (POST body).",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
         "parameters": [
           {
             "in": "body",
@@ -112,21 +106,11 @@
     },
     "/api/LearningPaths/Sync-data-readmodel": {
       "post": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Đồng bộ dữ liệu từ write-model sang read-model (BACKEND)",
         "description": "Dùng để đồng bộ dữ liệu từ write-model khi chỉnh data, chỉ dùng cho Backend",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -148,21 +132,11 @@
     },
     "/api/LearningPaths/update-course-status": {
       "post": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Update course status in all learning paths for a user",
         "description": "Internal debug endpoint - userId lấy từ body, không dùng token",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -184,19 +158,9 @@
     },
     "/api/LearningPaths/UpdateLearningPathStatus": {
       "post": {
-        "tags": [
-          "LearningPaths"
-        ],
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["LearningPaths"],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -218,16 +182,10 @@
     },
     "/api/StudentDashboards/GenAndInsertImprovementByAI": {
       "post": {
-        "tags": [
-          "StudentDashboards"
-        ],
+        "tags": ["StudentDashboards"],
         "summary": "Tìm tài liệu improvement",
         "description": "Trả về tài liệu dạng markdown. Cần xác thực Bearer.",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -248,21 +206,11 @@
     },
     "/api/v1/Admin/InsertLearningGoal": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Tạo mục tiêu học tập mới",
         "description": "Cần cấp quyền Admin",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -284,21 +232,11 @@
     },
     "/api/v1/Admin/InsertTechnology": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Thêm ngôn ngữ/ framework mới",
         "description": "Cần cấp quyền Admin",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -320,19 +258,11 @@
     },
     "/api/v1/Student/InsertStudentTranscript": {
       "post": {
-        "tags": [
-          "Student"
-        ],
+        "tags": ["Student"],
         "summary": "Import bảng điểm từ FAP cho sinh viên",
         "description": "Cần cấp quyền Student",
-        "consumes": [
-          "multipart/form-data"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["multipart/form-data"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "formData",
@@ -352,21 +282,11 @@
     },
     "/api/v1/UserBehaviour/InsertUserBehaviour": {
       "post": {
-        "tags": [
-          "UserBehaviour"
-        ],
+        "tags": ["UserBehaviour"],
         "summary": "Dùng cho việc lưu hành vi của người dùng để theo dõi đưa ra lộ trình cá nhân hoá phù hợp",
         "description": "Cần cấp quyền",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -388,14 +308,8 @@
     },
     "/api/AiQuizEvaluate/GetLatestLessonAiEvaluations": {
       "get": {
-        "tags": [
-          "AiQuizEvaluate"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "tags": ["AiQuizEvaluate"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -432,16 +346,10 @@
     },
     "/api/LearningPaths": {
       "get": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Lấy Learning Path (hỗ trợ SSE)",
         "description": "Nếu client gửi Accept: text/event-stream thì server trả SSE realtime, ngược lại trả JSON thông thường.",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -462,16 +370,10 @@
     },
     "/api/LearningPaths/get-all": {
       "get": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Lấy tất cả Learning Path",
         "description": "Trả về Learning Path đang có. Cần xác thực Bearer.",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -496,18 +398,47 @@
         }
       }
     },
+    "/api/LearningPaths/suggested-courses/{pathId}/subjects/{subjectCode}/recommend": {
+      "get": {
+        "tags": ["LearningPaths"],
+        "summary": "Lấy các khóa học được đề xuất cho một lộ trình học tập dựa trên độ khó",
+        "description": "API này cho phép lấy các khóa học được đề xuất dựa trên độ khó (dễ hơn hoặc khó hơn) cho một lộ trình học tập cụ thể.",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pathId",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "path",
+            "name": "subjectCode",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "type"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetSuggestedCoursesForLearningPathResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/StudentDashboards/GetLessonDashboardProcess": {
       "get": {
-        "tags": [
-          "StudentDashboards"
-        ],
+        "tags": ["StudentDashboards"],
         "summary": "Lấy Lesson Dashboard",
         "description": "Trả về Lesson Dashboard theo tham số query. Cần xác thực Bearer.",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -528,16 +459,10 @@
     },
     "/api/StudentDashboards/GetModuleDashboardProcess": {
       "get": {
-        "tags": [
-          "StudentDashboards"
-        ],
+        "tags": ["StudentDashboards"],
         "summary": "Lấy Module Dashboard",
         "description": "Trả về Module Dashboard theo tham số query. Cần xác thực Bearer.",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -558,16 +483,10 @@
     },
     "/api/StudentDashboards/GetOverviewCourseDashboardProcess": {
       "get": {
-        "tags": [
-          "StudentDashboards"
-        ],
+        "tags": ["StudentDashboards"],
         "summary": "Lấy Overview Dashboard",
         "description": "Trả về Overview Dashboard theo tham số query. Cần xác thực Bearer.",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -588,16 +507,10 @@
     },
     "/api/v1/Admin/SelectLearningGoals": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Lấy danh sách mục tiêu học tập (phân trang, tìm kiếm, lọc)",
         "description": "Cần cấp quyền Admin",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -635,16 +548,10 @@
     },
     "/api/v1/Admin/SelectTechnologies": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Lấy danh sách công nghệ (phân trang, tìm kiếm, lọc)",
         "description": "Cần cấp quyền Admin",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -682,16 +589,10 @@
     },
     "/api/v1/Student/SelectStudentProfile": {
       "get": {
-        "tags": [
-          "Student"
-        ],
+        "tags": ["Student"],
         "summary": "Hiển thị profile học sinh",
         "description": "Cần cấp quyền Student",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -704,16 +605,10 @@
     },
     "/api/v1/Student/SelectStudentTechnologyGoal": {
       "get": {
-        "tags": [
-          "Student"
-        ],
+        "tags": ["Student"],
         "summary": "Hiển thị công nghệ và mục tiêu học tập của sinh viên",
         "description": "Cần cấp quyền Student",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -726,16 +621,10 @@
     },
     "/api/v1/Student/SelectStudentTranscript": {
       "get": {
-        "tags": [
-          "Student"
-        ],
+        "tags": ["Student"],
         "summary": "Hiển thị bảng điểm được import từ FAP của sinh viên",
         "description": "Cần cấp quyền Student",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -748,16 +637,10 @@
     },
     "/api/v1/UserBehaviour/SelectUserBehaviours": {
       "get": {
-        "tags": [
-          "UserBehaviour"
-        ],
+        "tags": ["UserBehaviour"],
         "summary": "Lấy danh sách toàn bộ hành vi của người dùng hiện tại",
         "description": "API hỗ trợ phân trang và lọc theo ActionType, TargetType. Cần cấp quyền.",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -768,23 +651,39 @@
         }
       }
     },
+    "/api/LearningPaths/add-suggested-course": {
+      "patch": {
+        "tags": ["LearningPaths"],
+        "summary": "Thêm khóa học được đề xuất vào lộ trình học tập",
+        "description": "API này cho phép thêm một khóa học được đề xuất vào lộ trình học tập hiện tại.",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AddLearningPathCourseCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AddLearningPathCourseResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/LearningPaths/choose-major": {
       "put": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Pick lộ trình chuyên ngành phù hợp",
         "description": "",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -806,21 +705,11 @@
     },
     "/api/LearningPaths/rename": {
       "put": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Đổi tên Learning Path",
         "description": "Chỉ cập nhật PathName của lộ trình.",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -842,21 +731,11 @@
     },
     "/api/LearningPaths/UpdateCourseStatusToSkipped": {
       "put": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Cập nhật trạng thái khóa học sang Skipped",
         "description": "API cho phép sinh viên chấp nhận học vượt/bỏ qua khóa học trong lộ trình học tập",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -878,21 +757,11 @@
     },
     "/api/LearningPaths/UpdateLearningPathCourses": {
       "put": {
-        "tags": [
-          "LearningPaths"
-        ],
+        "tags": ["LearningPaths"],
         "summary": "Cập nhật các khóa học được chọn trong lộ trình học tập",
         "description": "API này cho phép sinh viên chọn các khóa học mong muốn.",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -912,23 +781,39 @@
         }
       }
     },
+    "/api/LearningPaths/UpdateSubjectToSkipped": {
+      "put": {
+        "tags": ["LearningPaths"],
+        "summary": "Cập nhật trạng thái môn học sang Skipped",
+        "description": "API cho phép sinh viên chấp nhận học vượt/bỏ qua môn học trong lộ trình học tập",
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateSubjectToSkippedCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/UpdateSubjectToSkippedCommandResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Admin/UpdateLearningGoal": {
       "put": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Cập nhật mục tiêu học tập",
         "description": "Cần cấp quyền Admin",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -950,21 +835,11 @@
     },
     "/api/v1/Admin/UpdateTechnology": {
       "put": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Cập nhật ngôn ngữ/ framework",
         "description": "Cần cấp quyền Admin",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -984,57 +859,13 @@
         }
       }
     },
-    "/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus": {
-      "put": {
-        "tags": [
-          "CourseSuggestions"
-        ],
-        "summary": "Chấp nhận đề xuất khóa học",
-        "description": "API cho phép sinh viên chấp nhận đề xuất khóa học từ hệ thống. Sau khi chấp nhận, IsAccepted sẽ được đặt thành true.",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "schema": {
-              "$ref": "#/definitions/AcceptCourseSuggestionCommand"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/AcceptCourseSuggestionResponse"
-            }
-          }
-        }
-      }
-    },
     "/api/v1/Student/UpdateStudentProfile": {
       "put": {
-        "tags": [
-          "Student"
-        ],
+        "tags": ["Student"],
         "summary": "Cập nhật thông tin học sinh",
         "description": "Cần cấp quyền Student",
-        "consumes": [
-          "multipart/form-data"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["multipart/form-data"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "formData",
@@ -1135,16 +966,10 @@
     },
     "/api/v1/Admin/DeleteLearningGoal": {
       "delete": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Xóa mục tiêu học tập",
         "description": "Cần cấp quyền Admin - Xóa logic",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1166,16 +991,10 @@
     },
     "/api/v1/Admin/DeleteTechnology": {
       "delete": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Xóa ngôn ngữ/ framework",
         "description": "Cần cấp quyền Admin - Xóa logic",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1196,17 +1015,28 @@
     }
   },
   "definitions": {
-    "AcceptCourseSuggestionCommand": {
+    "AddLearningPathCourseCommand": {
       "type": "object",
       "properties": {
-        "courseSuggestionId": {
+        "learningPathMajorId": {
           "format": "uuid",
+          "type": "string"
+        },
+        "internalCourseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "learningPathSubjectCodeId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "subjectCode": {
           "type": "string"
         }
       },
       "additionalProperties": false
     },
-    "AcceptCourseSuggestionResponse": {
+    "AddLearningPathCourseResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -1225,7 +1055,7 @@
           }
         },
         "response": {
-          "type": "string"
+          "$ref": "#/definitions/LearningPathCourseDto"
         }
       },
       "additionalProperties": false
@@ -1524,13 +1354,62 @@
       },
       "additionalProperties": false
     },
+    "CourseBasicInfoDto": {
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "shortDescription": {
+          "type": "string"
+        },
+        "courseImageUrl": {
+          "type": "string"
+        },
+        "level": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "price": {
+          "format": "double",
+          "type": "number"
+        },
+        "dealPrice": {
+          "format": "double",
+          "type": "number"
+        },
+        "teacherId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "teacherName": {
+          "type": "string"
+        },
+        "subjectCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "CourseGroupDto": {
       "type": "object",
       "properties": {
+        "subjectId": {
+          "format": "uuid",
+          "type": "string"
+        },
         "subjectCode": {
           "type": "string"
         },
         "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "semesterPosition": {
           "format": "int32",
           "type": "integer"
         },
@@ -1847,6 +1726,33 @@
       },
       "additionalProperties": false
     },
+    "GetSuggestedCoursesForLearningPathResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CourseBasicInfoDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "InternalLearningPathDto": {
       "type": "object",
       "properties": {
@@ -1977,26 +1883,11 @@
     },
     "LearningGoalType": {
       "format": "int32",
-      "enum": [
-        0,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
+      "enum": [0, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       "type": "integer"
     },
     "LearningGoalUpdateCommand": {
-      "required": [
-        "goalId",
-        "goalName",
-        "learningGoalType"
-      ],
+      "required": ["goalId", "goalName", "learningGoalType"],
       "type": "object",
       "properties": {
         "goalId": {
@@ -2040,11 +1931,37 @@
       },
       "additionalProperties": false
     },
+    "LearningPathCourseDto": {
+      "type": "object",
+      "properties": {
+        "learningPathCourseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "learningPathMajorId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "internalCourseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "subjectCode": {
+          "type": "string"
+        },
+        "position": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
     "LearningPathCourseUpdateCommand": {
-      "required": [
-        "pathId",
-        "selectedCourseIds"
-      ],
+      "required": ["pathId", "selectedCourseIds"],
       "type": "object",
       "properties": {
         "pathId": {
@@ -2087,10 +2004,7 @@
       "additionalProperties": false
     },
     "LearningPathRenameCommand": {
-      "required": [
-        "learningPathId",
-        "pathName"
-      ],
+      "required": ["learningPathId", "pathName"],
       "type": "object",
       "properties": {
         "learningPathId": {
@@ -2208,6 +2122,23 @@
           "format": "double",
           "type": "number"
         },
+        "level": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "levelReason": {
+          "type": "string"
+        },
+        "isSkipTest": {
+          "type": "boolean"
+        },
+        "limitTime": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "evaluationAndImprove": {
+          "type": "string"
+        },
         "summaryFeedback": {
           "type": "string"
         },
@@ -2219,6 +2150,12 @@
         },
         "learningAbility": {
           "type": "string"
+        },
+        "praticalAbilityFeedbacks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PraticalAbilityFeedback"
+          }
         },
         "basicLearningPath": {
           "$ref": "#/definitions/BasicLearningPathDto"
@@ -2502,11 +2439,7 @@
     },
     "LessonStatus": {
       "format": "int32",
-      "enum": [
-        0,
-        1,
-        2
-      ],
+      "enum": [0, 1, 2],
       "type": "integer"
     },
     "MajorItem": {
@@ -2739,11 +2672,7 @@
     },
     "ModuleProgressStatus": {
       "format": "int32",
-      "enum": [
-        0,
-        1,
-        2
-      ],
+      "enum": [0, 1, 2],
       "type": "integer"
     },
     "OverviewCourseContract": {
@@ -2788,6 +2717,12 @@
         },
         "learningBehavior": {
           "$ref": "#/definitions/LearningBehaviorSection"
+        },
+        "suggestedCourses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SuggestedCourseDetailsDto"
+          }
         }
       },
       "additionalProperties": false
@@ -2812,6 +2747,15 @@
           "type": "integer"
         },
         "analysis": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PraticalAbilityFeedback": {
+      "type": "object",
+      "properties": {
+        "analysisMarkDown": {
           "type": "string"
         }
       },
@@ -2853,11 +2797,7 @@
     },
     "QuizScope": {
       "format": "int32",
-      "enum": [
-        1,
-        2,
-        3
-      ],
+      "enum": [1, 2, 3],
       "type": "integer"
     },
     "RecommendedAction": {
@@ -2870,6 +2810,31 @@
           "type": "string"
         },
         "targetUrl": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RegenerateLearningPathCommandResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "format": "uuid",
           "type": "string"
         }
       },
@@ -3273,6 +3238,47 @@
       },
       "additionalProperties": false
     },
+    "SuggestedCourseDetailsDto": {
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "shortDescription": {
+          "type": "string"
+        },
+        "courseImageUrl": {
+          "type": "string"
+        },
+        "level": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "price": {
+          "format": "double",
+          "type": "number"
+        },
+        "dealPrice": {
+          "format": "double",
+          "type": "number"
+        },
+        "teacherId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "teacherName": {
+          "type": "string"
+        },
+        "subjectCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "SuggestedCourseDto": {
       "type": "object",
       "properties": {
@@ -3300,6 +3306,11 @@
         }
       },
       "additionalProperties": false
+    },
+    "SuggestedCourseType": {
+      "format": "int32",
+      "enum": [1, 2],
+      "type": "integer"
     },
     "TechnologyDeleteResponse": {
       "type": "object",
@@ -3366,18 +3377,11 @@
     },
     "TechnologyType": {
       "format": "int32",
-      "enum": [
-        1,
-        2
-      ],
+      "enum": [1, 2],
       "type": "integer"
     },
     "TechnologyUpdateCommand": {
-      "required": [
-        "technologyId",
-        "technologyName",
-        "technologyType"
-      ],
+      "required": ["technologyId", "technologyName", "technologyType"],
       "type": "object",
       "properties": {
         "technologyId": {
@@ -3422,9 +3426,7 @@
       "additionalProperties": false
     },
     "UpdateCourseStatusToSkippedCommand": {
-      "required": [
-        "courseId"
-      ],
+      "required": ["courseId"],
       "type": "object",
       "properties": {
         "courseId": {
@@ -3613,44 +3615,46 @@
       },
       "additionalProperties": false
     },
+    "UpdateSubjectToSkippedCommand": {
+      "required": ["subjectCode"],
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateSubjectToSkippedCommandResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "UserBehaviourActionType": {
       "format": "int32",
       "enum": [
-        1,
-        2,
-        3,
-        4,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        20,
-        21,
-        22,
-        23,
-        24,
-        30,
-        31,
-        32,
-        33,
-        40,
-        41,
-        42,
-        50,
-        51,
-        52,
-        60,
-        61,
-        62,
-        63,
-        64,
-        65,
-        70,
-        71,
-        72
+        1, 2, 3, 4, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 30, 31, 32,
+        33, 40, 41, 42, 50, 51, 52, 60, 61, 62, 63, 64, 65, 70, 71, 72
       ],
       "type": "integer"
     },
@@ -3686,9 +3690,7 @@
       "additionalProperties": false
     },
     "UserBehaviourInsertCommand": {
-      "required": [
-        "actionType"
-      ],
+      "required": ["actionType"],
       "type": "object",
       "properties": {
         "actionType": {
@@ -3737,16 +3739,7 @@
     },
     "UserBehaviourTargetType": {
       "format": "int32",
-      "enum": [
-        1,
-        2,
-        4,
-        5,
-        6,
-        7,
-        8,
-        99
-      ],
+      "enum": [1, 2, 4, 5, 6, 7, 8, 99],
       "type": "integer"
     }
   },
@@ -3760,7 +3753,7 @@
   },
   "security": [
     {
-      "JWT_Token": [ ]
+      "JWT_Token": []
     }
   ]
 }

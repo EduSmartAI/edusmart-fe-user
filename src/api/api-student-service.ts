@@ -68,6 +68,12 @@ export enum TechnologyType {
 }
 
 /** @format int32 */
+export enum SuggestedCourseType {
+  Value1 = 1,
+  Value2 = 2,
+}
+
+/** @format int32 */
 export enum QuizScope {
   Value1 = 1,
   Value2 = 2,
@@ -102,17 +108,22 @@ export enum LearningGoalType {
   Value10 = 10,
 }
 
-export interface AcceptCourseSuggestionCommand {
+export interface AddLearningPathCourseCommand {
   /** @format uuid */
-  courseSuggestionId?: string;
+  learningPathMajorId?: string;
+  /** @format uuid */
+  internalCourseId?: string;
+  /** @format uuid */
+  learningPathSubjectCodeId?: string;
+  subjectCode?: string;
 }
 
-export interface AcceptCourseSuggestionResponse {
+export interface AddLearningPathCourseResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
   detailErrors?: DetailError[];
-  response?: string;
+  response?: LearningPathCourseDto;
 }
 
 export interface AdminLearningGoalItem {
@@ -229,7 +240,27 @@ export interface BasicLearningPathDto {
   courseGroups?: CourseGroupDto[];
 }
 
+export interface CourseBasicInfoDto {
+  /** @format uuid */
+  courseId?: string;
+  title?: string;
+  shortDescription?: string;
+  courseImageUrl?: string;
+  /** @format int32 */
+  level?: number;
+  /** @format double */
+  price?: number;
+  /** @format double */
+  dealPrice?: number;
+  /** @format uuid */
+  teacherId?: string;
+  teacherName?: string;
+  subjectCode?: string;
+}
+
 export interface CourseGroupDto {
+  /** @format uuid */
+  subjectId?: string;
   subjectCode?: string;
   /** @format int32 */
   status?: number;
@@ -347,6 +378,14 @@ export interface GetOverviewCourseDashboardResponse {
   response?: OverviewCourseContract;
 }
 
+export interface GetSuggestedCoursesForLearningPathResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: CourseBasicInfoDto[];
+}
+
 export interface InternalLearningPathDto {
   majorId?: string;
   majorCode?: string;
@@ -411,6 +450,20 @@ export interface LearningGoalUpdateResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: string;
+}
+
+export interface LearningPathCourseDto {
+  /** @format uuid */
+  learningPathCourseId?: string;
+  /** @format uuid */
+  learningPathMajorId?: string;
+  /** @format uuid */
+  internalCourseId?: string;
+  subjectCode?: string;
+  /** @format int32 */
+  position?: number;
+  /** @format int32 */
+  status?: number;
 }
 
 export interface LearningPathCourseUpdateCommand {
@@ -479,10 +532,18 @@ export interface LearningPathSelectDto {
   pathName?: string;
   /** @format double */
   completionPercent?: number;
+  /** @format int32 */
+  level?: number;
+  levelReason?: string;
+  isSkipTest?: boolean;
+  /** @format int32 */
+  limitTime?: number;
+  evaluationAndImprove?: string;
   summaryFeedback?: string;
   habitAndInterestAnalysis?: string;
   personality?: string;
   learningAbility?: string;
+  praticalAbilityFeedbacks?: PraticalAbilityFeedback[];
   basicLearningPath?: BasicLearningPathDto;
   internalLearningPath?: InternalLearningPathDto[];
   externalLearningPath?: ExternalLearningPathDto[];
@@ -716,6 +777,7 @@ export interface OverviewCourseContract {
   aiEvaluationMarkdown?: string;
   performance?: PerformanceSection;
   learningBehavior?: LearningBehaviorSection;
+  suggestedCourses?: SuggestedCourseDetailsDto[];
 }
 
 export interface PerformanceSection {
@@ -728,6 +790,10 @@ export interface PerformanceSection {
   /** @format int32 */
   slowerCount?: number;
   analysis?: string;
+}
+
+export interface PraticalAbilityFeedback {
+  analysisMarkDown?: string;
 }
 
 export interface ProgressSection {
@@ -751,6 +817,15 @@ export interface RecommendedAction {
   title?: string;
   kind?: string;
   targetUrl?: string;
+}
+
+export interface RegenerateLearningPathCommandResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  /** @format uuid */
+  response?: string;
 }
 
 export interface SearchAiRecommendResponse {
@@ -897,6 +972,24 @@ export interface StudentTranscriptSelectResponseEntity {
   createdAt?: string;
 }
 
+export interface SuggestedCourseDetailsDto {
+  /** @format uuid */
+  courseId?: string;
+  title?: string;
+  shortDescription?: string;
+  courseImageUrl?: string;
+  /** @format int32 */
+  level?: number;
+  /** @format double */
+  price?: number;
+  /** @format double */
+  dealPrice?: number;
+  /** @format uuid */
+  teacherId?: string;
+  teacherName?: string;
+  subjectCode?: string;
+}
+
 export interface SuggestedCourseDto {
   title?: string;
   link?: string;
@@ -1012,6 +1105,19 @@ export interface UpdateStatusLearningPathCommand {
 }
 
 export interface UpdateStatusLearningPathResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
+export interface UpdateSubjectToSkippedCommand {
+  /** @minLength 1 */
+  subjectCode: string;
+}
+
+export interface UpdateSubjectToSkippedCommandResponse {
   success?: boolean;
   messageId?: string;
   message?: string;
@@ -1364,6 +1470,24 @@ export class Api<
       }),
 
     /**
+     * @description API này cho phép sinh viên tạo lại lộ trình học tập của mình.
+     *
+     * @tags LearningPaths
+     * @name LearningPathsReGenerateLearningPathCreate
+     * @summary Tạo lại Learning Path, Khi student chưa ưng ý lộ trình học tập vừa tạo
+     * @request POST:/api/LearningPaths/ReGenerateLearningPath
+     * @secure
+     */
+    learningPathsReGenerateLearningPathCreate: (params: RequestParams = {}) =>
+      this.request<RegenerateLearningPathCommandResponse, any>({
+        path: `/api/LearningPaths/ReGenerateLearningPath`,
+        method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Sử dụng SSE để lấy Learning PathById (POST body).
      *
      * @tags LearningPaths
@@ -1653,6 +1777,32 @@ export class Api<
       }),
 
     /**
+     * @description API này cho phép lấy các khóa học được đề xuất dựa trên độ khó (dễ hơn hoặc khó hơn) cho một lộ trình học tập cụ thể.
+     *
+     * @tags LearningPaths
+     * @name LearningPathsSuggestedCoursesSubjectsRecommendList
+     * @summary Lấy các khóa học được đề xuất cho một lộ trình học tập dựa trên độ khó
+     * @request GET:/api/LearningPaths/suggested-courses/{pathId}/subjects/{subjectCode}/recommend
+     * @secure
+     */
+    learningPathsSuggestedCoursesSubjectsRecommendList: (
+      pathId: string,
+      subjectCode: string,
+      query?: {
+        type?: any;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSuggestedCoursesForLearningPathResponse, any>({
+        path: `/api/LearningPaths/suggested-courses/${pathId}/subjects/${subjectCode}/recommend`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Trả về Lesson Dashboard theo tham số query. Cần xác thực Bearer.
      *
      * @tags StudentDashboards
@@ -1860,6 +2010,29 @@ export class Api<
       }),
 
     /**
+     * @description API này cho phép thêm một khóa học được đề xuất vào lộ trình học tập hiện tại.
+     *
+     * @tags LearningPaths
+     * @name LearningPathsAddSuggestedCoursePartialUpdate
+     * @summary Thêm khóa học được đề xuất vào lộ trình học tập
+     * @request PATCH:/api/LearningPaths/add-suggested-course
+     * @secure
+     */
+    learningPathsAddSuggestedCoursePartialUpdate: (
+      body: AddLearningPathCourseCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<AddLearningPathCourseResponse, any>({
+        path: `/api/LearningPaths/add-suggested-course`,
+        method: "PATCH",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * No description
      *
      * @tags LearningPaths
@@ -1952,6 +2125,29 @@ export class Api<
       }),
 
     /**
+     * @description API cho phép sinh viên chấp nhận học vượt/bỏ qua môn học trong lộ trình học tập
+     *
+     * @tags LearningPaths
+     * @name LearningPathsUpdateSubjectToSkippedUpdate
+     * @summary Cập nhật trạng thái môn học sang Skipped
+     * @request PUT:/api/LearningPaths/UpdateSubjectToSkipped
+     * @secure
+     */
+    learningPathsUpdateSubjectToSkippedUpdate: (
+      body: UpdateSubjectToSkippedCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateSubjectToSkippedCommandResponse, any>({
+        path: `/api/LearningPaths/UpdateSubjectToSkipped`,
+        method: "PUT",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Cần cấp quyền Admin
      *
      * @tags Admin
@@ -1989,29 +2185,6 @@ export class Api<
     ) =>
       this.request<TechnologyUpdateResponse, any>({
         path: `/api/v1/Admin/UpdateTechnology`,
-        method: "PUT",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description API cho phép sinh viên chấp nhận đề xuất khóa học từ hệ thống. Sau khi chấp nhận, IsAccepted sẽ được đặt thành true.
-     *
-     * @tags CourseSuggestions
-     * @name V1CourseSuggestionsUpdateAcceptCourseSuggestionStatusUpdate
-     * @summary Chấp nhận đề xuất khóa học
-     * @request PUT:/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus
-     * @secure
-     */
-    v1CourseSuggestionsUpdateAcceptCourseSuggestionStatusUpdate: (
-      body: AcceptCourseSuggestionCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<AcceptCourseSuggestionResponse, any>({
-        path: `/api/v1/CourseSuggestions/UpdateAcceptCourseSuggestionStatus`,
         method: "PUT",
         body: body,
         secure: true,
