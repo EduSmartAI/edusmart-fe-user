@@ -61,6 +61,7 @@ export interface SurveyState {
   isSubmitting: boolean;
   surveyId: string | null;
   submitError: StoreError | null; // ✅ NEW: Typed error object
+  otherQuestionAnswerCodes: number[] | null; // ✅ Store other question answer codes for quiz submission
 
   // Draft state
   isDraftSaving: boolean;
@@ -223,6 +224,7 @@ const initialState: SurveyState = {
   isSubmitting: false,
   surveyId: null,
   submitError: null,
+  otherQuestionAnswerCodes: null,
   isDraftSaving: false,
   lastSavedAt: null,
   recommendations: null,
@@ -442,10 +444,15 @@ export const useSurveyStore = create<SurveyState & SurveyActions>()(
                 `✅ [SURVEY STORE] Survey submitted (Quiz flow). Response: null`,
               );
 
+              // Store otherQuestionAnswerCodes for later use in quiz submission
+              set({ 
+                surveyId: result.surveyId || null,
+                otherQuestionAnswerCodes: otherQuestionAnswerCodes || null,
+              });
+
               // Auto-load recommendations (optional, don't fail if this fails)
               // Only for quiz flow
               if (result.surveyId) {
-                set({ surveyId: result.surveyId });
                 try {
                   const loadResult = await getSurveyRecommendationsAction(
                     result.surveyId,
