@@ -3404,6 +3404,19 @@
       },
       "additionalProperties": false
     },
+    "PracticeTestAdminSolutionUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "solutionCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "PracticeTestAdminTemplatesInsertRequest": {
       "type": "object",
       "properties": {
@@ -3516,6 +3529,12 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/PracticeTestAdminProblemExampleUpdateRequest"
+          }
+        },
+        "solutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PracticeTestAdminSolutionUpdateRequest"
           }
         }
       },

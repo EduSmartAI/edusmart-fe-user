@@ -21,6 +21,7 @@ import {
   message,
   Collapse,
   Progress,
+  Tooltip,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
@@ -40,6 +41,8 @@ import {
   FiChevronRight,
   FiSearch,
   FiGlobe,
+  FiBook,
+  FiPlayCircle,
 } from "react-icons/fi";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
@@ -995,7 +998,7 @@ const LearningPathSamplePage = () => {
     switch (statusValue) {
       case 0:
         return {
-          label: "Chưa học",
+          label: "Chưa học cần học để cải thiện",
           color: "default",
           bgClass: "bg-slate-100 dark:bg-slate-800",
         };
@@ -1011,12 +1014,41 @@ const LearningPathSamplePage = () => {
           color: "success",
           bgClass: "bg-green-50 dark:bg-green-950/30",
         };
+      case 4:
+        return {
+          label: "Không có khóa học",
+          color: "default",
+          bgClass: "bg-gray-100 dark:bg-gray-800",
+        };
       default:
         return {
           label: "Chưa xác định",
           color: "default",
           bgClass: "bg-slate-100 dark:bg-slate-800",
         };
+    }
+  };
+
+  // Helper: LearningCurrentStatus theo StudentTranscriptStatus enum
+  const getLearningCurrentStatusInfo = (statusValue: number | undefined) => {
+    switch (statusValue) {
+      case 0: // NotStarted
+        return {
+          label: "Chưa bắt đầu",
+          className: "bg-gray-100 text-gray-700",
+        };
+      case 1: // Studying
+        return {
+          label: "Đang học",
+          className: "bg-blue-100 text-blue-700",
+        };
+      case 2: // Passed
+        return {
+          label: "Đã qua",
+          className: "bg-emerald-100 text-emerald-700",
+        };
+      default:
+        return null;
     }
   };
 
@@ -1092,9 +1124,34 @@ const LearningPathSamplePage = () => {
                       {courseCount} khóa học
                     </span>
                   )}
-                  <Tag color={statusInfo.color as string} className="text-xs">
-                    {statusInfo.label}
-                  </Tag>
+                  <Tooltip title="Trạng thái học tập của khóa học trong môn này">
+                    <div className="inline-flex">
+                      <Tag
+                        color={statusInfo.color as string}
+                        className="text-xs flex items-center gap-1"
+                      >
+                        <FiPlayCircle className="w-3 h-3" />
+                        {statusInfo.label}
+                      </Tag>
+                    </div>
+                  </Tooltip>
+                  {(() => {
+                    const learningStatusInfo = getLearningCurrentStatusInfo(
+                      (group as ExtendedCourseGroupDto).learningCurrentStatus,
+                    );
+                    return learningStatusInfo ? (
+                      <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
+                        <div className="inline-flex">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
+                          >
+                            <FiBook className="w-3 h-3" />
+                            {learningStatusInfo.label}
+                          </span>
+                        </div>
+                      </Tooltip>
+                    ) : null;
+                  })()}
                 </div>
 
                 {/* Expand indicator */}
@@ -1418,17 +1475,41 @@ const LearningPathSamplePage = () => {
                                     <div className="px-2 py-1 rounded-md bg-[#49BBBD] text-white text-xs font-bold">
                                       {cg.subjectCode ?? "SUB"}
                                     </div>
-                                    <span
-                                      className={`px-2 py-1 rounded-full text-xs font-semibold ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
-                                    >
-                                      {cg.status === 0
-                                        ? "Chưa bắt đầu"
-                                        : cg.status === 1
-                                          ? "Đang học"
-                                          : cg.status === 2
-                                            ? "Hoàn thành"
-                                            : "Bỏ qua"}
-                                    </span>
+                                    <Tooltip title="Trạng thái học tập của khóa học trong môn này">
+                                      <div className="inline-flex">
+                                        <span
+                                          className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : cg.status === 4 ? "bg-gray-200 text-gray-600" : "bg-amber-100 text-amber-700"}`}
+                                        >
+                                          <FiPlayCircle className="w-3 h-3" />
+                                          {cg.status === 0
+                                            ? "Chưa bắt đầu"
+                                            : cg.status === 1
+                                              ? "Đang học"
+                                              : cg.status === 2
+                                                ? "Hoàn thành"
+                                                : cg.status === 4
+                                                  ? "Không có khóa học"
+                                                  : "Bỏ qua"}
+                                        </span>
+                                      </div>
+                                    </Tooltip>
+                                    {(() => {
+                                      const learningStatusInfo = getLearningCurrentStatusInfo(
+                                        cg.learningCurrentStatus,
+                                      );
+                                      return learningStatusInfo ? (
+                                        <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
+                                          <div className="inline-flex">
+                                            <span
+                                              className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
+                                            >
+                                              <FiBook className="w-3 h-3" />
+                                              {learningStatusInfo.label}
+                                            </span>
+                                          </div>
+                                        </Tooltip>
+                                      ) : null;
+                                    })()}
                                   </div>
                                   {/* <span className="text-xs text-gray-500 dark:text-gray-400">
                                     {courseCount} khóa học
@@ -1777,17 +1858,41 @@ const LearningPathSamplePage = () => {
                                         <div className="px-2 py-1 rounded-md bg-[#49BBBD] text-white text-xs font-bold">
                                           {cg.subjectCode ?? "SUB"}
                                         </div>
-                                        <span
-                                          className={`px-2 py-1 rounded-full text-xs font-semibold ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
-                                        >
-                                          {cg.status === 0
-                                            ? "Chưa bắt đầu"
-                                            : cg.status === 1
-                                              ? "Đang học"
-                                              : cg.status === 2
-                                                ? "Hoàn thành"
-                                                : "Bỏ qua"}
-                                        </span>
+                                        <Tooltip title="Trạng thái học tập của khóa học trong môn này">
+                                          <div className="inline-flex">
+                                            <span
+                                              className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : cg.status === 4 ? "bg-gray-200 text-gray-600" : "bg-amber-100 text-amber-700"}`}
+                                            >
+                                              <FiPlayCircle className="w-3 h-3" />
+                                              {cg.status === 0
+                                                ? "Chưa bắt đầu"
+                                                : cg.status === 1
+                                                  ? "Đang học"
+                                                  : cg.status === 2
+                                                    ? "Hoàn thành"
+                                                    : cg.status === 4
+                                                      ? "Không có khóa học"
+                                                      : "Bỏ qua"}
+                                            </span>
+                                          </div>
+                                        </Tooltip>
+                                        {(() => {
+                                          const learningStatusInfo = getLearningCurrentStatusInfo(
+                                            cg.learningCurrentStatus,
+                                          );
+                                          return learningStatusInfo ? (
+                                            <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
+                                              <div className="inline-flex">
+                                                <span
+                                                  className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
+                                                >
+                                                  <FiBook className="w-3 h-3" />
+                                                  {learningStatusInfo.label}
+                                                </span>
+                                              </div>
+                                            </Tooltip>
+                                          ) : null;
+                                        })()}
                                       </div>
                                       <span className="text-xs text-gray-500 dark:text-gray-400">
                                         {courseCount} khóa học
@@ -2522,6 +2627,42 @@ const LearningPathSamplePage = () => {
               label: "Lộ trình học tập",
               children: (
                 <div className="space-y-5">
+                  {/* Chú thích về Status */}
+                  <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 mb-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-0.5">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                          <FiBook className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                          Chú thích về trạng thái
+                        </h4>
+                        <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 text-xs font-semibold">
+                              <FiPlayCircle className="w-3 h-3" />
+                              Trạng thái khóa học
+                            </span>
+                            <span className="text-gray-600 dark:text-gray-400">
+                              : Hiển thị tiến độ học tập của các khóa học trong môn (Chưa bắt đầu / Đang học / Hoàn thành / Không có khóa học)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs font-semibold border border-gray-300">
+                              <FiBook className="w-3 h-3" />
+                              Trạng thái môn học
+                            </span>
+                            <span className="text-gray-600 dark:text-gray-400">
+                              : Dựa trên bảng điểm, cho biết bạn đã đậu, không đậu hay đang học môn này (Chưa bắt đầu / Đang học / Đã qua)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Section 1: Lộ trình khởi đầu */}
                   <section className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm">
                     <div
