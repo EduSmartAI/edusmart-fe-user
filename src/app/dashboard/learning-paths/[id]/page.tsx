@@ -50,7 +50,6 @@ import {
   LearningPathSelectDto as GeneratedLearningPathSelectDto,
   LearningPathSelectResponse,
   CourseBasicInfoDto,
-  AddLearningPathCourseCommand,
 } from "EduSmart/api/api-student-service";
 import { StudentClient, AIClient } from "EduSmart/hooks/apiClient";
 
@@ -444,6 +443,7 @@ const LearningPathSamplePage = () => {
   const [externalSubjectCode, setExternalSubjectCode] = useState<string | null>(
     null,
   );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [externalCourses, setExternalCourses] = useState<any[]>([]);
   const [loadingExternalCourses, setLoadingExternalCourses] = useState(false);
 
