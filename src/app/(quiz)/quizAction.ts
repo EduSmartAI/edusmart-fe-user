@@ -281,6 +281,7 @@ export async function submitStudentTestAction(testData: {
     learningGoalType?: number;
     learningGoalName?: string;
   };
+  otherQuestionAnswerCodes?: number[];
 }): Promise<
   | { ok: true; data: ApiResponse<{ learningPathId: string }> }
   | { ok: false; error: string; status?: number }
@@ -302,6 +303,7 @@ export async function submitStudentTestAction(testData: {
         learningGoalType?: number;
         learningGoalName?: string;
       };
+      otherQuestionAnswerCodes?: number[];
     } = {
       testId: testData.testId,
       startedAt: testData.startedAt,
@@ -337,6 +339,15 @@ export async function submitStudentTestAction(testData: {
       console.log("✅ Learning Goal Added to Payload:", payload.learningGoal);
     } else {
       console.warn("⚠️ No Learning Goal provided in testData");
+    }
+
+    // Add otherQuestionAnswerCodes if provided
+    if (testData.otherQuestionAnswerCodes && testData.otherQuestionAnswerCodes.length > 0) {
+      console.log("📝 Other Question Answer Codes Found:", testData.otherQuestionAnswerCodes);
+      payload.otherQuestionAnswerCodes = testData.otherQuestionAnswerCodes;
+      console.log("✅ Other Question Answer Codes Added to Payload:", payload.otherQuestionAnswerCodes);
+    } else {
+      console.log("ℹ️ No Other Question Answer Codes provided in testData");
     }
 
     console.log("📤 Final payload:", payload);

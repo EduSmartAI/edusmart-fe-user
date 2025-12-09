@@ -27,6 +27,7 @@ export interface QuizState {
       learningGoalType?: number;
       learningGoalName?: string;
     };
+    otherQuestionAnswerCodes?: number[];
   };
 }
 
@@ -42,7 +43,7 @@ const QuizMainFlow: React.FC = () => {
 
   const quizStore = useQuizStore();
   const practiceTestStore = usePracticeTestStore();
-  const { survey1Data, learningGoals } = useSurveyStore();
+  const { survey1Data, learningGoals, otherQuestionAnswerCodes } = useSurveyStore();
 
   // Determine initial stage based on flow state
   const getInitialStage = (): QuizState["stage"] => {
@@ -160,6 +161,7 @@ const QuizMainFlow: React.FC = () => {
       quizSubmissionData: {
         ...quizData,
         learningGoal,
+        otherQuestionAnswerCodes: otherQuestionAnswerCodes || undefined,
       },
     });
   };
@@ -204,10 +206,19 @@ const QuizMainFlow: React.FC = () => {
       });
 
       // Submit combined data
+      // Use otherQuestionAnswerCodes from quizSubmissionData if available, otherwise from store
+      const finalOtherQuestionAnswerCodes = 
+        quizState.quizSubmissionData.otherQuestionAnswerCodes ?? 
+        otherQuestionAnswerCodes ?? 
+        undefined;
+
       const testData = {
         ...quizState.quizSubmissionData,
         practiceTestAnswers,
+        otherQuestionAnswerCodes: finalOtherQuestionAnswerCodes,
       };
+
+      console.log("📤 Submitting quiz with otherQuestionAnswerCodes:", finalOtherQuestionAnswerCodes);
 
       const result = await quizStore.submitTest(testData);
 
