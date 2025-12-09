@@ -11,6 +11,7 @@ import { useSurveyStore } from "EduSmart/stores/Survey/SurveyStore";
 import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
 import { learningPathProgress } from "EduSmart/components/LearningPath";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
+import { getLearningGoalAction } from "EduSmart/app/(survey)/surveyAction";
 
 export interface QuizState {
   stage: "selection" | "taking" | "practice-selection" | "practice-taking";
@@ -87,7 +88,7 @@ const QuizMainFlow: React.FC = () => {
     });
   };
 
-  const handleSubmitQuiz = (quizData: {
+  const handleSubmitQuiz = async (quizData: {
     testId: string;
     startedAt: string;
     quizIds: string[];
@@ -100,9 +101,9 @@ const QuizMainFlow: React.FC = () => {
     // Get learningGoal from survey store
     let learningGoal:
       | {
-          learningGoalId?: string;
-          learningGoalType?: number;
-          learningGoalName?: string;
+          learningGoalId: string;
+          learningGoalType: number;
+          learningGoalName: string;
         }
       | undefined;
 
@@ -111,9 +112,31 @@ const QuizMainFlow: React.FC = () => {
 
     if (survey1Data?.learningGoal) {
       console.log("🔍 Looking for learning goal ID:", survey1Data.learningGoal);
-      const selectedGoal = learningGoals.find(
+      let selectedGoal = learningGoals.find(
         (goal) => goal.learningGoalId === survey1Data.learningGoal,
       );
+
+      // If not found in store, fetch from API
+      if (!selectedGoal) {
+        console.warn(
+          "⚠️ Learning goal ID not found in learningGoals array, fetching from API:",
+          survey1Data.learningGoal,
+        );
+        try {
+          const result = await getLearningGoalAction();
+          if (result.ok && result.data) {
+            selectedGoal = result.data.find(
+              (goal) => goal.learningGoalId === survey1Data.learningGoal,
+            );
+            if (selectedGoal) {
+              console.log("✅ Learning Goal Found from API:", selectedGoal);
+            }
+          }
+        } catch (error) {
+          console.error("❌ Error fetching learning goal from API:", error);
+        }
+      }
+
       if (selectedGoal) {
         learningGoal = {
           learningGoalId: selectedGoal.learningGoalId,
@@ -122,8 +145,8 @@ const QuizMainFlow: React.FC = () => {
         };
         console.log("✅ Learning Goal Found:", learningGoal);
       } else {
-        console.warn(
-          "⚠️ Learning goal ID not found in learningGoals array:",
+        console.error(
+          "❌ Learning goal not found even after fetching from API:",
           survey1Data.learningGoal,
         );
       }
