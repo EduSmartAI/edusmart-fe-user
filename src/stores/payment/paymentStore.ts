@@ -7,7 +7,7 @@ import {
   SelectOrderResponseEntity,
   RePaymentResponse,
 } from "EduSmart/api/api-payment-service";
-import { PaymentClient } from "EduSmart/hooks/apiClient";
+import apiClient, { PaymentClient } from "EduSmart/hooks/apiClient";
 
 interface PaymentState {
   // State
@@ -23,6 +23,7 @@ interface PaymentState {
   ) => Promise<InsertOrderResponse | null>;
   fetchOrderDetails: (orderId: string) => Promise<void>;
   retryPayment: (orderId: string) => Promise<RePaymentResponse | null>;
+  rePayment: (orderId: string) => Promise<RePaymentResponse | null>;
   setPaymentMethod: (method: PaymentGateway) => void;
   clearOrder: () => void;
 }
@@ -89,12 +90,35 @@ export const usePaymentStore = create<PaymentState>((set) => ({
     set({ isProcessing: true, error: null });
     try {
       // Re-process payment for the order
-      const res = await PaymentClient.api.v1PaymentRePaymentList({
+      const res = await apiClient.paymentService.api.v1PaymentRePaymentList({
         orderId,
       });
 
       if (res.data?.success) {
         set({ isProcessing: false });
+        return res.data;
+      }
+
+      throw new Error(res.data?.message || "Failed to retry payment");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      console.error("Failed to retry payment:", error);
+      const errorMsg =
+        err?.response?.data?.message || "Không thể thử lại thanh toán";
+      set({ error: errorMsg, isProcessing: false });
+      message.error(errorMsg);
+      return null;
+    }
+  },
+  rePayment: async (orderId: string) => {
+    set({ isProcessing: true, error: null });
+    try {
+      // Re-process payment for the order
+      const res = await apiClient.paymentService.api.v1PaymentRePaymentList({
+        orderId,
+      });
+
+      if (res.data?.success) {
         return res.data;
       }
 

@@ -1598,6 +1598,90 @@
       },
       "additionalProperties": false
     },
+    "SubjectCourseMatchItem": {
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "level": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "string"
+        },
+        "estimatedWeeks": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "score": {
+          "format": "double",
+          "type": "number"
+        },
+        "snippet": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectCourseMatchResult": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectTitle": {
+          "type": "string"
+        },
+        "courses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectCourseMatchItem"
+          }
+        },
+        "showSources": {
+          "type": "boolean"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectCourseSource"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectCourseSource": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "contentPreview": {
+          "type": "string"
+        },
+        "score": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
     "SubjectMark": {
       "type": "object",
       "properties": {

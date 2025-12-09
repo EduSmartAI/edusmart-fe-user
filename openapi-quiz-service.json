@@ -208,13 +208,13 @@
         }
       }
     },
-    "/api/v1/Admin/InsertTest": {
+    "/api/v1/Admin/InsertTestQuiz": {
       "post": {
         "tags": [
           "Admin"
         ],
-        "summary": "Tạo bài kiểm tra đầu vào mới",
-        "description": "Cần cấp quyền Admin cho API",
+        "summary": "Thêm quiz vào bài kiểm tra đầu vào",
+        "description": "Thêm một hoặc nhiều quiz vào bài test đã tồn tại. Cần cấp quyền Admin cho API",
         "consumes": [
           "application/json",
           "text/json",
@@ -230,7 +230,7 @@
             "in": "body",
             "name": "body",
             "schema": {
-              "$ref": "#/definitions/TestInsertCommand"
+              "$ref": "#/definitions/TestQuizInsertCommand"
             }
           }
         ],
@@ -238,7 +238,43 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/TestInsertResponse"
+              "$ref": "#/definitions/TestQuizInsertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/InsertTestQuizQuestions": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Thêm câu hỏi vào quiz",
+        "description": "Thêm một hoặc nhiều câu hỏi vào quiz trong bài test. Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/TestQuizQuestionsInsertCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TestQuizQuestionsInsertResponse"
             }
           }
         }
@@ -665,6 +701,28 @@
         }
       }
     },
+    "/api/v1/Admin/SelectPlacementTestDetail": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Chi tiết một bài kiểm tra đầu vào",
+        "description": "Lấy toàn bộ thông tin chi tiết của một bài kiểm tra đầu vào cho sinh viên",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdminSelectPlacementTestQueryResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Admin/SelectPracticeTest": {
       "get": {
         "tags": [
@@ -742,13 +800,13 @@
         }
       }
     },
-    "/api/v1/Admin/SelectQuizzes": {
+    "/api/v1/Admin/SelectStudentSurveyDetail": {
       "get": {
         "tags": [
           "Admin"
         ],
-        "summary": "Lấy danh sách tất cả quiz/survey",
-        "description": "Hỗ trợ phân trang và lọc theo QuizType, SubjectCode, SurveyCode",
+        "summary": "Chi tiết một khảo sát của sinh viên",
+        "description": "Lấy toàn bộ thông tin chi tiết của một khảo sát bao gồm câu hỏi và câu trả lời của sinh viên",
         "produces": [
           "text/plain",
           "application/json",
@@ -757,37 +815,17 @@
         "parameters": [
           {
             "in": "query",
-            "name": "PageNumber",
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "in": "query",
-            "name": "PageSize",
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "in": "query",
-            "name": "QuizType"
-          },
-          {
-            "in": "query",
-            "name": "SubjectCode",
+            "name": "StudentQuizId",
+            "required": true,
             "type": "string",
             "format": "uuid"
-          },
-          {
-            "in": "query",
-            "name": "SurveyCode",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/AdminQuizzesSelectResponse"
+              "$ref": "#/definitions/AdminStudentSurveySelectDetailResponse"
             }
           }
         }
@@ -817,6 +855,11 @@
             "name": "SurveyId",
             "type": "string",
             "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "SurveyCode",
+            "type": "string"
           },
           {
             "in": "query",
@@ -914,6 +957,58 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/AdminStudentTestsSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/SelectSurveys": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Lấy danh sách tất cả surveys",
+        "description": "Hỗ trợ phân trang và lọc theo SurveyTypeId, SurveyCode, tìm kiếm theo Title. Trả về thông tin chi tiết bao gồm Questions và Answers. Cần cấp quyền Admin cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "SurveyTypeId",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "SurveyCode",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "SearchTitle",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdminSurveysSelectResponse"
             }
           }
         }
@@ -1594,6 +1689,78 @@
         }
       }
     },
+    "/api/v1/Admin/DeleteTestQuiz": {
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Xóa quiz khỏi bài test",
+        "description": "Xóa (soft delete) một quiz khỏi bài test. Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/TestQuizDeleteCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TestQuizDeleteResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Admin/DeleteTestQuizQuestions": {
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Xóa nhiều câu hỏi khỏi quiz",
+        "description": "Xóa (soft delete) một hoặc nhiều câu hỏi khỏi quiz. Cần cấp quyền Admin cho API",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/TestQuizQuestionsDeleteCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/TestQuizQuestionsDeleteResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse": {
       "delete": {
         "tags": [
@@ -1632,6 +1799,22 @@
     }
   },
   "definitions": {
+    "AdminPracticeSolution": {
+      "type": "object",
+      "properties": {
+        "solutionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "language": {
+          "$ref": "#/definitions/LanguageInfo"
+        },
+        "solutionCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "AdminPracticeTestExample": {
       "type": "object",
       "properties": {
@@ -1752,6 +1935,12 @@
             "$ref": "#/definitions/AdminPracticeTestTemplate"
           }
         },
+        "solutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminPracticeSolution"
+          }
+        },
         "createdAt": {
           "format": "date-time",
           "type": "string"
@@ -1852,55 +2041,23 @@
       },
       "additionalProperties": false
     },
-    "AdminQuizItem": {
+    "AdminSelectAnswerDetailResponse": {
       "type": "object",
       "properties": {
-        "quizId": {
+        "answerId": {
           "format": "uuid",
           "type": "string"
         },
-        "quizType": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "quizTypeName": {
+        "answerText": {
           "type": "string"
         },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "subjectCode": {
-          "format": "uuid",
-          "type": "string"
-        },
-        "subjectCodeName": {
-          "type": "string"
-        },
-        "surveyCode": {
-          "type": "string"
-        },
-        "totalQuestions": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "totalStudentsTaken": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "isActive": {
+        "isCorrect": {
           "type": "boolean"
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": "string"
         }
       },
       "additionalProperties": false
     },
-    "AdminQuizzesSelectResponse": {
+    "AdminSelectPlacementTestQueryResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -1919,31 +2076,96 @@
           }
         },
         "response": {
-          "$ref": "#/definitions/AdminQuizzesSelectResponseEntity"
+          "$ref": "#/definitions/AdminSelectPlacementTestQueryResponseEntity"
         }
       },
       "additionalProperties": false
     },
-    "AdminQuizzesSelectResponseEntity": {
+    "AdminSelectPlacementTestQueryResponseEntity": {
       "type": "object",
       "properties": {
+        "testId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "testName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "totalStudentAnswered": {
+          "format": "int32",
+          "type": "integer"
+        },
         "quizzes": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/AdminQuizItem"
+            "$ref": "#/definitions/AdminSelectQuizDetailResponse"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminSelectQuestionDetailResponse": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
         },
-        "totalCount": {
+        "questionText": {
+          "type": "string"
+        },
+        "questionType": {
           "format": "int32",
           "type": "integer"
         },
-        "pageNumber": {
+        "questionTypeName": {
+          "type": "string"
+        },
+        "difficultyLevel": {
           "format": "int32",
           "type": "integer"
         },
-        "pageSize": {
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminSelectAnswerDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminSelectQuizDetailResponse": {
+      "type": "object",
+      "properties": {
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "subjectCode": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "subjectCodeName": {
+          "type": "string"
+        },
+        "totalQuestions": {
           "format": "int32",
           "type": "integer"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminSelectQuestionDetailResponse"
+          }
         }
       },
       "additionalProperties": false
@@ -1986,6 +2208,73 @@
         "createdAt": {
           "format": "date-time",
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminStudentSurveySelectDetailResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/AdminStudentSurveySelectDetailResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminStudentSurveySelectDetailResponseEntity": {
+      "type": "object",
+      "properties": {
+        "studentQuizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "studentId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "studentName": {
+          "type": "string"
+        },
+        "studentEmail": {
+          "type": "string"
+        },
+        "surveyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "surveyTitle": {
+          "type": "string"
+        },
+        "surveyDescription": {
+          "type": "string"
+        },
+        "surveyCode": {
+          "type": "string"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "questionResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SurveyQuestionResultResponseEntity"
+          }
         }
       },
       "additionalProperties": false
@@ -2165,6 +2454,115 @@
       },
       "additionalProperties": false
     },
+    "AdminSurveyAnswerDetailResponse": {
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerText": {
+          "type": "string"
+        },
+        "selectedByStudent": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminSurveyItem": {
+      "type": "object",
+      "properties": {
+        "surveyId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "surveyType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "surveyQuizSetting": {
+          "$ref": "#/definitions/SurveyQuizSettingDto"
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionDto"
+          }
+        },
+        "totalQuestions": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalStudentsTaken": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminSurveysSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/AdminSurveysSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminSurveysSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "surveys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminSurveyItem"
+          }
+        },
+        "totalCount": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageNumber": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
     "AnswerAddRequest": {
       "required": [
         "answerText",
@@ -2191,6 +2589,38 @@
         },
         "answerText": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AnswerDto": {
+      "type": "object",
+      "properties": {
+        "answerId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "answerText": {
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AnswerInsertDto": {
+      "required": [
+        "answerText"
+      ],
+      "type": "object",
+      "properties": {
+        "answerText": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "isCorrect": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -2255,23 +2685,6 @@
           "format": "uuid",
           "type": "string"
         },
-        "answerText": {
-          "minLength": 1,
-          "type": "string"
-        },
-        "isCorrect": {
-          "type": "boolean"
-        }
-      },
-      "additionalProperties": false
-    },
-    "Answers": {
-      "required": [
-        "answerText",
-        "isCorrect"
-      ],
-      "type": "object",
-      "properties": {
         "answerText": {
           "minLength": 1,
           "type": "string"
@@ -2426,6 +2839,19 @@
       "properties": {
         "learningPathId": {
           "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LanguageInfo": {
+      "type": "object",
+      "properties": {
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "languageName": {
           "type": "string"
         }
       },
@@ -3689,6 +4115,40 @@
       },
       "additionalProperties": false
     },
+    "QuestionDto": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AnswerDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "QuestionInsertCommand": {
       "type": "object",
       "properties": {
@@ -3706,6 +4166,35 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/InsertAnswers"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "QuestionInsertDto": {
+      "required": [
+        "answers",
+        "questionText",
+        "questionType"
+      ],
+      "type": "object",
+      "properties": {
+        "questionText": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "questionType": {
+          "$ref": "#/definitions/QuestionType"
+        },
+        "difficultyLevel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "answers": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AnswerInsertDto"
           }
         }
       },
@@ -3835,38 +4324,6 @@
         },
         "response": {
           "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "Questions": {
-      "required": [
-        "answers",
-        "difficultyLevel",
-        "questionText"
-      ],
-      "type": "object",
-      "properties": {
-        "questionText": {
-          "minLength": 1,
-          "type": "string"
-        },
-        "difficultyLevel": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "questionType": {
-          "format": "int32",
-          "type": "integer"
-        },
-        "explanation": {
-          "type": "string"
-        },
-        "answers": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Answers"
-          }
         }
       },
       "additionalProperties": false
@@ -4332,6 +4789,35 @@
       },
       "additionalProperties": false
     },
+    "QuizInsertDto": {
+      "required": [
+        "questions",
+        "subjectCode",
+        "title"
+      ],
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "questions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionInsertDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "QuizResultSelectResponseEntity": {
       "type": "object",
       "properties": {
@@ -4487,36 +4973,6 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/QuestionDetailResponse"
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "Quizzes": {
-      "required": [
-        "description",
-        "questions",
-        "subjectCode",
-        "title"
-      ],
-      "type": "object",
-      "properties": {
-        "title": {
-          "minLength": 1,
-          "type": "string"
-        },
-        "description": {
-          "minLength": 1,
-          "type": "string"
-        },
-        "subjectCode": {
-          "format": "uuid",
-          "type": "string"
-        },
-        "questions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Questions"
           }
         }
       },
@@ -5437,6 +5893,51 @@
       },
       "additionalProperties": false
     },
+    "SurveyQuestionResultResponseEntity": {
+      "type": "object",
+      "properties": {
+        "questionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionText": {
+          "type": "string"
+        },
+        "questionType": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminSurveyAnswerDetailResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SurveyQuizSettingDto": {
+      "type": "object",
+      "properties": {
+        "surveyTypeId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "surveyTypeName": {
+          "type": "string"
+        },
+        "surveyCode": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "SurveySelectsResponse": {
       "type": "object",
       "properties": {
@@ -5579,32 +6080,171 @@
       },
       "additionalProperties": false
     },
-    "TestInsertCommand": {
+    "TestQuizDeleteCommand": {
       "required": [
-        "description",
-        "quizzes",
-        "testName"
+        "quizId",
+        "testId"
       ],
       "type": "object",
       "properties": {
-        "testName": {
-          "minLength": 1,
+        "testId": {
+          "format": "uuid",
           "type": "string"
         },
-        "description": {
-          "minLength": 1,
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestQuizDeleteResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestQuizInsertCommand": {
+      "required": [
+        "quizzes",
+        "testId"
+      ],
+      "type": "object",
+      "properties": {
+        "testId": {
+          "format": "uuid",
           "type": "string"
         },
         "quizzes": {
+          "minItems": 1,
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Quizzes"
+            "$ref": "#/definitions/QuizInsertDto"
           }
         }
       },
       "additionalProperties": false
     },
-    "TestInsertResponse": {
+    "TestQuizInsertResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestQuizQuestionsDeleteCommand": {
+      "required": [
+        "questionIds",
+        "quizId",
+        "testId"
+      ],
+      "type": "object",
+      "properties": {
+        "testId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questionIds": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestQuizQuestionsDeleteResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestQuizQuestionsInsertCommand": {
+      "required": [
+        "questions",
+        "quizId",
+        "testId"
+      ],
+      "type": "object",
+      "properties": {
+        "testId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "quizId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "questions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/QuestionInsertDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TestQuizQuestionsInsertResponse": {
       "type": "object",
       "properties": {
         "success": {
@@ -5673,15 +6313,6 @@
         }
       },
       "additionalProperties": false
-    },
-    "TestType": {
-      "format": "int32",
-      "enum": [
-        1,
-        2,
-        3
-      ],
-      "type": "integer"
     },
     "UpdateAnswers": {
       "type": "object",
