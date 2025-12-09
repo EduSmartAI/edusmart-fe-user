@@ -48,7 +48,6 @@ import {
   LearningPathSelectDto as GeneratedLearningPathSelectDto,
   LearningPathSelectResponse,
   CourseBasicInfoDto,
-  AddLearningPathCourseCommand,
 } from "EduSmart/api/api-student-service";
 import { StudentClient, AIClient } from "EduSmart/hooks/apiClient";
 
@@ -113,6 +112,17 @@ type InternalMajorDto = NonNullable<
 
 type LearningPathApiResponse = Omit<LearningPathSelectResponse, "response"> & {
   response?: LearningPathDto;
+};
+
+type ExternalCourseRecommendation = {
+  title: string;
+  provider: string;
+  link: string;
+  level?: string | null;
+  estimatedWeeks?: number | null;
+  snippet?: string | null;
+  score?: number | null;
+  rating?: number | null;
 };
 
 type AiFieldKey =
@@ -396,7 +406,9 @@ const LearningPathSamplePage = () => {
   );
   const [selectedMajorId, setSelectedMajorId] = useState<string | null>(null);
   const [suggestionType, setSuggestionType] = useState<1 | 2>(1); // 1 = Easier, 2 = Harder
-  const [suggestedCourses, setSuggestedCourses] = useState<any[]>([]);
+  const [suggestedCourses, setSuggestedCourses] = useState<
+    CourseBasicInfoDto[]
+  >([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
 
@@ -406,7 +418,9 @@ const LearningPathSamplePage = () => {
   const [externalSubjectCode, setExternalSubjectCode] = useState<string | null>(
     null,
   );
-  const [externalCourses, setExternalCourses] = useState<any[]>([]);
+  const [externalCourses, setExternalCourses] = useState<
+    ExternalCourseRecommendation[]
+  >([]);
   const [loadingExternalCourses, setLoadingExternalCourses] = useState(false);
 
   const summaryFeedback = learningPath?.summaryFeedback;
@@ -746,7 +760,9 @@ const LearningPathSamplePage = () => {
       );
 
       if (response.data?.success && response.data?.response?.courses) {
-        setExternalCourses(response.data.response.courses);
+        const courses =
+          response.data.response.courses as ExternalCourseRecommendation[];
+        setExternalCourses(courses);
         if (response.data.response.courses.length === 0) {
           message.info("Không tìm thấy khóa học bên ngoài phù hợp");
         }
@@ -2654,12 +2670,12 @@ const LearningPathSamplePage = () => {
                   <p className="text-gray-500 dark:text-gray-400">
                     Không tìm thấy khóa học bên ngoài phù hợp
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Thử lại sau hoặc tìm kiếm môn học khác
-                  </p>
-                </div>
-              ) : (
-                externalCourses.map((course: any, index) => (
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Thử lại sau hoặc tìm kiếm môn học khác
+              </p>
+            </div>
+          ) : (
+            externalCourses.map((course, index) => (
                   <div
                     key={index}
                     className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hover:border-[#FF6B6B] dark:hover:border-orange-600 hover:shadow-md transition-all duration-200"

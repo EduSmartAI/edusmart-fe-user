@@ -6,7 +6,6 @@ import {
   FiCheckCircle,
   FiChevronLeft,
   FiSend,
-  FiAlertCircle,
 } from "react-icons/fi";
 import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
 import {
