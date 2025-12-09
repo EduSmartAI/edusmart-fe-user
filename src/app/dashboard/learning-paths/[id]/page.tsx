@@ -2090,17 +2090,6 @@ const LearningPathSamplePage = () => {
                       />
                     </div>
                   )}
-                {/* TEMPORARY: Force show for testing */}
-                {learningPath && !( status != null &&
-                  status >= LearningPathStatus.InProgress &&
-                  typeof learningPath?.completionPercent === "number") && (
-                    <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded text-xs">
-                      <strong>DEBUG:</strong> Progress không hiển thị vì:{" "}
-                      {status == null && "status = null"}{" "}
-                      {status != null && status < LearningPathStatus.InProgress && `status = ${status} (cần >= 2)`}{" "}
-                      {typeof learningPath?.completionPercent !== "number" && `completionPercent = ${learningPath?.completionPercent} (type: ${typeof learningPath?.completionPercent})`}
-                    </div>
-                  )}
               </div>
               <div className="flex items-center gap-2">
                 <Tag
