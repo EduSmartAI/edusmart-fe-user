@@ -48,8 +48,8 @@ import {
   LearningPathSelectDto as GeneratedLearningPathSelectDto,
   LearningPathSelectResponse,
   CourseBasicInfoDto,
-  AddLearningPathCourseCommand,
 } from "EduSmart/api/api-student-service";
+import { SubjectCourseMatchItem } from "EduSmart/api/api-ai-service";
 import { StudentClient, AIClient } from "EduSmart/hooks/apiClient";
 
 const SNAPSHOT_ENDPOINT = "/api/learning-paths";
@@ -396,7 +396,7 @@ const LearningPathSamplePage = () => {
   );
   const [selectedMajorId, setSelectedMajorId] = useState<string | null>(null);
   const [suggestionType, setSuggestionType] = useState<1 | 2>(1); // 1 = Easier, 2 = Harder
-  const [suggestedCourses, setSuggestedCourses] = useState<any[]>([]);
+  const [suggestedCourses, setSuggestedCourses] = useState<CourseBasicInfoDto[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
 
@@ -406,7 +406,7 @@ const LearningPathSamplePage = () => {
   const [externalSubjectCode, setExternalSubjectCode] = useState<string | null>(
     null,
   );
-  const [externalCourses, setExternalCourses] = useState<any[]>([]);
+  const [externalCourses, setExternalCourses] = useState<SubjectCourseMatchItem[]>([]);
   const [loadingExternalCourses, setLoadingExternalCourses] = useState(false);
 
   const summaryFeedback = learningPath?.summaryFeedback;
@@ -2659,7 +2659,7 @@ const LearningPathSamplePage = () => {
                   </p>
                 </div>
               ) : (
-                externalCourses.map((course: any, index) => (
+                externalCourses.map((course, index) => (
                   <div
                     key={index}
                     className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hover:border-[#FF6B6B] dark:hover:border-orange-600 hover:shadow-md transition-all duration-200"
