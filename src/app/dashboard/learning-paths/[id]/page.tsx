@@ -20,6 +20,7 @@ import {
   Select,
   message,
   Collapse,
+  Progress,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
@@ -2053,6 +2054,53 @@ const LearningPathSamplePage = () => {
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
                   {learningPath?.pathName || "Lộ trình học tập"}
                 </h1>
+                {/* DEBUG: Log values */}
+                {(() => {
+                  console.log("🔍 Progress Check:", {
+                    status,
+                    statusType: typeof status,
+                    InProgressEnum: LearningPathStatus.InProgress,
+                    isStatusValid:
+                      status != null && status >= LearningPathStatus.InProgress,
+                    completionPercent: learningPath?.completionPercent,
+                    completionType: typeof learningPath?.completionPercent,
+                    isNumberType:
+                      typeof learningPath?.completionPercent === "number",
+                    shouldShow:
+                      status != null &&
+                      status >= LearningPathStatus.InProgress &&
+                      typeof learningPath?.completionPercent === "number",
+                  });
+                  return null;
+                })()}
+                {/* Completion Progress - Only show if status >= InProgress (2) */}
+                {status != null &&
+                  status >= LearningPathStatus.InProgress &&
+                  typeof learningPath?.completionPercent === "number" && (
+                    <div className="mt-3 flex items-center gap-3">
+                      <Progress
+                        percent={Math.round(learningPath.completionPercent)}
+                        strokeColor={{
+                          "0%": "#fb923c",
+                          "100%": "#f97316",
+                        }}
+                        trailColor="#fed7aa"
+                        size="small"
+                        className="flex-1 max-w-full"
+                      />
+                    </div>
+                  )}
+                {/* TEMPORARY: Force show for testing */}
+                {learningPath && !( status != null &&
+                  status >= LearningPathStatus.InProgress &&
+                  typeof learningPath?.completionPercent === "number") && (
+                    <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded text-xs">
+                      <strong>DEBUG:</strong> Progress không hiển thị vì:{" "}
+                      {status == null && "status = null"}{" "}
+                      {status != null && status < LearningPathStatus.InProgress && `status = ${status} (cần >= 2)`}{" "}
+                      {typeof learningPath?.completionPercent !== "number" && `completionPercent = ${learningPath?.completionPercent} (type: ${typeof learningPath?.completionPercent})`}
+                    </div>
+                  )}
               </div>
               <div className="flex items-center gap-2">
                 <Tag
