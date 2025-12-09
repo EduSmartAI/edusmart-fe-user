@@ -50,7 +50,7 @@ function SurveyToQuizTransitionContent() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { submitSurvey } = useSurveyStore(); // ✅ Get submitSurvey from store
+  const { submitSurvey, survey1Data, semesters } = useSurveyStore(); // ✅ Get submitSurvey, survey1Data, and semesters from store
   const [selectedOption, setSelectedOption] = useState<
     "quiz" | "transcript" | null
   >(null);
@@ -172,7 +172,22 @@ function SurveyToQuizTransitionContent() {
   };
 
   const handleContinueToQuiz = async () => {
-    // ✅ Submit survey with isWantToTakeTest = true
+    // Validate: Check if semester >= 5 and has transcript
+    if (survey1Data?.semester && semesters.length > 0) {
+      // Find semester info from semesters list using semesterId
+      const semesterInfo = semesters.find(
+        (s) => s.semesterId === survey1Data.semester,
+      );
+
+      if (semesterInfo && semesterInfo.semesterNumber >= 5 && !hasTranscript) {
+        messageApi.warning(
+          "Nếu kỳ học lớn hơn 5, chúng tôi cần thêm bảng điểm để đánh giá chính xác",
+        );
+        return;
+      }
+    }
+
+    // Submit survey with isWantToTakeTest = true
     setIsSubmitting(true);
     try {
       console.log(
