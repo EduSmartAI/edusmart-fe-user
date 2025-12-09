@@ -969,7 +969,8 @@ export async function submitSurveyAction(surveyData: {
       },
       studentSurveys: studentSurveys,
       isWantToTakeTest: surveyData.isWantToTakeTest, // ✅ Use parameter from function argument
-      otherQuestionAnswerCodes: (otherQuestionAnswerCodes || []) as OtherQuestionCode[], // ✅ Cast number array to enum array
+      otherQuestionAnswerCodes: (otherQuestionAnswerCodes ||
+        []) as OtherQuestionCode[], // ✅ Cast number array to enum array
     };
 
     // Validate payload before sending
@@ -1021,6 +1022,24 @@ export async function submitSurveyAction(surveyData: {
         );
       });
     });
+
+    console.log("🎯 Additional Options:");
+    console.log("  - isWantToTakeTest:", finalPayload.isWantToTakeTest);
+    console.log(
+      "  - otherQuestionAnswerCodes:",
+      finalPayload.otherQuestionAnswerCodes,
+    );
+    if (
+      finalPayload.otherQuestionAnswerCodes &&
+      finalPayload.otherQuestionAnswerCodes.length > 0
+    ) {
+      console.log(
+        "    ✅ Other Questions Selected:",
+        finalPayload.otherQuestionAnswerCodes.join(", "),
+      );
+    } else {
+      console.log("    ⚠️ No other questions selected");
+    }
 
     console.log("🔍 Payload Validation Status: PASSED ✅");
     console.groupEnd();
