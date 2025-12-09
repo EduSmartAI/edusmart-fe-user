@@ -8,16 +8,7 @@ import React, {
   useState,
 } from "react";
 import { useParams } from "next/navigation";
-import {
-  Card,
-  Tabs,
-  Tag,
-  Modal,
-  Table,
-  Spin,
-  Button,
-  Carousel,
-} from "antd";
+import { Card, Tabs, Tag, Modal, Table, Spin, Button, Carousel } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
@@ -1972,12 +1963,24 @@ const LearningPathSamplePage = () => {
                                   .trim();
                               }
 
-                              // Kiểm tra nếu là bài test PE (thực hành) - có chứa "Bài test tự luận"
-                              const isPracticalTest =
+                              // Kiểm tra loại phân tích
+                              const isTranscriptAnalysis =
                                 testInfo
                                   .toLowerCase()
+                                  .includes("phân tích dựa trên bảng điểm") ||
+                                testInfo.toLowerCase().includes("bảng điểm");
+
+                              const isPracticalTest =
+                                !isTranscriptAnalysis &&
+                                (testInfo
+                                  .toLowerCase()
                                   .includes("bài test tự luận") ||
-                                testInfo.toLowerCase().includes("với độ khó");
+                                  testInfo
+                                    .toLowerCase()
+                                    .includes("với độ khó"));
+
+                              const isTheoryTest =
+                                !isTranscriptAnalysis && !isPracticalTest;
 
                               // Trích xuất heading ## đầu tiên (tên tiếng Việt)
                               const headingMatch =
@@ -1986,7 +1989,7 @@ const LearningPathSamplePage = () => {
                                 ? headingMatch[1].trim()
                                 : null;
 
-                              // Nếu là bài test PE, lược bỏ heading ## đầu tiên (vì nó bị lặp)
+                              // Nếu là bài test PE hoặc Transcript, lược bỏ heading ## đầu tiên
                               // Nếu là bài test TE, cũng lược bỏ heading ## (vì sẽ hiển thị trong parenthesis)
                               if (vietnameseName) {
                                 markdownContent = markdownContent
@@ -1995,7 +1998,7 @@ const LearningPathSamplePage = () => {
                               }
 
                               // Với bài test TE, thêm tên tiếng Việt vào testInfo
-                              if (!isPracticalTest && vietnameseName) {
+                              if (isTheoryTest && vietnameseName) {
                                 testInfo = `${testInfo} (${vietnameseName})`;
                               }
 
@@ -2014,10 +2017,26 @@ const LearningPathSamplePage = () => {
                                       </span> */}
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
-                                              Bài đánh giá {index + 1} /{" "}
-                                              {praticalAbilityFeedbacks.length}
-                                            </span>
+                                            {isTranscriptAnalysis ? (
+                                              <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                                                Phân tích từ bảng điểm
+                                              </span>
+                                            ) : (
+                                              <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                                                Bài đánh giá {index + 1} /{" "}
+                                                {
+                                                  praticalAbilityFeedbacks.length
+                                                }
+                                              </span>
+                                            )}
+                                            {/* {isTranscriptAnalysis && (
+                                              <Tag
+                                                color="blue"
+                                                className="text-xs m-0"
+                                              >
+                                                Bảng điểm
+                                              </Tag>
+                                            )} */}
                                             {isPracticalTest && (
                                               <Tag
                                                 color="purple"
@@ -2026,7 +2045,7 @@ const LearningPathSamplePage = () => {
                                                 Thực hành
                                               </Tag>
                                             )}
-                                            {!isPracticalTest && (
+                                            {isTheoryTest && (
                                               <Tag
                                                 color="green"
                                                 className="text-xs m-0"
@@ -2045,11 +2064,17 @@ const LearningPathSamplePage = () => {
                                           </div>
                                         </div>
                                       </div>
-                                      {testInfo && (
-                                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
-                                          {testInfo}
-                                        </h4>
-                                      )}
+                                      {testInfo &&
+                                        (isTranscriptAnalysis ? (
+                                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
+                                            Hệ thống đưa ra đánh giá dựa trên
+                                            bảng điểm của bạn
+                                          </h4>
+                                        ) : (
+                                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
+                                            {testInfo}
+                                          </h4>
+                                        ))}
                                     </div>
 
                                     {/* Body */}

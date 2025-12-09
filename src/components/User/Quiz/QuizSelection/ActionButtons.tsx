@@ -45,7 +45,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
           {/* Action Buttons */}
           <div className="flex flex-row items-center space-x-2">
-            <div>
+            {/* <div>
               <Button
                 onClick={onSkip}
                 size="large"
@@ -54,7 +54,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               >
                 Thoát
               </Button>
-            </div>
+            </div> */}
 
             <div>
               <Button
