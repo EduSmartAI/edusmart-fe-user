@@ -157,6 +157,21 @@ export interface AiSearchResponse {
   response?: string;
 }
 
+export interface AiSubjectCourseRequest {
+  subjectCode: string;
+  /** @format int32 */
+  topK?: number;
+  showSources?: boolean;
+}
+
+export interface AiSubjectCourseResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: SubjectCourseMatchResult;
+}
+
 export interface AiSummaryFeedbackModuleRequest {
   /** @format uuid */
   studentId?: string;
@@ -440,6 +455,37 @@ export interface SubjectAnalysis {
   subjectCode?: string;
   subjectName?: string;
   analysisMarkdown?: string;
+}
+
+export interface SubjectCourseMatchItem {
+  courseId?: string;
+  title?: string;
+  provider?: string;
+  link?: string;
+  level?: string;
+  rating?: string;
+  /** @format int32 */
+  estimatedWeeks?: number;
+  /** @format double */
+  score?: number;
+  snippet?: string;
+}
+
+export interface SubjectCourseMatchResult {
+  subjectCode?: string;
+  subjectTitle?: string;
+  courses?: SubjectCourseMatchItem[];
+  showSources?: boolean;
+  sources?: SubjectCourseSource[];
+}
+
+export interface SubjectCourseSource {
+  title?: string;
+  provider?: string;
+  link?: string;
+  contentPreview?: string;
+  /** @format double */
+  score?: number;
 }
 
 export interface SubjectMark {
@@ -955,6 +1001,28 @@ export class Api<
     ) =>
       this.request<AiRecommendImprovementResponse, any>({
         path: `/api/v1/AiRecommend/GenAnalysis`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AiRecommend
+     * @name V1AiRecommendSubjectCourseMatchCreate
+     * @request POST:/api/v1/AiRecommend/subject-course-match
+     * @secure
+     */
+    v1AiRecommendSubjectCourseMatchCreate: (
+      body: AiSubjectCourseRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<AiSubjectCourseResponse, any>({
+        path: `/api/v1/AiRecommend/subject-course-match`,
         method: "POST",
         body: body,
         secure: true,

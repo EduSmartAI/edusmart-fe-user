@@ -37,6 +37,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiSearch,
+  FiGlobe,
 } from "react-icons/fi";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
@@ -49,7 +50,7 @@ import {
   CourseBasicInfoDto,
   AddLearningPathCourseCommand,
 } from "EduSmart/api/api-student-service";
-import { StudentClient } from "EduSmart/hooks/apiClient";
+import { StudentClient, AIClient } from "EduSmart/hooks/apiClient";
 
 const SNAPSHOT_ENDPOINT = "/api/learning-paths";
 const STREAM_ENDPOINT = "/api/learning-paths/stream";
@@ -399,6 +400,15 @@ const LearningPathSamplePage = () => {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
 
+  // External courses modal states
+  const [showExternalCoursesModal, setShowExternalCoursesModal] =
+    useState(false);
+  const [externalSubjectCode, setExternalSubjectCode] = useState<string | null>(
+    null,
+  );
+  const [externalCourses, setExternalCourses] = useState<any[]>([]);
+  const [loadingExternalCourses, setLoadingExternalCourses] = useState(false);
+
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
   const habitAnalysis = learningPath?.habitAndInterestAnalysis;
@@ -714,6 +724,45 @@ const LearningPathSamplePage = () => {
     }
   };
 
+  // Open external courses modal
+  const handleOpenExternalCourses = (subjectCode: string) => {
+    setExternalSubjectCode(subjectCode);
+    setShowExternalCoursesModal(true);
+    fetchExternalCourses(subjectCode);
+  };
+
+  // Fetch external courses
+  const fetchExternalCourses = async (subjectCode: string) => {
+    try {
+      setLoadingExternalCourses(true);
+      setExternalCourses([]);
+
+      const response = await AIClient.api.v1AiRecommendSubjectCourseMatchCreate(
+        {
+          subjectCode: subjectCode,
+          topK: 20,
+          showSources: false,
+        },
+      );
+
+      if (response.data?.success && response.data?.response?.courses) {
+        setExternalCourses(response.data.response.courses);
+        if (response.data.response.courses.length === 0) {
+          message.info("Không tìm thấy khóa học bên ngoài phù hợp");
+        }
+      } else {
+        message.error(
+          response.data?.message || "Không thể tải danh sách khóa học",
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching external courses:", error);
+      message.error("Đã xảy ra lỗi khi tải danh sách khóa học");
+    } finally {
+      setLoadingExternalCourses(false);
+    }
+  };
+
   // Add course to learning path
   const handleAddCourseToPath = async (courseId: string) => {
     if (!selectedMajorId || !selectedSubjectId || !selectedSubjectCode) {
@@ -751,6 +800,16 @@ const LearningPathSamplePage = () => {
     } finally {
       setAddingCourseId(null);
     }
+  };
+
+  // Map level to Vietnamese
+  const getLevelInVietnamese = (level?: string | null) => {
+    if (!level) return "";
+    const levelLower = level.toLowerCase();
+    if (levelLower.includes("beginner")) return "Cơ bản";
+    if (levelLower.includes("intermediate")) return "Trung cấp";
+    if (levelLower.includes("advanced")) return "Nâng cao";
+    return level;
   };
 
   // Get status tag for transcript
@@ -1336,36 +1395,60 @@ const LearningPathSamplePage = () => {
                                   {/* <span className="text-xs text-gray-500 dark:text-gray-400">
                                     {courseCount} khóa học
                                   </span> */}
-                                  <Button
-                                    size="small"
-                                    type="default"
-                                    icon={<FiSearch className="w-3.5 h-3.5" />}
-                                    onClick={() => {
-                                      handleOpenCourseSuggestion(
-                                        cg.subjectCode ?? "",
-                                        cg.subjectId ?? "",
-                                        selectedMajor.majorId ?? "",
-                                      );
-                                    }}
-                                    style={{
-                                      borderColor: "#49BBBD",
-                                      color: "#49BBBD",
-                                      display: "inline-flex",
-                                      alignItems: "center",
-                                      gap: "4px",
-                                    }}
-                                    className="hover:bg-[#49BBBD] hover:text-white transition-colors"
-                                  >
-                                    Tìm thêm khóa ở mức độ khác
-                                  </Button>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="small"
+                                      type="default"
+                                      icon={
+                                        <FiSearch className="w-3.5 h-3.5" />
+                                      }
+                                      onClick={() => {
+                                        handleOpenCourseSuggestion(
+                                          cg.subjectCode ?? "",
+                                          cg.subjectId ?? "",
+                                          selectedMajor.majorId ?? "",
+                                        );
+                                      }}
+                                      style={{
+                                        borderColor: "#49BBBD",
+                                        color: "#49BBBD",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                      }}
+                                      className="hover:bg-[#49BBBD] hover:text-white transition-colors"
+                                    >
+                                      Tìm thêm khóa ở mức độ khác
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      type="default"
+                                      icon={<FiGlobe className="w-3.5 h-3.5" />}
+                                      onClick={() => {
+                                        handleOpenExternalCourses(
+                                          cg.subjectCode ?? "",
+                                        );
+                                      }}
+                                      style={{
+                                        borderColor: "#FF6B6B",
+                                        color: "#FF6B6B",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                      }}
+                                      className="hover:bg-[#FF6B6B] hover:text-white transition-colors"
+                                    >
+                                      Tìm khóa học bên ngoài
+                                    </Button>
+                                  </div>
                                 </div>
 
                                 {courseCount > 0 && (
-                                  <div className="space-y-3">
+                                  <div className="space-y-3 flex flex-row flex-wrap gap-5">
                                     {(cg.courses ?? []).map((course, i) => (
                                       <div
                                         key={`${cg.subjectCode}-${i}`}
-                                        className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 p-3 hover:border-teal-200 dark:hover:border-teal-800 hover:shadow-sm transition-all duration-200"
+                                        className=""
                                       >
                                         <CourseCard
                                           id={course.courseId ?? ""}
@@ -1386,7 +1469,7 @@ const LearningPathSamplePage = () => {
                                           price={course.price}
                                           dealPrice={course.dealPrice}
                                           routerPush={`/course/${course.courseId}`}
-                                          isHorizontal={true}
+                                          isHorizontal={false}
                                         />
                                       </div>
                                     ))}
@@ -1672,30 +1755,54 @@ const LearningPathSamplePage = () => {
                                         {courseCount} khóa học
                                       </span>
                                     </div>
-                                    <Button
-                                      size="small"
-                                      type="default"
-                                      icon={
-                                        <FiSearch className="w-3.5 h-3.5" />
-                                      }
-                                      onClick={() => {
-                                        handleOpenCourseSuggestion(
-                                          cg.subjectCode ?? "",
-                                          cg.subjectId ?? "",
-                                          major.majorId ?? "",
-                                        );
-                                      }}
-                                      style={{
-                                        borderColor: "#49BBBD",
-                                        color: "#49BBBD",
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: "4px",
-                                      }}
-                                      className="hover:bg-[#49BBBD] hover:text-white transition-colors"
-                                    >
-                                      Tìm thêm khóa ở mức độ khác
-                                    </Button>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="small"
+                                        type="default"
+                                        icon={
+                                          <FiSearch className="w-3.5 h-3.5" />
+                                        }
+                                        onClick={() => {
+                                          handleOpenCourseSuggestion(
+                                            cg.subjectCode ?? "",
+                                            cg.subjectId ?? "",
+                                            major.majorId ?? "",
+                                          );
+                                        }}
+                                        style={{
+                                          borderColor: "#49BBBD",
+                                          color: "#49BBBD",
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          gap: "4px",
+                                        }}
+                                        className="hover:bg-[#49BBBD] hover:text-white transition-colors"
+                                      >
+                                        Tìm thêm khóa ở mức độ khác
+                                      </Button>
+                                      <Button
+                                        size="small"
+                                        type="default"
+                                        icon={
+                                          <FiGlobe className="w-3.5 h-3.5" />
+                                        }
+                                        onClick={() => {
+                                          handleOpenExternalCourses(
+                                            cg.subjectCode ?? "",
+                                          );
+                                        }}
+                                        style={{
+                                          borderColor: "#FF6B6B",
+                                          color: "#FF6B6B",
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          gap: "4px",
+                                        }}
+                                        className="hover:bg-[#FF6B6B] hover:text-white transition-colors"
+                                      >
+                                        Tìm khóa học bên ngoài
+                                      </Button>
+                                    </div>
                                   </div>
                                   {courseCount > 0 && (
                                     <div className="space-y-3 mt-3">
@@ -1842,10 +1949,12 @@ const LearningPathSamplePage = () => {
                                     )}
                                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
-                                        {course.provider ?? "Đối tác"}
+                                        {course.level
+                                          ? getLevelInVietnamese(course.level)
+                                          : "N/A"}
                                       </span>
-                                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {course.level ?? "N/A"}
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
+                                        {course.provider ?? "Đối tác"}
                                       </span>
                                     </div>
                                   </div>
@@ -2496,6 +2605,121 @@ const LearningPathSamplePage = () => {
                           ? "Đang thêm..."
                           : "Thêm vào lộ trình"}
                       </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Spin>
+        </div>
+      </Modal>
+
+      {/* External Courses Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FiGlobe className="w-5 h-5 text-[#FF6B6B]" />
+            <span className="font-bold">
+              Khóa học bên ngoài - {externalSubjectCode}
+            </span>
+          </div>
+        }
+        open={showExternalCoursesModal}
+        onCancel={() => setShowExternalCoursesModal(false)}
+        footer={null}
+        width={1200}
+        centered
+      >
+        <div className="space-y-4">
+          {/* Info Section */}
+          {/* <div className="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+            <FiGlobe className="w-5 h-5 text-[#FF6B6B]" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                Khóa học từ các nền tảng: Coursera, Udemy, edX...
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Tìm thấy {externalCourses.length} khóa học phù hợp với môn{" "}
+                {externalSubjectCode}
+              </p>
+            </div>
+          </div> */}
+
+          {/* Courses List */}
+          <Spin spinning={loadingExternalCourses}>
+            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+              {externalCourses.length === 0 && !loadingExternalCourses ? (
+                <div className="text-center py-12">
+                  <FiGlobe className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Không tìm thấy khóa học bên ngoài phù hợp
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Thử lại sau hoặc tìm kiếm môn học khác
+                  </p>
+                </div>
+              ) : (
+                externalCourses.map((course: any, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hover:border-[#FF6B6B] dark:hover:border-orange-600 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex gap-4">
+                      {/* Course Info */}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-base font-bold text-gray-900 dark:text-white line-clamp-2">
+                            {course.title}
+                          </h3>
+                          {course.rating && (
+                            <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                              <span className="text-yellow-500">⭐</span>
+                              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                {course.rating}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 mb-3 flex-wrap">
+                          <Tag color="blue" className="text-xs">
+                            {course.provider}
+                          </Tag>
+                          {course.level && (
+                            <Tag color="green" className="text-xs">
+                              {getLevelInVietnamese(course.level)}
+                            </Tag>
+                          )}
+                          {course.estimatedWeeks && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              ~{course.estimatedWeeks} tuần
+                            </span>
+                          )}
+                        </div>
+
+                        {course.snippet && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-3">
+                            {course.snippet}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={course.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-[#FF6B6B] hover:bg-[#ff5252] rounded-lg transition-colors"
+                          >
+                            <FiExternalLink className="w-4 h-4" />
+                            Xem khóa học
+                          </a>
+                          {course.score && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                              Độ phù hợp: {(course.score * 100).toFixed(1)}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))

@@ -209,11 +209,11 @@ const CourseCard: React.FC<CourseCardProps> = ({
   const levelLabel = (() => {
     switch (level) {
       case CourseLevel.Beginner:
-        return "Beginner";
+        return "Cơ bản";
       case CourseLevel.Intermidiate:
-        return "Intermediate";
+        return "Trung cấp";
       case CourseLevel.Advanced:
-        return "Advanced";
+        return "Nâng cao";
       default:
         return null;
     }
