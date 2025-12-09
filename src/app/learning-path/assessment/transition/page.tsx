@@ -190,10 +190,29 @@ function SurveyToQuizTransitionContent() {
     // Submit survey with isWantToTakeTest = true
     setIsSubmitting(true);
     try {
+      console.group("🎯 [TRANSITION] QUIZ SUBMISSION");
       console.log(
-        "🎯 [TRANSITION] Submitting survey with isWantToTakeTest = true (Take Quiz)",
+        "📋 Submitting survey with isWantToTakeTest = true (Take Quiz)",
       );
-      const result = await submitSurvey(true);
+      console.log("📊 Has Transcript:", hasTranscript);
+      console.log("📝 Selected Other Questions:", selectedOtherQuestions);
+      console.log("📝 Other Questions Count:", selectedOtherQuestions.length);
+
+      // ✅ Only send otherQuestions if user has transcript AND selected any
+      const otherQuestionsToSend =
+        hasTranscript && selectedOtherQuestions.length > 0
+          ? (selectedOtherQuestions as OtherQuestionCode[])
+          : undefined;
+
+      console.log("📤 Sending otherQuestionAnswerCodes:", otherQuestionsToSend);
+      if (!hasTranscript) {
+        console.log("⚠️ No transcript - skipping other questions");
+      } else if (selectedOtherQuestions.length === 0) {
+        console.log("⚠️ Has transcript but no other questions selected");
+      }
+      console.groupEnd();
+
+      const result = await submitSurvey(true, otherQuestionsToSend);
 
       console.log("🎯 [TRANSITION] Survey result:", result);
 
@@ -242,13 +261,19 @@ function SurveyToQuizTransitionContent() {
     try {
       // ✅ Submit survey with isWantToTakeTest = false and optional other question answers
       // Backend will create learning path from transcript and return learningPathId
+      console.group("📄 [TRANSITION] TRANSCRIPT SUBMISSION");
       console.log(
-        "📄 [TRANSITION] Submitting survey with isWantToTakeTest = false (Use Transcript)",
+        "📋 Submitting survey with isWantToTakeTest = false (Use Transcript)",
       );
+      console.log("📊 Has Transcript:", hasTranscript);
+      console.log("📝 Selected Other Questions:", selectedOtherQuestions);
+      console.log("📝 Other Questions Count:", selectedOtherQuestions.length);
       console.log(
-        "📄 [TRANSITION] Selected other questions:",
-        selectedOtherQuestions,
+        "📤 Sending otherQuestionAnswerCodes:",
+        selectedOtherQuestions as OtherQuestionCode[],
       );
+      console.groupEnd();
+
       const surveyResult = await submitSurvey(
         false,
         selectedOtherQuestions as OtherQuestionCode[],
@@ -744,7 +769,17 @@ function SurveyToQuizTransitionContent() {
                         ? "border-2 border-orange-500 shadow-sm"
                         : "border border-gray-200 dark:border-gray-700"
                     }`}
-                    onClick={() => setSelectedOption("quiz")}
+                    onClick={(e) => {
+                      // Prevent card click when clicking on checkboxes
+                      if (
+                        (e.target as HTMLElement).closest(
+                          ".other-questions-section",
+                        )
+                      ) {
+                        return;
+                      }
+                      setSelectedOption("quiz");
+                    }}
                   >
                     <div className="text-center p-5">
                       {/* Icon */}
@@ -796,6 +831,68 @@ function SurveyToQuizTransitionContent() {
                           </div>
                         </div>
                       </div> */}
+
+                      {/* Other Questions Section - Show when this card is selected AND has transcript */}
+                      {selectedOption === "quiz" &&
+                        hasTranscript === true &&
+                        otherQuestions.length > 0 && (
+                          <div className="other-questions-section mt-4 border-t border-gray-200 dark:border-gray-600">
+                            <Collapse
+                              ghost
+                              size="small"
+                              expandIconPosition="start"
+                              items={[
+                                {
+                                  key: "1",
+                                  label: (
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                      Câu hỏi bổ sung (Không bắt buộc)
+                                    </span>
+                                  ),
+                                  children: (
+                                    <>
+                                      {loadingOtherQuestions ? (
+                                        <div className="text-center py-2">
+                                          <Spin size="small" />
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-2 text-left max-h-48 overflow-y-auto">
+                                          <Checkbox.Group
+                                            value={selectedOtherQuestions}
+                                            onChange={(checkedValues) => {
+                                              setSelectedOtherQuestions(
+                                                checkedValues as number[],
+                                              );
+                                            }}
+                                            className="w-full"
+                                          >
+                                            <Space
+                                              direction="vertical"
+                                              className="w-full"
+                                              size="small"
+                                            >
+                                              {otherQuestions.map((q) => (
+                                                <Checkbox
+                                                  key={q.otherQuestionCode}
+                                                  value={q.otherQuestionCode}
+                                                  className="!items-start"
+                                                >
+                                                  <span className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                                                    {q.otherQuestionText}
+                                                  </span>
+                                                </Checkbox>
+                                              ))}
+                                            </Space>
+                                          </Checkbox.Group>
+                                        </div>
+                                      )}
+                                    </>
+                                  ),
+                                },
+                              ]}
+                            />
+                          </div>
+                        )}
 
                       {/* Selected Badge */}
                       {selectedOption === "quiz" && (
