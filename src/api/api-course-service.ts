@@ -11,6 +11,12 @@
  */
 
 /** @format int32 */
+export enum SuggestedCourseType {
+  Value1 = 1,
+  Value2 = 2,
+}
+
+/** @format int32 */
 export enum ModuleProgressStatus {
   Value0 = 0,
   Value1 = 1,
@@ -1146,6 +1152,14 @@ export interface GetSubjectsResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: SubjectDtoPagedResult;
+}
+
+export interface GetSuggestedCoursesEventResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CourseBasicInfoDto[] | null;
 }
 
 export interface GuestLessonDetailDto {
@@ -3250,6 +3264,35 @@ export class Api<
       this.request<GetCourseBySlugForGuestResponse, any>({
         path: `/api/v1/Courses/slug/${slug}`,
         method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Courses
+     * @name V1CoursesSuggestedCoursesList
+     * @request GET:/api/v1/Courses/suggested-courses
+     * @secure
+     */
+    v1CoursesSuggestedCoursesList: (
+      query?: {
+        /** @format uuid */
+        UserId?: string;
+        SubjectCode?: string;
+        /** @format int32 */
+        CurrentLevel?: number;
+        Type?: SuggestedCourseType;
+        ExistingCourseIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSuggestedCoursesEventResponse, any>({
+        path: `/api/v1/Courses/suggested-courses`,
+        method: "GET",
+        query: query,
         secure: true,
         format: "json",
         ...params,

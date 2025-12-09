@@ -265,6 +265,8 @@ export interface CourseGroupDto {
   /** @format int32 */
   status?: number;
   /** @format int32 */
+  learningCurrentStatus?: number;
+  /** @format int32 */
   semesterPosition?: number;
   analysisMarkdown?: string;
   courses?: CourseItemDto[];

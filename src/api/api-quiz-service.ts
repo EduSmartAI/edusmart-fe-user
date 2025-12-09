@@ -668,6 +668,12 @@ export interface PracticeTestAdminSolutionInsertRequest {
   solutionCode?: string;
 }
 
+export interface PracticeTestAdminSolutionUpdateRequest {
+  /** @format int32 */
+  languageId?: number;
+  solutionCode?: string;
+}
+
 export interface PracticeTestAdminTemplatesInsertRequest {
   /** @format uuid */
   problemId?: string;
@@ -704,6 +710,7 @@ export interface PracticeTestAdminUpdateRequest {
   testcases?: PracticeTestAdminProblemTestcaseUpdateRequest[];
   templates?: PracticeTestAdminProblemTemplateUpdateRequest[];
   examples?: PracticeTestAdminProblemExampleUpdateRequest[];
+  solutions?: PracticeTestAdminSolutionUpdateRequest[];
 }
 
 export interface PracticeTestAdminUpdateResponse {

@@ -2316,6 +2316,78 @@
         }
       }
     },
+    "/api/v1/Courses/suggested-courses": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "SubjectCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CurrentLevel",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "Type",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SuggestedCourseType"
+            }
+          },
+          {
+            "name": "ExistingCourseIds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSuggestedCoursesEventResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSuggestedCoursesEventResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetSuggestedCoursesEventResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Courses/tags": {
       "get": {
         "tags": [
@@ -5958,6 +6030,37 @@
         },
         "additionalProperties": false
       },
+      "GetSuggestedCoursesEventResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseBasicInfoDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "GuestLessonDetailDto": {
         "type": "object",
         "properties": {
@@ -7105,6 +7208,14 @@
           }
         },
         "additionalProperties": false
+      },
+      "SuggestedCourseType": {
+        "enum": [
+          1,
+          2
+        ],
+        "type": "integer",
+        "format": "int32"
       },
       "SyllabusFullDto": {
         "type": "object",
