@@ -199,15 +199,13 @@ const QuizMainFlow: React.FC = () => {
         // Store learning path ID
         learningPathProgress.setLearningPathId(result.learningPathId);
 
-        // Set flag to allow access to processing page
-        sessionStorage.setItem("learning-path-assessment-completed", "true");
+        // Clear assessment completion flag (no longer needed)
+        sessionStorage.removeItem("learning-path-assessment-completed");
 
-        // Redirect to processing
+        // Direct redirect to dashboard learning path
         setTimeout(() => {
-          router.push(
-            `/learning-path/assessment/processing?learningPathId=${result.learningPathId}`,
-          );
-        }, 300);
+          router.push(`/dashboard/learning-paths/${result.learningPathId}`);
+        }, 500);
       } else {
         throw new Error(result.error || "Submission failed");
       }

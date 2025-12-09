@@ -362,7 +362,7 @@ const Survey1BasicInfo: React.FC<Survey1BasicInfoProps> = ({
               size="large"
               requiredMark={false}
             >
-              <Row gutter={[24, 16]}>
+              <Row gutter={[24, 0]}>
                 <Col xs={24} md={12}>
                   <Form.Item
                     name="semester"

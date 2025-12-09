@@ -6,7 +6,6 @@ import {
   FiCheckCircle,
   FiChevronLeft,
   FiSend,
-  FiAlertCircle,
 } from "react-icons/fi";
 import { usePracticeTestStore } from "EduSmart/stores/PracticeTest/PracticeTestStore";
 import {
@@ -359,7 +358,7 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
               </Button>
             )}
 
-            {isAllCompleted || completedProblems.length === problems.length ? (
+            {(isAllCompleted || completedProblems.length === problems.length) &&
               <Button
                 type="primary"
                 size="large"
@@ -369,18 +368,9 @@ const PracticeTestTaking: React.FC<PracticeTestTakingProps> = ({
                 disabled={isSubmitting}
                 className="px-10"
               >
-                {isSubmitting ? "Đang nộp..." : "Nộp bài"}
+                {isSubmitting ? "Đang nộp..." : "Nộp tất cả"}
               </Button>
-            ) : (
-              <Button
-                type="default"
-                icon={<FiAlertCircle />}
-                onClick={handleSubmitAll}
-                disabled={isSubmitting}
-              >
-                Nộp bài ({completedProblems.length}/{problems.length})
-              </Button>
-            )}
+            }
           </div>
 
           {/* <Button

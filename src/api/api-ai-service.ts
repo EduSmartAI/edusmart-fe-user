@@ -159,8 +159,6 @@ export interface AiSearchResponse {
 
 export interface AiSubjectCourseRequest {
   subjectCode: string;
-  subjectTitle?: string;
-  subjectDescription?: string;
   /** @format int32 */
   topK?: number;
   showSources?: boolean;

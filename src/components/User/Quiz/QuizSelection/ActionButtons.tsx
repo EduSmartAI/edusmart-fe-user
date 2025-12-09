@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Button } from "antd";
-import { FiArrowRight, FiX, FiCheckCircle } from "react-icons/fi";
+import { FiArrowRight, FiCheckCircle } from "react-icons/fi";
 
 interface ActionButtonsProps {
   selectedCount: number;
@@ -12,7 +12,7 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   selectedCount,
-  onSkip,
+  onSkip, // eslint-disable-line @typescript-eslint/no-unused-vars
   onStart,
   disabled = false,
 }) => {
@@ -45,7 +45,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
 
           {/* Action Buttons */}
           <div className="flex flex-row items-center space-x-2">
-            <div>
+            {/* <div>
               <Button
                 onClick={onSkip}
                 size="large"
@@ -54,7 +54,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
               >
                 Thoát
               </Button>
-            </div>
+            </div> */}
 
             <div>
               <Button

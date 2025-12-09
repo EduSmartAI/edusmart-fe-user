@@ -17,6 +17,10 @@ import {
   Spin,
   Button,
   Carousel,
+  Select,
+  message,
+  Collapse,
+  Progress,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
@@ -34,6 +38,8 @@ import {
   FiFileText,
   FiChevronLeft,
   FiChevronRight,
+  FiSearch,
+  FiGlobe,
 } from "react-icons/fi";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
@@ -43,7 +49,9 @@ import {
   ExternalLearningPathDto,
   LearningPathSelectDto as GeneratedLearningPathSelectDto,
   LearningPathSelectResponse,
+  CourseBasicInfoDto,
 } from "EduSmart/api/api-student-service";
+import { StudentClient, AIClient } from "EduSmart/hooks/apiClient";
 
 const SNAPSHOT_ENDPOINT = "/api/learning-paths";
 const STREAM_ENDPOINT = "/api/learning-paths/stream";
@@ -65,6 +73,40 @@ const LEARNING_PATH_STATUS_LABEL: Record<LearningPathStatus, string> = {
   [LearningPathStatus.Closed]: "Đã đóng",
   [LearningPathStatus.Paused]: "Tạm dừng",
 };
+
+// Level mapping và config
+const LEVEL_CONFIG = {
+  1: {
+    label: "Cơ bản",
+    color: "green",
+    bgGradient:
+      "from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30",
+    borderColor: "border-green-200 dark:border-green-800",
+    badgeColor:
+      "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
+    iconColor: "text-green-600 dark:text-green-400",
+  },
+  2: {
+    label: "Trung cấp",
+    color: "blue",
+    bgGradient:
+      "from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30",
+    borderColor: "border-blue-200 dark:border-blue-800",
+    badgeColor:
+      "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+    iconColor: "text-blue-600 dark:text-blue-400",
+  },
+  3: {
+    label: "Nâng cao",
+    color: "purple",
+    bgGradient:
+      "from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30",
+    borderColor: "border-purple-200 dark:border-purple-800",
+    badgeColor:
+      "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300",
+    iconColor: "text-purple-600 dark:text-purple-400",
+  },
+} as const;
 
 interface SubjectInsight {
   score?: number;
@@ -378,6 +420,33 @@ const LearningPathSamplePage = () => {
   >([]);
   const [loadingTranscript, setLoadingTranscript] = useState(false);
 
+  // Course suggestion modal states
+  const [showCourseSuggestionModal, setShowCourseSuggestionModal] =
+    useState(false);
+  const [selectedSubjectCode, setSelectedSubjectCode] = useState<string | null>(
+    null,
+  );
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
+    null,
+  );
+  const [selectedMajorId, setSelectedMajorId] = useState<string | null>(null);
+  const [suggestionType, setSuggestionType] = useState<1 | 2>(1); // 1 = Easier, 2 = Harder
+  const [suggestedCourses, setSuggestedCourses] = useState<
+    CourseBasicInfoDto[]
+  >([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
+
+  // External courses modal states
+  const [showExternalCoursesModal, setShowExternalCoursesModal] =
+    useState(false);
+  const [externalSubjectCode, setExternalSubjectCode] = useState<string | null>(
+    null,
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [externalCourses, setExternalCourses] = useState<any[]>([]);
+  const [loadingExternalCourses, setLoadingExternalCourses] = useState(false);
+
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
   const habitAnalysis = learningPath?.habitAndInterestAnalysis;
@@ -635,6 +704,150 @@ const LearningPathSamplePage = () => {
     } finally {
       setLoadingTranscript(false);
     }
+  };
+
+  // Open course suggestion modal
+  const handleOpenCourseSuggestion = (
+    subjectCode: string,
+    subjectId: string,
+    majorId: string,
+  ) => {
+    setSelectedSubjectCode(subjectCode);
+    setSelectedSubjectId(subjectId);
+    setSelectedMajorId(majorId);
+    setSuggestionType(1); // Default to Easier
+    setShowCourseSuggestionModal(true);
+    // Auto-fetch on open
+    fetchSuggestedCourses(subjectCode, 1);
+  };
+
+  // Fetch suggested courses
+  const fetchSuggestedCourses = async (subjectCode: string, type: 1 | 2) => {
+    if (!pathId) return;
+
+    try {
+      setLoadingSuggestions(true);
+      setSuggestedCourses([]);
+
+      const response =
+        await StudentClient.api.learningPathsSuggestedCoursesSubjectsRecommendList(
+          pathId,
+          subjectCode,
+          { type },
+        );
+
+      if (response.data?.success && response.data?.response) {
+        setSuggestedCourses(response.data.response);
+        if (response.data.response.length === 0) {
+          message.info("Không tìm thấy khóa học phù hợp");
+        }
+      } else {
+        message.error(
+          response.data?.message || "Không thể tải danh sách khóa học",
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching suggested courses:", error);
+      message.error("Đã xảy ra lỗi khi tải danh sách khóa học");
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  // Handle suggestion type change
+  const handleSuggestionTypeChange = (type: 1 | 2) => {
+    setSuggestionType(type);
+    if (selectedSubjectCode) {
+      fetchSuggestedCourses(selectedSubjectCode, type);
+    }
+  };
+
+  // Open external courses modal
+  const handleOpenExternalCourses = (subjectCode: string) => {
+    setExternalSubjectCode(subjectCode);
+    setShowExternalCoursesModal(true);
+    fetchExternalCourses(subjectCode);
+  };
+
+  // Fetch external courses
+  const fetchExternalCourses = async (subjectCode: string) => {
+    try {
+      setLoadingExternalCourses(true);
+      setExternalCourses([]);
+
+      const response = await AIClient.api.v1AiRecommendSubjectCourseMatchCreate(
+        {
+          subjectCode: subjectCode,
+          topK: 20,
+          showSources: false,
+        },
+      );
+
+      if (response.data?.success && response.data?.response?.courses) {
+        setExternalCourses(response.data.response.courses);
+        if (response.data.response.courses.length === 0) {
+          message.info("Không tìm thấy khóa học bên ngoài phù hợp");
+        }
+      } else {
+        message.error(
+          response.data?.message || "Không thể tải danh sách khóa học",
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching external courses:", error);
+      message.error("Đã xảy ra lỗi khi tải danh sách khóa học");
+    } finally {
+      setLoadingExternalCourses(false);
+    }
+  };
+
+  // Add course to learning path
+  const handleAddCourseToPath = async (courseId: string) => {
+    if (!selectedMajorId || !selectedSubjectId || !selectedSubjectCode) {
+      message.error("Thiếu thông tin cần thiết để thêm khóa học");
+      return;
+    }
+
+    try {
+      setAddingCourseId(courseId);
+
+      const response =
+        await StudentClient.api.learningPathsAddSuggestedCoursePartialUpdate({
+          learningPathMajorId: selectedMajorId,
+          internalCourseId: courseId,
+          learningPathSubjectCodeId: selectedSubjectId,
+          subjectCode: selectedSubjectCode,
+        });
+
+      if (response.data?.success) {
+        message.success("Đã thêm khóa học vào lộ trình thành công!");
+        // Refresh learning path data
+        fetchLearningPath();
+        // Close modal after successful add
+        setTimeout(() => {
+          setShowCourseSuggestionModal(false);
+        }, 1000);
+      } else {
+        message.error(
+          response.data?.message || "Không thể thêm khóa học vào lộ trình",
+        );
+      }
+    } catch (error) {
+      console.error("Error adding course to path:", error);
+      message.error("Đã xảy ra lỗi khi thêm khóa học");
+    } finally {
+      setAddingCourseId(null);
+    }
+  };
+
+  // Map level to Vietnamese
+  const getLevelInVietnamese = (level?: string | null) => {
+    if (!level) return "";
+    const levelLower = level.toLowerCase();
+    if (levelLower.includes("beginner")) return "Cơ bản";
+    if (levelLower.includes("intermediate")) return "Trung cấp";
+    if (levelLower.includes("advanced")) return "Nâng cao";
+    return level;
   };
 
   // Get status tag for transcript
@@ -1217,16 +1430,63 @@ const LearningPathSamplePage = () => {
                                             : "Bỏ qua"}
                                     </span>
                                   </div>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {/* <span className="text-xs text-gray-500 dark:text-gray-400">
                                     {courseCount} khóa học
-                                  </span>
+                                  </span> */}
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="small"
+                                      type="default"
+                                      icon={
+                                        <FiSearch className="w-3.5 h-3.5" />
+                                      }
+                                      onClick={() => {
+                                        handleOpenCourseSuggestion(
+                                          cg.subjectCode ?? "",
+                                          cg.subjectId ?? "",
+                                          selectedMajor.majorId ?? "",
+                                        );
+                                      }}
+                                      style={{
+                                        borderColor: "#49BBBD",
+                                        color: "#49BBBD",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                      }}
+                                      className="hover:bg-[#49BBBD] hover:text-white transition-colors"
+                                    >
+                                      Tìm thêm khóa ở mức độ khác
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      type="default"
+                                      icon={<FiGlobe className="w-3.5 h-3.5" />}
+                                      onClick={() => {
+                                        handleOpenExternalCourses(
+                                          cg.subjectCode ?? "",
+                                        );
+                                      }}
+                                      style={{
+                                        borderColor: "#FF6B6B",
+                                        color: "#FF6B6B",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                      }}
+                                      className="hover:bg-[#FF6B6B] hover:text-white transition-colors"
+                                    >
+                                      Tìm khóa học bên ngoài
+                                    </Button>
+                                  </div>
                                 </div>
+
                                 {courseCount > 0 && (
-                                  <div className="space-y-3">
+                                  <div className="space-y-3 flex flex-row flex-wrap gap-5">
                                     {(cg.courses ?? []).map((course, i) => (
                                       <div
                                         key={`${cg.subjectCode}-${i}`}
-                                        className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 p-3 hover:border-teal-200 dark:hover:border-teal-800 hover:shadow-sm transition-all duration-200"
+                                        className=""
                                       >
                                         <CourseCard
                                           id={course.courseId ?? ""}
@@ -1247,7 +1507,7 @@ const LearningPathSamplePage = () => {
                                           price={course.price}
                                           dealPrice={course.dealPrice}
                                           routerPush={`/course/${course.courseId}`}
-                                          isHorizontal={true}
+                                          isHorizontal={false}
                                         />
                                       </div>
                                     ))}
@@ -1511,26 +1771,76 @@ const LearningPathSamplePage = () => {
                                   key={cg.subjectCode ?? `${id}-${sem}`}
                                   className="mb-6"
                                 >
-                                  <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-3">
-                                      <div className="px-2 py-1 rounded-md bg-[#49BBBD] text-white text-xs font-bold">
-                                        {cg.subjectCode ?? "SUB"}
+                                  <div className="mb-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center gap-3 flex-wrap">
+                                        <div className="px-2 py-1 rounded-md bg-[#49BBBD] text-white text-xs font-bold">
+                                          {cg.subjectCode ?? "SUB"}
+                                        </div>
+                                        <span
+                                          className={`px-2 py-1 rounded-full text-xs font-semibold ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+                                        >
+                                          {cg.status === 0
+                                            ? "Chưa bắt đầu"
+                                            : cg.status === 1
+                                              ? "Đang học"
+                                              : cg.status === 2
+                                                ? "Hoàn thành"
+                                                : "Bỏ qua"}
+                                        </span>
                                       </div>
-                                      <span
-                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${cg.status === 0 ? "bg-gray-100 text-gray-700" : cg.status === 1 ? "bg-blue-100 text-blue-700" : cg.status === 2 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
-                                      >
-                                        {cg.status === 0
-                                          ? "Chưa bắt đầu"
-                                          : cg.status === 1
-                                            ? "Đang học"
-                                            : cg.status === 2
-                                              ? "Hoàn thành"
-                                              : "Bỏ qua"}
+                                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        {courseCount} khóa học
                                       </span>
                                     </div>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                      {courseCount} khóa học
-                                    </span>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="small"
+                                        type="default"
+                                        icon={
+                                          <FiSearch className="w-3.5 h-3.5" />
+                                        }
+                                        onClick={() => {
+                                          handleOpenCourseSuggestion(
+                                            cg.subjectCode ?? "",
+                                            cg.subjectId ?? "",
+                                            major.majorId ?? "",
+                                          );
+                                        }}
+                                        style={{
+                                          borderColor: "#49BBBD",
+                                          color: "#49BBBD",
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          gap: "4px",
+                                        }}
+                                        className="hover:bg-[#49BBBD] hover:text-white transition-colors"
+                                      >
+                                        Tìm thêm khóa ở mức độ khác
+                                      </Button>
+                                      <Button
+                                        size="small"
+                                        type="default"
+                                        icon={
+                                          <FiGlobe className="w-3.5 h-3.5" />
+                                        }
+                                        onClick={() => {
+                                          handleOpenExternalCourses(
+                                            cg.subjectCode ?? "",
+                                          );
+                                        }}
+                                        style={{
+                                          borderColor: "#FF6B6B",
+                                          color: "#FF6B6B",
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          gap: "4px",
+                                        }}
+                                        className="hover:bg-[#FF6B6B] hover:text-white transition-colors"
+                                      >
+                                        Tìm khóa học bên ngoài
+                                      </Button>
+                                    </div>
                                   </div>
                                   {courseCount > 0 && (
                                     <div className="space-y-3 mt-3">
@@ -1677,10 +1987,12 @@ const LearningPathSamplePage = () => {
                                     )}
                                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
-                                        {course.provider ?? "Đối tác"}
+                                        {course.level
+                                          ? getLevelInVietnamese(course.level)
+                                          : "N/A"}
                                       </span>
-                                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                                        {course.level ?? "N/A"}
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
+                                        {course.provider ?? "Đối tác"}
                                       </span>
                                     </div>
                                   </div>
@@ -1742,6 +2054,53 @@ const LearningPathSamplePage = () => {
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
                   {learningPath?.pathName || "Lộ trình học tập"}
                 </h1>
+                {/* DEBUG: Log values */}
+                {(() => {
+                  console.log("🔍 Progress Check:", {
+                    status,
+                    statusType: typeof status,
+                    InProgressEnum: LearningPathStatus.InProgress,
+                    isStatusValid:
+                      status != null && status >= LearningPathStatus.InProgress,
+                    completionPercent: learningPath?.completionPercent,
+                    completionType: typeof learningPath?.completionPercent,
+                    isNumberType:
+                      typeof learningPath?.completionPercent === "number",
+                    shouldShow:
+                      status != null &&
+                      status >= LearningPathStatus.InProgress &&
+                      typeof learningPath?.completionPercent === "number",
+                  });
+                  return null;
+                })()}
+                {/* Completion Progress - Only show if status >= InProgress (2) */}
+                {status != null &&
+                  status >= LearningPathStatus.InProgress &&
+                  typeof learningPath?.completionPercent === "number" && (
+                    <div className="mt-3 flex items-center gap-3">
+                      <Progress
+                        percent={Math.round(learningPath.completionPercent)}
+                        strokeColor={{
+                          "0%": "#fb923c",
+                          "100%": "#f97316",
+                        }}
+                        trailColor="#fed7aa"
+                        size="small"
+                        className="flex-1 max-w-full"
+                      />
+                    </div>
+                  )}
+                {/* TEMPORARY: Force show for testing */}
+                {learningPath && !( status != null &&
+                  status >= LearningPathStatus.InProgress &&
+                  typeof learningPath?.completionPercent === "number") && (
+                    <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded text-xs">
+                      <strong>DEBUG:</strong> Progress không hiển thị vì:{" "}
+                      {status == null && "status = null"}{" "}
+                      {status != null && status < LearningPathStatus.InProgress && `status = ${status} (cần >= 2)`}{" "}
+                      {typeof learningPath?.completionPercent !== "number" && `completionPercent = ${learningPath?.completionPercent} (type: ${typeof learningPath?.completionPercent})`}
+                    </div>
+                  )}
               </div>
               <div className="flex items-center gap-2">
                 <Tag
@@ -1972,12 +2331,24 @@ const LearningPathSamplePage = () => {
                                   .trim();
                               }
 
-                              // Kiểm tra nếu là bài test PE (thực hành) - có chứa "Bài test tự luận"
-                              const isPracticalTest =
+                              // Kiểm tra loại phân tích
+                              const isTranscriptAnalysis =
                                 testInfo
                                   .toLowerCase()
+                                  .includes("phân tích dựa trên bảng điểm") ||
+                                testInfo.toLowerCase().includes("bảng điểm");
+
+                              const isPracticalTest =
+                                !isTranscriptAnalysis &&
+                                (testInfo
+                                  .toLowerCase()
                                   .includes("bài test tự luận") ||
-                                testInfo.toLowerCase().includes("với độ khó");
+                                  testInfo
+                                    .toLowerCase()
+                                    .includes("với độ khó"));
+
+                              const isTheoryTest =
+                                !isTranscriptAnalysis && !isPracticalTest;
 
                               // Trích xuất heading ## đầu tiên (tên tiếng Việt)
                               const headingMatch =
@@ -1986,7 +2357,7 @@ const LearningPathSamplePage = () => {
                                 ? headingMatch[1].trim()
                                 : null;
 
-                              // Nếu là bài test PE, lược bỏ heading ## đầu tiên (vì nó bị lặp)
+                              // Nếu là bài test PE hoặc Transcript, lược bỏ heading ## đầu tiên
                               // Nếu là bài test TE, cũng lược bỏ heading ## (vì sẽ hiển thị trong parenthesis)
                               if (vietnameseName) {
                                 markdownContent = markdownContent
@@ -1995,7 +2366,7 @@ const LearningPathSamplePage = () => {
                               }
 
                               // Với bài test TE, thêm tên tiếng Việt vào testInfo
-                              if (!isPracticalTest && vietnameseName) {
+                              if (isTheoryTest && vietnameseName) {
                                 testInfo = `${testInfo} (${vietnameseName})`;
                               }
 
@@ -2014,10 +2385,26 @@ const LearningPathSamplePage = () => {
                                       </span> */}
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
-                                              Bài đánh giá {index + 1} /{" "}
-                                              {praticalAbilityFeedbacks.length}
-                                            </span>
+                                            {isTranscriptAnalysis ? (
+                                              <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                                                Phân tích từ bảng điểm
+                                              </span>
+                                            ) : (
+                                              <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                                                Bài đánh giá {index + 1} /{" "}
+                                                {
+                                                  praticalAbilityFeedbacks.length
+                                                }
+                                              </span>
+                                            )}
+                                            {/* {isTranscriptAnalysis && (
+                                              <Tag
+                                                color="blue"
+                                                className="text-xs m-0"
+                                              >
+                                                Bảng điểm
+                                              </Tag>
+                                            )} */}
                                             {isPracticalTest && (
                                               <Tag
                                                 color="purple"
@@ -2026,7 +2413,7 @@ const LearningPathSamplePage = () => {
                                                 Thực hành
                                               </Tag>
                                             )}
-                                            {!isPracticalTest && (
+                                            {isTheoryTest && (
                                               <Tag
                                                 color="green"
                                                 className="text-xs m-0"
@@ -2045,11 +2432,17 @@ const LearningPathSamplePage = () => {
                                           </div>
                                         </div>
                                       </div>
-                                      {testInfo && (
-                                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
-                                          {testInfo}
-                                        </h4>
-                                      )}
+                                      {testInfo &&
+                                        (isTranscriptAnalysis ? (
+                                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
+                                            Hệ thống đưa ra đánh giá dựa trên
+                                            bảng điểm của bạn
+                                          </h4>
+                                        ) : (
+                                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white leading-snug">
+                                            {testInfo}
+                                          </h4>
+                                        ))}
                                     </div>
 
                                     {/* Body */}
@@ -2074,6 +2467,64 @@ const LearningPathSamplePage = () => {
                         </div>
                       </>
                     )}
+
+                  {/* Level Assessment - Collapse */}
+                  {learningPath?.level && (
+                    <div className="mt-8">
+                      <Collapse
+                        ghost
+                        expandIconPosition="end"
+                        items={[
+                          {
+                            key: "level-detail",
+                            label: (
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                                  Đánh giá trình độ của bạn:
+                                </span>
+                                <span
+                                  className={`inline-flex items-center rounded-full text-sm  font-bold ${
+                                    LEVEL_CONFIG[
+                                      learningPath.level as 1 | 2 | 3
+                                    ]
+                                  }`}
+                                >
+                                  {LEVEL_CONFIG[learningPath.level as 1 | 2 | 3]
+                                    ?.label || `Level ${learningPath.level}`}
+                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  (Click để xem chi tiết)
+                                </span>
+                              </div>
+                            ),
+                            children: (
+                              <div className="pt-2 pb-4">
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                  Dựa trên kết quả bài kiểm tra lý thuyết và
+                                  thực hành
+                                </p>
+                                {learningPath?.levelReason ? (
+                                  <div className="prose prose-sm max-w-none dark:prose-invert text-slate-600 dark:text-slate-300 leading-relaxed prose-strong:text-orange-600 dark:prose-strong:text-orange-400">
+                                    <MarkdownBlock
+                                      markdown={learningPath.levelReason.replace(
+                                        /\n---\n*$/,
+                                        "",
+                                      )}
+                                    />
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                    Đang phân tích kết quả đánh giá của bạn...
+                                  </p>
+                                )}
+                              </div>
+                            ),
+                          },
+                        ]}
+                        className="bg-white dark:bg-slate-900 rounded-2xl border border-orange-100 dark:border-orange-900/50 overflow-hidden shadow-sm [&_.ant-collapse-header]:!bg-gradient-to-r [&_.ant-collapse-header]:!from-orange-50 [&_.ant-collapse-header]:!to-amber-50 dark:[&_.ant-collapse-header]:!from-orange-950/30 dark:[&_.ant-collapse-header]:!to-amber-950/30 [&_.ant-collapse-header]:!px-6 [&_.ant-collapse-header]:!py-6 [&_.ant-collapse-content-box]:!px-6 [&_.ant-collapse-expand-icon]:!text-orange-600 dark:[&_.ant-collapse-expand-icon]:!text-orange-400"
+                      />
+                    </div>
+                  )}
                 </>
               ),
             },
@@ -2207,6 +2658,219 @@ const LearningPathSamplePage = () => {
           ]}
         />
       </div>
+
+      {/* Course Suggestion Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FiSearch className="w-5 h-5 text-[#49BBBD]" />
+            <span className="font-bold">
+              Tìm khóa học khác - {selectedSubjectCode}
+            </span>
+          </div>
+        }
+        open={showCourseSuggestionModal}
+        onCancel={() => setShowCourseSuggestionModal(false)}
+        footer={null}
+        width={1100}
+        centered
+      >
+        <div className="space-y-4">
+          {/* Filter Section */}
+          <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Độ khó:
+            </span>
+            <Select
+              value={suggestionType}
+              onChange={handleSuggestionTypeChange}
+              className="w-48"
+              options={[
+                { value: 1, label: "Dễ hơn" },
+                { value: 2, label: "Khó hơn" },
+              ]}
+            />
+            <div className="flex-1" />
+            <Tag color="blue" className="text-xs">
+              {suggestedCourses.length} khóa học
+            </Tag>
+          </div>
+
+          {/* Courses List */}
+          <Spin spinning={loadingSuggestions}>
+            <div className="space-y-3 max-h-[500px] overflow-y-auto">
+              {suggestedCourses.length === 0 && !loadingSuggestions ? (
+                <div className="text-center py-12">
+                  <FiSearch className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Không tìm thấy khóa học phù hợp
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Thử chọn độ khó khác hoặc quay lại sau
+                  </p>
+                </div>
+              ) : (
+                suggestedCourses.map((course: CourseBasicInfoDto, index) => (
+                  <div
+                    key={course.courseId ?? index}
+                    className="rounded-xl p-4 transition-all duration-200 flex gap-5"
+                  >
+                    <CourseCard
+                      id={course.courseId ?? ""}
+                      imageUrl={
+                        course.courseImageUrl ??
+                        "https://via.placeholder.com/600x400?text=EduSmart"
+                      }
+                      title={course.title ?? "Khóa học"}
+                      descriptionLines={
+                        course.shortDescription ? [course.shortDescription] : []
+                      }
+                      instructor={course.teacherName ?? "Giảng viên"}
+                      level={course.level}
+                      price={course.price}
+                      dealPrice={course.dealPrice}
+                      routerPush={`/course/${course.courseId}`}
+                      isHorizontal={true}
+                    />
+                    <div className="mt-3 flex flex-1 items-center justify-center ">
+                      <Button
+                        type="primary"
+                        size="middle"
+                        icon={<FiPlus className="w-4 h-4" />}
+                        loading={addingCourseId === course.courseId}
+                        disabled={addingCourseId !== null}
+                        onClick={() =>
+                          handleAddCourseToPath(course.courseId ?? "")
+                        }
+                        className="bg-[#49BBBD] hover:bg-cyan-600 border-none"
+                      >
+                        {addingCourseId === course.courseId
+                          ? "Đang thêm..."
+                          : "Thêm vào lộ trình"}
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Spin>
+        </div>
+      </Modal>
+
+      {/* External Courses Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FiGlobe className="w-5 h-5 text-[#FF6B6B]" />
+            <span className="font-bold">
+              Khóa học bên ngoài - {externalSubjectCode}
+            </span>
+          </div>
+        }
+        open={showExternalCoursesModal}
+        onCancel={() => setShowExternalCoursesModal(false)}
+        footer={null}
+        width={1200}
+        centered
+      >
+        <div className="space-y-4">
+          {/* Info Section */}
+          {/* <div className="flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+            <FiGlobe className="w-5 h-5 text-[#FF6B6B]" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                Khóa học từ các nền tảng: Coursera, Udemy, edX...
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Tìm thấy {externalCourses.length} khóa học phù hợp với môn{" "}
+                {externalSubjectCode}
+              </p>
+            </div>
+          </div> */}
+
+          {/* Courses List */}
+          <Spin spinning={loadingExternalCourses}>
+            <div className="space-y-3 max-h-[600px] overflow-y-auto">
+              {externalCourses.length === 0 && !loadingExternalCourses ? (
+                <div className="text-center py-12">
+                  <FiGlobe className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Không tìm thấy khóa học bên ngoài phù hợp
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Thử lại sau hoặc tìm kiếm môn học khác
+                  </p>
+                </div>
+              ) : (
+                externalCourses.map((course, index) => (
+                  <div
+                    key={index}
+                    className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 hover:border-[#FF6B6B] dark:hover:border-orange-600 hover:shadow-md transition-all duration-200"
+                  >
+                    <div className="flex gap-4">
+                      {/* Course Info */}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-base font-bold text-gray-900 dark:text-white line-clamp-2">
+                            {course.title}
+                          </h3>
+                          {course.rating && (
+                            <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                              <span className="text-yellow-500">⭐</span>
+                              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                {course.rating}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 mb-3 flex-wrap">
+                          <Tag color="blue" className="text-xs">
+                            {course.provider}
+                          </Tag>
+                          {course.level && (
+                            <Tag color="green" className="text-xs">
+                              {getLevelInVietnamese(course.level)}
+                            </Tag>
+                          )}
+                          {course.estimatedWeeks && (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              ~{course.estimatedWeeks} tuần
+                            </span>
+                          )}
+                        </div>
+
+                        {course.snippet && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-3">
+                            {course.snippet}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={course.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-[#FF6B6B] hover:bg-[#ff5252] rounded-lg transition-colors"
+                          >
+                            <FiExternalLink className="w-4 h-4" />
+                            Xem khóa học
+                          </a>
+                          {course.score && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                              Độ phù hợp: {(course.score * 100).toFixed(1)}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Spin>
+        </div>
+      </Modal>
 
       {/* Transcript Modal */}
       <Modal
