@@ -45,6 +45,13 @@ export enum TechnologyType {
   Other = 6,
 }
 
+export enum ChatBotRawReason
+{
+    GetAllLearningPath = "GetAllLearningPath",
+    GetDetailTrainingPath = "GetDetailTrainingPath",
+    SkipSubjectLearningPath = "SkipSubjectLearningPath",
+}
+
 // Technology Type display names
 export const TechnologyTypeLabels: Record<TechnologyType, string> = {
   [TechnologyType.ProgrammingLanguage]: "Ngôn ngữ lập trình",

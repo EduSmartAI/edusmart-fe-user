@@ -28,12 +28,20 @@ import {
   FiCheckCircle,
   FiHome,
 } from "react-icons/fi";
+import { Drawer, Spin, Button } from "antd";
+import { CloseOutlined } from "@ant-design/icons";
+import { getLearningPathAction } from "EduSmart/app/(learning-path)/learningPathAction";
+import type { LearningPathData } from "EduSmart/app/(learning-path)/learningPathAction";
+import LearningPathsCarousel from "EduSmart/components/AiChat/LearningPathsCarousel";
 import {
   aiChatBotsChatWithAiLearningPathCreate,
   aiChatBotsLearningPathList,
   aiChatBotsLearningPathDetailList,
 } from "EduSmart/app/apiServer/Ai/aiAction";
+import { getAllLearningPathsAction } from "EduSmart/app/(learning-path)/learningPathAction";
 import type { ChatSummaryDto, ChatHistoryLearningPathItemDto } from "EduSmart/api/api-ai-service";
+import type { LearningPathSelectAllDto } from "EduSmart/api/api-student-service";
+import { ChatBotRawReason } from "EduSmart/enum/enum";
 import { v4 as uuidv4 } from "uuid";
 
 type Message = {
@@ -42,6 +50,8 @@ type Message = {
   content: string;
   isLoading?: boolean;
   isTyping?: boolean;
+  rawFinishReason?: string;
+  learningPaths?: LearningPathSelectAllDto[];
 };
 
 const userMessageClasses =
@@ -147,11 +157,13 @@ function TypingMessage({
 function MessageBubble({ 
   message, 
   onTypingComplete,
-  onScrollUpdate
+  onScrollUpdate,
+  onLearningPathClick,
 }: { 
   message: Message; 
   onTypingComplete?: (messageId: number) => void;
   onScrollUpdate?: () => void;
+  onLearningPathClick?: (pathId: string, pathName?: string) => void;
 }) {
   const isUser = message.role === "user";
 
@@ -178,7 +190,7 @@ function MessageBubble({
   }
 
   return (
-    <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
+    <div className={`flex w-full flex-col ${isUser ? "items-end" : "items-start"}`}>
       <animated.div
         style={styles}
         className={isUser ? userMessageClasses : assistantMessageClasses}
@@ -189,9 +201,17 @@ function MessageBubble({
           <AssistantMarkdownContent content={message.content} />
         )}
       </animated.div>
+      {/* Learning Paths Carousel */}
+      {!isUser && message.learningPaths && message.learningPaths.length > 0 && (
+        <LearningPathsCarousel 
+          learningPaths={message.learningPaths}
+          onPathClick={onLearningPathClick}
+        />
+      )}
     </div>
   );
 }
+
 
 function ChatHomePageClient() {
   const searchParams = useSearchParams();
@@ -230,6 +250,79 @@ function ChatHomePageClient() {
   const hasMessages = messages.length > 0;
   const shouldShowChatView = hasMessages || isLoadingDetail || !!sessionId;
 
+  // Learning Path Detail Drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedPathId, setSelectedPathId] = useState<string | null>(null);
+  const [pathDetailLoading, setPathDetailLoading] = useState(false);
+  const [pathDetailData, setPathDetailData] = useState<LearningPathData | null>(null);
+  const [pathDetailError, setPathDetailError] = useState<string | null>(null);
+
+  // Listen for drawer open events
+  useEffect(() => {
+    const handleOpenDrawer = (event: CustomEvent<{ pathId: string }>) => {
+      const { pathId } = event.detail;
+      setSelectedPathId(pathId);
+      setDrawerOpen(true);
+      setPathDetailError(null);
+      setPathDetailData(null);
+    };
+
+    window.addEventListener('openLearningPathDrawer', handleOpenDrawer as EventListener);
+    return () => {
+      window.removeEventListener('openLearningPathDrawer', handleOpenDrawer as EventListener);
+    };
+  }, []);
+
+  // Fetch learning path detail when drawer opens
+  useEffect(() => {
+    if (drawerOpen && selectedPathId) {
+      const fetchDetail = async () => {
+        setPathDetailLoading(true);
+        setPathDetailError(null);
+        try {
+          const result = await getLearningPathAction(selectedPathId);
+          if (result.ok) {
+            setPathDetailData(result.data);
+          } else {
+            setPathDetailError(result.error || "Không thể tải chi tiết lộ trình");
+          }
+        } catch (err) {
+          setPathDetailError(err instanceof Error ? err.message : "Đã xảy ra lỗi");
+        } finally {
+          setPathDetailLoading(false);
+        }
+      };
+      fetchDetail();
+    }
+  }, [drawerOpen, selectedPathId]);
+
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setSelectedPathId(null);
+    setPathDetailData(null);
+    setPathDetailError(null);
+  };
+
+  // Handle learning path click - điền ID vào input chat
+  const handleLearningPathClick = useCallback((pathId: string, pathName?: string) => {
+    // Tạo prompt với ID để chatbot có thể xác định chính xác lộ trình
+    const promptText = pathName 
+      ? `Chi tiết về lộ trình "${pathName}" (ID: ${pathId})`
+      : `Chi tiết về lộ trình học tập (ID: ${pathId})`;
+    
+    setPrompt(promptText);
+    
+    // Focus vào input field sau khi set prompt và scroll đến input
+    setTimeout(() => {
+      const inputElement = document.querySelector('input[placeholder*="Hỏi bất kỳ"]') as HTMLInputElement;
+      if (inputElement) {
+        inputElement.focus();
+        // Scroll đến input một cách mượt mà
+        inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  }, []);
+
   const loadChatList = useCallback(async (showSkeleton = false) => {
     if (showSkeleton) {
       setIsLoadingChatList(true);
@@ -256,11 +349,28 @@ function ChatHomePageClient() {
       if (result.data?.success && result.data.response) {
         const chatDetail = result.data.response;
         if (chatDetail.messages) {
-          const formattedMessages: Message[] = chatDetail.messages.map(
-            (msg: ChatHistoryLearningPathItemDto, index: number) => ({
-              id: Date.now() + index,
-              role: (msg.role === "user" ? "user" : "assistant") as "user" | "assistant",
-              content: msg.content || "",
+          const formattedMessages: Message[] = await Promise.all(
+            chatDetail.messages.map(async (msg: ChatHistoryLearningPathItemDto, index: number) => {
+              const message: Message = {
+                id: Date.now() + index,
+                role: (msg.role === "user" ? "user" : "assistant") as "user" | "assistant",
+                content: msg.content || "",
+                rawFinishReason: msg.rawFinishReason,
+              };
+
+              // If this message has GetAllLearningPath reason, fetch learning paths
+              if (msg.rawFinishReason === ChatBotRawReason.GetAllLearningPath) {
+                try {
+                  const learningPathsResult = await getAllLearningPathsAction(0, 1000);
+                  if (learningPathsResult.ok && learningPathsResult.data?.data) {
+                    message.learningPaths = learningPathsResult.data.data;
+                  }
+                } catch (error) {
+                  console.error("Error fetching learning paths for history:", error);
+                }
+              }
+
+              return message;
             })
           );
           setMessages(formattedMessages);
@@ -347,8 +457,22 @@ function ChatHomePageClient() {
 
       // Check if we have a reply in the response (prioritize reply over success flag)
       const reply = result.data?.response?.reply;
+      const rawFinishReason = result.data?.response?.rawFinishReason;
       
       if (reply !== undefined && reply !== null && reply !== "") {
+        // Check if we need to fetch learning paths
+        let learningPaths: LearningPathSelectAllDto[] | undefined;
+        if (rawFinishReason === ChatBotRawReason.GetAllLearningPath) {
+          try {
+            const learningPathsResult = await getAllLearningPathsAction(0, 1000);
+            if (learningPathsResult.ok && learningPathsResult.data?.data) {
+              learningPaths = learningPathsResult.data.data;
+            }
+          } catch (error) {
+            console.error("Error fetching learning paths:", error);
+          }
+        }
+
         // Replace loading skeleton with typing message
         setMessages((prev) =>
           prev.map((msg) =>
@@ -358,6 +482,8 @@ function ChatHomePageClient() {
                   role: "assistant" as const,
                   content: reply,
                   isTyping: true,
+                  rawFinishReason: rawFinishReason,
+                  learningPaths: learningPaths,
                 }
               : msg
           )
@@ -947,7 +1073,7 @@ function ChatHomePageClient() {
                           key={m.id} 
                           message={m}
                           onTypingComplete={(messageId) => {
-                            // Remove typing state when typing completes
+                            // Remove typing state when typing completes, but keep learningPaths
                             setMessages((prev) =>
                               prev.map((msg) =>
                                 msg.id === messageId
@@ -957,6 +1083,7 @@ function ChatHomePageClient() {
                             );
                           }}
                           onScrollUpdate={scrollToBottom}
+                          onLearningPathClick={handleLearningPathClick}
                         />
                       ))}
                       <div ref={messagesEndRef} className="h-px scroll-mb-32" />
@@ -1077,6 +1204,92 @@ function ChatHomePageClient() {
         background: linear-gradient(180deg, rgba(96, 165, 250, 0.95), rgba(14, 165, 233, 1));
       }
     `}</style>
+    
+    {/* Learning Path Detail Drawer - Single instance for all cards */}
+    <Drawer
+      title={
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-400 to-sky-500 text-white">
+            <FiBookOpen className="text-[16px]" />
+          </div>
+          <span>Chi tiết lộ trình học tập</span>
+        </div>
+      }
+      placement="right"
+      onClose={handleCloseDrawer}
+      open={drawerOpen}
+      width={600}
+      extra={
+        <Button
+          type="text"
+          icon={<CloseOutlined />}
+          onClick={handleCloseDrawer}
+        />
+      }
+    >
+      {pathDetailLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Spin size="large" />
+        </div>
+      ) : pathDetailError ? (
+        <div className="py-8 text-center text-red-500 dark:text-red-400">
+          {pathDetailError}
+        </div>
+      ) : pathDetailData ? (
+        <div className="space-y-4">
+          <div>
+            <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-50">
+              {pathDetailData.pathName || "Lộ trình học tập"}
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
+                pathDetailData.status === 1
+                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
+                  : "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300"
+              }`}>
+                {pathDetailData.status === 1 ? "Đã xác nhận" : "Chưa xác nhận"}
+              </span>
+              {pathDetailData.completionPercent !== undefined && (
+                <span className="text-sm text-slate-500 dark:text-slate-400">
+                  Hoàn thành: {Math.round(pathDetailData.completionPercent)}%
+                </span>
+              )}
+            </div>
+          </div>
+
+          {pathDetailData.basicLearningPath?.courseGroups && pathDetailData.basicLearningPath.courseGroups.length > 0 && (
+            <div>
+              <h4 className="mb-3 text-base font-semibold text-slate-900 dark:text-slate-50">
+                Nhóm khóa học
+              </h4>
+              <div className="space-y-3">
+                {pathDetailData.basicLearningPath.courseGroups.map((group, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800"
+                  >
+                    <div className="mb-2 font-medium text-slate-900 dark:text-slate-50">
+                      {group.subjectCode || `Nhóm ${idx + 1}`}
+                    </div>
+                    {group.courses && group.courses.length > 0 && (
+                      <div className="text-sm text-slate-600 dark:text-slate-400">
+                        {group.courses.length} khóa học
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(!pathDetailData.basicLearningPath?.courseGroups || pathDetailData.basicLearningPath.courseGroups.length === 0) && (
+            <div className="py-8 text-center text-slate-500 dark:text-slate-400">
+              Chưa có thông tin chi tiết về lộ trình này.
+            </div>
+          )}
+        </div>
+      ) : null}
+    </Drawer>
     </>
   );
 }
