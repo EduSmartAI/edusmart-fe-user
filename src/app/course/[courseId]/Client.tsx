@@ -33,6 +33,8 @@ import {
   HomeOutlined,
   RightOutlined,
   BookOutlined,
+  LoginOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import { FadeTransition } from "EduSmart/components/Animation/FadeTransition";
 import Link from "next/link";
@@ -46,6 +48,7 @@ import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
 import { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 import { useCourseStore } from "EduSmart/stores/course/courseStore";
 import { useCartStore } from "EduSmart/stores/cart/cartStore";
+import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useRouter } from "next/navigation";
 import {
   v1CartItemsCheckList,
@@ -164,7 +167,8 @@ export default function CourseDetailUI({
   const subjectTag = data?.subjectCode ? [data.subjectCode] : [];
   const levelTag = levelLabel(data?.level ?? 0);
   const enRollingCourseById = useCourseStore((s) => s.enRollingCourseById);
-  const { addToCart } = useCartStore();
+  const { addToCart, fetchCart } = useCartStore();
+  const isAuthen = useAuthStore((s) => s.isAuthen);
   const router = useRouter();
   const durationText = useMemo(
     () => formatDuration(data?.durationHours ?? 0, data?.durationMinutes ?? 0),
@@ -218,6 +222,75 @@ export default function CourseDetailUI({
   };
 
   const onStudyCourse = async () => {
+    // Kiểm tra đăng nhập trước
+    if (!isAuthen) {
+      Modal.confirm({
+        title: (
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <ExclamationCircleOutlined className="text-2xl text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Bạn cần đăng nhập
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                Để tiếp tục học khóa học này
+              </div>
+            </div>
+          </div>
+        ),
+        content: (
+          <div className="ml-16 mt-2">
+            <p className="text-gray-700 dark:text-gray-300">
+              Vui lòng đăng nhập để tiếp tục học khóa học này.
+            </p>
+          </div>
+        ),
+        okText: (
+          <span className="flex items-center gap-2">
+            <LoginOutlined />
+            Đăng nhập
+          </span>
+        ),
+        cancelText: "Hủy",
+        centered: true,
+        width: 480,
+        okButtonProps: {
+          size: "large",
+          className: "h-10 px-6 font-semibold",
+        },
+        cancelButtonProps: {
+          size: "large",
+          className: "h-10 px-6",
+        },
+        styles: {
+          content: {
+            padding: "24px",
+            borderRadius: "12px",
+          },
+          header: {
+            borderBottom: "none",
+            padding: "24px 24px 0 24px",
+          },
+          body: {
+            padding: "0 24px 24px 24px",
+          },
+          footer: {
+            borderTop: "1px solid #f0f0f0",
+            padding: "16px 24px",
+            marginTop: "16px",
+          },
+        },
+        onOk: () => {
+          const returnUrl =
+            typeof window !== "undefined" ? window.location.pathname : "/";
+          router.push(`/Login?returnUrl=${encodeURIComponent(returnUrl)}`);
+        },
+      });
+      return;
+    }
+
     if (isLearning) {
       message.success("Tiếp tục học");
       router.push(`/course/${data?.courseId}/learn`);
@@ -263,10 +336,63 @@ export default function CourseDetailUI({
 
     if (status === 401) {
       Modal.confirm({
-        title: "Bạn cần đăng nhập",
-        content: "Vui lòng đăng nhập để ghi danh khóa học.",
-        okText: "Đăng nhập",
+        title: (
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <ExclamationCircleOutlined className="text-2xl text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Bạn cần đăng nhập
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                Để ghi danh khóa học
+              </div>
+            </div>
+          </div>
+        ),
+        content: (
+          <div className="ml-16 mt-2">
+            <p className="text-gray-700 dark:text-gray-300">
+              Vui lòng đăng nhập để ghi danh khóa học.
+            </p>
+          </div>
+        ),
+        okText: (
+          <span className="flex items-center gap-2">
+            <LoginOutlined />
+            Đăng nhập
+          </span>
+        ),
         cancelText: "Hủy",
+        centered: true,
+        width: 480,
+        okButtonProps: {
+          size: "large",
+          className: "h-10 px-6 font-semibold",
+        },
+        cancelButtonProps: {
+          size: "large",
+          className: "h-10 px-6",
+        },
+        styles: {
+          content: {
+            padding: "24px",
+            borderRadius: "12px",
+          },
+          header: {
+            borderBottom: "none",
+            padding: "24px 24px 0 24px",
+          },
+          body: {
+            padding: "0 24px 24px 24px",
+          },
+          footer: {
+            borderTop: "1px solid #f0f0f0",
+            padding: "16px 24px",
+            marginTop: "16px",
+          },
+        },
         onOk: () => {
           const returnUrl =
             typeof window !== "undefined" ? window.location.pathname : "/";
@@ -308,6 +434,75 @@ export default function CourseDetailUI({
   }, [data?.courseId]);
 
   const handleAddToCart = async () => {
+    // Kiểm tra đăng nhập trước
+    if (!isAuthen) {
+      Modal.confirm({
+        title: (
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <ExclamationCircleOutlined className="text-2xl text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Bạn cần đăng nhập
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                Để thêm khóa học vào giỏ hàng
+              </div>
+            </div>
+          </div>
+        ),
+        content: (
+          <div className="ml-16 mt-2">
+            <p className="text-gray-700 dark:text-gray-300">
+              Vui lòng đăng nhập để thêm khóa học vào giỏ hàng.
+            </p>
+          </div>
+        ),
+        okText: (
+          <span className="flex items-center gap-2">
+            <LoginOutlined />
+            Đăng nhập
+          </span>
+        ),
+        cancelText: "Hủy",
+        centered: true,
+        width: 480,
+        okButtonProps: {
+          size: "large",
+          className: "h-10 px-6 font-semibold",
+        },
+        cancelButtonProps: {
+          size: "large",
+          className: "h-10 px-6",
+        },
+        styles: {
+          content: {
+            padding: "24px",
+            borderRadius: "12px",
+          },
+          header: {
+            borderBottom: "none",
+            padding: "24px 24px 0 24px",
+          },
+          body: {
+            padding: "0 24px 24px 24px",
+          },
+          footer: {
+            borderTop: "1px solid #f0f0f0",
+            padding: "16px 24px",
+            marginTop: "16px",
+          },
+        },
+        onOk: () => {
+          const returnUrl =
+            typeof window !== "undefined" ? window.location.pathname : "/";
+          router.push(`/Login?returnUrl=${encodeURIComponent(returnUrl)}`);
+        },
+      });
+      return;
+    }
+
     if (!data?.courseId) {
       message.error("Thiếu thông tin khóa học.");
       return;
@@ -331,6 +526,8 @@ export default function CourseDetailUI({
 
       if (ok) {
         setInCart(true);
+        // Refresh cart để cập nhật số lượng trong CartIcon
+        await fetchCart();
         message.success("Đã thêm khóa học vào giỏ hàng.");
       } else {
         message.error(
