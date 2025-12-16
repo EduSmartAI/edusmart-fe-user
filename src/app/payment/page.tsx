@@ -1,10 +1,5 @@
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
-import { v1PaymentPaymentCallbackCreate } from "EduSmart/app/apiServer/payment/paymentAction";
 import PaymentResultClient from "./PaymentResultClient";
-import type {
-  PaymentCallbackDto,
-  PaymentCallbackResponse,
-} from "EduSmart/api/api-payment-service";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -110,48 +105,16 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
     return <MissingParams missing={issues.length ? issues : ["tham số không hợp lệ"]} />;
   }
 
-  let callbackResponse: PaymentCallbackResponse | null = null;
-  let combinedMessage: string | null = null;
-
-  try {
-    callbackResponse = await v1PaymentPaymentCallbackCreate(
-      params.orderId,
-      params.code,
-      params.id,
-      params.cancel,
-      params.status,
-      params.orderCode,
-    );
-
-    if (!callbackResponse) {
-      combinedMessage = "Không nhận được phản hồi từ hệ thống thanh toán.";
-    } else if (!callbackResponse.success) {
-      combinedMessage =
-        callbackResponse.message ||
-        callbackResponse.detailErrors?.[0]?.errorMessage ||
-        "Thanh toán chưa được xác nhận. Vui lòng thử lại.";
-    } else if (callbackResponse.message) {
-      combinedMessage = callbackResponse.message;
-    }
-  } catch (error) {
-    console.error("Failed to handle payment callback:", error);
-    combinedMessage = "Không thể xử lý yêu cầu thanh toán. Vui lòng thử lại sau.";
-  }
-
-  const callbackPayload: PaymentCallbackDto | null =
-    callbackResponse?.response ?? null;
-
   return (
     <BaseScreenWhiteNav>
       <div className="max-w-3xl mx-auto px-4 py-12">
         <PaymentResultClient
           orderId={params.orderId}
+          code={params.code}
+          id={params.id}
           cancel={params.cancel}
+          status={params.status}
           orderCode={params.orderCode}
-          originalStatus={params.status}
-          callbackSuccess={callbackResponse?.success ?? false}
-          callbackMessage={combinedMessage}
-          callbackPayload={callbackPayload}
         />
       </div>
     </BaseScreenWhiteNav>

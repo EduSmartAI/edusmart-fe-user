@@ -12,36 +12,105 @@ const { Paragraph, Text, Title } = Typography;
 
 type PaymentResultClientProps = {
   orderId: string;
+  code: string;
+  id: string;
   cancel: boolean;
+  status: string;
   orderCode: number;
-  originalStatus: string;
-  callbackSuccess: boolean;
-  callbackMessage: string | null;
-  callbackPayload: PaymentCallbackDto | null;
 };
 
 const PaymentResultClient = ({
   orderId,
+  code,
+  id,
   cancel,
+  status,
   orderCode,
-  originalStatus,
-  callbackSuccess,
-  callbackMessage,
-  callbackPayload,
 }: PaymentResultClientProps) => {
   const router = useRouter();
+  const v1PaymentPaymentCallbackCreate = usePaymentStore(
+    (state) => state.v1PaymentPaymentCallbackCreate,
+  );
   const retryPayment = usePaymentStore((state) => state.retryPayment);
   const isProcessing = usePaymentStore((state) => state.isProcessing);
 
+  const [callbackResponse, setCallbackResponse] = useState<{
+    success: boolean;
+    message: string | null;
+    payload: PaymentCallbackDto | null;
+  } | null>(null);
   const [repaymentUrl, setRepaymentUrl] = useState<string | null>(null);
   const [repaymentMessage, setRepaymentMessage] = useState<string | null>(null);
   const [retryFailed, setRetryFailed] = useState(false);
+  const callbackTriggeredRef = useRef(false);
   const retryTriggeredRef = useRef(false);
 
-  const normalizedStatus = useMemo(
-    () => originalStatus?.toUpperCase() ?? "",
-    [originalStatus],
-  );
+  // Call callback API on mount
+  useEffect(() => {
+    if (callbackTriggeredRef.current) {
+      return;
+    }
+
+    callbackTriggeredRef.current = true;
+    let ignore = false;
+
+    const handleCallback = async () => {
+      try {
+        const response = await v1PaymentPaymentCallbackCreate(
+          orderId,
+          code,
+          id,
+          cancel,
+          status,
+          orderCode,
+        );
+
+        if (ignore) {
+          return;
+        }
+
+        let combinedMessage: string | null = null;
+
+        if (!response) {
+          combinedMessage = "Không nhận được phản hồi từ hệ thống thanh toán.";
+        } else if (!response.success) {
+          combinedMessage =
+            response.message ||
+            response.detailErrors?.[0]?.errorMessage ||
+            "Thanh toán chưa được xác nhận. Vui lòng thử lại.";
+        } else if (response.message) {
+          combinedMessage = response.message;
+        }
+
+        setCallbackResponse({
+          success: response?.success ?? false,
+          message: combinedMessage,
+          payload: response?.response ?? null,
+        });
+      } catch (error) {
+        console.error("Failed to handle payment callback:", error);
+        if (!ignore) {
+          setCallbackResponse({
+            success: false,
+            message: "Không thể xử lý yêu cầu thanh toán. Vui lòng thử lại sau.",
+            payload: null,
+          });
+        }
+      }
+    };
+
+    handleCallback();
+
+    return () => {
+      ignore = true;
+    };
+  }, [orderId, code, id, cancel, status, orderCode, v1PaymentPaymentCallbackCreate]);
+
+  const normalizedStatus = useMemo(() => status?.toUpperCase() ?? "", [status]);
+  const callbackSuccess = callbackResponse?.success ?? false;
+  const callbackMessage = callbackResponse?.message ?? null;
+  const callbackPayload = callbackResponse?.payload ?? null;
+
   const isPaid = useMemo(
     () => callbackSuccess && normalizedStatus === "PAID",
     [callbackSuccess, normalizedStatus],
@@ -140,7 +209,7 @@ const PaymentResultClient = ({
     { label: "Mã đơn PayOS", value: orderCode },
     {
       label: "Trạng thái PayOS",
-      value: originalStatus || "Không xác định",
+      value: status || "Không xác định",
     },
     {
       label: "Trạng thái hệ thống",
