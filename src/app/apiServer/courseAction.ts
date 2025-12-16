@@ -16,7 +16,7 @@ export type Course = {
   title: string;
   descriptionLines: Array<string>;
   isWishList?: boolean;
-  isEnroll?: boolean;
+  isEnrolled?: boolean;
   instructor: string;
   price?: number;
   dealPrice?: number | null;
@@ -42,7 +42,7 @@ export async function GetAllCourses() {
     if (res.data?.success && res.data.response?.data) {
       const courses: Course[] = res.data.response.data.map((courseDto) => ({
         id: courseDto.courseId ?? "",
-        isEnroll: courseDto.isEnrolled,
+        isEnrolled: courseDto.isEnrolled ?? false,
         isWishList: courseDto.isWishlist ?? false,
         imageUrl: courseDto.courseImageUrl || "/default-course-image.jpg",
         title: courseDto.title || "Untitled Course",
@@ -88,7 +88,7 @@ export async function fetchCourseByQuery(
     if (res.data?.success && res.data.response?.data) {
       const courses: Course[] = res.data.response.data.map((courseDto) => ({
         id: courseDto.courseId ?? "",
-        isEnroll: courseDto.isEnrolled,
+        isEnrolled: courseDto.isEnrolled ?? false,
         isWishList: courseDto.isWishlist ?? false,
         imageUrl: courseDto.courseImageUrl || "/default-course-image.jpg",
         title: courseDto.title || "Untitled Course",
@@ -104,6 +104,7 @@ export async function fetchCourseByQuery(
         level: courseDto.level ?? null,
         learnerCount: courseDto.learnerCount ?? null,
       }));
+
       return {
         data: courses,
         totalPages: res.data.response.totalPages ?? 0,
@@ -135,7 +136,7 @@ export async function fetchCourseByQueryForSlug(
     if (res.data?.success && res.data.response?.data) {
       const courses: Course[] = res.data.response.data.map((courseDto) => ({
         id: courseDto.courseId ?? "",
-        isEnroll: courseDto.isEnrolled,
+        isEnrolled: courseDto.isEnrolled ?? false,
         isWishList: courseDto.isWishlist ?? false,
         imageUrl: courseDto.courseImageUrl || "/default-course-image.jpg",
         title: courseDto.title || "Untitled Course",

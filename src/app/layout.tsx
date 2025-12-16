@@ -96,8 +96,12 @@ export default function RootLayout({
           name="google-site-verification"
           content="zHUQms0K0yncnzbqCtw9XTpot7mSQqw2npsCYfi8S84"
         />
-        <link rel="preconnect" href="https://api.edusmart.vn" />
-        <link rel="dns-prefetch" href="https://api.edusmart.vn" />
+        {process.env.NEXT_PUBLIC_API_URL && (
+          <>
+            <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL} />
+            <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_API_URL} />
+          </>
+        )}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         {/* ✅ BỎ dòng preload CSS hardcode vì không ổn định giữa các build */}
         {/* <link rel="preload" as="style" href="/_next/static/css/xxx.css" /> */}

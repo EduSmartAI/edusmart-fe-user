@@ -562,7 +562,7 @@ export default function CourseListPage({
                       <div className="h-full xs:ml-4">
                         <CourseCard
                           {...c}
-                          isEnrolled={c.isEnroll ?? false}
+                          isEnrolled={c.isEnrolled ?? false}
                           isWishList={c.isWishList ?? false}
                         />
                       </div>
