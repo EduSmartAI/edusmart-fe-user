@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Card, Tabs, Tag, Collapse, Modal, Spin, Row, Col } from "antd";
+import { Card, Tabs, Tag, Collapse, Modal, Spin, Row, Col, Drawer, Button, message } from "antd";
 import { MarkdownView } from "EduSmart/components/MarkDown/MarkdownView";
 import type { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 import type { OverviewCourseContract } from "EduSmart/api/api-student-service";
@@ -10,6 +10,7 @@ import { fetchImprovementContentClient } from "EduSmart/hooks/api-client/courseA
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import BaseControlCarousel from "EduSmart/components/Carousel/BaseControlCarousel";
 import StreakChart from "./StreakChart";
+import { v1AiRecommendCourseSubjectAnalysisCreate } from "EduSmart/app/apiServer/Ai/aiAction";
 import {
   FiTrendingUp,
   FiActivity,
@@ -22,6 +23,7 @@ import {
   FiAward,
   FiArrowRight,
   FiInfo,
+  FiCpu,
 } from "react-icons/fi";
 import { GiProgression } from "react-icons/gi";
 import { TbBrandGoogleAnalytics } from "react-icons/tb";
@@ -181,9 +183,58 @@ export default function CoursePerformanceClient({
   const [improvementResourcesMap, setImprovementResourcesMap] = useState<
     Record<string, string>
   >({});
+  
+  // AI Subject Analysis Sidebar states
+  const [isAnalysisSidebarOpen, setIsAnalysisSidebarOpen] = useState(false);
+  const [analysisContent, setAnalysisContent] = useState<string>("");
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
 
   // const test =
   //   "## Tổng quan\n- Khóa học đã có 3 bài được chấm với **điểm do AI chấm** trung bình là 33.33. \n- Mức hiệu chỉnh trung bình là 0.\n\n### Bảng tổng quan\n| Chỉ số | Giá trị |\n|---|---|\n| Số đánh giá | 3 |\n| Điểm AI trung bình | 33.33 |\n| Điểm thô trung bình | 33.33 |\n| Mức hiệu chỉnh trung bình | 0 |\n| Số bài theo scope | Lesson: 3 · Module: 0 |\n| Ghi chú | Điểm hiện tại là 'điểm do AI chấm'. Khống hiển thị điểm gốc. |\n\n### Nhận xét tổng quan\n- Kết quả học tập cho thấy điểm số thấp, cho thấy học viên cần cải thiện kỹ năng trong các bài học. Xu hướng điểm hiện tại cho thấy sự cần thiết phải củng cố kiến thức và kỹ năng.\n\n## Điểm mạnh nổi bật\n- Có kiến thức cơ bản về hình ảnh chuyên nghiệp.\n- Giảng viên chia sẻ kiến thức thực tế.\n- Hiểu rõ về khái niệm đánh giá đầu vào và ứng dụng trong thực tế.\n\n## Vấn đề & Khoảng trống kỹ năng\n- Cần cải thiện khả năng phân tích và đánh giá thông tin.\n- Cần tìm hiểu thêm về các phương pháp học nhanh và hiệu quả.\n- Cần củng cố kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n## Phân tầng chất lượng\n- Dựa trên các mẫu gần nhất, tỷ trọng ước lượng cho thấy không có học viên nào đạt mức xuất sắc, một số học viên có thể ở mức cần củng cố, trong khi đa số đang ở mức nguy cơ. Hạn chế dữ liệu từ số mẫu ít (3 mẫu) có thể ảnh hưởng đến độ chính xác của phân tích.\n\n## Ưu tiên hành động (1–2 tuần)\n- Ôn lại kiến thức về phân tích và đánh giá thông tin mỗi ngày 2–3 bài ngắn.\n- Luyện tập kỹ năng giao tiếp thông qua các buổi thảo luận nhóm.\n- Làm bài tập thực hành về tạo niềm tin cho học viên.\n- Viết nhật ký học tập để theo dõi tiến bộ cá nhân.\n\n## Nhóm rủi ro cao\n### 🔹 Lesson có điểm thấp\n| Lesson | Module liên quan | Điểm AI TB | Số bài | Đánh giá ngắn |\n|---|---|---|---|---|\n| Giữ hình ảnh chuyên nghiệp trước học viên | Củng cố hình ảnh chuyên nghiệp | 0 | 1 | Cần cải thiện kỹ năng và kiến thức. |\n| Tạo sự tin tưởng với học viên | Tạo sự tin tưởng ban đầu | 0 | 1 | Cần củng cố kỹ năng giao tiếp. |\n\n**Phân tích nhanh (Lesson)**\n- Có 2 lesson rủi ro với điểm trung bình từ 0 đến 0.\n- Chủ đề lặp lại đáng chú ý: Củng cố hình ảnh chuyên nghiệp: 1 lesson, Tạo sự tin tưởng ban đầu: 1 lesson.\n- Vấn đề phổ biến: Thiếu kỹ năng phân tích và đánh giá thông tin, kỹ năng giao tiếp yếu.\n- Gợi ý trọng tâm: Cần cải thiện kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n### 🔸 Module có điểm thấp\n- Không có module nào ở mức rủi ro.\n\n**Phân tích nhanh (Module)**\n- —\n\n## Nguyên nhân gốc\n- Thiếu nền tảng khái niệm trong các bài học.\n- Kỹ năng giao tiếp và tạo niềm tin cho học viên chưa được phát triển.\n- Thời gian luyện tập không đều và không đủ.\n\n## Xu hướng theo thời gian\n- — \n\n## Gợi ý học tập nhanh\n- Tìm kiếm tài liệu học tập trực tuyến về phân tích và đánh giá thông tin.\n- Tham gia các khóa học kỹ năng giao tiếp.\n- Luyện tập qua các bài tập thực hành hàng ngày.";
+
+  /**
+   * Handle AI Subject Analysis
+   * Fetch analysis from API and open sidebar
+   */
+  const handleOpenSubjectAnalysis = async () => {
+    if (!courseDetail.courseId) {
+      message.warning("Không tìm thấy thông tin khóa học");
+      return;
+    }
+
+    try {
+      setIsLoadingAnalysis(true);
+      setIsAnalysisSidebarOpen(true);
+      setAnalysisContent(""); // Clear previous content
+      
+      const result = await v1AiRecommendCourseSubjectAnalysisCreate(
+        courseDetail.courseId,
+      );
+
+      if (result.data?.success && result.data.response) {
+        const improvementAnalysis = result.data.response.improvementAnalysis;
+        if (improvementAnalysis && improvementAnalysis.trim()) {
+          setAnalysisContent(improvementAnalysis);
+        } else {
+          setAnalysisContent(
+            "Chưa có dữ liệu phân tích cho khóa học này. Vui lòng thử lại sau.",
+          );
+          message.info("Chưa có dữ liệu phân tích");
+        }
+      } else {
+        const errorMessage =
+          result.data?.message || "Không thể tải phân tích. Vui lòng thử lại sau.";
+        setAnalysisContent(errorMessage);
+        message.error(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error loading subject analysis:", error);
+      setAnalysisContent("Lỗi khi tải phân tích. Vui lòng thử lại.");
+      message.error("Lỗi khi tải phân tích từ AI");
+    } finally {
+      setIsLoadingAnalysis(false);
+    }
+  };
 
   /**
    * Handle viewing improvement details
@@ -250,7 +301,7 @@ export default function CoursePerformanceClient({
       <div className="space-y-5">
         {/* Course Header */}
         <div className="space-y-3">
-          {/* Subject Code & Level */}
+          {/* Subject Code */}
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-sm text-white text-sm font-medium">
               {courseDetail.subjectCode || "N/A"}
@@ -313,6 +364,31 @@ export default function CoursePerformanceClient({
                 : "--"}
               h
             </div>
+          </div>
+        </div>
+
+        {/* AI Analysis Button Section */}
+        <div className="mt-6 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3 max-w-md">
+            <Button
+              type="primary"
+              icon={<FiCpu className="w-5 h-5" />}
+              onClick={handleOpenSubjectAnalysis}
+              loading={isLoadingAnalysis}
+              size="large"
+              className="!bg-gradient-to-r !from-yellow-400 !to-orange-500 hover:!from-yellow-500 hover:!to-orange-600 !border-0 !text-white !font-bold !shadow-xl hover:!shadow-2xl !transition-all !duration-300 hover:!scale-105 !px-8 !h-12 relative overflow-hidden group !rounded-lg !w-full"
+              style={{
+                boxShadow: "0 8px 20px -5px rgba(251, 191, 36, 0.5), 0 0 15px rgba(251, 191, 36, 0.3)",
+              }}
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                <FiCpu className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="text-lg">Phân tích AI</span>
+              </span>
+            </Button>
+            <p className="text-white/90 text-sm text-center leading-relaxed px-4">
+              Nhận phân tích chi tiết về hiệu suất học tập từ AI để cải thiện kết quả học tập của bạn
+            </p>
           </div>
         </div>
       </div>
@@ -1544,6 +1620,57 @@ export default function CoursePerformanceClient({
           />
         </Spin>
       </Modal>
+
+      {/* Drawer for AI Subject Analysis */}
+      <Drawer
+        title={
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#49BBBD]/10 rounded-lg">
+              <FiCpu className="w-5 h-5 text-[#49BBBD]" />
+            </div>
+            <div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                Phân tích AI - {courseDetail.subjectCode || "Khóa học"}
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Phân tích chi tiết về hiệu suất học tập của bạn
+              </div>
+            </div>
+          </div>
+        }
+        placement="right"
+        onClose={() => setIsAnalysisSidebarOpen(false)}
+        open={isAnalysisSidebarOpen}
+        width={600}
+        className="ai-analysis-drawer"
+        styles={{
+          body: {
+            padding: "24px",
+            background: "var(--ant-color-bg-container)",
+          },
+        }}
+      >
+        <Spin spinning={isLoadingAnalysis} tip="Đang phân tích...">
+          {analysisContent && analysisContent.trim() ? (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <MarkdownView
+                content={analysisContent}
+                collapsible
+                collapsedHeight={300}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FiCpu className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">
+                {isLoadingAnalysis
+                  ? "Đang tải phân tích..."
+                  : "Chưa có dữ liệu phân tích"}
+              </p>
+            </div>
+          )}
+        </Spin>
+      </Drawer>
     </div>
   );
 }
