@@ -545,6 +545,7 @@ export interface LearningPathSelectDto {
   habitAndInterestAnalysis?: string;
   personality?: string;
   learningAbility?: string;
+  studentQuizSubmission?: StudentQuizSubmission;
   praticalAbilityFeedbacks?: PraticalAbilityFeedback[];
   basicLearningPath?: BasicLearningPathDto;
   internalLearningPath?: InternalLearningPathDto[];
@@ -876,6 +877,11 @@ export interface StudentLearningGoalItem {
   learningGoalTypeName?: string;
 }
 
+export interface StudentPracticeTestSubmission {
+  /** @format uuid */
+  practiceTestSubmissionId?: string;
+}
+
 export interface StudentProfileSelectResponse {
   success?: boolean;
   messageId?: string;
@@ -914,6 +920,18 @@ export interface StudentProfileUpdateResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: string;
+}
+
+export interface StudentQuizSubmission {
+  /** @format uuid */
+  placementTestSubmissionId?: string;
+  studentPracticeTestSubmissions?: StudentPracticeTestSubmission[];
+  studentSurveySubmissions?: StudentSurveySubmission[];
+}
+
+export interface StudentSurveySubmission {
+  /** @format uuid */
+  studentSurveyId?: string;
 }
 
 export interface StudentTechnologyGoalSelectResponse {

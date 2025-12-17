@@ -1,6 +1,7 @@
 // app/(quiz)/quizAction.ts
 "use server";
 
+import { StudentPracticeTestSubmissionsByIdsSelectResponseEntity, StudentSurveySelectDetailResponseEntity } from "EduSmart/api/api-quiz-service";
 import apiServer from "EduSmart/lib/apiServer";
 
 export interface QuizListItem {
@@ -478,6 +479,59 @@ export async function getStudentTestResultAction(
       ok: false,
       error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
       status: nErr.status,
+    };
+  }
+}
+
+
+export async function v1StudentSurveySelectStudentSurveyDetailList(
+  id: string,
+): Promise<{
+  data: StudentSurveySelectDetailResponseEntity;
+}> {
+  try {
+    console.log("GetResultOfQuizByQuizResultId - id:", id);
+    const res = await apiServer.quiz.api.v1StudentSurveySelectStudentSurveyDetailList({
+      studentSurveyId: id ?? "",
+    });
+    if (res.data?.success && res.data.response) {
+      return {
+        data: res.data.response ?? {},
+      };
+    }
+    return {
+      data: res.data.response ?? {},
+    };
+  } catch (error) {
+    console.error("Error fetching:", error);
+    return {
+      data: {},
+    };
+  }
+}
+
+export async function v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList(
+  id: string[],
+): Promise<{
+  data: StudentPracticeTestSubmissionsByIdsSelectResponseEntity;
+}> {
+  try {
+    console.log("GetResultOfQuizByQuizResultId - id:", id);
+    const res = await apiServer.quiz.api.v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList({
+      SubmissionIds: id ?? [],
+    });
+    if (res.data?.success && res.data.response) {
+      return {
+        data: res.data.response ?? {},
+      };
+    }
+    return {
+      data: res.data.response ?? {},
+    };
+  } catch (error) {
+    console.error("Error fetching:", error);
+    return {
+      data: {},
     };
   }
 }
