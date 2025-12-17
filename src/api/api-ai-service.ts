@@ -278,6 +278,11 @@ export interface CourseImprove {
   level?: number;
 }
 
+export interface CourseSubjectAnalysisRequest {
+  /** @format uuid */
+  courseId: string;
+}
+
 export interface CreateTranscriptCommand {
   createTranscriptionReq?: CreateTranscriptionReq;
 }
@@ -296,6 +301,14 @@ export interface CreateTranscriptionReq {
   language?: string;
   /** @format double */
   durationSec?: number;
+}
+
+export interface DependentSubjectWarning {
+  subjectCode?: string;
+  subjectName?: string;
+  /** @format int32 */
+  semesterIndex?: number;
+  warningMessage?: string;
 }
 
 export interface DetailError {
@@ -455,6 +468,32 @@ export interface SubjectAnalysis {
   subjectCode?: string;
   subjectName?: string;
   analysisMarkdown?: string;
+}
+
+export interface SubjectAnalysisDto {
+  subjectCode?: string;
+  subjectName?: string;
+  /** @format double */
+  mark?: number;
+  improvementAnalysis?: string;
+  dependentWarnings?: DependentSubjectWarning[];
+}
+
+export interface SubjectAnalysisRequest {
+  subjectCode: string;
+  subjectName: string;
+  /** @format double */
+  mark: number;
+  majorCode?: string;
+  careerGoal?: string;
+}
+
+export interface SubjectAnalysisResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: SubjectAnalysisDto;
 }
 
 export interface SubjectCourseMatchItem {
@@ -1023,6 +1062,50 @@ export class Api<
     ) =>
       this.request<AiSubjectCourseResponse, any>({
         path: `/api/v1/AiRecommend/subject-course-match`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AiRecommend
+     * @name V1AiRecommendSubjectAnalysisCreate
+     * @request POST:/api/v1/AiRecommend/subject-analysis
+     * @secure
+     */
+    v1AiRecommendSubjectAnalysisCreate: (
+      body: SubjectAnalysisRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<SubjectAnalysisResponse, any>({
+        path: `/api/v1/AiRecommend/subject-analysis`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AiRecommend
+     * @name V1AiRecommendCourseSubjectAnalysisCreate
+     * @request POST:/api/v1/AiRecommend/course-subject-analysis
+     * @secure
+     */
+    v1AiRecommendCourseSubjectAnalysisCreate: (
+      body: CourseSubjectAnalysisRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<SubjectAnalysisResponse, any>({
+        path: `/api/v1/AiRecommend/course-subject-analysis`,
         method: "POST",
         body: body,
         secure: true,

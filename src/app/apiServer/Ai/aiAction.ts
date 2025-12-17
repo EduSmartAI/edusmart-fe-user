@@ -3,6 +3,7 @@ import {
   AIChatBotLearningPathResponse,
   GetAllChatsLearningPathResponse,
   GetChatDetailLearningPathResponse,
+  SubjectAnalysisResponse,
 } from "EduSmart/api/api-ai-service";
 import apiServer from "EduSmart/lib/apiServer";
 
@@ -79,6 +80,33 @@ export async function aiChatBotsLearningPathDetailList(
     };
   } catch (error) {
     console.error("Error fetching courses:", error);
+    return {
+      data: {},
+    };
+  }
+}
+
+
+export async function v1AiRecommendCourseSubjectAnalysisCreate(
+  courseId: string,
+): Promise<{
+  data: SubjectAnalysisResponse;
+}> {
+  try {
+    const res = await apiServer.ai.api.v1AiRecommendCourseSubjectAnalysisCreate({
+      courseId: courseId,
+    });
+    if (res.data?.success && res.data.response) {
+      console.log("AI Response:", res.data.response);
+      return {
+        data: res.data ?? {},
+      };
+    }
+    return {
+      data: res.data ?? {},
+    };
+  } catch (error) {
+    console.error("Error fetching:", error);
     return {
       data: {},
     };
