@@ -1328,6 +1328,130 @@
         }
       }
     },
+    "/api/v1/PracticeTest/SelectStudentPracticeTestSubmissions": {
+      "get": {
+        "tags": [
+          "PracticeTest"
+        ],
+        "summary": "Lấy danh sách các bài nộp practice test của sinh viên",
+        "description": "API này trả về danh sách tất cả các lần nộp bài practice test của sinh viên đang đăng nhập. Hỗ trợ phân trang và filter theo ProblemId. Kết quả bao gồm thông tin bài toán, ngôn ngữ, status, số test case pass/fail, và thời gian nộp. Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "SubmissionId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "ProblemId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentPracticeTestSubmissionsSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/SelectStudentPracticeTestSubmissionsByIds": {
+      "get": {
+        "tags": [
+          "PracticeTest"
+        ],
+        "summary": "Lấy chi tiết các bài nộp practice test theo danh sách SubmissionIds",
+        "description": "API này trả về chi tiết đầy đủ các bài nộp practice test dựa trên danh sách SubmissionIds được cung cấp. Bao gồm source code, chi tiết test results, và tất cả thông tin liên quan. Chỉ trả về các submissions thuộc về sinh viên đang đăng nhập. Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "SubmissionIds",
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentPracticeTestSubmissionsByIdsSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/SelectStudentSubmissions": {
+      "get": {
+        "tags": [
+          "PracticeTest"
+        ],
+        "summary": "Lấy danh sách tất cả bài nộp practice test của một sinh viên",
+        "description": "API này cho phép xem tất cả các bài nộp practice test của một sinh viên. Hỗ trợ phân trang và filter theo ProblemId. Admin có thể xem tất cả test cases (cả public và private). Bao gồm source code, chi tiết kết quả, thời gian runtime. Cần cấp quyền Admin cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ProblemId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSubmissionsSelectResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/PracticeTest/SelectUserTemplateCode": {
       "get": {
         "tags": [
@@ -1441,6 +1565,28 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/StudentSurveySelectDetailResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/StudentSurvey/SelectStudentSurveyLatest": {
+      "get": {
+        "tags": [
+          "StudentSurvey"
+        ],
+        "summary": "Hiển câu trả lời phần khảo sát của học sinh, lấy bài khảo sát mới nhất",
+        "description": "Cần cấp quyền cho API",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSurveyLatestSelectQueryResponse"
             }
           }
         }
@@ -2170,6 +2316,61 @@
       },
       "additionalProperties": false
     },
+    "AdminStudentSubmissionItem": {
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemTitle": {
+          "type": "string"
+        },
+        "problemDifficulty": {
+          "type": "string"
+        },
+        "languageName": {
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        },
+        "passedTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "runtimeMs": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submittedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sourceCode": {
+          "type": "string"
+        },
+        "testResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminSubmissionTestResultItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "AdminStudentSurveyItem": {
       "type": "object",
       "properties": {
@@ -2450,6 +2651,31 @@
         "pageSize": {
           "format": "int32",
           "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AdminSubmissionTestResultItem": {
+      "type": "object",
+      "properties": {
+        "testCaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "actualOutput": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -4271,7 +4497,7 @@
       "enum": [
         1,
         2,
-        3
+        4
       ],
       "type": "integer"
     },
@@ -5155,6 +5381,211 @@
       },
       "additionalProperties": false
     },
+    "StudentPracticeTestSubmissionDetailItem": {
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemTitle": {
+          "type": "string"
+        },
+        "problemDifficulty": {
+          "type": "string"
+        },
+        "languageName": {
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        },
+        "passedTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "runtimeMs": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submittedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sourceCode": {
+          "type": "string"
+        },
+        "testResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubmissionTestResultDetailItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionItem": {
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemTitle": {
+          "type": "string"
+        },
+        "problemDifficulty": {
+          "type": "string"
+        },
+        "languageName": {
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        },
+        "passedTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "averageTimeMs": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submittedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "testResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubmissionTestResultItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionsByIdsSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/StudentPracticeTestSubmissionsByIdsSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionsByIdsSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "submissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentPracticeTestSubmissionDetailItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionsSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/StudentPracticeTestSubmissionsSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionsSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "totalRecords": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalPages": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "currentPage": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentPracticeTestSubmissionItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmitResponse": {
+      "type": "object",
+      "properties": {
+        "practiceTestSubmitId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentQuizAnswerInsertRequest": {
       "required": [
         "questionId"
@@ -5259,6 +5690,62 @@
       },
       "additionalProperties": false
     },
+    "StudentSubmissionsSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/StudentSubmissionsSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSubmissionsSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "studentId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "totalRecords": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalPages": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "currentPage": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminStudentSubmissionItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentSurveyInsertCommand": {
       "required": [
         "isWantToTakeTest",
@@ -5334,6 +5821,33 @@
         "response": {
           "format": "uuid",
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveyLatestSelectQueryResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySelectDetailResponseEntity"
+          }
         }
       },
       "additionalProperties": false
@@ -5561,6 +6075,9 @@
         "response": {
           "format": "uuid",
           "type": "string"
+        },
+        "studentTestSubmit": {
+          "$ref": "#/definitions/StudentTestSubmitResponse"
         }
       },
       "additionalProperties": false
@@ -5619,6 +6136,72 @@
           "items": {
             "$ref": "#/definitions/QuizResultSelectResponseEntity"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentTestSubmitResponse": {
+      "type": "object",
+      "properties": {
+        "studentTestId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "practiceTestSubmits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentPracticeTestSubmitResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubmissionTestResultDetailItem": {
+      "type": "object",
+      "properties": {
+        "testCaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "actualOutput": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubmissionTestResultItem": {
+      "type": "object",
+      "properties": {
+        "testCaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "actualOutput": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false

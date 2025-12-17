@@ -14,7 +14,7 @@
 export enum QuestionType {
   Value1 = 1,
   Value2 = 2,
-  Value3 = 3,
+  Value4 = 4,
 }
 
 /** @format int32 */
@@ -199,6 +199,29 @@ export interface AdminSelectQuizDetailResponse {
   questions?: AdminSelectQuestionDetailResponse[];
 }
 
+export interface AdminStudentSubmissionItem {
+  /** @format uuid */
+  submissionId?: string;
+  /** @format uuid */
+  problemId?: string;
+  problemTitle?: string;
+  problemDifficulty?: string;
+  languageName?: string;
+  /** @format int32 */
+  languageId?: number;
+  status?: string;
+  /** @format int32 */
+  passedTests?: number;
+  /** @format int32 */
+  totalTests?: number;
+  /** @format int32 */
+  runtimeMs?: number;
+  /** @format date-time */
+  submittedAt?: string;
+  sourceCode?: string;
+  testResults?: AdminSubmissionTestResultItem[];
+}
+
 export interface AdminStudentSurveyItem {
   /** @format uuid */
   studentQuizId?: string;
@@ -311,6 +334,16 @@ export interface AdminStudentTestsSelectResponseEntity {
   pageNumber?: number;
   /** @format int32 */
   pageSize?: number;
+}
+
+export interface AdminSubmissionTestResultItem {
+  /** @format uuid */
+  testCaseId?: string;
+  isPublic?: boolean;
+  inputData?: string;
+  expectedOutput?: string;
+  actualOutput?: string;
+  passed?: boolean;
 }
 
 export interface AdminSurveyAnswerDetailResponse {
@@ -1306,6 +1339,88 @@ export interface StudentInformation {
   learningGoal: LearningGoal;
 }
 
+export interface StudentPracticeTestSubmissionDetailItem {
+  /** @format uuid */
+  submissionId?: string;
+  /** @format uuid */
+  problemId?: string;
+  problemTitle?: string;
+  problemDifficulty?: string;
+  languageName?: string;
+  /** @format int32 */
+  languageId?: number;
+  status?: string;
+  /** @format int32 */
+  passedTests?: number;
+  /** @format int32 */
+  totalTests?: number;
+  /** @format int32 */
+  runtimeMs?: number;
+  /** @format date-time */
+  submittedAt?: string;
+  sourceCode?: string;
+  testResults?: SubmissionTestResultDetailItem[];
+}
+
+export interface StudentPracticeTestSubmissionItem {
+  /** @format uuid */
+  submissionId?: string;
+  /** @format uuid */
+  problemId?: string;
+  problemTitle?: string;
+  problemDifficulty?: string;
+  languageName?: string;
+  /** @format int32 */
+  languageId?: number;
+  status?: string;
+  /** @format int32 */
+  passedTests?: number;
+  /** @format int32 */
+  totalTests?: number;
+  /** @format int32 */
+  averageTimeMs?: number;
+  /** @format date-time */
+  submittedAt?: string;
+  testResults?: SubmissionTestResultItem[];
+}
+
+export interface StudentPracticeTestSubmissionsByIdsSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentPracticeTestSubmissionsByIdsSelectResponseEntity;
+}
+
+export interface StudentPracticeTestSubmissionsByIdsSelectResponseEntity {
+  submissions?: StudentPracticeTestSubmissionDetailItem[];
+}
+
+export interface StudentPracticeTestSubmissionsSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentPracticeTestSubmissionsSelectResponseEntity;
+}
+
+export interface StudentPracticeTestSubmissionsSelectResponseEntity {
+  /** @format int32 */
+  totalRecords?: number;
+  /** @format int32 */
+  totalPages?: number;
+  /** @format int32 */
+  currentPage?: number;
+  /** @format int32 */
+  pageSize?: number;
+  submissions?: StudentPracticeTestSubmissionItem[];
+}
+
+export interface StudentPracticeTestSubmitResponse {
+  /** @format uuid */
+  practiceTestSubmitId?: string;
+}
+
 export interface StudentQuizAnswerInsertRequest {
   /** @format uuid */
   questionId: string;
@@ -1347,6 +1462,28 @@ export interface StudentQuizCourseInsertResponseEntity {
   suggestedCourses?: SuggestCourseEntity[];
 }
 
+export interface StudentSubmissionsSelectResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentSubmissionsSelectResponseEntity;
+}
+
+export interface StudentSubmissionsSelectResponseEntity {
+  /** @format uuid */
+  studentId?: string;
+  /** @format int32 */
+  totalRecords?: number;
+  /** @format int32 */
+  totalPages?: number;
+  /** @format int32 */
+  currentPage?: number;
+  /** @format int32 */
+  pageSize?: number;
+  submissions?: AdminStudentSubmissionItem[];
+}
+
 export interface StudentSurveyInsertCommand {
   studentInformation: StudentInformation;
   studentSurveys: StudentSurveyInsertRequest[];
@@ -1369,6 +1506,14 @@ export interface StudentSurveyInsertResponse {
   detailErrors?: DetailError[];
   /** @format uuid */
   response?: string;
+}
+
+export interface StudentSurveyLatestSelectQueryResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: StudentSurveySelectDetailResponseEntity[];
 }
 
 export interface StudentSurveySelectAnswerResponseEntity {
@@ -1447,6 +1592,7 @@ export interface StudentTestInsertResponse {
   detailErrors?: DetailError[];
   /** @format uuid */
   response?: string;
+  studentTestSubmit?: StudentTestSubmitResponse;
 }
 
 export interface StudentTestSelectResponse {
@@ -1469,6 +1615,32 @@ export interface StudentTestSelectResponseEntity {
   /** @format date-time */
   finishedAt?: string;
   quizResults?: QuizResultSelectResponseEntity[];
+}
+
+export interface StudentTestSubmitResponse {
+  /** @format uuid */
+  studentTestId?: string;
+  practiceTestSubmits?: StudentPracticeTestSubmitResponse[];
+}
+
+export interface SubmissionTestResultDetailItem {
+  /** @format uuid */
+  testCaseId?: string;
+  isPublic?: boolean;
+  inputData?: string;
+  expectedOutput?: string;
+  actualOutput?: string;
+  passed?: boolean;
+}
+
+export interface SubmissionTestResultItem {
+  /** @format uuid */
+  testCaseId?: string;
+  isPublic?: boolean;
+  inputData?: string;
+  expectedOutput?: string;
+  actualOutput?: string;
+  passed?: boolean;
 }
 
 export interface SubmissionTestResultResponse {
@@ -2917,6 +3089,90 @@ export class Api<
       }),
 
     /**
+     * @description API này trả về danh sách tất cả các lần nộp bài practice test của sinh viên đang đăng nhập. Hỗ trợ phân trang và filter theo ProblemId. Kết quả bao gồm thông tin bài toán, ngôn ngữ, status, số test case pass/fail, và thời gian nộp. Cần cấp quyền cho API
+     *
+     * @tags PracticeTest
+     * @name V1PracticeTestSelectStudentPracticeTestSubmissionsList
+     * @summary Lấy danh sách các bài nộp practice test của sinh viên
+     * @request GET:/api/v1/PracticeTest/SelectStudentPracticeTestSubmissions
+     * @secure
+     */
+    v1PracticeTestSelectStudentPracticeTestSubmissionsList: (
+      query?: {
+        /** @format uuid */
+        SubmissionId?: string;
+        /** @format uuid */
+        ProblemId?: string;
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentPracticeTestSubmissionsSelectResponse, any>({
+        path: `/api/v1/PracticeTest/SelectStudentPracticeTestSubmissions`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API này trả về chi tiết đầy đủ các bài nộp practice test dựa trên danh sách SubmissionIds được cung cấp. Bao gồm source code, chi tiết test results, và tất cả thông tin liên quan. Chỉ trả về các submissions thuộc về sinh viên đang đăng nhập. Cần cấp quyền cho API
+     *
+     * @tags PracticeTest
+     * @name V1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList
+     * @summary Lấy chi tiết các bài nộp practice test theo danh sách SubmissionIds
+     * @request GET:/api/v1/PracticeTest/SelectStudentPracticeTestSubmissionsByIds
+     * @secure
+     */
+    v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList: (
+      query?: {
+        SubmissionIds?: string[];
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentPracticeTestSubmissionsByIdsSelectResponse, any>({
+        path: `/api/v1/PracticeTest/SelectStudentPracticeTestSubmissionsByIds`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API này cho phép xem tất cả các bài nộp practice test của một sinh viên. Hỗ trợ phân trang và filter theo ProblemId. Admin có thể xem tất cả test cases (cả public và private). Bao gồm source code, chi tiết kết quả, thời gian runtime. Cần cấp quyền Admin cho API
+     *
+     * @tags PracticeTest
+     * @name V1PracticeTestSelectStudentSubmissionsList
+     * @summary Lấy danh sách tất cả bài nộp practice test của một sinh viên
+     * @request GET:/api/v1/PracticeTest/SelectStudentSubmissions
+     * @secure
+     */
+    v1PracticeTestSelectStudentSubmissionsList: (
+      query?: {
+        /** @format uuid */
+        ProblemId?: string;
+        /** @format int32 */
+        PageNumber?: number;
+        /** @format int32 */
+        PageSize?: number;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentSubmissionsSelectResponse, any>({
+        path: `/api/v1/PracticeTest/SelectStudentSubmissions`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description API này trả về hàm mẫu dành cho người dùng, dựa trên bài tập (problem) và ngôn ngữ lập trình được chọn. Người dùng có thể sử dụng mã nguồn này để code phần bài tập thực hành của mình.
      *
      * @tags PracticeTest
@@ -3005,6 +3261,26 @@ export class Api<
         path: `/api/v1/StudentSurvey/SelectStudentSurveyDetail`,
         method: "GET",
         query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền cho API
+     *
+     * @tags StudentSurvey
+     * @name V1StudentSurveySelectStudentSurveyLatestList
+     * @summary Hiển câu trả lời phần khảo sát của học sinh, lấy bài khảo sát mới nhất
+     * @request GET:/api/v1/StudentSurvey/SelectStudentSurveyLatest
+     * @secure
+     */
+    v1StudentSurveySelectStudentSurveyLatestList: (
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentSurveyLatestSelectQueryResponse, any>({
+        path: `/api/v1/StudentSurvey/SelectStudentSurveyLatest`,
+        method: "GET",
         secure: true,
         format: "json",
         ...params,

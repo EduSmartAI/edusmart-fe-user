@@ -2456,6 +2456,9 @@
         "learningAbility": {
           "type": "string"
         },
+        "studentQuizSubmission": {
+          "$ref": "#/definitions/StudentQuizSubmission"
+        },
         "praticalAbilityFeedbacks": {
           "type": "array",
           "items": {
@@ -3281,6 +3284,16 @@
       },
       "additionalProperties": false
     },
+    "StudentPracticeTestSubmission": {
+      "type": "object",
+      "properties": {
+        "practiceTestSubmissionId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentProfileSelectResponse": {
       "type": "object",
       "properties": {
@@ -3390,6 +3403,38 @@
           }
         },
         "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentQuizSubmission": {
+      "type": "object",
+      "properties": {
+        "placementTestSubmissionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "studentPracticeTestSubmissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentPracticeTestSubmission"
+          }
+        },
+        "studentSurveySubmissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySubmission"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveySubmission": {
+      "type": "object",
+      "properties": {
+        "studentSurveyId": {
+          "format": "uuid",
           "type": "string"
         }
       },
