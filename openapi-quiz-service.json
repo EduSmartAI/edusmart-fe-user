@@ -8,16 +8,10 @@
   "paths": {
     "/api/v1/Admin/InsertPracticeLanguage": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Đồng bộ ngôn ngữ lập trình từ Judge0 (Không spam API này)",
         "description": "Lấy danh sách ngôn ngữ lập trình từ Judge0 API và thêm các ngôn ngữ mới vào hệ thống. Các ngôn ngữ đã tồn tại sẽ được bỏ qua. (Không spam API này). Cần cấp quyền Admin cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -30,21 +24,11 @@
     },
     "/api/v1/Admin/InsertPracticeTest": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Tạo bài tập thực hành mới",
         "description": "Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -66,21 +50,11 @@
     },
     "/api/v1/Admin/InsertPracticeTestExamples": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Thêm ví dụ vào bài tập thực hành",
         "description": "Thêm các ví dụ minh họa input/output vào bài tập thực hành đã tồn tại. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -102,21 +76,11 @@
     },
     "/api/v1/Admin/InsertPracticeTestTemplates": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Thêm code templates vào bài tập thực hành",
         "description": "Thêm code templates cho các ngôn ngữ lập trình vào bài tập thực hành đã tồn tại. Mỗi ngôn ngữ chỉ có thể có 1 template. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -138,21 +102,11 @@
     },
     "/api/v1/Admin/InsertPracticeTestTestcases": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Thêm test cases vào bài tập thực hành",
         "description": "Thêm public và private test cases vào bài tập thực hành đã tồn tại. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -174,21 +128,11 @@
     },
     "/api/v1/Admin/InsertSurvey": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Tạo khảo sát mới",
         "description": "Tạo khảo sát mới với các câu hỏi và câu trả lời tương ứng",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -210,21 +154,11 @@
     },
     "/api/v1/Admin/InsertTestQuiz": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Thêm quiz vào bài kiểm tra đầu vào",
         "description": "Thêm một hoặc nhiều quiz vào bài test đã tồn tại. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -246,21 +180,11 @@
     },
     "/api/v1/Admin/InsertTestQuizQuestions": {
       "post": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Thêm câu hỏi vào quiz",
         "description": "Thêm một hoặc nhiều câu hỏi vào quiz trong bài test. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -282,21 +206,11 @@
     },
     "/api/v1/CourseQuiz/CheckStudentQuizAttempt": {
       "post": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Kiểm tra bài kiểm tra course của sinh viên",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -318,21 +232,11 @@
     },
     "/api/v1/CourseQuiz/InsertQuestionsToQuizCourse": {
       "post": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Thêm câu hỏi mới vào bài kiểm tra",
         "description": "Cần cấp quyền Teacher cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -354,20 +258,10 @@
     },
     "/api/v1/CourseQuiz/InsertQuizCourse": {
       "post": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "API dùng để test thêm mới bài kiểm tra cho khoá học",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -389,21 +283,11 @@
     },
     "/api/v1/CourseQuiz/InsertStudentQuizCourse": {
       "post": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Lưu câu trả lời của sinh viên trong bài kiếm tra course",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -425,21 +309,11 @@
     },
     "/api/v1/LearningPath/InsertLearningPathWithPreviousSurveyAndTranscript": {
       "post": {
-        "tags": [
-          "LearningPath"
-        ],
+        "tags": ["LearningPath"],
         "summary": "Tạo learning path từ khảo sát đã làm trước đó và bảng điểm (không làm bài test)",
         "description": "Dành cho sinh viên đã làm khảo sát và không muốn làm bài test. Hệ thống sẽ tính toán level từ bảng điểm. Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -461,21 +335,11 @@
     },
     "/api/v1/PracticeTest/CheckPracticeTestCode": {
       "post": {
-        "tags": [
-          "PracticeTest"
-        ],
+        "tags": ["PracticeTest"],
         "summary": "Kiểm tra code với nhiều input tự nhập mà không lưu vào database",
         "description": "API này cho phép student kiểm tra code của mình với nhiều test cases (inputs) cùng lúc để xem kết quả thực thi trước khi nộp bài chính thức. Student có thể gửi 1 hoặc nhiều inputs trong một request. Kết quả trả về bao gồm status, output, lỗi (nếu có), thời gian thực thi và memory cho từng test case mà không lưu vào database. Cần cấp quyền cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -497,21 +361,11 @@
     },
     "/api/v1/PracticeTest/SubmitPracticeTest": {
       "post": {
-        "tags": [
-          "PracticeTest"
-        ],
+        "tags": ["PracticeTest"],
         "summary": "Nộp bài tập thực hành",
         "description": "Cần cấp quyền cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -533,21 +387,11 @@
     },
     "/api/v1/Question": {
       "post": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Thêm câu hỏi và câu trả lời vào quiz",
         "description": "Cần cấp quyền Admin cho API. Insert question và tất cả answers vào quiz",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -567,21 +411,11 @@
         }
       },
       "put": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Cập nhật câu hỏi và câu trả lời",
         "description": "Cần cấp quyền Admin cho API. Update question và tất cả answers của nó",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -601,16 +435,10 @@
         }
       },
       "delete": {
-        "tags": [
-          "Question"
-        ],
+        "tags": ["Question"],
         "summary": "Xóa câu hỏi và tất cả câu trả lời",
         "description": "Cần cấp quyền Admin cho API. Delete question và tất cả answers của nó",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -631,21 +459,11 @@
     },
     "/api/v1/StudentSurvey/InsertStudentSurvey": {
       "post": {
-        "tags": [
-          "StudentSurvey"
-        ],
+        "tags": ["StudentSurvey"],
         "summary": "Lưu câu trả lời phần khảo sát của học sinh",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -667,21 +485,11 @@
     },
     "/api/v1/StudentTest/InsertStudentTest": {
       "post": {
-        "tags": [
-          "StudentTest"
-        ],
+        "tags": ["StudentTest"],
         "summary": "Lưu câu trả lời của học sinh",
         "description": "Cần cấp quyền Student cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -703,16 +511,10 @@
     },
     "/api/v1/Admin/SelectPlacementTestDetail": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Chi tiết một bài kiểm tra đầu vào",
         "description": "Lấy toàn bộ thông tin chi tiết của một bài kiểm tra đầu vào cho sinh viên",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -725,16 +527,10 @@
     },
     "/api/v1/Admin/SelectPracticeTest": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Chi tiết một bài kiểm tra thực hành",
         "description": "Lấy toàn bộ thông tin chi tiết bao gồm test cases, templates, examples. Cần cấp quyền Admin cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -756,16 +552,10 @@
     },
     "/api/v1/Admin/SelectPracticeTests": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Lấy danh sách tất cả bài kiểm tra thực hành",
         "description": "Hỗ trợ phân trang và lọc theo độ khó, tìm kiếm theo tiêu đề. Cần cấp quyền Admin cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -802,16 +592,10 @@
     },
     "/api/v1/Admin/SelectStudentSurveyDetail": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Chi tiết một khảo sát của sinh viên",
         "description": "Lấy toàn bộ thông tin chi tiết của một khảo sát bao gồm câu hỏi và câu trả lời của sinh viên",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -833,16 +617,10 @@
     },
     "/api/v1/Admin/SelectStudentSurveys": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Lấy danh sách tất cả khảo sát của học sinh",
         "description": "Hỗ trợ phân trang và lọc theo StudentId hoặc SurveyId",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -886,15 +664,9 @@
     },
     "/api/v1/Admin/SelectStudentTestDetail": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Chi tiết một bài kiểm tra đầu vào của sinh viên",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -916,16 +688,10 @@
     },
     "/api/v1/Admin/SelectStudentTests": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Lấy danh sách tất cả bài kiểm tra của học sinh",
         "description": "Hỗ trợ phân trang và lọc theo StudentId hoặc TestId",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -964,16 +730,10 @@
     },
     "/api/v1/Admin/SelectSurveys": {
       "get": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Lấy danh sách tất cả surveys",
         "description": "Hỗ trợ phân trang và lọc theo SurveyTypeId, SurveyCode, tìm kiếm theo Title. Trả về thông tin chi tiết bao gồm Questions và Answers. Cần cấp quyền Admin cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1016,16 +776,10 @@
     },
     "/api/v1/CourseQuiz/GetLatestLessonQuizScores": {
       "get": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo lesson",
         "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1062,16 +816,10 @@
     },
     "/api/v1/CourseQuiz/GetLatestModuleQuizScores": {
       "get": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Lấy điểm làm bài kiểm tra mới nhất của sinh viên theo module",
         "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1108,15 +856,9 @@
     },
     "/api/v1/CourseQuiz/SelectQuizCourse": {
       "get": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "API dùng để test lấy bài kiểm tra cho khoá học",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1137,16 +879,10 @@
     },
     "/api/v1/CourseQuiz/SelectStudentQuizCourse": {
       "get": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Hiển thị bài kiểm tra course cho sinh viên",
         "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1167,16 +903,10 @@
     },
     "/api/v1/ExternalQuiz/SelectLearningGoals": {
       "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
+        "tags": ["ExternalQuiz"],
         "summary": "Lấy danh sách tất cả các mục tiêu học tập đang có",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1189,16 +919,10 @@
     },
     "/api/v1/ExternalQuiz/SelectMajors": {
       "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
+        "tags": ["ExternalQuiz"],
         "summary": "Lấy danh sách tất cả các chuyên ngành trong trường",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1211,16 +935,10 @@
     },
     "/api/v1/ExternalQuiz/SelectSemesters": {
       "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
+        "tags": ["ExternalQuiz"],
         "summary": "Lấy danh sách tất cả các học kỳ",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1233,16 +951,10 @@
     },
     "/api/v1/ExternalQuiz/SelectTechnologies": {
       "get": {
-        "tags": [
-          "ExternalQuiz"
-        ],
+        "tags": ["ExternalQuiz"],
         "summary": "Lấy danh sách tất cả các ngôn ngữ lập trình/ framework",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1255,16 +967,10 @@
     },
     "/api/v1/PracticeTest/SelectCodeLanguages": {
       "get": {
-        "tags": [
-          "PracticeTest"
-        ],
+        "tags": ["PracticeTest"],
         "summary": "Lấy danh sách các ngôn ngữ lập trình hỗ trợ cho bài tập thực hành",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1277,16 +983,10 @@
     },
     "/api/v1/PracticeTest/SelectPracticeTestDetail": {
       "get": {
-        "tags": [
-          "PracticeTest"
-        ],
+        "tags": ["PracticeTest"],
         "summary": "Lấy danh sách bài tập thực hành",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1308,16 +1008,10 @@
     },
     "/api/v1/PracticeTest/SelectPracticeTests": {
       "get": {
-        "tags": [
-          "PracticeTest"
-        ],
+        "tags": ["PracticeTest"],
         "summary": "Lấy 3 bài tập thực hành ngẫu nhiên",
         "description": "Lấy 3 bài tập thực hành ngẫu nhiên có đủ 3 level: Dễ (Easy), Trung bình (Medium), Khó (Hard). Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1328,18 +1022,118 @@
         }
       }
     },
+    "/api/v1/PracticeTest/SelectStudentPracticeTestSubmissions": {
+      "get": {
+        "tags": ["PracticeTest"],
+        "summary": "Lấy danh sách các bài nộp practice test của sinh viên",
+        "description": "API này trả về danh sách tất cả các lần nộp bài practice test của sinh viên đang đăng nhập. Hỗ trợ phân trang và filter theo ProblemId. Kết quả bao gồm thông tin bài toán, ngôn ngữ, status, số test case pass/fail, và thời gian nộp. Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "SubmissionId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "ProblemId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentPracticeTestSubmissionsSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/SelectStudentPracticeTestSubmissionsByIds": {
+      "get": {
+        "tags": ["PracticeTest"],
+        "summary": "Lấy chi tiết các bài nộp practice test theo danh sách SubmissionIds",
+        "description": "API này trả về chi tiết đầy đủ các bài nộp practice test dựa trên danh sách SubmissionIds được cung cấp. Bao gồm source code, chi tiết test results, và tất cả thông tin liên quan. Chỉ trả về các submissions thuộc về sinh viên đang đăng nhập. Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "SubmissionIds",
+            "type": "array",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentPracticeTestSubmissionsByIdsSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/PracticeTest/SelectStudentSubmissions": {
+      "get": {
+        "tags": ["PracticeTest"],
+        "summary": "Lấy danh sách tất cả bài nộp practice test của một sinh viên",
+        "description": "API này cho phép xem tất cả các bài nộp practice test của một sinh viên. Hỗ trợ phân trang và filter theo ProblemId. Admin có thể xem tất cả test cases (cả public và private). Bao gồm source code, chi tiết kết quả, thời gian runtime. Cần cấp quyền Admin cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ProblemId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "PageNumber",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "in": "query",
+            "name": "PageSize",
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSubmissionsSelectResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/PracticeTest/SelectUserTemplateCode": {
       "get": {
-        "tags": [
-          "PracticeTest"
-        ],
+        "tags": ["PracticeTest"],
         "summary": "Lấy source code mẫu cho user tương ứng với problem và ngôn ngữ lập trình tương ứng",
         "description": "API này trả về hàm mẫu dành cho người dùng, dựa trên bài tập (problem) và ngôn ngữ lập trình được chọn. Người dùng có thể sử dụng mã nguồn này để code phần bài tập thực hành của mình.",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1368,16 +1162,10 @@
     },
     "/api/v1/Quiz/SelectQuizzes": {
       "get": {
-        "tags": [
-          "Quiz"
-        ],
+        "tags": ["Quiz"],
         "summary": "Lấy danh sách quiz của một bài kiểm tra",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1390,16 +1178,10 @@
     },
     "/api/v1/StudentSurvey/SelectStudentSurvey": {
       "get": {
-        "tags": [
-          "StudentSurvey"
-        ],
+        "tags": ["StudentSurvey"],
         "summary": "Hiển câu trả lời phần khảo sát của học sinh",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1418,16 +1200,10 @@
     },
     "/api/v1/StudentSurvey/SelectStudentSurveyDetail": {
       "get": {
-        "tags": [
-          "StudentSurvey"
-        ],
+        "tags": ["StudentSurvey"],
         "summary": "Lấy chi tiết câu trả lời của học sinh trong bài khảo sát",
         "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1446,18 +1222,28 @@
         }
       }
     },
+    "/api/v1/StudentSurvey/SelectStudentSurveyLatest": {
+      "get": {
+        "tags": ["StudentSurvey"],
+        "summary": "Hiển câu trả lời phần khảo sát của học sinh, lấy bài khảo sát mới nhất",
+        "description": "Cần cấp quyền cho API",
+        "produces": ["text/plain", "application/json", "text/json"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSurveyLatestSelectQueryResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/StudentTest/SelectStudentTest": {
       "get": {
-        "tags": [
-          "StudentTest"
-        ],
+        "tags": ["StudentTest"],
         "summary": "Lấy câu trả lời của học sinh trong bài test",
         "description": "Cần cấp quyền Student cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1478,16 +1264,10 @@
     },
     "/api/v1/Survey": {
       "get": {
-        "tags": [
-          "Survey"
-        ],
+        "tags": ["Survey"],
         "summary": "Lấy danh sách các khảo sát",
         "description": "Lấy danh sách các khảo sát",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "responses": {
           "200": {
             "description": "OK",
@@ -1500,16 +1280,10 @@
     },
     "/api/v1/Survey/Detail": {
       "get": {
-        "tags": [
-          "Survey"
-        ],
+        "tags": ["Survey"],
         "summary": "Lấy danh sách các khảo sát",
         "description": "Lấy chi tiết khảo sát với phân trang",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1549,16 +1323,10 @@
     },
     "/api/v1/Test/SelectTest": {
       "get": {
-        "tags": [
-          "Test"
-        ],
+        "tags": ["Test"],
         "summary": "Lấy bài kiểm tra gồm các quiz mà student chọn",
         "description": "Cần cấp quyền cho API",
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "query",
@@ -1583,21 +1351,11 @@
     },
     "/api/v1/Admin/UpdatePracticeTest": {
       "put": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Cập nhật bài kiểm tra thực hành",
         "description": "Cập nhật thông tin bài kiểm tra thực hành bao gồm: tiêu đề, mô tả, độ khó, test cases, templates và examples. Chỉ cập nhật/xóa items có ID trong request. Items không có trong request sẽ bị xoá. Phải giữ ít nhất 1 test case và 1 example. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -1619,21 +1377,11 @@
     },
     "/api/v1/CourseQuiz/UpdateQuizCourse": {
       "put": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Cập nhật bài kiểm tra cho khoá học",
         "description": "Cần cấp quyền Teacher cho API. Chỉ cập nhật thông tin quiz settings và câu hỏi/câu trả lời hiện có",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -1655,21 +1403,11 @@
     },
     "/api/v1/Admin/DeletePracticeTest": {
       "delete": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Xóa bài tập thực hành",
         "description": "Xóa bài tập thực hành. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -1691,21 +1429,11 @@
     },
     "/api/v1/Admin/DeleteTestQuiz": {
       "delete": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Xóa quiz khỏi bài test",
         "description": "Xóa (soft delete) một quiz khỏi bài test. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -1727,21 +1455,11 @@
     },
     "/api/v1/Admin/DeleteTestQuizQuestions": {
       "delete": {
-        "tags": [
-          "Admin"
-        ],
+        "tags": ["Admin"],
         "summary": "Xóa nhiều câu hỏi khỏi quiz",
         "description": "Xóa (soft delete) một hoặc nhiều câu hỏi khỏi quiz. Cần cấp quyền Admin cho API",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -1763,21 +1481,11 @@
     },
     "/api/v1/CourseQuiz/DeleteQuestionsFromQuizCourse": {
       "delete": {
-        "tags": [
-          "CourseQuiz"
-        ],
+        "tags": ["CourseQuiz"],
         "summary": "Xóa câu hỏi khỏi bài kiểm tra",
         "description": "Cần cấp quyền Teacher cho API. Xóa mềm (soft delete) - set IsActive = false",
-        "consumes": [
-          "application/json",
-          "text/json",
-          "application/*+json"
-        ],
-        "produces": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
+        "consumes": ["application/json", "text/json", "application/*+json"],
+        "produces": ["text/plain", "application/json", "text/json"],
         "parameters": [
           {
             "in": "body",
@@ -2170,6 +1878,61 @@
       },
       "additionalProperties": false
     },
+    "AdminStudentSubmissionItem": {
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemTitle": {
+          "type": "string"
+        },
+        "problemDifficulty": {
+          "type": "string"
+        },
+        "languageName": {
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        },
+        "passedTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "runtimeMs": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submittedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sourceCode": {
+          "type": "string"
+        },
+        "testResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminSubmissionTestResultItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "AdminStudentSurveyItem": {
       "type": "object",
       "properties": {
@@ -2454,6 +2217,31 @@
       },
       "additionalProperties": false
     },
+    "AdminSubmissionTestResultItem": {
+      "type": "object",
+      "properties": {
+        "testCaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "actualOutput": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
     "AdminSurveyAnswerDetailResponse": {
       "type": "object",
       "properties": {
@@ -2564,10 +2352,7 @@
       "additionalProperties": false
     },
     "AnswerAddRequest": {
-      "required": [
-        "answerText",
-        "isCorrect"
-      ],
+      "required": ["answerText", "isCorrect"],
       "type": "object",
       "properties": {
         "answerText": {
@@ -2610,9 +2395,7 @@
       "additionalProperties": false
     },
     "AnswerInsertDto": {
-      "required": [
-        "answerText"
-      ],
+      "required": ["answerText"],
       "type": "object",
       "properties": {
         "answerText": {
@@ -2650,12 +2433,7 @@
     },
     "AnswerRuleUnit": {
       "format": "int32",
-      "enum": [
-        1,
-        2,
-        3,
-        4
-      ],
+      "enum": [1, 2, 3, 4],
       "type": "integer"
     },
     "AnswerSurveySelects": {
@@ -2675,10 +2453,7 @@
       "additionalProperties": false
     },
     "AnswerUpdateRequest": {
-      "required": [
-        "answerText",
-        "isCorrect"
-      ],
+      "required": ["answerText", "isCorrect"],
       "type": "object",
       "properties": {
         "answerId": {
@@ -2919,18 +2694,7 @@
     },
     "LearningGoalType": {
       "format": "int32",
-      "enum": [
-        0,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
-      ],
+      "enum": [0, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       "type": "integer"
     },
     "LessonLatestQuizScore": {
@@ -3030,13 +2794,7 @@
     },
     "OtherQuestionCode": {
       "format": "int32",
-      "enum": [
-        1,
-        2,
-        3,
-        4,
-        5
-      ],
+      "enum": [1, 2, 3, 4, 5],
       "type": "integer"
     },
     "PracticeTestAdminDeleteRequest": {
@@ -3565,12 +3323,7 @@
       "additionalProperties": false
     },
     "PracticeTestCodeCheckRequest": {
-      "required": [
-        "inputs",
-        "languageId",
-        "problemId",
-        "sourceCode"
-      ],
+      "required": ["inputs", "languageId", "problemId", "sourceCode"],
       "type": "object",
       "properties": {
         "problemId": {
@@ -3880,11 +3633,7 @@
       "additionalProperties": false
     },
     "PracticeTestStudentAnswerRequest": {
-      "required": [
-        "codeSubmission",
-        "languageId",
-        "problemId"
-      ],
+      "required": ["codeSubmission", "languageId", "problemId"],
       "type": "object",
       "properties": {
         "problemId": {
@@ -3903,11 +3652,7 @@
       "additionalProperties": false
     },
     "PracticeTestSubmitInsertRequest": {
-      "required": [
-        "languageId",
-        "problemId",
-        "sourceCode"
-      ],
+      "required": ["languageId", "problemId", "sourceCode"],
       "type": "object",
       "properties": {
         "problemId": {
@@ -4046,18 +3791,11 @@
     },
     "ProblemDifficultyLevel": {
       "format": "int32",
-      "enum": [
-        1,
-        2,
-        3
-      ],
+      "enum": [1, 2, 3],
       "type": "integer"
     },
     "QuestionAddRequest": {
-      "required": [
-        "answers",
-        "questionText"
-      ],
+      "required": ["answers", "questionText"],
       "type": "object",
       "properties": {
         "questionText": {
@@ -4191,11 +3929,7 @@
       "additionalProperties": false
     },
     "QuestionInsertDto": {
-      "required": [
-        "answers",
-        "questionText",
-        "questionType"
-      ],
+      "required": ["answers", "questionText", "questionType"],
       "type": "object",
       "properties": {
         "questionText": {
@@ -4268,11 +4002,7 @@
     },
     "QuestionType": {
       "format": "int32",
-      "enum": [
-        1,
-        2,
-        3
-      ],
+      "enum": [1, 2, 4],
       "type": "integer"
     },
     "QuestionUpdateCommand": {
@@ -4404,10 +4134,7 @@
       "additionalProperties": false
     },
     "QuizCourseAddQuestionsCommand": {
-      "required": [
-        "questions",
-        "quizId"
-      ],
+      "required": ["questions", "quizId"],
       "type": "object",
       "properties": {
         "quizId": {
@@ -4449,10 +4176,7 @@
       "additionalProperties": false
     },
     "QuizCourseAnswersInsert": {
-      "required": [
-        "answerText",
-        "isCorrect"
-      ],
+      "required": ["answerText", "isCorrect"],
       "type": "object",
       "properties": {
         "answerText": {
@@ -4517,10 +4241,7 @@
       "additionalProperties": false
     },
     "QuizCourseDeleteQuestionsCommand": {
-      "required": [
-        "questionIds",
-        "quizId"
-      ],
+      "required": ["questionIds", "quizId"],
       "type": "object",
       "properties": {
         "quizId": {
@@ -4639,10 +4360,7 @@
       "additionalProperties": false
     },
     "QuizCourseQuestionsInsert": {
-      "required": [
-        "answers",
-        "questionText"
-      ],
+      "required": ["answers", "questionText"],
       "type": "object",
       "properties": {
         "questionText": {
@@ -4769,9 +4487,7 @@
       "additionalProperties": false
     },
     "QuizCourseUpdateCommand": {
-      "required": [
-        "quizzes"
-      ],
+      "required": ["quizzes"],
       "type": "object",
       "properties": {
         "quizzes": {
@@ -4809,11 +4525,7 @@
       "additionalProperties": false
     },
     "QuizInsertDto": {
-      "required": [
-        "questions",
-        "subjectCode",
-        "title"
-      ],
+      "required": ["questions", "subjectCode", "title"],
       "type": "object",
       "properties": {
         "subjectCode": {
@@ -4929,9 +4641,7 @@
       "additionalProperties": false
     },
     "QuizUpdateRequest": {
-      "required": [
-        "quizId"
-      ],
+      "required": ["quizId"],
       "type": "object",
       "properties": {
         "quizId": {
@@ -5061,10 +4771,7 @@
       "additionalProperties": false
     },
     "StudentAnswerRequest": {
-      "required": [
-        "answerId",
-        "questionId"
-      ],
+      "required": ["answerId", "questionId"],
       "type": "object",
       "properties": {
         "questionId": {
@@ -5127,12 +4834,7 @@
       "additionalProperties": false
     },
     "StudentInformation": {
-      "required": [
-        "learningGoal",
-        "majorId",
-        "semesterId",
-        "technologies"
-      ],
+      "required": ["learningGoal", "majorId", "semesterId", "technologies"],
       "type": "object",
       "properties": {
         "majorId": {
@@ -5155,10 +4857,213 @@
       },
       "additionalProperties": false
     },
+    "StudentPracticeTestSubmissionDetailItem": {
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemTitle": {
+          "type": "string"
+        },
+        "problemDifficulty": {
+          "type": "string"
+        },
+        "languageName": {
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        },
+        "passedTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "runtimeMs": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submittedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "sourceCode": {
+          "type": "string"
+        },
+        "testResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubmissionTestResultDetailItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionItem": {
+      "type": "object",
+      "properties": {
+        "submissionId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "problemTitle": {
+          "type": "string"
+        },
+        "problemDifficulty": {
+          "type": "string"
+        },
+        "languageName": {
+          "type": "string"
+        },
+        "languageId": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        },
+        "passedTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalTests": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "averageTimeMs": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submittedAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "testResults": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubmissionTestResultItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionsByIdsSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/StudentPracticeTestSubmissionsByIdsSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionsByIdsSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "submissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentPracticeTestSubmissionDetailItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionsSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/StudentPracticeTestSubmissionsSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmissionsSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "totalRecords": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalPages": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "currentPage": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentPracticeTestSubmissionItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentPracticeTestSubmitResponse": {
+      "type": "object",
+      "properties": {
+        "practiceTestSubmitId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentQuizAnswerInsertRequest": {
-      "required": [
-        "questionId"
-      ],
+      "required": ["questionId"],
       "type": "object",
       "properties": {
         "questionId": {
@@ -5259,12 +5164,64 @@
       },
       "additionalProperties": false
     },
+    "StudentSubmissionsSelectResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/StudentSubmissionsSelectResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSubmissionsSelectResponseEntity": {
+      "type": "object",
+      "properties": {
+        "studentId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "totalRecords": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "totalPages": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "currentPage": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "submissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AdminStudentSubmissionItem"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentSurveyInsertCommand": {
-      "required": [
-        "isWantToTakeTest",
-        "studentInformation",
-        "studentSurveys"
-      ],
+      "required": ["isWantToTakeTest", "studentInformation", "studentSurveys"],
       "type": "object",
       "properties": {
         "studentInformation": {
@@ -5289,11 +5246,7 @@
       "additionalProperties": false
     },
     "StudentSurveyInsertRequest": {
-      "required": [
-        "answers",
-        "surveyCode",
-        "surveyId"
-      ],
+      "required": ["answers", "surveyCode", "surveyId"],
       "type": "object",
       "properties": {
         "surveyId": {
@@ -5334,6 +5287,33 @@
         "response": {
           "format": "uuid",
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSurveyLatestSelectQueryResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentSurveySelectDetailResponseEntity"
+          }
         }
       },
       "additionalProperties": false
@@ -5493,12 +5473,7 @@
       "additionalProperties": false
     },
     "StudentTestInsertCommand": {
-      "required": [
-        "answers",
-        "quizIds",
-        "startedAt",
-        "testId"
-      ],
+      "required": ["answers", "quizIds", "startedAt", "testId"],
       "type": "object",
       "properties": {
         "testId": {
@@ -5561,6 +5536,9 @@
         "response": {
           "format": "uuid",
           "type": "string"
+        },
+        "studentTestSubmit": {
+          "$ref": "#/definitions/StudentTestSubmitResponse"
         }
       },
       "additionalProperties": false
@@ -5619,6 +5597,72 @@
           "items": {
             "$ref": "#/definitions/QuizResultSelectResponseEntity"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentTestSubmitResponse": {
+      "type": "object",
+      "properties": {
+        "studentTestId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "practiceTestSubmits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StudentPracticeTestSubmitResponse"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubmissionTestResultDetailItem": {
+      "type": "object",
+      "properties": {
+        "testCaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "actualOutput": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubmissionTestResultItem": {
+      "type": "object",
+      "properties": {
+        "testCaseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "inputData": {
+          "type": "string"
+        },
+        "expectedOutput": {
+          "type": "string"
+        },
+        "actualOutput": {
+          "type": "string"
+        },
+        "passed": {
+          "type": "boolean"
         }
       },
       "additionalProperties": false
@@ -5698,9 +5742,7 @@
       "additionalProperties": false
     },
     "SurveyAnswerRequest": {
-      "required": [
-        "answerText"
-      ],
+      "required": ["answerText"],
       "type": "object",
       "properties": {
         "answerText": {
@@ -5812,12 +5854,7 @@
       "additionalProperties": false
     },
     "SurveyInsertCommand": {
-      "required": [
-        "description",
-        "questions",
-        "surveyCode",
-        "title"
-      ],
+      "required": ["description", "questions", "surveyCode", "title"],
       "type": "object",
       "properties": {
         "title": {
@@ -5889,11 +5926,7 @@
       "additionalProperties": false
     },
     "SurveyQuestionRequest": {
-      "required": [
-        "answers",
-        "questionText",
-        "questionType"
-      ],
+      "required": ["answers", "questionText", "questionType"],
       "type": "object",
       "properties": {
         "questionText": {
@@ -6100,10 +6133,7 @@
       "additionalProperties": false
     },
     "TestQuizDeleteCommand": {
-      "required": [
-        "quizId",
-        "testId"
-      ],
+      "required": ["quizId", "testId"],
       "type": "object",
       "properties": {
         "testId": {
@@ -6142,10 +6172,7 @@
       "additionalProperties": false
     },
     "TestQuizInsertCommand": {
-      "required": [
-        "quizzes",
-        "testId"
-      ],
+      "required": ["quizzes", "testId"],
       "type": "object",
       "properties": {
         "testId": {
@@ -6187,11 +6214,7 @@
       "additionalProperties": false
     },
     "TestQuizQuestionsDeleteCommand": {
-      "required": [
-        "questionIds",
-        "quizId",
-        "testId"
-      ],
+      "required": ["questionIds", "quizId", "testId"],
       "type": "object",
       "properties": {
         "testId": {
@@ -6238,11 +6261,7 @@
       "additionalProperties": false
     },
     "TestQuizQuestionsInsertCommand": {
-      "required": [
-        "questions",
-        "quizId",
-        "testId"
-      ],
+      "required": ["questions", "quizId", "testId"],
       "type": "object",
       "properties": {
         "testId": {
@@ -6360,7 +6379,7 @@
   },
   "security": [
     {
-      "JWT_Token": [ ]
+      "JWT_Token": []
     }
   ]
 }
