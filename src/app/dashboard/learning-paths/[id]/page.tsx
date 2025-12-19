@@ -22,7 +22,12 @@ import {
   Collapse,
   Progress,
   Tooltip,
+  Drawer,
+  Layout,
+  Splitter,
 } from "antd";
+
+const { Content } = Layout;
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
@@ -43,6 +48,12 @@ import {
   FiGlobe,
   FiBook,
   FiPlayCircle,
+  FiCode,
+  FiClock,
+  FiCheckCircle,
+  FiXCircle,
+  FiAlertCircle,
+  FiTrendingUp,
 } from "react-icons/fi";
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
@@ -55,6 +66,18 @@ import {
   CourseBasicInfoDto,
 } from "EduSmart/api/api-student-service";
 import { StudentClient, AIClient } from "EduSmart/hooks/apiClient";
+import {
+  v1StudentSurveySelectStudentSurveyDetailList,
+  v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList,
+} from "EduSmart/app/(quiz)/quizAction";
+import type {
+  StudentSurveySelectDetailResponseEntity,
+  StudentPracticeTestSubmissionDetailItem,
+} from "EduSmart/api/api-quiz-service";
+import { useTheme } from "EduSmart/Provider/ThemeProvider";
+import Editor from "@monaco-editor/react";
+import { judgeLanguageToMonaco } from "EduSmart/enum/enum";
+import { handleEditorWillMount } from "EduSmart/utils/EditorCodeConfig";
 
 const SNAPSHOT_ENDPOINT = "/api/learning-paths";
 const STREAM_ENDPOINT = "/api/learning-paths/stream";
@@ -384,6 +407,7 @@ const consumeSseBuffer = (
 const LearningPathSamplePage = () => {
   const params = useParams<{ id?: string }>();
   const pathId = Array.isArray(params?.id) ? params?.id?.[0] : params?.id;
+  const { isDarkMode } = useTheme();
 
   const [learningPath, setLearningPath] = useState<LearningPathDto | null>(
     null,
@@ -449,6 +473,30 @@ const LearningPathSamplePage = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [externalCourses, setExternalCourses] = useState<any[]>([]);
   const [loadingExternalCourses, setLoadingExternalCourses] = useState(false);
+
+  // Survey submissions modal states
+  const [showSurveyModal, setShowSurveyModal] = useState(false);
+  const [surveySubmissions, setSurveySubmissions] = useState<
+    Array<{ studentSurveyId: string }>
+  >([]);
+  const [surveyDetails, setSurveyDetails] = useState<
+    Record<string, StudentSurveySelectDetailResponseEntity>
+  >({});
+  const [loadingSurveyDetails, setLoadingSurveyDetails] = useState<
+    Record<string, boolean>
+  >({});
+  const [activeSurveyTab, setActiveSurveyTab] = useState<string | null>(null);
+
+  // Practice test submissions drawer states
+  const [showPracticeTestDrawer, setShowPracticeTestDrawer] = useState(false);
+  const [practiceTestSubmissions, setPracticeTestSubmissions] = useState<
+    StudentPracticeTestSubmissionDetailItem[]
+  >([]);
+  const [loadingPracticeTestSubmissions, setLoadingPracticeTestSubmissions] =
+    useState(false);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState<
+    string | null
+  >(null);
 
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
@@ -706,6 +754,91 @@ const LearningPathSamplePage = () => {
       console.error("Error loading transcript:", error);
     } finally {
       setLoadingTranscript(false);
+    }
+  };
+
+  // Handle open survey modal
+  const handleOpenSurveyModal = () => {
+    const submissions =
+      learningPath?.studentQuizSubmission?.studentSurveySubmissions ?? [];
+    const validSubmissions = submissions
+      .filter((s) => s.studentSurveyId)
+      .map((s) => ({ studentSurveyId: s.studentSurveyId! }));
+    setSurveySubmissions(validSubmissions);
+    setShowSurveyModal(true);
+    if (validSubmissions.length > 0) {
+      setActiveSurveyTab(validSubmissions[0].studentSurveyId);
+      // Load first survey detail
+      handleFetchSurveyDetail(validSubmissions[0].studentSurveyId);
+    }
+  };
+
+  // Fetch survey detail
+  const handleFetchSurveyDetail = async (studentSurveyId: string) => {
+    if (surveyDetails[studentSurveyId] || loadingSurveyDetails[studentSurveyId]) {
+      return; // Already loaded or loading
+    }
+
+    try {
+      setLoadingSurveyDetails((prev) => ({ ...prev, [studentSurveyId]: true }));
+      const result = await v1StudentSurveySelectStudentSurveyDetailList(
+        studentSurveyId,
+      );
+      if (result.data) {
+        setSurveyDetails((prev) => ({
+          ...prev,
+          [studentSurveyId]: result.data,
+        }));
+      }
+    } catch (error) {
+      console.error("Error loading survey detail:", error);
+      message.error("Không thể tải chi tiết khảo sát");
+    } finally {
+      setLoadingSurveyDetails((prev) => ({
+        ...prev,
+        [studentSurveyId]: false,
+      }));
+    }
+  };
+
+  // Handle survey tab change
+  const handleSurveyTabChange = (studentSurveyId: string) => {
+    setActiveSurveyTab(studentSurveyId);
+    handleFetchSurveyDetail(studentSurveyId);
+  };
+
+  // Handle open practice test submissions drawer
+  const handleOpenPracticeTestDrawer = async () => {
+    const submissions =
+      learningPath?.studentQuizSubmission?.studentPracticeTestSubmissions ?? [];
+    const submissionIds = submissions
+      .map((s) => s.practiceTestSubmissionId)
+      .filter((id): id is string => !!id);
+
+    if (submissionIds.length === 0) {
+      message.warning("Không có bài nộp nào");
+      return;
+    }
+
+    setShowPracticeTestDrawer(true);
+    setLoadingPracticeTestSubmissions(true);
+
+    try {
+      const result =
+        await v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList(
+          submissionIds,
+        );
+      if (result.data?.submissions) {
+        setPracticeTestSubmissions(result.data.submissions);
+        if (result.data.submissions.length > 0) {
+          setSelectedSubmissionId(result.data.submissions[0].submissionId ?? null);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading practice test submissions:", error);
+      message.error("Không thể tải danh sách bài nộp");
+    } finally {
+      setLoadingPracticeTestSubmissions(false);
     }
   };
 
@@ -1185,19 +1318,47 @@ const LearningPathSamplePage = () => {
                     </div>
                   )}
 
+                  {/* Action Buttons - Always visible */}
+                  <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                    <div className="flex gap-2">
+                      <Button
+                        size="small"
+                        type="default"
+                        icon={<FiGlobe className="w-3.5 h-3.5" />}
+                        onClick={() => {
+                          handleOpenExternalCourses(
+                            group.subjectCode ?? "",
+                          );
+                        }}
+                        style={{
+                          borderColor: "#FF6B6B",
+                          color: "#FF6B6B",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                        className="hover:bg-[#FF6B6B] hover:text-white transition-colors"
+                      >
+                        Tìm khóa học bên ngoài
+                      </Button>
+                    </div>
+                  </div>
+
                   {/* Courses */}
                   {courseCount > 0 && (
                     <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-1 h-5 bg-gradient-to-b from-orange-500 to-amber-500 rounded-full"></div>
-                          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                            Khóa học đề xuất
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-1 h-5 bg-gradient-to-b from-orange-500 to-amber-500 rounded-full"></div>
+                            <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                              Khóa học đề xuất
+                            </span>
+                          </div>
+                          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                            {courseCount} khóa học
                           </span>
                         </div>
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                          {courseCount} khóa học
-                        </span>
                       </div>
                       <div className="space-y-3">
                         {(group.courses ?? []).map((course, idx) => (
@@ -2253,6 +2414,40 @@ const LearningPathSamplePage = () => {
                     Bảng điểm
                   </button>
                 )}
+                {learningPath?.studentQuizSubmission?.studentSurveySubmissions &&
+                  learningPath.studentQuizSubmission.studentSurveySubmissions.length >
+                    0 && (
+                    <button
+                      type="button"
+                      onClick={handleOpenSurveyModal}
+                      className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 border border-purple-300 dark:border-purple-700 transition-colors"
+                    >
+                      <FiFileText className="w-4 h-4" />
+                      Khảo sát (
+                      {
+                        learningPath.studentQuizSubmission
+                          .studentSurveySubmissions.length
+                      }
+                      )
+                    </button>
+                  )}
+                {learningPath?.studentQuizSubmission?.studentPracticeTestSubmissions &&
+                  learningPath.studentQuizSubmission.studentPracticeTestSubmissions.length >
+                    0 && (
+                    <button
+                      type="button"
+                      onClick={handleOpenPracticeTestDrawer}
+                      className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-300 dark:border-blue-700 transition-colors"
+                    >
+                      <FiPlayCircle className="w-4 h-4" />
+                      Bài nộp code (
+                      {
+                        learningPath.studentQuizSubmission
+                          .studentPracticeTestSubmissions.length
+                      }
+                      )
+                    </button>
+                  )}
               </div>
             </div>
             {error && (
@@ -3042,8 +3237,743 @@ const LearningPathSamplePage = () => {
               />
             )}
           </div>
+          </Spin>
+        </Modal>
+
+        {/* Survey Submissions Modal */}
+        <Modal
+          title={
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <FiFileText className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="text-lg font-bold text-gray-900 dark:text-white">
+                  Kết quả khảo sát
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {surveySubmissions.length} khảo sát đã hoàn thành
+                </div>
+              </div>
+            </div>
+          }
+          open={showSurveyModal}
+          onCancel={() => setShowSurveyModal(false)}
+          footer={null}
+          width={1100}
+          centered
+          styles={{
+            body: {
+              padding: "24px",
+            },
+          }}
+        >
+          <Tabs
+            activeKey={activeSurveyTab ?? undefined}
+            onChange={(key) => handleSurveyTabChange(key)}
+            type="card"
+            size="large"
+            items={surveySubmissions.map((submission, index) => {
+              const surveyId = submission.studentSurveyId;
+              const surveyDetail = surveyDetails[surveyId];
+              const isLoading = loadingSurveyDetails[surveyId];
+
+              return {
+                key: surveyId,
+                label: (
+                  <span className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs font-bold">
+                      {index + 1}
+                    </span>
+                    Khảo sát {index + 1}
+                  </span>
+                ),
+                children: (
+                  <div className="mt-4">
+                    <Spin spinning={isLoading}>
+                      {surveyDetail ? (
+                        <div className="space-y-6">
+                          {/* Survey Header */}
+                          <div className="relative p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/30 dark:via-pink-950/30 dark:to-purple-950/30 rounded-2xl border-2 border-purple-200 dark:border-purple-800 shadow-sm overflow-hidden">
+                            {/* Decorative elements */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200/20 dark:bg-purple-800/20 rounded-full -mr-16 -mt-16 blur-2xl" />
+                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-pink-200/20 dark:bg-pink-800/20 rounded-full -ml-12 -mb-12 blur-2xl" />
+                            
+                            <div className="relative">
+                              <div className="flex items-start gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                                  <FiFileText className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                    {surveyDetail.surveyTitle || "Khảo sát"}
+                                  </h3>
+                                  {surveyDetail.surveyDescription && (
+                                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                      {surveyDetail.surveyDescription}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              {surveyDetail.createdAt && (
+                                <div className="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60 px-3 py-2 rounded-lg">
+                                  <FiClock className="w-3.5 h-3.5" />
+                                  <span className="font-medium">
+                                    Ngày thực hiện:{" "}
+                                    {new Date(
+                                      surveyDetail.createdAt,
+                                    ).toLocaleDateString("vi-VN", {
+                                      day: "2-digit",
+                                      month: "2-digit",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Questions */}
+                          {surveyDetail.questions && surveyDetail.questions.length > 0 ? (
+                            <div className="space-y-5">
+                              {surveyDetail.questions.map((question, qIndex) => (
+                                <Card
+                                  key={question.questionId ?? qIndex}
+                                  className="border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+                                  styles={{
+                                    body: {
+                                      padding: "20px",
+                                    },
+                                  }}
+                                >
+                                  <div className="flex items-start gap-4">
+                                    {/* Question Number */}
+                                    <div className="flex-shrink-0">
+                                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center font-bold text-base shadow-md">
+                                        {qIndex + 1}
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex-1 min-w-0">
+                                      {/* Question Text */}
+                                      <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4 leading-relaxed">
+                                        {question.questionText}
+                                      </h4>
+
+                                      {/* Answers */}
+                                      {question.answers && question.answers.length > 0 && (
+                                        <div className="space-y-3">
+                                          {question.answers.map((answer, aIndex) => {
+                                            const isSelected = answer.selectedByStudent;
+                                            return (
+                                              <div
+                                                key={answer.answerId ?? aIndex}
+                                                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 cursor-default ${
+                                                  isSelected
+                                                    ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/20 border-blue-400 dark:border-blue-600 shadow-md scale-[1.02]"
+                                                    : "bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                                }`}
+                                              >
+                                                <div className="flex items-center gap-3">
+                                                  {/* Check Icon */}
+                                                  <div
+                                                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                                                      isSelected
+                                                        ? "bg-blue-500 text-white"
+                                                        : "bg-gray-200 dark:bg-gray-700 text-transparent"
+                                                    }`}
+                                                  >
+                                                    {isSelected && (
+                                                      <FiCheck className="w-4 h-4" />
+                                                    )}
+                                                  </div>
+                                                  
+                                                  {/* Answer Text */}
+                                                  <span
+                                                    className={`text-sm flex-1 ${
+                                                      isSelected
+                                                        ? "text-blue-900 dark:text-blue-100 font-semibold"
+                                                        : "text-gray-700 dark:text-gray-300"
+                                                    }`}
+                                                  >
+                                                    {answer.answerText}
+                                                  </span>
+
+                                                  {/* Selected Badge */}
+                                                  {isSelected && (
+                                                    <Tag
+                                                      color="blue"
+                                                      className="ml-auto text-xs font-semibold"
+                                                    >
+                                                      Đã chọn
+                                                    </Tag>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </Card>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-12">
+                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                <FiAlertCircle className="w-8 h-8 text-purple-500 dark:text-purple-400" />
+                              </div>
+                              <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
+                                Không có câu hỏi nào trong khảo sát này
+                              </p>
+                              <p className="text-gray-500 dark:text-gray-500 text-sm">
+                                Khảo sát này chưa có nội dung
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ) : !isLoading ? (
+                        <div className="text-center py-12">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                            <FiXCircle className="w-8 h-8 text-red-500 dark:text-red-400" />
+                          </div>
+                          <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
+                            Không thể tải chi tiết khảo sát
+                          </p>
+                          <p className="text-gray-500 dark:text-gray-500 text-sm">
+                            Vui lòng thử lại sau
+                          </p>
+                        </div>
+                      ) : null}
+                    </Spin>
+                  </div>
+                ),
+              };
+            })}
+          />
+        </Modal>
+
+      {/* Practice Test Submissions Drawer */}
+      <Drawer
+        title={
+          <div className="flex items-center gap-2">
+            <FiPlayCircle className="w-5 h-5 text-blue-600" />
+            <span className="font-bold">Bài nộp code</span>
+          </div>
+        }
+        open={showPracticeTestDrawer}
+        onClose={() => setShowPracticeTestDrawer(false)}
+        width="90%"
+        styles={{
+          body: {
+            padding: 0,
+            height: "calc(100vh - 55px)",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <Spin spinning={loadingPracticeTestSubmissions}>
+          {practiceTestSubmissions.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <FiCode className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                </div>
+                <p className="text-gray-500 dark:text-gray-400 text-base font-medium">
+                  Không có bài nộp nào
+                </p>
+                <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                  Chưa có bài nộp code nào được lưu
+                </p>
+              </div>
+            </div>
+          ) : (
+            <Layout className="h-full">
+              <Content className="bg-gray-50 dark:bg-gray-900 p-3 md:p-4 h-full">
+                <Splitter style={{ height: "100%" }} className="bg-transparent">
+                  {/* LEFT: Submissions List */}
+                  <Splitter.Panel defaultSize="30%" min={200}>
+                    <Card
+                      className="h-full !bg-white dark:!bg-[#020712] !text-gray-900 dark:!text-gray-100 overflow-hidden"
+                      styles={{
+                        body: {
+                          padding: 0,
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                        },
+                      }}
+                    >
+                      <div className="border-b border-gray-200 dark:border-gray-800 px-4 py-3 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30">
+                        <div className="flex items-center gap-2">
+                          <FiCode className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                            Danh sách bài nộp
+                          </span>
+                          <Tag color="blue" className="ml-auto text-xs">
+                            {practiceTestSubmissions.length} bài
+                          </Tag>
+                        </div>
+                      </div>
+                      <div className="flex-1 overflow-auto px-3 md:px-4 py-3 md:py-4">
+                        <div className="space-y-3">
+                          {practiceTestSubmissions.map((submission, idx) => {
+                            const isSelected =
+                              selectedSubmissionId === submission.submissionId;
+                            const isAccepted = submission.status === "Accepted";
+                            const isWrongAnswer =
+                              submission.status === "Wrong Answer";
+                            const passRate =
+                              submission.totalTests && submission.totalTests > 0
+                                ? ((submission.passedTests ?? 0) /
+                                    submission.totalTests) *
+                                  100
+                                : 0;
+
+                            return (
+                              <div
+                                key={submission.submissionId}
+                                onClick={() =>
+                                  setSelectedSubmissionId(
+                                    submission.submissionId ?? null,
+                                  )
+                                }
+                                className={`group relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                                  isSelected
+                                    ? "border-blue-500 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/20 shadow-md scale-[1.02]"
+                                    : "border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm bg-white dark:bg-gray-800/50"
+                                }`}
+                              >
+                                {/* Status Indicator */}
+                                <div
+                                  className={`absolute top-3 right-3 w-2 h-2 rounded-full ${
+                                    isAccepted
+                                      ? "bg-green-500"
+                                      : isWrongAnswer
+                                        ? "bg-red-500"
+                                        : "bg-yellow-500"
+                                  } ${isSelected ? "ring-2 ring-white" : ""}`}
+                                />
+
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                                        isSelected
+                                          ? "bg-blue-500 text-white"
+                                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+                                      }`}
+                                    >
+                                      {idx + 1}
+                                    </div>
+                                    <div>
+                                      <div className="font-semibold text-sm text-gray-900 dark:text-white line-clamp-1">
+                                        {submission.problemTitle ?? "Bài tập"}
+                                      </div>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <Tag
+                                          color={
+                                            isAccepted
+                                              ? "success"
+                                              : isWrongAnswer
+                                                ? "error"
+                                                : "warning"
+                                          }
+                                          className="text-xs m-0"
+                                        >
+                                          {submission.status ?? "Unknown"}
+                                        </Tag>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                          <FiCode className="w-3 h-3" />
+                                          {submission.languageName ?? "N/A"}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                {submission.totalTests &&
+                                  submission.totalTests > 0 && (
+                                    <div className="mb-2">
+                                      <div className="flex items-center justify-between text-xs mb-1">
+                                        <span className="text-gray-600 dark:text-gray-400 font-medium">
+                                          Test Cases
+                                        </span>
+                                        <span className="text-gray-700 dark:text-gray-300 font-semibold">
+                                          {submission.passedTests ?? 0}/
+                                          {submission.totalTests} (
+                                          {Math.round(passRate)}%)
+                                        </span>
+                                      </div>
+                                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                        <div
+                                          className={`h-full transition-all duration-300 ${
+                                            isAccepted
+                                              ? "bg-gradient-to-r from-green-500 to-emerald-500"
+                                              : "bg-gradient-to-r from-red-500 to-orange-500"
+                                          }`}
+                                          style={{ width: `${passRate}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+
+                                {/* Runtime */}
+                                {submission.runtimeMs !== undefined && (
+                                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                    <FiClock className="w-3 h-3" />
+                                    <span>Runtime: {submission.runtimeMs} ms</span>
+                                  </div>
+                                )}
+
+                                {/* Submitted At */}
+                                {submission.submittedAt && (
+                                  <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                    <FiClock className="w-3 h-3" />
+                                    <span>
+                                      {new Date(
+                                        submission.submittedAt,
+                                      ).toLocaleString("vi-VN", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </Card>
+                  </Splitter.Panel>
+
+                  {/* RIGHT: Submission Details */}
+                  <Splitter.Panel min={400}>
+                    {selectedSubmissionId ? (
+                      (() => {
+                        const selectedSubmission = practiceTestSubmissions.find(
+                          (s) => s.submissionId === selectedSubmissionId,
+                        );
+                        if (!selectedSubmission) {
+                          return (
+                            <div className="flex items-center justify-center h-full">
+                              <p className="text-gray-500">
+                                Không tìm thấy bài nộp
+                              </p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <Splitter layout="vertical" className="bg-transparent h-full">
+                            {/* Code Panel */}
+                            <Splitter.Panel defaultSize="60%" min={200}>
+                              <Card
+                                className="h-full !bg-white dark:!bg-[#020712]"
+                                styles={{
+                                  body: {
+                                    padding: 0,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    height: "100%",
+                                  },
+                                }}
+                              >
+                                <div className="border-b border-gray-200 dark:border-gray-800 px-4 py-3 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800">
+                                  <div className="flex items-center gap-2">
+                                    <FiCode className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                      Source Code
+                                    </span>
+                                    {selectedSubmission.languageName && (
+                                      <Tag
+                                        color="blue"
+                                        className="ml-auto text-xs"
+                                      >
+                                        {selectedSubmission.languageName}
+                                      </Tag>
+                                    )}
+                                  </div>
+                                </div>
+                                <div style={{ flex: 1, minHeight: 0 }} className="relative">
+                                  <Editor
+                                    height="100%"
+                                    language={
+                                      selectedSubmission.languageId
+                                        ? judgeLanguageToMonaco[
+                                            selectedSubmission.languageId
+                                          ] ?? "plaintext"
+                                        : "plaintext"
+                                    }
+                                    value={selectedSubmission.sourceCode ?? ""}
+                                    beforeMount={handleEditorWillMount}
+                                    theme={isDarkMode ? "edusmart-night" : "edusmart-light"}
+                                    options={{
+                                      readOnly: true,
+                                      domReadOnly: true,
+                                      contextmenu: false,
+                                      automaticLayout: true,
+                                      minimap: { enabled: true },
+                                      fontSize: 14,
+                                      lineHeight: 22,
+                                      fontLigatures: true,
+                                      scrollBeyondLastLine: false,
+                                      wordWrap: "on",
+                                      lineNumbers: "on",
+                                      renderLineHighlight: "none",
+                                      cursorStyle: "line",
+                                      readOnlyMessage: {
+                                        value: "Chế độ chỉ đọc - Không thể chỉnh sửa",
+                                      },
+                                    }}
+                                  />
+                                </div>
+                              </Card>
+                            </Splitter.Panel>
+
+                            {/* Test Results Panel */}
+                            <Splitter.Panel defaultSize="40%" min={150}>
+                              <Card
+                                className="h-full !bg-white dark:!bg-[#020712]"
+                                styles={{
+                                  body: {
+                                    padding: 0,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    height: "100%",
+                                  },
+                                }}
+                              >
+                                <div className="border-b border-gray-200 dark:border-gray-800 px-4 py-3 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-800 dark:to-slate-800">
+                                  <div className="flex items-center gap-2">
+                                    <FiTrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                      Test Results
+                                    </span>
+                                  </div>
+                                </div>
+                                <div
+                                  className="flex-1 overflow-auto p-4"
+                                  style={{ minHeight: 0 }}
+                                >
+                                  <div className="space-y-4">
+                                    {/* Summary Cards */}
+                                    <div className="grid grid-cols-1 gap-3">
+                                      {/* Status Card */}
+                                      <div className="p-3 rounded-lg border bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            {selectedSubmission.status ===
+                                            "Accepted" ? (
+                                              <FiCheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                            ) : selectedSubmission.status ===
+                                                "Wrong Answer" ? (
+                                              <FiXCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                                            ) : (
+                                              <FiAlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                                            )}
+                                            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                              Trạng thái
+                                            </span>
+                                          </div>
+                                          <Tag
+                                            color={
+                                              selectedSubmission.status ===
+                                              "Accepted"
+                                                ? "success"
+                                                : selectedSubmission.status ===
+                                                    "Wrong Answer"
+                                                  ? "error"
+                                                  : "warning"
+                                            }
+                                            className="text-xs font-semibold"
+                                          >
+                                            {selectedSubmission.status ?? "Unknown"}
+                                          </Tag>
+                                        </div>
+                                      </div>
+
+                                      {/* Stats Card */}
+                                      <div className="p-3 rounded-lg border bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700">
+                                        <div className="grid grid-cols-2 gap-3">
+                                          <div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                              Test Cases
+                                            </div>
+                                            <div className="text-base font-bold text-gray-900 dark:text-white">
+                                              {selectedSubmission.passedTests ?? 0}/
+                                              {selectedSubmission.totalTests ?? 0}
+                                            </div>
+                                            {selectedSubmission.totalTests &&
+                                              selectedSubmission.totalTests > 0 && (
+                                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                  {Math.round(
+                                                    ((selectedSubmission.passedTests ??
+                                                      0) /
+                                                      selectedSubmission.totalTests) *
+                                                      100,
+                                                  )}
+                                                  % passed
+                                                </div>
+                                              )}
+                                          </div>
+                                          {selectedSubmission.runtimeMs !==
+                                            undefined && (
+                                            <div>
+                                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
+                                                <FiClock className="w-3 h-3" />
+                                                Runtime
+                                              </div>
+                                              <div className="text-base font-bold text-gray-900 dark:text-white">
+                                                {selectedSubmission.runtimeMs} ms
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Test Cases */}
+                                    {selectedSubmission.testResults &&
+                                    selectedSubmission.testResults.length > 0 ? (
+                                      <div>
+                                        <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
+                                          Chi tiết test cases
+                                        </div>
+                                        <div className="space-y-3">
+                                          {selectedSubmission.testResults.map(
+                                            (test, testIdx) => (
+                                              <div
+                                                key={test.testCaseId ?? testIdx}
+                                                className={`p-4 rounded-xl border-2 transition-all ${
+                                                  test.passed
+                                                    ? "border-green-300 dark:border-green-700 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/20"
+                                                    : "border-red-300 dark:border-red-700 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/20"
+                                                }`}
+                                              >
+                                                <div className="flex items-center justify-between mb-3">
+                                                  <div className="flex items-center gap-2">
+                                                    <div
+                                                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
+                                                        test.passed
+                                                          ? "bg-green-500 text-white"
+                                                          : "bg-red-500 text-white"
+                                                      }`}
+                                                    >
+                                                      {testIdx + 1}
+                                                    </div>
+                                                    <span className="font-semibold text-sm text-gray-900 dark:text-white">
+                                                      Test Case {testIdx + 1}
+                                                    </span>
+                                                  </div>
+                                                  <Tag
+                                                    color={test.passed ? "success" : "error"}
+                                                    className="text-xs font-semibold"
+                                                  >
+                                                    {test.passed ? (
+                                                      <span className="flex items-center gap-1">
+                                                        <FiCheckCircle className="w-3 h-3" />
+                                                        Passed
+                                                      </span>
+                                                    ) : (
+                                                      <span className="flex items-center gap-1">
+                                                        <FiXCircle className="w-3 h-3" />
+                                                        Failed
+                                                      </span>
+                                                    )}
+                                                  </Tag>
+                                                </div>
+                                                <div className="space-y-3">
+                                                  {test.inputData && (
+                                                    <div>
+                                                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
+                                                        <FiCode className="w-3 h-3" />
+                                                        Input:
+                                                      </div>
+                                                      <pre className="text-xs font-mono bg-white dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700 whitespace-pre-wrap break-words text-gray-900 dark:text-gray-100">
+                                                        {test.inputData}
+                                                      </pre>
+                                                    </div>
+                                                  )}
+                                                  {test.expectedOutput && (
+                                                    <div>
+                                                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
+                                                        <FiCheckCircle className="w-3 h-3 text-green-600 dark:text-green-400" />
+                                                        Expected:
+                                                      </div>
+                                                      <pre className="text-xs font-mono bg-white dark:bg-gray-900 p-3 rounded-lg border border-green-200 dark:border-green-800 whitespace-pre-wrap break-words text-gray-900 dark:text-gray-100">
+                                                        {test.expectedOutput}
+                                                      </pre>
+                                                    </div>
+                                                  )}
+                                                  {test.actualOutput !== undefined && (
+                                                    <div>
+                                                      <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
+                                                        <FiCode className="w-3 h-3" />
+                                                        Actual:
+                                                      </div>
+                                                      <pre
+                                                        className={`text-xs font-mono bg-white dark:bg-gray-900 p-3 rounded-lg border whitespace-pre-wrap break-words text-gray-900 dark:text-gray-100 ${
+                                                          test.passed
+                                                            ? "border-green-200 dark:border-green-800"
+                                                            : "border-red-200 dark:border-red-800"
+                                                        }`}
+                                                      >
+                                                        {test.actualOutput ?? "N/A"}
+                                                      </pre>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            ),
+                                          )}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-center py-8">
+                                        <FiAlertCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                          Không có test results
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </Card>
+                            </Splitter.Panel>
+                          </Splitter>
+                        );
+                      })()
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                            <FiCode className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                          </div>
+                          <p className="text-gray-700 dark:text-gray-300 font-medium mb-1">
+                            Chọn một bài nộp để xem chi tiết
+                          </p>
+                          <p className="text-gray-500 dark:text-gray-400 text-sm">
+                            Nhấn vào bài nộp ở bên trái để xem code và kết quả
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </Splitter.Panel>
+                </Splitter>
+              </Content>
+            </Layout>
+          )}
         </Spin>
-      </Modal>
+      </Drawer>
     </div>
   );
 };

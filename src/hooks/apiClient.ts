@@ -43,8 +43,16 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError & { config?: RetryConfig }) => {
     const status = error.response?.status;
     const originalRequest = error.config!;
+    
+    // Kiểm tra xem có đang ở payment page không
+    // Nếu có, KHÔNG logout để tránh gián đoạn flow thanh toán khi redirect về từ PayOS
+    // Bỏ logout hoàn toàn khi đang ở payment page vì có thể token đang được refresh
+    const isPaymentPage = 
+      typeof window !== "undefined" && 
+      window.location.pathname.startsWith("/payment");
+    
     if (status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // 👈 THÊM DÒNG NÀY
+      originalRequest._retry = true;
       try {
         await useAuthStore.getState().refreshToken();
         const newToken = useAuthStore.getState().token;
@@ -57,14 +65,19 @@ axiosInstance.interceptors.response.use(
         }
         return axiosInstance(originalRequest);
       } catch {
-        useAuthStore.getState().logout();
-        useValidateStore.getState().setInValid(true);
+        // KHÔNG logout khi đang ở payment page để tránh gián đoạn flow thanh toán
+        if (!isPaymentPage) {
+          useAuthStore.getState().logout();
+          useValidateStore.getState().setInValid(true);
+        }
       }
     }
     if ((status === 403 || status === 418) && !originalRequest._retry) {
-      useAuthStore.getState().logout();
-      // useAuthStore.persist.clearStorage();
-      useValidateStore.getState().setInValid(true);
+      // KHÔNG logout khi đang ở payment page để tránh gián đoạn flow thanh toán
+      if (!isPaymentPage) {
+        useAuthStore.getState().logout();
+        useValidateStore.getState().setInValid(true);
+      }
     }
     return Promise.reject(error);
   },

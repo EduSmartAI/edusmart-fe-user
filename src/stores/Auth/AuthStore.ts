@@ -12,6 +12,7 @@ import {
 } from "EduSmart/app/(auth)/action";
 import { ForgotPasswordResponse, ResetPasswordResponse, TokenVerifyResponse } from "EduSmart/api/api-auth-service";
 import { BasicUser } from "EduSmart/lib/authServer";
+import { useCartStore } from "../cart/cartStore";
 
 export interface AuthState {
   token: string | null;
@@ -142,6 +143,7 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           refreshToken: null,
         });
+        useCartStore.getState().clearCart();
       },
     }),
     {

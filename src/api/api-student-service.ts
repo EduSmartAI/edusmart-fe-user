@@ -546,6 +546,7 @@ export interface LearningPathSelectDto {
   personality?: string;
   learningAbility?: string;
   studentQuizSubmission?: StudentQuizSubmission;
+  studentQuizSubmission?: StudentQuizSubmission;
   praticalAbilityFeedbacks?: PraticalAbilityFeedback[];
   basicLearningPath?: BasicLearningPathDto;
   internalLearningPath?: InternalLearningPathDto[];

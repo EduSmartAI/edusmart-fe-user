@@ -6,6 +6,7 @@ import {
   InsertOrderResponse,
   SelectOrderResponseEntity,
   RePaymentResponse,
+  PaymentCallbackResponse,
 } from "EduSmart/api/api-payment-service";
 import apiClient, { PaymentClient } from "EduSmart/hooks/apiClient";
 
@@ -26,6 +27,14 @@ interface PaymentState {
   rePayment: (orderId: string) => Promise<RePaymentResponse | null>;
   setPaymentMethod: (method: PaymentGateway) => void;
   clearOrder: () => void;
+  v1PaymentPaymentCallbackCreate: (
+    orderId: string,
+    code: string,
+    id: string,
+    cancel: boolean,
+    status: string,
+    orderCode: number,
+  ) => Promise<PaymentCallbackResponse | null>;
 }
 
 export const usePaymentStore = create<PaymentState>((set) => ({
@@ -122,6 +131,37 @@ export const usePaymentStore = create<PaymentState>((set) => ({
         return res.data;
       }
 
+      throw new Error(res.data?.message || "Failed to retry payment");
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      console.error("Failed to retry payment:", error);
+      const errorMsg =
+        err?.response?.data?.message || "Không thể thử lại thanh toán";
+      set({ error: errorMsg, isProcessing: false });
+      message.error(errorMsg);
+      return null;
+    }
+  },
+  v1PaymentPaymentCallbackCreate: async (
+    orderId: string,
+    code: string,
+    id: string,
+    cancel: boolean,
+    status: string,
+    orderCode: number,
+  ): Promise<PaymentCallbackResponse | null> => {
+    try {
+      const res = await apiClient.paymentService.api.v1PaymentPaymentCallbackCreate({
+        orderId: orderId,
+        code: code,
+        id: id,
+        cancel: cancel,
+        status: status,
+        orderCode: orderCode,
+      });
+      if (res.data?.success) {
+        return res.data;
+      }
       throw new Error(res.data?.message || "Failed to retry payment");
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };

@@ -153,17 +153,17 @@ export async function updateStudentProfileClient(data: {
     // Create proper FormData object
     const formData = new FormData();
 
-    // Add basic fields (always add, even if empty - backend may require them)
-    formData.append("FirstName", data.FirstName || "");
-    formData.append("LastName", data.LastName || "");
-    if (data.DateOfBirth) formData.append("DateOfBirth", data.DateOfBirth);
-    if (data.PhoneNumber) formData.append("PhoneNumber", data.PhoneNumber);
-    if (data.Gender !== undefined)
-      formData.append("Gender", data.Gender.toString());
-    if (data.Address) formData.append("Address", data.Address);
-    if (data.Bio) formData.append("Bio", data.Bio);
-    if (data.MajorId) formData.append("MajorId", data.MajorId);
-    if (data.SemesterId) formData.append("SemesterId", data.SemesterId);
+    // Add basic fields - always append all fields to match Postman behavior
+    // This ensures backend receives all fields even if some are empty
+    formData.append("FirstName", data.FirstName ?? "");
+    formData.append("LastName", data.LastName ?? "");
+    formData.append("DateOfBirth", data.DateOfBirth ?? "");
+    formData.append("PhoneNumber", data.PhoneNumber ?? "");
+    formData.append("Gender", data.Gender !== undefined ? data.Gender.toString() : "");
+    formData.append("Address", data.Address ?? "");
+    formData.append("Bio", data.Bio ?? "");
+    formData.append("MajorId", data.MajorId ?? "");
+    formData.append("SemesterId", data.SemesterId ?? "");
 
     // Add Avatar if provided
     if (data.Avatar) {
@@ -171,6 +171,7 @@ export async function updateStudentProfileClient(data: {
     }
 
     // Add Technologies - IMPORTANT: Backend requires at least 1 item (@minItems 1)
+    // Always append each technology separately to match Postman's --form behavior
     if (data.Technologies && data.Technologies.length > 0) {
       data.Technologies.forEach((techId) => {
         formData.append("Technologies", techId);
@@ -178,6 +179,7 @@ export async function updateStudentProfileClient(data: {
     }
 
     // Add LearningGoals - IMPORTANT: Backend requires at least 1 item (@minItems 1)
+    // Always append each learning goal separately to match Postman's --form behavior
     if (data.LearningGoals && data.LearningGoals.length > 0) {
       data.LearningGoals.forEach((goalId) => {
         formData.append("LearningGoals", goalId);
@@ -197,6 +199,13 @@ export async function updateStudentProfileClient(data: {
       await apiClient.studentService.api.v1StudentUpdateStudentProfileUpdate(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formData as any,
+        {
+          headers: {
+            Accept: "text/plain",
+            // Don't set Content-Type for FormData - let browser set it with boundary
+            // This is critical for multipart/form-data to work correctly
+          },
+        },
       );
 
     console.log("📥 API Response:", response.data);

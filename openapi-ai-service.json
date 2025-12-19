@@ -360,6 +360,74 @@
         }
       }
     },
+    "/api/v1/AiRecommend/subject-analysis": {
+      "post": {
+        "tags": [
+          "AiRecommend"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/SubjectAnalysisRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SubjectAnalysisResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/AiRecommend/course-subject-analysis": {
+      "post": {
+        "tags": [
+          "AiRecommend"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/CourseSubjectAnalysisRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SubjectAnalysisResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/AiSummarys/feedback-course": {
       "post": {
         "tags": [
@@ -1181,6 +1249,19 @@
       },
       "additionalProperties": false
     },
+    "CourseSubjectAnalysisRequest": {
+      "required": [
+        "courseId"
+      ],
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "CreateTranscriptCommand": {
       "type": "object",
       "properties": {
@@ -1229,6 +1310,25 @@
         "durationSec": {
           "format": "double",
           "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DependentSubjectWarning": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "semesterIndex": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "warningMessage": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -1657,6 +1757,82 @@
         },
         "analysisMarkdown": {
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectAnalysisDto": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "mark": {
+          "format": "double",
+          "type": "number"
+        },
+        "improvementAnalysis": {
+          "type": "string"
+        },
+        "dependentWarnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DependentSubjectWarning"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectAnalysisRequest": {
+      "required": [
+        "mark",
+        "subjectCode",
+        "subjectName"
+      ],
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "mark": {
+          "format": "double",
+          "type": "number"
+        },
+        "majorCode": {
+          "type": "string"
+        },
+        "careerGoal": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectAnalysisResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/SubjectAnalysisDto"
         }
       },
       "additionalProperties": false
