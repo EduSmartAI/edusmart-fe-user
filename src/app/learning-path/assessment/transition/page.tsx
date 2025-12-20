@@ -36,7 +36,8 @@ import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentActi
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import { uploadTranscriptClient } from "EduSmart/hooks/api-client/studentApiClient";
 import apiClient from "EduSmart/hooks/apiClient";
-import { MultiColorThemeProvider } from "EduSmart/components/Themes";
+// Reserved for future use: MultiColorThemeProvider
+// import { MultiColorThemeProvider } from "EduSmart/components/Themes";
 
 interface LearningGoalOption {
   learningGoalId: string;
@@ -507,6 +508,7 @@ function SurveyToQuizTransitionContent() {
           openNotification();
         } else {
           // Show regular error message for other errors
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const errorDetails = result.detailErrors
             ? typeof result.detailErrors === "string"
               ? result.detailErrors
@@ -1077,7 +1079,7 @@ function SurveyToQuizTransitionContent() {
           open={showTranscriptModal}
           onCancel={() => setShowTranscriptModal(false)}
           footer={[
-            <div className="flex flex-row gap-2 justify-end">
+            <div key="footer-actions" className="flex flex-row gap-2 justify-end">
               <Upload
                 key="upload"
                 accept=".xlsx,.xls"

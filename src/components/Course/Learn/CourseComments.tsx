@@ -53,8 +53,11 @@ export default function CourseComments({ courseId }: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [totalPages, setTotalPages] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [hasNextPage, setHasNextPage] = useState(false);
 
   // Fetch comments

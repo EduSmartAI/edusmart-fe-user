@@ -41,6 +41,7 @@ export default function WishlistPage() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(100); // Load all items
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [totalCount, setTotalCount] = useState(0);
 
   // Fetch wishlist

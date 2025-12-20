@@ -75,11 +75,12 @@ import {
   v1StudentSurveySelectStudentSurveyDetailList,
   v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList,
   getStudentTestResultAction,
+  type StudentTestResult,
 } from "EduSmart/app/(quiz)/quizAction";
 import type {
   StudentSurveySelectDetailResponseEntity,
   StudentPracticeTestSubmissionDetailItem,
-  StudentTestSelectResponseEntity,
+  // StudentTestSelectResponseEntity, // Reserved for future use
 } from "EduSmart/api/api-quiz-service";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import Editor from "@monaco-editor/react";
@@ -545,9 +546,9 @@ const LearningPathSamplePage = () => {
   const [activeAssessmentTab, setActiveAssessmentTab] = useState<
     "theory" | "practice"
   >("theory");
-  const [theoryTestData, setTheoryTestData] = useState<any>(null);
+  const [theoryTestData, setTheoryTestData] = useState<StudentTestResult | null>(null);
   const [loadingTheoryTest, setLoadingTheoryTest] = useState(false);
-  const [practiceTestData, setPracticeTestData] = useState<any>(null);
+  const [practiceTestData, setPracticeTestData] = useState<StudentPracticeTestSubmissionDetailItem[] | null>(null);
   const [loadingPracticeTest, setLoadingPracticeTest] = useState(false);
 
   const summaryFeedback = learningPath?.summaryFeedback;
@@ -861,7 +862,8 @@ const LearningPathSamplePage = () => {
     handleFetchSurveyDetail(studentSurveyId);
   };
 
-  // Handle open practice test submissions drawer
+  // Handle open practice test submissions drawer - Reserved for future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleOpenPracticeTestDrawer = async () => {
     const submissions =
       learningPath?.studentQuizSubmission?.studentPracticeTestSubmissions ?? [];
@@ -936,9 +938,9 @@ const LearningPathSamplePage = () => {
     if (practiceSubmissions && practiceSubmissions.length > 0) {
       setLoadingPracticeTest(true);
       try {
-        const submissionIds = practiceSubmissions.map(
-          (s: any) => s.practiceTestSubmissionId,
-        );
+        const submissionIds = practiceSubmissions
+          .map((s) => s.practiceTestSubmissionId)
+          .filter((id): id is string => !!id);
         const result =
           await v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList(
             submissionIds,
@@ -4145,7 +4147,6 @@ const LearningPathSamplePage = () => {
         open={showAssessmentDrawer}
         onClose={() => setShowAssessmentDrawer(false)}
         width={1200}
-        centered
       >
         <Tabs
           activeKey={activeAssessmentTab}
@@ -4232,7 +4233,7 @@ const LearningPathSamplePage = () => {
                               accordion={false}
                               ghost
                               items={theoryTestData.quizzesResults.map(
-                                (quiz: any, qIdx: number) => ({
+                                (quiz, qIdx: number) => ({
                                   key: quiz.quizId ?? qIdx,
                                   label: (
                                     <div className="flex items-center justify-between w-full pr-4">
@@ -4269,32 +4270,29 @@ const LearningPathSamplePage = () => {
                                   children: (
                                     <div className="px-10">
                                       {/* Questions */}
-                                      {((quiz.questionResults &&
-                                        quiz.questionResults.length > 0) ||
-                                        (quiz.questionsResult &&
-                                          quiz.questionsResult.length > 0)) && (
+                                      {quiz.questionsResult &&
+                                        quiz.questionsResult.length > 0 && (
                                         <div className="space-y-4 flex flex-col gap-5">
                                           {(
-                                            quiz.questionResults ||
                                             quiz.questionsResult
                                           ).map(
-                                            (question: any, qIndex: number) => {
+                                            (question, qIndex: number) => {
                                               const correctAnswers =
                                                 question.answers?.filter(
-                                                  (a: any) => a.isCorrectAnswer,
+                                                  (a) => a.isCorrectAnswer,
                                                 ) || [];
                                               const selectedAnswers =
                                                 question.answers?.filter(
-                                                  (a: any) =>
+                                                  (a) =>
                                                     a.selectedByStudent,
                                                 ) || [];
                                               const isCorrect =
                                                 correctAnswers.length ===
                                                   selectedAnswers.length &&
                                                 correctAnswers.every(
-                                                  (ca: any) =>
+                                                  (ca) =>
                                                     selectedAnswers.some(
-                                                      (sa: any) =>
+                                                      (sa) =>
                                                         sa.answerId ===
                                                         ca.answerId,
                                                     ),
@@ -4356,7 +4354,7 @@ const LearningPathSamplePage = () => {
                                                         <div className="space-y-2 pl-11">
                                                           {question.answers.map(
                                                             (
-                                                              answer: any,
+                                                              answer,
                                                               aIndex: number,
                                                             ) => {
                                                               const isSelected =
@@ -4495,7 +4493,7 @@ const LearningPathSamplePage = () => {
                           accordion={false}
                           ghost
                           items={practiceTestData.map(
-                            (submission: any, sIdx: number) => {
+                            (submission, sIdx: number) => {
                               const isAccepted =
                                 submission.status === "Accepted";
                               const statusColor = isAccepted
@@ -4503,6 +4501,8 @@ const LearningPathSamplePage = () => {
                                 : submission.status === "Compilation Error"
                                   ? "text-orange-600 dark:text-orange-400"
                                   : "text-red-600 dark:text-red-400";
+                              // Status background color for future styling
+                              // eslint-disable-next-line @typescript-eslint/no-unused-vars
                               const statusBg = isAccepted
                                 ? "bg-green-100 dark:bg-green-900/30"
                                 : submission.status === "Compilation Error"
@@ -4565,10 +4565,10 @@ const LearningPathSamplePage = () => {
                                           height="300px"
                                           language={
                                             judgeLanguageToMonaco[
-                                              submission.languageId
+                                              submission.languageId ?? 0
                                             ] || "plaintext"
                                           }
-                                          value={submission.sourceCode}
+                                          value={submission.sourceCode ?? ""}
                                           theme={
                                             isDarkMode ? "vs-dark" : "light"
                                           }
@@ -4596,7 +4596,7 @@ const LearningPathSamplePage = () => {
                                       </h5>
                                       <div className="space-y-2 flex flex-col gap-1">
                                         {submission.testResults?.map(
-                                          (test: any, tIdx: number) => (
+                                          (test, tIdx: number) => (
                                             <Card
                                               key={test.testCaseId ?? tIdx}
                                               size="small"
@@ -4644,7 +4644,7 @@ const LearningPathSamplePage = () => {
                                         <FiClock className="w-3.5 h-3.5" />
                                         <span>
                                           {new Date(
-                                            submission.submittedAt,
+                                            submission.submittedAt ?? "",
                                           ).toLocaleDateString("vi-VN", {
                                             day: "2-digit",
                                             month: "2-digit",
