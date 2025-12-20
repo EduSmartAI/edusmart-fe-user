@@ -427,11 +427,30 @@ function SurveyToQuizTransitionContent() {
           transcriptResult.response.length > 0
         ) {
           setHasTranscript(true);
+          // Update transcript data in modal
+          setTranscriptData(transcriptResult.response);
           // Auto-load other questions after successful upload
           await loadOtherQuestions();
         }
       } else {
         console.warn("⚠️ [TRANSITION] Upload failed");
+
+        // Close modal on failure
+        setShowTranscriptModal(false);
+
+        // Re-check if transcript still exists
+        const transcriptCheck = await getStudentTranscriptServer();
+        const stillHasTranscript =
+          transcriptCheck.success &&
+          transcriptCheck.response &&
+          transcriptCheck.response.length > 0;
+
+        setHasTranscript(stillHasTranscript);
+
+        // If no transcript anymore, clear transcript data
+        if (!stillHasTranscript) {
+          setTranscriptData([]);
+        }
 
         // Check if error is semester mismatch (E00000)
         if (result.messageId === "E00000" && result.message) {
@@ -1058,33 +1077,58 @@ function SurveyToQuizTransitionContent() {
           open={showTranscriptModal}
           onCancel={() => setShowTranscriptModal(false)}
           footer={[
-            <Button key="close" onClick={() => setShowTranscriptModal(false)}>
-              Đóng
-            </Button>,
+            <div className="flex flex-row gap-2 justify-end">
+              <Upload
+                key="upload"
+                accept=".xlsx,.xls"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  handleUploadTranscript(file);
+                  return false;
+                }}
+                disabled={uploadingTranscript}
+              >
+                <Button
+                  icon={<UploadOutlined />}
+                  loading={uploadingTranscript}
+                  type="primary"
+                  ghost
+                >
+                  {uploadingTranscript
+                    ? "Đang tải lên..."
+                    : "Upload bảng điểm mới"}
+                </Button>
+              </Upload>
+              <Button key="close" onClick={() => setShowTranscriptModal(false)}>
+                Đóng
+              </Button>
+            </div>,
           ]}
           width={1000}
           centered
         >
-          <Spin spinning={loadingTranscript}>
+          <Spin spinning={loadingTranscript || uploadingTranscript}>
             <div className="mt-4">
               {transcriptData.length === 0 && !loadingTranscript ? (
                 <div className="text-center py-8 text-gray-500">
                   Không có dữ liệu bảng điểm
                 </div>
               ) : (
-                <Table
-                  columns={transcriptColumns}
-                  dataSource={transcriptData}
-                  rowKey="studentTranscriptId"
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: false,
-                    showTotal: (total) => `Tổng ${total} môn học`,
-                  }}
-                  scroll={{ x: 800 }}
-                  size="small"
-                  bordered
-                />
+                <>
+                  <Table
+                    columns={transcriptColumns}
+                    dataSource={transcriptData}
+                    rowKey="studentTranscriptId"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: false,
+                      showTotal: (total) => `Tổng ${total} môn học`,
+                    }}
+                    scroll={{ x: 800 }}
+                    size="small"
+                    bordered
+                  />
+                </>
               )}
             </div>
           </Spin>

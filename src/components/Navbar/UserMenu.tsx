@@ -142,7 +142,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
       label: "Khóa học yêu thích",
     },
     { key: "cart", icon: <ShoppingCartOutlined />, label: "Giỏ hàng của tôi" },
-    { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
+
     { type: "divider" },
     // {
     //   key: "data",
@@ -166,6 +166,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
         </div>
       ),
     },
+    { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
     // { type: "divider" },
     // { key: "settings", icon: <SettingOutlined />, label: "Cài đặt" },
     // { key: "help", icon: <QuestionCircleOutlined />, label: "Trợ giúp" },
