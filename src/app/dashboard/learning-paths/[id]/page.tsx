@@ -141,6 +141,31 @@ const LEVEL_CONFIG = {
   },
 } as const;
 
+// Color scheme for Assessment and Survey drawers
+const ASSESSMENT_COLOR_SCHEME = {
+  // Change this to "orange" or "teal" to switch color scheme
+  theme: "teal" as "orange" | "teal",
+
+  orange: {
+    bgLight: "bg-orange-100 dark:bg-orange-900/30",
+    bgDark: "bg-orange-50 dark:bg-orange-900/20",
+    text: "text-orange-600 dark:text-orange-400",
+    border: "border-orange-200 dark:border-orange-800",
+    icon: "text-orange-600 dark:text-orange-400",
+  },
+
+  teal: {
+    bgLight: "bg-cyan-100 dark:bg-cyan-900/30",
+    bgDark: "bg-cyan-50 dark:bg-cyan-900/20",
+    text: "text-cyan-600 dark:text-cyan-400",
+    border: "border-cyan-200 dark:border-cyan-800",
+    icon: "text-cyan-600 dark:text-cyan-400",
+  },
+} as const;
+
+const getAssessmentColor = () =>
+  ASSESSMENT_COLOR_SCHEME[ASSESSMENT_COLOR_SCHEME.theme];
+
 interface SubjectInsight {
   score?: number;
   target?: number;
@@ -1332,13 +1357,8 @@ const LearningPathSamplePage = () => {
                 </span>
 
                 {/* Subject Code */}
-                <span className="font-semibold text-gray-900 dark:text-white flex-shrink-0">
+                <span className="font-semibold text-gray-900 dark:text-white flex-shrink-0 flex-1 min-w-0 truncate">
                   {group.subjectCode ?? "SUB"}
-                </span>
-
-                {/* Subject Name */}
-                <span className="text-sm text-gray-600 dark:text-gray-400 flex-1 min-w-0 truncate">
-                  {group.subjectCode ?? ""}
                 </span>
 
                 {/* Course count + Status */}
@@ -1354,8 +1374,10 @@ const LearningPathSamplePage = () => {
                         color={statusInfo.color as string}
                         className="text-xs flex items-center gap-1"
                       >
-                        <FiPlayCircle className="w-3 h-3" />
-                        {statusInfo.label}
+                        <div className="flex flex-row justify-center items-center gap-1">
+                          <FiPlayCircle className="w-3 h-3" />
+                          {statusInfo.label}
+                        </div>
                       </Tag>
                     </div>
                   </Tooltip>
@@ -2509,7 +2531,7 @@ const LearningPathSamplePage = () => {
                     <button
                       type="button"
                       onClick={handleOpenSurveyModal}
-                      className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 border border-purple-300 dark:border-purple-700 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-[#49BBBD] hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-[#49BBBD]/30 transition-colors"
                     >
                       <FcSurvey className="w-4 h-4" />
                       Khảo sát (
@@ -2525,7 +2547,7 @@ const LearningPathSamplePage = () => {
                   <button
                     type="button"
                     onClick={handleOpenAssessmentDrawer}
-                    className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 border border-purple-300 dark:border-purple-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-[#49BBBD] hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-[#49BBBD]/30 transition-colors"
                   >
                     <FiCheckCircle className="w-4 h-4" />
                     Bài Đánh Giá Năng Lực
@@ -2906,11 +2928,17 @@ const LearningPathSamplePage = () => {
               children: (
                 <div className="space-y-5">
                   {/* Chú thích về Status */}
-                  <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 mb-4">
+                  <div
+                    className={`rounded-xl border ${getAssessmentColor().border} ${getAssessmentColor().bgDark} p-4 mb-4`}
+                  >
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 mt-0.5">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-                          <FiBook className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <div
+                          className={`w-8 h-8 rounded-full ${getAssessmentColor().bgLight} flex items-center justify-center`}
+                        >
+                          <FiBook
+                            className={`w-4 h-4 ${getAssessmentColor().text}`}
+                          />
                         </div>
                       </div>
                       <div className="flex-1">
@@ -2919,7 +2947,9 @@ const LearningPathSamplePage = () => {
                         </h4>
                         <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 text-xs font-semibold">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${getAssessmentColor().bgLight} ${getAssessmentColor().text} text-xs font-semibold border-cyan-300 border-1`}
+                            >
                               <FiPlayCircle className="w-3 h-3" />
                               Trạng thái khóa học
                             </span>
@@ -2930,7 +2960,7 @@ const LearningPathSamplePage = () => {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs font-semibold border border-gray-300">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs font-semibold border border-emerald-300 dark:border-emerald-700">
                               <FiBook className="w-3 h-3" />
                               Trạng thái môn học
                             </span>
@@ -3331,8 +3361,10 @@ const LearningPathSamplePage = () => {
       <Modal
         title={
           <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <FcSurvey className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <div
+              className={`w-10 h-10 rounded-lg ${getAssessmentColor().bgLight} flex items-center justify-center`}
+            >
+              <FcSurvey className={`w-5 h-5 ${getAssessmentColor().icon}`} />
             </div>
             <div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -3373,9 +3405,15 @@ const LearningPathSamplePage = () => {
                     {surveyDetail ? (
                       <div className="space-y-4">
                         {/* Survey Header */}
-                        <div className="bg-purple-50 dark:bg-purple-900/20   p-4 rounded-lg mb-6 flex items-center justify-center flex-col py-6 border-1 border-purple-100 dark:border-purple-800">
-                          <div className="w-10 h-10  bg-purple-300 flex items-center justify-center flex-shrink-0 mb-3 rounded-full">
-                            <FcSurvey className="w-5 h-5 text-white" />
+                        <div
+                          className={`${getAssessmentColor().bgDark} p-4 rounded-lg mb-6 flex items-center justify-center flex-col py-6 border ${getAssessmentColor().border}`}
+                        >
+                          <div
+                            className={`w-10 h-10 ${getAssessmentColor().bgLight} flex items-center justify-center flex-shrink-0 mb-3 rounded-full`}
+                          >
+                            <FcSurvey
+                              className={`w-5 h-5 ${getAssessmentColor().icon}`}
+                            />
                           </div>
                           <div className="flex items-start gap-3 text-center">
                             <div className="flex-1">
@@ -3427,7 +3465,9 @@ const LearningPathSamplePage = () => {
                                 <div className="space-y-3">
                                   {/* Question */}
                                   <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center font-medium text-sm">
+                                    <div
+                                      className={`flex-shrink-0 w-8 h-8 rounded-full ${getAssessmentColor().bgLight} ${getAssessmentColor().text} flex items-center justify-center font-medium text-sm`}
+                                    >
                                       {qIndex + 1}
                                     </div>
                                     <h4 className="text-sm font-normal text-gray-900 dark:text-white pt-1">
@@ -3499,8 +3539,12 @@ const LearningPathSamplePage = () => {
                           </div>
                         ) : (
                           <div className="text-center py-12">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                              <FiAlertCircle className="w-8 h-8 text-purple-500 dark:text-purple-400" />
+                            <div
+                              className={`w-16 h-16 mx-auto mb-4 rounded-full ${getAssessmentColor().bgLight} flex items-center justify-center`}
+                            >
+                              <FiAlertCircle
+                                className={`w-8 h-8 ${getAssessmentColor().text}`}
+                              />
                             </div>
                             <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
                               Không có câu hỏi nào trong khảo sát này
@@ -4081,8 +4125,12 @@ const LearningPathSamplePage = () => {
       <Drawer
         title={
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <FiCheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <div
+              className={`w-10 h-10 rounded-lg ${getAssessmentColor().bgLight} flex items-center justify-center`}
+            >
+              <FiCheckCircle
+                className={`w-5 h-5 ${getAssessmentColor().icon}`}
+              />
             </div>
             <div>
               <div className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -4205,7 +4253,9 @@ const LearningPathSamplePage = () => {
                                       </div>
                                       <div className="flex items-center gap-4">
                                         <div className="text-right">
-                                          <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                                          <div
+                                            className={`text-xl font-bold ${getAssessmentColor().text}`}
+                                          >
                                             {quiz.totalCorrectAnswers}/
                                             {quiz.totalQuestions}
                                           </div>
@@ -4401,8 +4451,12 @@ const LearningPathSamplePage = () => {
                           </div>
                         ) : (
                           <div className="text-center py-12">
-                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                              <FiAlertCircle className="w-8 h-8 text-purple-500 dark:text-purple-400" />
+                            <div
+                              className={`w-16 h-16 mx-auto mb-4 rounded-full ${getAssessmentColor().bgLight} flex items-center justify-center`}
+                            >
+                              <FiAlertCircle
+                                className={`w-8 h-8 ${getAssessmentColor().text}`}
+                              />
                             </div>
                             <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
                               Không có kết quả bài kiểm tra
@@ -4496,7 +4550,6 @@ const LearningPathSamplePage = () => {
                                           {submission.totalTests} test cases
                                         </div>
                                       </div>
-                                     
                                     </div>
                                   </div>
                                 ),
