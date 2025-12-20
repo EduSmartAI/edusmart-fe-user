@@ -10,6 +10,7 @@ import {
   RobotOutlined,
   ShoppingOutlined,
   BookOutlined,
+  HeartOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Menu, Layout, theme } from "antd";
@@ -61,6 +62,13 @@ const navItems: NavMenuItem[] = [
     <BookOutlined />,
     undefined,
     "/dashboard/my-courses",
+  ),
+  getItem(
+    "Khóa học yêu thích",
+    "dashboard-wishlist",
+    <HeartOutlined />,
+    undefined,
+    "/dashboard/wishlist",
   ),
   getItem(
     "Hồ sơ của tôi",

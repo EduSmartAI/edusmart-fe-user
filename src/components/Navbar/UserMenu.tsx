@@ -7,6 +7,7 @@ import {
   ShoppingCartOutlined,
   BookOutlined,
   DashboardOutlined,
+  HeartOutlined,
 } from "@ant-design/icons";
 import { ThemeSwitch } from "../Themes/Theme";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
@@ -135,6 +136,11 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
       label: "Dashboard cá nhân",
     },
     { key: "my-courses", icon: <BookOutlined />, label: "Khóa học của tôi" },
+    {
+      key: "my-wishlist",
+      icon: <HeartOutlined />,
+      label: "Khóa học yêu thích",
+    },
     { key: "cart", icon: <ShoppingCartOutlined />, label: "Giỏ hàng của tôi" },
     { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
     { type: "divider" },
@@ -198,6 +204,9 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
           }
           if (key === "my-courses") {
             router.push("/dashboard/my-courses");
+          }
+          if (key === "my-wishlist") {
+            router.push("/dashboard/wishlist");
           }
           
         },
