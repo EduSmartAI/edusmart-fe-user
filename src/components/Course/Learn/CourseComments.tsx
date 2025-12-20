@@ -22,7 +22,7 @@ import {
   CheckCircleFilled,
 } from "@ant-design/icons";
 import { CourseCommentDetailsDto } from "EduSmart/api/api-course-service";
-import { useCourseStore } from "EduSmart/stores/course/courseStore";
+import { CourseClient } from "EduSmart/hooks/apiClient";
 import moment from "moment";
 import "moment/locale/vi";
 
@@ -51,18 +51,11 @@ export default function CourseComments({ courseId }: Props) {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(6);
+  const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
-  const [allCommentsData, setAllCommentsData] = useState<CommentWithReplies[]>(
-    [],
-  );
-
-  // Store
-  const courseCommentsCreate = useCourseStore((s) => s.courseCommentsCreate);
-  const courseCommentsList = useCourseStore((s) => s.courseCommentsList);
-  const courseCommentsRepliesCreate = useCourseStore(
-    (s) => s.courseCommentsRepliesCreate,
-  );
+  const [totalPages, setTotalPages] = useState(0);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   // Fetch comments
   const fetchComments = async (page: number = currentPage) => {
@@ -70,25 +63,19 @@ export default function CourseComments({ courseId }: Props) {
 
     setLoading(true);
     try {
-      // Fetch all comments (backend returns all with pageSize=1000)
-      const response = await courseCommentsList({
+      // Call API directly with page starting from 1 and pageSize of 10
+      const response = await CourseClient.api.courseCommentsList({
         courseId,
-        page: currentPage - 1,
-        size: 1000,
+        page,
+        size: pageSize,
       });
 
       if (response.data.success && response.data.response) {
-        const allComments = response.data.response.items ?? [];
+        const data = response.data.response;
+        const allComments = data.items ?? [];
 
         // Filter only top-level comments (parentCommentId = null)
         const topLevelComments = allComments.filter((c) => !c.parentCommentId);
-
-        // Sort top-level comments by createdAt (newest first)
-        topLevelComments.sort(
-          (a, b) =>
-            new Date(b.createdAt ?? 0).getTime() -
-            new Date(a.createdAt ?? 0).getTime(),
-        );
 
         // Build replies map
         const repliesMap = new Map<string, CourseCommentDetailsDto[]>();
@@ -99,7 +86,7 @@ export default function CourseComments({ courseId }: Props) {
           }
         });
 
-        // Attach replies to parent comments and sort by createdAt
+        // Attach replies to parent comments
         const commentsWithReplies = topLevelComments.map((c) => {
           const replies = repliesMap.get(c.commentId ?? "") ?? [];
           // Sort replies by createdAt (oldest first)
@@ -115,37 +102,12 @@ export default function CourseComments({ courseId }: Props) {
           };
         });
 
-        console.log("=== Comments Processing ===");
-        console.log("Total items from API:", allComments.length);
-        console.log("Parent comments:", topLevelComments.length);
-        console.log(
-          "Reply comments:",
-          allComments.length - topLevelComments.length,
-        );
-        console.log("Comments with replies:", commentsWithReplies);
-
-        // Store all comments data for client-side pagination
-        setAllCommentsData(commentsWithReplies);
-        setTotalCount(topLevelComments.length);
-
-        // Apply client-side pagination
-        const startIndex = (page - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedComments = commentsWithReplies.slice(
-          startIndex,
-          endIndex,
-        );
-
-        console.log("=== Pagination ===");
-        console.log("Current page:", page);
-        console.log("Page size:", pageSize);
-        console.log("Start index:", startIndex);
-        console.log("End index:", endIndex);
-        console.log("Paginated comments:", paginatedComments);
-        console.log("Paginated comments length:", paginatedComments.length);
-
-        setComments(paginatedComments);
-        setCurrentPage(page);
+        setComments(commentsWithReplies);
+        setCurrentPage(data.pageNumber ?? page);
+        setTotalCount(data.totalCount ?? 0);
+        setTotalPages(data.totalPages ?? 0);
+        setHasPreviousPage(data.hasPreviousPage ?? false);
+        setHasNextPage(data.hasNextPage ?? false);
       }
     } catch (error) {
       console.error("Error fetching comments:", error);
@@ -161,23 +123,13 @@ export default function CourseComments({ courseId }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  // Handle page change (client-side pagination)
+  // Handle page change (server-side pagination)
   const handlePageChange = (page: number, size?: number) => {
     if (size && size !== pageSize) {
       setPageSize(size);
-      setCurrentPage(1);
-      // Re-paginate with new page size
-      const startIndex = 0;
-      const endIndex = size;
-      const paginatedComments = allCommentsData.slice(startIndex, endIndex);
-      setComments(paginatedComments);
+      fetchComments(1);
     } else {
-      setCurrentPage(page);
-      // Re-paginate with new page
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedComments = allCommentsData.slice(startIndex, endIndex);
-      setComments(paginatedComments);
+      fetchComments(page);
     }
   };
 
@@ -190,7 +142,7 @@ export default function CourseComments({ courseId }: Props) {
 
     setSubmitting(true);
     try {
-      const response = await courseCommentsCreate(
+      const response = await CourseClient.api.courseCommentsCreate(
         { content: newComment.trim() },
         { courseId },
       );
@@ -199,7 +151,6 @@ export default function CourseComments({ courseId }: Props) {
         message.success("Đã đăng bình luận!");
         setNewComment("");
         // Refresh comments - go to first page to see new comment
-        setCurrentPage(1);
         fetchComments(1);
       } else {
         message.error(
@@ -224,7 +175,7 @@ export default function CourseComments({ courseId }: Props) {
 
     setSubmitting(true);
     try {
-      const response = await courseCommentsRepliesCreate(
+      const response = await CourseClient.api.courseCommentsRepliesCreate(
         parentCommentId,
         { content: replyContent.trim() },
         { courseId },
@@ -455,7 +406,7 @@ export default function CourseComments({ courseId }: Props) {
                   showTotal={(total, range) =>
                     `${range[0]}-${range[1]} của ${total} bình luận`
                   }
-                  pageSizeOptions={["6", "10", "20", "50"]}
+                  pageSizeOptions={["10", "20", "50"]}
                 />
               </div>
             )}
