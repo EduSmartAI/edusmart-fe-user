@@ -111,12 +111,12 @@ export default function RegisterPage() {
       useLoadingStore.getState().showLoading();
       await insertStudent(values.email, values.password, values.firstName, values.lastName);
       await router.push("/Register/has-sent");
-      await messageApi.success("Đăng nhập thành công!");
+      await messageApi.success("Đăng ký thành công!");
       useLoadingStore.getState().hideLoading();
     } catch (error: unknown) {
       useLoadingStore.getState().hideLoading();
       let errorMessage =
-        "Đăng nhập thất bại, vui lòng kiểm tra lại email/mật khẩu.";
+        "Đăng ký thất bại, vui lòng kiểm tra lại email/mật khẩu.";
       if (isAxiosError(error)) {
         const serverMsg =
           error.response?.data?.errors || error.response?.data?.error;
@@ -227,7 +227,7 @@ export default function RegisterPage() {
               className="w-full py-4 font-semibold text-white rounded-full bg-gradient-to-r from-teal-400 to-blue-500 
                          hover:scale-[1.05] transition-transform duration-200"
             >
-              Đăng nhập
+              Đăng ký
             </button>
           </div>
         </Form>

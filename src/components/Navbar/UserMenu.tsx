@@ -2,18 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { Dropdown, Avatar } from "antd";
 import type { MenuProps } from "antd";
 import {
-  GoogleOutlined,
   LogoutOutlined,
   BgColorsOutlined,
-  SettingOutlined,
-  QuestionCircleOutlined,
-  CommentOutlined,
-  SwapOutlined,
-  KeyOutlined,
+  ShoppingCartOutlined,
+  BookOutlined,
+  DashboardOutlined,
 } from "@ant-design/icons";
 import { ThemeSwitch } from "../Themes/Theme";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useRouter } from "next/navigation";
+
 
 interface UserMenuProps {
   email?: string;
@@ -118,23 +116,33 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
           <div style={{ marginLeft: 12 }}>
             <div style={{ fontWeight: 600 }}>{name}</div>
             <div style={{ fontSize: 13, color: "#aaa" }}>{email}</div>
-            <a href="#" style={{ fontSize: 12, color: "#1890ff" }}>
-              Xem kênh của bạn
+            <a
+              href="/dashboard/my-profile"
+              style={{ fontSize: 12, color: "#1890ff" }}
+            >
+              Xem hồ sơ của bạn
             </a>
           </div>
         </div>
       ),
     },
     { type: "divider" },
-    { key: "google", icon: <GoogleOutlined />, label: "Tài khoản Google" },
-    { key: "switch", icon: <SwapOutlined />, label: "Chuyển đổi tài khoản" },
+    // { key: "google", icon: <GoogleOutlined />, label: "Tài khoản Google" },
+    // { key: "switch", icon: <SwapOutlined />, label: "Chuyển đổi tài khoản" },
+    {
+      key: "dashboard",
+      icon: <DashboardOutlined />,
+      label: "Dashboard cá nhân",
+    },
+    { key: "my-courses", icon: <BookOutlined />, label: "Khóa học của tôi" },
+    { key: "cart", icon: <ShoppingCartOutlined />, label: "Giỏ hàng của tôi" },
     { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
     { type: "divider" },
-    {
-      key: "data",
-      icon: <KeyOutlined />,
-      label: "Quên mật khẩu",
-    },
+    // {
+    //   key: "data",
+    //   icon: <KeyOutlined />,
+    //   label: "Quên mật khẩu",
+    // },
     {
       key: "theme",
       icon: <BgColorsOutlined />,
@@ -152,14 +160,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
         </div>
       ),
     },
-    { type: "divider" },
-    { key: "settings", icon: <SettingOutlined />, label: "Cài đặt" },
-    { key: "help", icon: <QuestionCircleOutlined />, label: "Trợ giúp" },
-    {
-      key: "feedback",
-      icon: <CommentOutlined />,
-      label: "Gửi ý kiến phản hồi",
-    },
+    // { type: "divider" },
+    // { key: "settings", icon: <SettingOutlined />, label: "Cài đặt" },
+    // { key: "help", icon: <QuestionCircleOutlined />, label: "Trợ giúp" },
+    // {
+    //   key: "feedback",
+    //   icon: <CommentOutlined />,
+    //   label: "Gửi ý kiến phản hồi",
+    // },
   ];
   const [mounted, setMounted] = useState(false);
 
@@ -182,6 +190,16 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
               router.push("/Login"); // điều hướng
             }
           }
+          if (key === "dashboard") {
+            router.push("/dashboard");
+          }
+          if (key === "cart") {
+            router.push("/cart");
+          }
+          if (key === "my-courses") {
+            router.push("/dashboard/my-courses");
+          }
+          
         },
         className: "user-menu", // tuỳ style thêm nếu cần
       }}

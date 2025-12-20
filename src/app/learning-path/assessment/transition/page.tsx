@@ -81,9 +81,6 @@ function SurveyToQuizTransitionContent() {
     string | undefined
   >(undefined);
   const [updatingSemester, setUpdatingSemester] = useState(false);
-  const [pendingUploadFile, setPendingUploadFile] = useState<RcFile | null>(
-    null,
-  );
   const [api, contextHolder] = notification.useNotification();
 
   // Load learning goal from URL param and fetch learning goals list
@@ -379,7 +376,6 @@ function SurveyToQuizTransitionContent() {
 
   // Handle semester update
   const handleUpdateSemester = async () => {
-
     if (!selectedSemesterForUpdate) {
       messageApi.warning("Vui lòng chọn kỳ học");
       return;
@@ -439,14 +435,14 @@ function SurveyToQuizTransitionContent() {
 
         // Check if error is semester mismatch (E00000)
         if (result.messageId === "E00000" && result.message) {
-          // Store the file for retry after semester update
-          setPendingUploadFile(file);
-
           const openNotification = () => {
             const key = `open${Date.now()}`;
             const isUnmatchedSemesterError = result.message.includes(
               "Kỳ học trong hồ sơ của bạn",
             );
+            const message = isUnmatchedSemesterError
+              ? "Bảng điểm không khớp với kỳ học trong hồ sơ"
+              : "Upload bảng điểm thất bại";
             const btn = (
               <Space>
                 <Button size="small" onClick={() => api.destroy(key)}>
@@ -475,8 +471,8 @@ function SurveyToQuizTransitionContent() {
                 )}
               </Space>
             );
-            api.error({
-              message: "Upload bảng điểm thất bại",
+            api.warning({
+              message,
               description: result.message,
               duration: 0, // Don't auto-close
               style: {
@@ -1101,7 +1097,6 @@ function SurveyToQuizTransitionContent() {
           onCancel={() => {
             setShowSemesterUpdateModal(false);
             setSelectedSemesterForUpdate(undefined);
-            setPendingUploadFile(null);
           }}
           onOk={handleUpdateSemester}
           okText="Xác nhận"

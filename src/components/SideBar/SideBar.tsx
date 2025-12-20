@@ -5,9 +5,7 @@ import Image from "next/image";
 import { Lobster } from "next/font/google";
 import {
   PieChartOutlined,
-  DesktopOutlined,
   LogoutOutlined,
-  SolutionOutlined,
   UserOutlined,
   RobotOutlined,
   ShoppingOutlined,
