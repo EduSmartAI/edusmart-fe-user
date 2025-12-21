@@ -53,7 +53,7 @@ export default function Navigationbar() {
     { key: "jobs", label: "Khóa học", href: "/course" },
     { key: "learningPath", label: "Đề xuất lộ trình học tập", href: "/learning-path" },
     { key: "dashboard", label: "Dashboard", href: "/dashboard" },
-    { key: "quiz", label: "Quiz", href: "/quiz" },
+    // { key: "quiz", label: "Quiz", href: "/quiz" },
     { key: "chatAI", label: "Chat AI", href: "/chat/ai" },
     { key: "login", label: "Đăng nhập", button: true, type: "link" },
     { key: "signup", label: "Đăng Ký", button: true, type: "primary" },

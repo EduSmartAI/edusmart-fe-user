@@ -156,11 +156,6 @@ const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   const handleToggleWish = async () => {
-    if (onToggleWishList) {
-      onToggleWishList();
-      return;
-    }
-
     if (!id) return;
 
     try {
@@ -173,6 +168,11 @@ const CourseCard: React.FC<CourseCardProps> = ({
           type: "success",
           duration: 1,
         });
+
+        // Call callback after successful add
+        if (onToggleWishList) {
+          onToggleWishList();
+        }
       } else {
         console.log("Removing from wishlist");
         const res = await courseWishlistDelete(id);
@@ -183,6 +183,11 @@ const CourseCard: React.FC<CourseCardProps> = ({
           type: "success",
           duration: 1,
         });
+
+        // Call callback after successful remove
+        if (onToggleWishList) {
+          onToggleWishList();
+        }
       }
     } catch (error) {
       console.error("handleToggleWish error:", error);

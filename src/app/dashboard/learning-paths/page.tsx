@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button, Spin, Empty, Pagination, Input, Select, message, Tag } from "antd";
+import {
+  Button,
+  Spin,
+  Empty,
+  Pagination,
+  Input,
+  Select,
+  message,
+  Tag,
+} from "antd";
 import { useRouter } from "next/navigation";
 import {
   FiClock,
@@ -33,7 +42,7 @@ const statusConfig = {
     description: "Hệ thống đang tạo lộ trình học tập cho bạn",
   },
   1: {
-    label: "Chờ xác nhận",
+    label: "Chờ xác nhận chuyên ngành",
     color: "warning",
     bgColor: "bg-orange-50 dark:bg-orange-900/20",
     borderColor: "border-orange-200 dark:border-orange-800",
@@ -104,11 +113,13 @@ export default function LearningPathHistoryPage() {
 
       if (result.ok) {
         // Sort by createdAt - newest first
-        const sortedPaths = (result.data.data || []).sort((a: LearningPath, b: LearningPath) => {
-          const dateA = new Date(a.createdAt).getTime();
-          const dateB = new Date(b.createdAt).getTime();
-          return dateB - dateA;
-        });
+        const sortedPaths = (result.data.data || []).sort(
+          (a: LearningPath, b: LearningPath) => {
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA;
+          },
+        );
         setAllPaths(sortedPaths);
       } else {
         message.error(result.error || "Không thể tải danh sách lộ trình");
@@ -126,7 +137,8 @@ export default function LearningPathHistoryPage() {
     const matchesSearch = path.pathName
       .toLowerCase()
       .includes(searchText.toLowerCase());
-    const matchesStatus = selectedStatus === null || path.status === selectedStatus;
+    const matchesStatus =
+      selectedStatus === null || path.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
 
@@ -163,26 +175,24 @@ export default function LearningPathHistoryPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br ">
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-black mb-3 leading-tight">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#49BBBD] via-cyan-500 to-[#4acfd1]">
-                  Tất cả lộ trình học tập
-                </span>
-              </h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300">
-                Quản lý và theo dõi tất cả lộ trình học tập của bạn
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-black text-[#49BBBD] dark:text-cyan-400">
-                {totalCount}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div className="flex flex-row flex-1 justify-between items-end">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
+                  Lộ trình học tập
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Quản lý và theo dõi tất cả lộ trình học tập của bạn
+                </p>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">lộ trình</p>
+
+              <div className="">
+                <Tag color="green">Tổng số lộ trình: {totalCount}</Tag>
+              </div>
             </div>
           </div>
 
@@ -230,13 +240,15 @@ export default function LearningPathHistoryPage() {
             {/* Paths Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {paginatedPaths.map((path) => {
-                const config = statusConfig[path.status as keyof typeof statusConfig] || statusConfig[0];
+                const config =
+                  statusConfig[path.status as keyof typeof statusConfig] ||
+                  statusConfig[0];
 
                 return (
                   <div
                     key={path.pathId}
                     onClick={() => handlePathClick(path.pathId)}
-                    className={`group cursor-pointer rounded-2xl p-6 transition-all duration-300 border-2 hover:shadow-xl hover:-translate-y-2 ${
+                    className={`group cursor-pointer rounded-xl p-6 transition-all duration-300 border-1 hover:shadow-xl hover:-translate-y-2 ${
                       config.bgColor
                     } ${config.borderColor}`}
                   >

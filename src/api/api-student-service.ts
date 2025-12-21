@@ -546,6 +546,7 @@ export interface LearningPathSelectDto {
   personality?: string;
   learningAbility?: string;
   studentQuizSubmission?: StudentQuizSubmission;
+  studentQuizSubmission?: StudentQuizSubmission;
   praticalAbilityFeedbacks?: PraticalAbilityFeedback[];
   basicLearningPath?: BasicLearningPathDto;
   internalLearningPath?: InternalLearningPathDto[];
@@ -929,6 +930,19 @@ export interface StudentQuizSubmission {
   studentSurveySubmissions?: StudentSurveySubmission[];
 }
 
+export interface StudentSemesterUpdateCommand {
+  /** @format uuid */
+  semesterId?: string;
+}
+
+export interface StudentSemesterUpdateCommandResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
 export interface StudentSurveySubmission {
   /** @format uuid */
   studentSurveyId?: string;
@@ -1133,8 +1147,7 @@ export interface UpdateStatusLearningPathResponse {
 }
 
 export interface UpdateSubjectToSkippedCommand {
-  /** @minLength 1 */
-  subjectCode: string;
+  subjectCode: string[];
 }
 
 export interface UpdateSubjectToSkippedCommandResponse {
@@ -2276,6 +2289,29 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentUpdateStudentSemesterPartialUpdate
+     * @summary Cập nhật thông tin học kỳ của học sinh
+     * @request PATCH:/api/v1/Student/UpdateStudentSemester
+     * @secure
+     */
+    v1StudentUpdateStudentSemesterPartialUpdate: (
+      body: StudentSemesterUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentSemesterUpdateCommandResponse, any>({
+        path: `/api/v1/Student/UpdateStudentSemester`,
+        method: "PATCH",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

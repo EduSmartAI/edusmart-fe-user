@@ -14,6 +14,8 @@ import {
   Tag,
   Collapse,
   Upload,
+  Select,
+  notification,
 } from "antd";
 import { FiCheckCircle, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 import { UploadOutlined } from "@ant-design/icons";
@@ -33,6 +35,9 @@ import type { RcFile } from "antd/es/upload";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import { uploadTranscriptClient } from "EduSmart/hooks/api-client/studentApiClient";
+import apiClient from "EduSmart/hooks/apiClient";
+// Reserved for future use: MultiColorThemeProvider
+// import { MultiColorThemeProvider } from "EduSmart/components/Themes";
 
 interface LearningGoalOption {
   learningGoalId: string;
@@ -50,7 +55,8 @@ function SurveyToQuizTransitionContent() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { submitSurvey, survey1Data, semesters } = useSurveyStore(); // ✅ Get submitSurvey, survey1Data, and semesters from store
+  const { submitSurvey, survey1Data, semesters, loadSemesters } =
+    useSurveyStore(); // ✅ Get submitSurvey, survey1Data, semesters, and loadSemesters from store
   const [selectedOption, setSelectedOption] = useState<
     "quiz" | "transcript" | null
   >(null);
@@ -71,6 +77,12 @@ function SurveyToQuizTransitionContent() {
   >([]);
   const [loadingTranscript, setLoadingTranscript] = useState(false);
   const [uploadingTranscript, setUploadingTranscript] = useState(false);
+  const [showSemesterUpdateModal, setShowSemesterUpdateModal] = useState(false);
+  const [selectedSemesterForUpdate, setSelectedSemesterForUpdate] = useState<
+    string | undefined
+  >(undefined);
+  const [updatingSemester, setUpdatingSemester] = useState(false);
+  const [api, contextHolder] = notification.useNotification();
 
   // Load learning goal from URL param and fetch learning goals list
   useEffect(() => {
@@ -363,6 +375,38 @@ function SurveyToQuizTransitionContent() {
     return <Tag color={config.color}>{config.label}</Tag>;
   };
 
+  // Handle semester update
+  const handleUpdateSemester = async () => {
+    if (!selectedSemesterForUpdate) {
+      messageApi.warning("Vui lòng chọn kỳ học");
+      return;
+    }
+
+    try {
+      setUpdatingSemester(true);
+
+      const result =
+        await apiClient.studentService.api.v1StudentUpdateStudentSemesterPartialUpdate(
+          {
+            semesterId: selectedSemesterForUpdate,
+          },
+        );
+
+      if (result.data?.success) {
+        messageApi.success(result.data.message || "Cập nhật kỳ học thành công");
+        setShowSemesterUpdateModal(false);
+        setSelectedSemesterForUpdate(undefined);
+      } else {
+        messageApi.error(result.data?.message || "Cập nhật kỳ học thất bại");
+      }
+    } catch (error) {
+      console.error("❌ [TRANSITION] Update semester exception:", error);
+      messageApi.error("Có lỗi xảy ra khi cập nhật kỳ học");
+    } finally {
+      setUpdatingSemester(false);
+    }
+  };
+
   // Handle transcript upload
   const handleUploadTranscript = async (file: RcFile) => {
     try {
@@ -384,28 +428,94 @@ function SurveyToQuizTransitionContent() {
           transcriptResult.response.length > 0
         ) {
           setHasTranscript(true);
+          // Update transcript data in modal
+          setTranscriptData(transcriptResult.response);
           // Auto-load other questions after successful upload
           await loadOtherQuestions();
         }
       } else {
         console.warn("⚠️ [TRANSITION] Upload failed");
-        const errorDetails = result.detailErrors
-          ? typeof result.detailErrors === "string"
-            ? result.detailErrors
-            : JSON.stringify(result.detailErrors)
-          : "";
 
-        messageApi.error({
-          content: (
-            <div>
-              <div className="font-semibold">{result.message}</div>
-              {errorDetails && (
-                <div className="text-sm mt-1">{errorDetails}</div>
-              )}
-            </div>
-          ),
-          duration: 5,
-        });
+        // Close modal on failure
+        setShowTranscriptModal(false);
+
+        // Re-check if transcript still exists
+        const transcriptCheck = await getStudentTranscriptServer();
+        const stillHasTranscript =
+          transcriptCheck.success &&
+          transcriptCheck.response &&
+          transcriptCheck.response.length > 0;
+
+        setHasTranscript(stillHasTranscript);
+
+        // If no transcript anymore, clear transcript data
+        if (!stillHasTranscript) {
+          setTranscriptData([]);
+        }
+
+        // Check if error is semester mismatch (E00000)
+        if (result.messageId === "E00000" && result.message) {
+          const openNotification = () => {
+            const key = `open${Date.now()}`;
+            const isUnmatchedSemesterError = result.message.includes(
+              "Kỳ học trong hồ sơ của bạn",
+            );
+            const message = isUnmatchedSemesterError
+              ? "Bảng điểm không khớp với kỳ học trong hồ sơ"
+              : "Upload bảng điểm thất bại";
+            const btn = (
+              <Space>
+                <Button size="small" onClick={() => api.destroy(key)}>
+                  Đóng
+                </Button>
+                {isUnmatchedSemesterError && (
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={async () => {
+                      api.destroy(key);
+                      console.log(
+                        "🔍 [TRANSITION] Current semesters:",
+                        semesters,
+                      );
+                      // Load semesters if not already loaded
+                      if (!semesters || semesters.length === 0) {
+                        console.log("📚 [TRANSITION] Loading semesters...");
+                        await loadSemesters();
+                      }
+                      setShowSemesterUpdateModal(true);
+                    }}
+                  >
+                    Cập nhật kỳ học
+                  </Button>
+                )}
+              </Space>
+            );
+            api.warning({
+              message,
+              description: result.message,
+              duration: 0, // Don't auto-close
+              style: {
+                width: 600,
+              },
+              btn: btn,
+              key,
+              onClose: () => api.destroy(key),
+            });
+          };
+
+          // Show notification with semester update option
+          openNotification();
+        } else {
+          // Show regular error message for other errors
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const errorDetails = result.detailErrors
+            ? typeof result.detailErrors === "string"
+              ? result.detailErrors
+              : JSON.stringify(result.detailErrors)
+            : "";
+          messageApi.error(result.message || "Lỗi xảy ra khi upload bảng điểm");
+        }
       }
     } catch (error) {
       console.error("❌ [TRANSITION] Upload exception:", error);
@@ -484,6 +594,7 @@ function SurveyToQuizTransitionContent() {
 
   return (
     <LearningPathGuard requiredStep={1} requiredCompletedSteps={[1]}>
+      {contextHolder}
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* Progress Header - Minimal Mode */}
         <div className="sticky top-0 z-10">
@@ -968,36 +1079,104 @@ function SurveyToQuizTransitionContent() {
           open={showTranscriptModal}
           onCancel={() => setShowTranscriptModal(false)}
           footer={[
-            <Button key="close" onClick={() => setShowTranscriptModal(false)}>
-              Đóng
-            </Button>,
+            <div key="footer-actions" className="flex flex-row gap-2 justify-end">
+              <Upload
+                key="upload"
+                accept=".xlsx,.xls"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  handleUploadTranscript(file);
+                  return false;
+                }}
+                disabled={uploadingTranscript}
+              >
+                <Button
+                  icon={<UploadOutlined />}
+                  loading={uploadingTranscript}
+                  type="primary"
+                  ghost
+                >
+                  {uploadingTranscript
+                    ? "Đang tải lên..."
+                    : "Upload bảng điểm mới"}
+                </Button>
+              </Upload>
+              <Button key="close" onClick={() => setShowTranscriptModal(false)}>
+                Đóng
+              </Button>
+            </div>,
           ]}
           width={1000}
           centered
         >
-          <Spin spinning={loadingTranscript}>
+          <Spin spinning={loadingTranscript || uploadingTranscript}>
             <div className="mt-4">
               {transcriptData.length === 0 && !loadingTranscript ? (
                 <div className="text-center py-8 text-gray-500">
                   Không có dữ liệu bảng điểm
                 </div>
               ) : (
-                <Table
-                  columns={transcriptColumns}
-                  dataSource={transcriptData}
-                  rowKey="studentTranscriptId"
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: false,
-                    showTotal: (total) => `Tổng ${total} môn học`,
-                  }}
-                  scroll={{ x: 800 }}
-                  size="small"
-                  bordered
-                />
+                <>
+                  <Table
+                    columns={transcriptColumns}
+                    dataSource={transcriptData}
+                    rowKey="studentTranscriptId"
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: false,
+                      showTotal: (total) => `Tổng ${total} môn học`,
+                    }}
+                    scroll={{ x: 800 }}
+                    size="small"
+                    bordered
+                  />
+                </>
               )}
             </div>
           </Spin>
+        </Modal>
+
+        {/* Semester Update Modal */}
+        <Modal
+          title="Cập nhật kỳ học"
+          open={showSemesterUpdateModal}
+          onCancel={() => {
+            setShowSemesterUpdateModal(false);
+            setSelectedSemesterForUpdate(undefined);
+          }}
+          onOk={handleUpdateSemester}
+          okText="Xác nhận"
+          cancelText="Hủy"
+          confirmLoading={updatingSemester}
+          centered
+        >
+          <div className="py-4">
+            <p className="mb-4 text-gray-600 dark:text-gray-300">
+              Vui lòng chọn kỳ học hiện tại của bạn:
+            </p>
+            {semesters && semesters.length > 0 ? (
+              <Select
+                placeholder="Chọn kỳ học"
+                value={selectedSemesterForUpdate}
+                onChange={setSelectedSemesterForUpdate}
+                className="w-full"
+                size="large"
+                showSearch
+                optionFilterProp="label"
+                options={semesters.map((s) => ({
+                  label: s.semesterName,
+                  value: s.semesterId,
+                }))}
+              />
+            ) : (
+              <Alert
+                message="Không tìm thấy danh sách kỳ học"
+                description="Vui lòng thử lại sau hoặc liên hệ quản trị viên"
+                type="warning"
+                showIcon
+              />
+            )}
+          </div>
         </Modal>
       </div>
     </LearningPathGuard>
