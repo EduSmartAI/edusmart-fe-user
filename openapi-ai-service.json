@@ -224,6 +224,40 @@
         }
       }
     },
+    "/api/v1/AiRecommend/GetLearningPathAiV2": {
+      "post": {
+        "tags": [
+          "AiRecommend"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AiEvaluationV2Request"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AiEvaluateResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/AiRecommend/external-courses": {
       "post": {
         "tags": [
@@ -423,6 +457,40 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/SubjectAnalysisResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/AiRecommend/subject-mark-update": {
+      "post": {
+        "tags": [
+          "AiRecommend"
+        ],
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/SubjectMarkUpdateRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SubjectMarkUpdateResponse"
             }
           }
         }
@@ -796,6 +864,50 @@
         "createdAtUtc": {
           "format": "date-time",
           "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AiEvaluationV2Request": {
+      "type": "object",
+      "properties": {
+        "careerGoal": {
+          "type": "string"
+        },
+        "knownFrameworks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "knownLanguages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "externalLimitTime": {
+          "type": "string"
+        },
+        "kRetrieval": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "scoreThreshold": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "learningPathId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "semesterId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "studentLevel": {
+          "format": "int32",
+          "type": "integer"
         }
       },
       "additionalProperties": false
@@ -1933,6 +2045,98 @@
         "mark": {
           "format": "double",
           "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectMarkUpdateDto": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "oldMark": {
+          "format": "double",
+          "type": "number"
+        },
+        "newMark": {
+          "format": "double",
+          "type": "number"
+        },
+        "markImprovement": {
+          "format": "double",
+          "type": "number"
+        },
+        "improvementAnalysis": {
+          "type": "string"
+        },
+        "comparisonAnalysis": {
+          "type": "string"
+        },
+        "dependentWarnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DependentSubjectWarning"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectMarkUpdateRequest": {
+      "required": [
+        "newAnalysis",
+        "newMark",
+        "subjectCode",
+        "subjectName"
+      ],
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "oldMark": {
+          "format": "double",
+          "type": "number"
+        },
+        "newMark": {
+          "format": "double",
+          "type": "number"
+        },
+        "newAnalysis": {
+          "type": "string"
+        },
+        "careerGoal": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectMarkUpdateResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/SubjectMarkUpdateDto"
         }
       },
       "additionalProperties": false

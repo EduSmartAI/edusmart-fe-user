@@ -107,6 +107,23 @@ export interface AiEvaluationDto {
   createdAtUtc?: string;
 }
 
+export interface AiEvaluationV2Request {
+  careerGoal?: string;
+  knownFrameworks?: string[];
+  knownLanguages?: string[];
+  externalLimitTime?: string;
+  /** @format int32 */
+  kRetrieval?: number;
+  /** @format int32 */
+  scoreThreshold?: number;
+  /** @format uuid */
+  learningPathId?: string;
+  /** @format uuid */
+  semesterId?: string;
+  /** @format int32 */
+  studentLevel?: number;
+}
+
 export interface AiExternalCourseRequest {
   goal_major?: string;
   learningPathId?: string;
@@ -532,6 +549,39 @@ export interface SubjectMark {
   subjectName?: string;
   /** @format double */
   mark?: number;
+}
+
+export interface SubjectMarkUpdateDto {
+  subjectCode?: string;
+  subjectName?: string;
+  /** @format double */
+  oldMark?: number;
+  /** @format double */
+  newMark?: number;
+  /** @format double */
+  markImprovement?: number;
+  improvementAnalysis?: string;
+  comparisonAnalysis?: string;
+  dependentWarnings?: DependentSubjectWarning[];
+}
+
+export interface SubjectMarkUpdateRequest {
+  subjectCode: string;
+  subjectName: string;
+  /** @format double */
+  oldMark?: number;
+  /** @format double */
+  newMark: number;
+  newAnalysis: string;
+  careerGoal?: string;
+}
+
+export interface SubjectMarkUpdateResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: SubjectMarkUpdateDto;
 }
 
 export interface SubjectWithoutMarkAnalysis {
@@ -986,6 +1036,28 @@ export class Api<
      * No description
      *
      * @tags AiRecommend
+     * @name V1AiRecommendGetLearningPathAiV2Create
+     * @request POST:/api/v1/AiRecommend/GetLearningPathAiV2
+     * @secure
+     */
+    v1AiRecommendGetLearningPathAiV2Create: (
+      body: AiEvaluationV2Request,
+      params: RequestParams = {},
+    ) =>
+      this.request<AiEvaluateResponse, any>({
+        path: `/api/v1/AiRecommend/GetLearningPathAiV2`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AiRecommend
      * @name V1AiRecommendExternalCoursesCreate
      * @request POST:/api/v1/AiRecommend/external-courses
      * @secure
@@ -1106,6 +1178,28 @@ export class Api<
     ) =>
       this.request<SubjectAnalysisResponse, any>({
         path: `/api/v1/AiRecommend/course-subject-analysis`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags AiRecommend
+     * @name V1AiRecommendSubjectMarkUpdateCreate
+     * @request POST:/api/v1/AiRecommend/subject-mark-update
+     * @secure
+     */
+    v1AiRecommendSubjectMarkUpdateCreate: (
+      body: SubjectMarkUpdateRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<SubjectMarkUpdateResponse, any>({
+        path: `/api/v1/AiRecommend/subject-mark-update`,
         method: "POST",
         body: body,
         secure: true,

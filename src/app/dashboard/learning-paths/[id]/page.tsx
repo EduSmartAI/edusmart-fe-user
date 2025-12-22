@@ -35,6 +35,7 @@ import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
 import { learningPathsChooseMajorUpdate } from "EduSmart/app/apiServer/learningPathAction";
+import { learningPathsProcessAndExportSubjectMarksCreate } from "EduSmart/app/(learning-path)/learningPathAction";
 import {
   FiCheck,
   FiPlus,
@@ -550,6 +551,12 @@ const LearningPathSamplePage = () => {
   const [loadingTheoryTest, setLoadingTheoryTest] = useState(false);
   const [practiceTestData, setPracticeTestData] = useState<StudentPracticeTestSubmissionDetailItem[] | null>(null);
   const [loadingPracticeTest, setLoadingPracticeTest] = useState(false);
+
+  // Performance evaluation states
+  const [loadingPerformance, setLoadingPerformance] = useState(false);
+  const [performanceCountdown, setPerformanceCountdown] = useState<number | null>(
+    null,
+  );
 
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
@@ -1102,6 +1109,56 @@ const LearningPathSamplePage = () => {
     if (levelLower.includes("intermediate")) return "Trung cấp";
     if (levelLower.includes("advanced")) return "Nâng cao";
     return level;
+  };
+
+  // Handle performance evaluation
+  const handleViewPerformance = async () => {
+    if (!pathId || loadingPerformance) return;
+
+    setLoadingPerformance(true);
+    setPerformanceCountdown(0);
+
+    // Start countdown timer
+    let countdownInterval: NodeJS.Timeout | null = null;
+    countdownInterval = setInterval(() => {
+      setPerformanceCountdown((prev) => {
+        if (prev === null) return null;
+        return prev + 1;
+      });
+    }, 1000);
+
+    try {
+      const result = await learningPathsProcessAndExportSubjectMarksCreate(
+        pathId,
+      );
+
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+
+      if (result.ok) {
+        const responseMessage =
+          result.data?.message ||
+          (typeof result.data?.response === "string"
+            ? result.data.response
+            : null) ||
+          "Đánh giá hiệu suất đã được xử lý thành công!";
+        message.success(responseMessage);
+      } else {
+        message.error(result.error || "Không thể xử lý đánh giá hiệu suất");
+      }
+    } catch (error) {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      console.error("Error processing performance evaluation:", error);
+      message.error("Đã xảy ra lỗi khi xử lý đánh giá hiệu suất");
+    } finally {
+      setLoadingPerformance(false);
+      setPerformanceCountdown(null);
+    }
   };
 
   // Get status tag for transcript
@@ -2484,6 +2541,37 @@ const LearningPathSamplePage = () => {
                 >
                   {statusLabel}
                 </Tag>
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<FiTrendingUp className="w-5 h-5" />}
+                  loading={loadingPerformance}
+                  disabled={loadingPerformance || !pathId}
+                  onClick={handleViewPerformance}
+                  style={{
+                    background: "linear-gradient(to right, #4f46e5, #9333ea, #db2777)",
+                    border: "none",
+                    color: "white",
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                    fontWeight: 600,
+                    fontSize: "15px",
+                    letterSpacing: "0.025em",
+                    textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                    padding: "10px 20px",
+                    height: "auto",
+                  }}
+                  className="inline-flex items-center gap-2.5 rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "linear-gradient(to right, #4338ca, #7e22ce, #be185d)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "linear-gradient(to right, #4f46e5, #9333ea, #db2777)";
+                  }}
+                >
+                  {loadingPerformance && performanceCountdown !== null
+                    ? `Đang xử lý... (${performanceCountdown}s)`
+                    : "Xem đánh giá hiệu suất"}
+                </Button>
                 <button
                   type="button"
                   onClick={() =>

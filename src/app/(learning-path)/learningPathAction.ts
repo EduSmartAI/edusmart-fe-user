@@ -212,6 +212,45 @@ export async function getAllLearningPathsAction(
   }
 }
 
+
+export async function learningPathsProcessAndExportSubjectMarksCreate(
+  learningPathId: string,
+): Promise<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  { ok: true; data: any } | { ok: false; error: string; status?: number }
+> {
+  try {
+    const response = await apiServer.student.api.learningPathsProcessAndExportSubjectMarksCreate({
+      learningPathId: learningPathId,
+    });
+
+    if (!response.data?.success) {
+      console.error(
+        "❌ [Learning Path] Process and export subject marks error:",
+        response.data?.message,
+      );
+      return {
+        ok: false,
+        error: response.data?.message || "Failed to process and export subject marks",
+        status: response.status,
+      };
+    }
+
+    return {
+      ok: true,
+      data: response.data.response,
+    };
+  } catch (error) {
+    const nErr = await normalizeFetchError(error);
+    console.error("❌ [Learning Path] Process and export subject marks exception:", nErr.message);
+    return {
+      ok: false,
+      error: nErr.details ? `${nErr.message} — ${nErr.details}` : nErr.message,
+      status: nErr.status,
+    };
+  }
+}
+
 /**
  * Create learning path from previous survey and transcript (without taking quiz)
  * @param learningGoalId - UUID of the learning goal
