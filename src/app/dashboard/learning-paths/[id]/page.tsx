@@ -547,16 +547,19 @@ const LearningPathSamplePage = () => {
   const [activeAssessmentTab, setActiveAssessmentTab] = useState<
     "theory" | "practice"
   >("theory");
-  const [theoryTestData, setTheoryTestData] = useState<StudentTestResult | null>(null);
+  const [theoryTestData, setTheoryTestData] =
+    useState<StudentTestResult | null>(null);
   const [loadingTheoryTest, setLoadingTheoryTest] = useState(false);
-  const [practiceTestData, setPracticeTestData] = useState<StudentPracticeTestSubmissionDetailItem[] | null>(null);
+  const [practiceTestData, setPracticeTestData] = useState<
+    StudentPracticeTestSubmissionDetailItem[] | null
+  >(null);
   const [loadingPracticeTest, setLoadingPracticeTest] = useState(false);
 
   // Performance evaluation states
   const [loadingPerformance, setLoadingPerformance] = useState(false);
-  const [performanceCountdown, setPerformanceCountdown] = useState<number | null>(
-    null,
-  );
+  const [performanceCountdown, setPerformanceCountdown] = useState<
+    number | null
+  >(null);
 
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
@@ -1128,9 +1131,8 @@ const LearningPathSamplePage = () => {
     }, 1000);
 
     try {
-      const result = await learningPathsProcessAndExportSubjectMarksCreate(
-        pathId,
-      );
+      const result =
+        await learningPathsProcessAndExportSubjectMarksCreate(pathId);
 
       if (countdownInterval) {
         clearInterval(countdownInterval);
@@ -2529,7 +2531,7 @@ const LearningPathSamplePage = () => {
                     </div>
                   )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Tag
                   color={
                     status != null
@@ -2541,37 +2543,45 @@ const LearningPathSamplePage = () => {
                 >
                   {statusLabel}
                 </Tag>
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<FiTrendingUp className="w-5 h-5" />}
-                  loading={loadingPerformance}
-                  disabled={loadingPerformance || !pathId}
+                <button
+                  type="button"
                   onClick={handleViewPerformance}
-                  style={{
-                    background: "linear-gradient(to right, #4f46e5, #9333ea, #db2777)",
-                    border: "none",
-                    color: "white",
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-                    fontWeight: 600,
-                    fontSize: "15px",
-                    letterSpacing: "0.025em",
-                    textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-                    padding: "10px 20px",
-                    height: "auto",
-                  }}
-                  className="inline-flex items-center gap-2.5 rounded-full hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "linear-gradient(to right, #4338ca, #7e22ce, #be185d)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "linear-gradient(to right, #4f46e5, #9333ea, #db2777)";
-                  }}
+                  disabled={loadingPerformance || !pathId}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold !text-white bg-gradient-to-r from-orange-300 to-orange-400 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
                 >
-                  {loadingPerformance && performanceCountdown !== null
-                    ? `Đang xử lý... (${performanceCountdown}s)`
-                    : "Xem đánh giá hiệu suất"}
-                </Button>
+                  {loadingPerformance ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      {performanceCountdown !== null
+                        ? `Đang xử lý... (${performanceCountdown}s)`
+                        : "Đang xử lý..."}
+                    </>
+                  ) : (
+                    <>
+                      <FiTrendingUp className="w-4 h-4" />
+                      Xem đánh giá hiệu suất
+                    </>
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={() =>
@@ -2579,7 +2589,7 @@ const LearningPathSamplePage = () => {
                       status === LearningPathStatus.Choosing ? "text" : "json",
                     )
                   }
-                  className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-3 py-1.5 text-sm font-semibold text-orange-600 hover:bg-orange-50 transition"
+                  className="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50 dark:bg-slate-800 dark:border-orange-700 dark:text-orange-400 dark:hover:bg-slate-700 transition-colors"
                   disabled={loading}
                 >
                   <FiRefreshCw
@@ -4360,175 +4370,172 @@ const LearningPathSamplePage = () => {
                                       {/* Questions */}
                                       {quiz.questionsResult &&
                                         quiz.questionsResult.length > 0 && (
-                                        <div className="space-y-4 flex flex-col gap-5">
-                                          {(
-                                            quiz.questionsResult
-                                          ).map(
-                                            (question, qIndex: number) => {
-                                              const correctAnswers =
-                                                question.answers?.filter(
-                                                  (a) => a.isCorrectAnswer,
-                                                ) || [];
-                                              const selectedAnswers =
-                                                question.answers?.filter(
-                                                  (a) =>
-                                                    a.selectedByStudent,
-                                                ) || [];
-                                              const isCorrect =
-                                                correctAnswers.length ===
-                                                  selectedAnswers.length &&
-                                                correctAnswers.every(
-                                                  (ca) =>
+                                          <div className="space-y-4 flex flex-col gap-5">
+                                            {quiz.questionsResult.map(
+                                              (question, qIndex: number) => {
+                                                const correctAnswers =
+                                                  question.answers?.filter(
+                                                    (a) => a.isCorrectAnswer,
+                                                  ) || [];
+                                                const selectedAnswers =
+                                                  question.answers?.filter(
+                                                    (a) => a.selectedByStudent,
+                                                  ) || [];
+                                                const isCorrect =
+                                                  correctAnswers.length ===
+                                                    selectedAnswers.length &&
+                                                  correctAnswers.every((ca) =>
                                                     selectedAnswers.some(
                                                       (sa) =>
                                                         sa.answerId ===
                                                         ca.answerId,
                                                     ),
-                                                );
+                                                  );
 
-                                              return (
-                                                <Card
-                                                  key={
-                                                    question.questionId ??
-                                                    qIndex
-                                                  }
-                                                  size="small"
-                                                  className={
-                                                    isCorrect
-                                                      ? "border-green-200 dark:border-green-800 shadow-xs"
-                                                      : "border-red-200 dark:border-red-800 shadow-xs"
-                                                  }
-                                                >
-                                                  <div className="space-y-3">
-                                                    {/* Question */}
-                                                    <div className="flex items-start gap-3">
-                                                      <div
-                                                        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-medium text-sm ${
-                                                          isCorrect
-                                                            ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
-                                                            : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                                                        }`}
-                                                      >
-                                                        {qIndex + 1}
-                                                      </div>
-                                                      <div className="flex-1">
-                                                        <h4 className="text-sm font-normal text-gray-900 dark:text-white">
-                                                          {
-                                                            question.questionText
-                                                          }
-                                                        </h4>
-                                                        {isCorrect ? (
-                                                          <Tag
-                                                            color="success"
-                                                            className="mt-2"
-                                                          >
-                                                            Đúng
-                                                          </Tag>
-                                                        ) : (
-                                                          <Tag
-                                                            color="error"
-                                                            className="mt-2"
-                                                          >
-                                                            Sai
-                                                          </Tag>
-                                                        )}
-                                                      </div>
-                                                    </div>
-
-                                                    {/* Answers */}
-                                                    {question.answers &&
-                                                      question.answers.length >
-                                                        0 && (
-                                                        <div className="space-y-2 pl-11">
-                                                          {question.answers.map(
-                                                            (
-                                                              answer,
-                                                              aIndex: number,
-                                                            ) => {
-                                                              const isSelected =
-                                                                answer.selectedByStudent;
-                                                              const isCorrectAnswer =
-                                                                answer.isCorrectAnswer;
-
-                                                              return (
-                                                                <div
-                                                                  key={
-                                                                    answer.answerId ??
-                                                                    aIndex
-                                                                  }
-                                                                  className={`p-3 rounded-lg border ${
-                                                                    isCorrectAnswer
-                                                                      ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700"
-                                                                      : isSelected
-                                                                        ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
-                                                                        : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700"
-                                                                  }`}
-                                                                >
-                                                                  <div className="flex items-center gap-2">
-                                                                    {/* Check Icon */}
-                                                                    <div
-                                                                      className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
-                                                                        isCorrectAnswer
-                                                                          ? "bg-green-500 text-white"
-                                                                          : isSelected
-                                                                            ? "bg-red-500 text-white"
-                                                                            : "bg-gray-300 dark:bg-gray-600"
-                                                                      }`}
-                                                                    >
-                                                                      {(isCorrectAnswer ||
-                                                                        isSelected) && (
-                                                                        <FiCheck className="w-3 h-3" />
-                                                                      )}
-                                                                    </div>
-
-                                                                    {/* Answer Text */}
-                                                                    <span
-                                                                      className={`text-sm flex-1 ${
-                                                                        isCorrectAnswer ||
-                                                                        isSelected
-                                                                          ? "text-gray-900 dark:text-white font-medium"
-                                                                          : "text-gray-700 dark:text-gray-300"
-                                                                      }`}
-                                                                    >
-                                                                      {
-                                                                        answer.answerText
-                                                                      }
-                                                                    </span>
-
-                                                                    {/* Badges */}
-                                                                    {isCorrectAnswer && (
-                                                                      <Tag
-                                                                        color="success"
-                                                                        className="text-xs"
-                                                                      >
-                                                                        Đáp án
-                                                                        đúng
-                                                                      </Tag>
-                                                                    )}
-                                                                    {isSelected &&
-                                                                      !isCorrectAnswer && (
-                                                                        <Tag
-                                                                          color="error"
-                                                                          className="text-xs"
-                                                                        >
-                                                                          Bạn đã
-                                                                          chọn
-                                                                        </Tag>
-                                                                      )}
-                                                                  </div>
-                                                                </div>
-                                                              );
-                                                            },
+                                                return (
+                                                  <Card
+                                                    key={
+                                                      question.questionId ??
+                                                      qIndex
+                                                    }
+                                                    size="small"
+                                                    className={
+                                                      isCorrect
+                                                        ? "border-green-200 dark:border-green-800 shadow-xs"
+                                                        : "border-red-200 dark:border-red-800 shadow-xs"
+                                                    }
+                                                  >
+                                                    <div className="space-y-3">
+                                                      {/* Question */}
+                                                      <div className="flex items-start gap-3">
+                                                        <div
+                                                          className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-medium text-sm ${
+                                                            isCorrect
+                                                              ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                                                              : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                                                          }`}
+                                                        >
+                                                          {qIndex + 1}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                          <h4 className="text-sm font-normal text-gray-900 dark:text-white">
+                                                            {
+                                                              question.questionText
+                                                            }
+                                                          </h4>
+                                                          {isCorrect ? (
+                                                            <Tag
+                                                              color="success"
+                                                              className="mt-2"
+                                                            >
+                                                              Đúng
+                                                            </Tag>
+                                                          ) : (
+                                                            <Tag
+                                                              color="error"
+                                                              className="mt-2"
+                                                            >
+                                                              Sai
+                                                            </Tag>
                                                           )}
                                                         </div>
-                                                      )}
-                                                  </div>
-                                                </Card>
-                                              );
-                                            },
-                                          )}
-                                        </div>
-                                      )}
+                                                      </div>
+
+                                                      {/* Answers */}
+                                                      {question.answers &&
+                                                        question.answers
+                                                          .length > 0 && (
+                                                          <div className="space-y-2 pl-11">
+                                                            {question.answers.map(
+                                                              (
+                                                                answer,
+                                                                aIndex: number,
+                                                              ) => {
+                                                                const isSelected =
+                                                                  answer.selectedByStudent;
+                                                                const isCorrectAnswer =
+                                                                  answer.isCorrectAnswer;
+
+                                                                return (
+                                                                  <div
+                                                                    key={
+                                                                      answer.answerId ??
+                                                                      aIndex
+                                                                    }
+                                                                    className={`p-3 rounded-lg border ${
+                                                                      isCorrectAnswer
+                                                                        ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700"
+                                                                        : isSelected
+                                                                          ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
+                                                                          : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700"
+                                                                    }`}
+                                                                  >
+                                                                    <div className="flex items-center gap-2">
+                                                                      {/* Check Icon */}
+                                                                      <div
+                                                                        className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                                                                          isCorrectAnswer
+                                                                            ? "bg-green-500 text-white"
+                                                                            : isSelected
+                                                                              ? "bg-red-500 text-white"
+                                                                              : "bg-gray-300 dark:bg-gray-600"
+                                                                        }`}
+                                                                      >
+                                                                        {(isCorrectAnswer ||
+                                                                          isSelected) && (
+                                                                          <FiCheck className="w-3 h-3" />
+                                                                        )}
+                                                                      </div>
+
+                                                                      {/* Answer Text */}
+                                                                      <span
+                                                                        className={`text-sm flex-1 ${
+                                                                          isCorrectAnswer ||
+                                                                          isSelected
+                                                                            ? "text-gray-900 dark:text-white font-medium"
+                                                                            : "text-gray-700 dark:text-gray-300"
+                                                                        }`}
+                                                                      >
+                                                                        {
+                                                                          answer.answerText
+                                                                        }
+                                                                      </span>
+
+                                                                      {/* Badges */}
+                                                                      {isCorrectAnswer && (
+                                                                        <Tag
+                                                                          color="success"
+                                                                          className="text-xs"
+                                                                        >
+                                                                          Đáp án
+                                                                          đúng
+                                                                        </Tag>
+                                                                      )}
+                                                                      {isSelected &&
+                                                                        !isCorrectAnswer && (
+                                                                          <Tag
+                                                                            color="error"
+                                                                            className="text-xs"
+                                                                          >
+                                                                            Bạn
+                                                                            đã
+                                                                            chọn
+                                                                          </Tag>
+                                                                        )}
+                                                                    </div>
+                                                                  </div>
+                                                                );
+                                                              },
+                                                            )}
+                                                          </div>
+                                                        )}
+                                                    </div>
+                                                  </Card>
+                                                );
+                                              },
+                                            )}
+                                          </div>
+                                        )}
                                     </div>
                                   ),
                                 }),
