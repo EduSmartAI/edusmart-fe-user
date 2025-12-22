@@ -12,16 +12,13 @@ export function mapBackendQuestionType(type: number | string): QuestionType {
   switch (type) {
     case 1:
     case "1":
-      return QuestionType.MULTIPLE_CHOICE;
+      return QuestionType.MULTIPLE_CHOICE; // Chọn nhiều đáp án
     case 2:
     case "2":
-      return QuestionType.TRUE_FALSE;
+      return QuestionType.TRUE_FALSE; // Đúng/Sai
     case 3:
     case "3":
-      return QuestionType.SHORT_ANSWER;
-    case 4:
-    case "4":
-      return QuestionType.SINGLE_CHOICE;
+      return QuestionType.SINGLE_CHOICE; // Chọn 1 đáp án
     default:
       return QuestionType.SINGLE_CHOICE;
   }
