@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Button, Dropdown, Tooltip } from "antd";
 import type { MenuProps } from "antd";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Kaushan_Script } from "next/font/google";
 import "@ant-design/v5-patch-for-react-19";
 
@@ -74,6 +74,10 @@ export default function CourseNavigationbar({
 
   const navRef = useRef<HTMLElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Extract courseId from URL path (e.g., /course/[courseId]/learn)
+  const courseId = pathname?.split("/")[2] || "";
 
   // ---------- UI Actions (right) ----------
   const copyLink = async () => {
@@ -132,8 +136,15 @@ export default function CourseNavigationbar({
       disabled: true,
     },
     { type: "divider" },
-    { key: "view", label: "Xem chi tiết tiến độ", onClick: () => {} },
-    { key: "reset", label: "Đặt lại tiến độ", danger: true, onClick: () => {} },
+    {
+      key: "view",
+      label: "Xem chi tiết tiến độ",
+      onClick: () => {
+        if (courseId) {
+          router.push(`/dashboard/my-courses/${courseId}/performance`);
+        }
+      },
+    },
   ];
 
   const moreMenu: MenuProps["items"] = [
