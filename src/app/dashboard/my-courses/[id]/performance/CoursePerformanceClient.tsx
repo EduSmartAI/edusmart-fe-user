@@ -554,10 +554,12 @@ export default function CoursePerformanceClient({
                   </div>
 
                   {/* AI Feedback Summary */}
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                      {module.aiFeedbackSummary}
-                    </p>
+                  <div className="mb-4 prose prose-sm dark:prose-invert max-w-none">
+                    <MarkdownView
+                      content={module.aiFeedbackSummary}
+                      collapsible
+                      collapsedHeight={300}
+                    />
                   </div>
 
                   {/* Two Column Layout for Strengths and Improvements */}
@@ -838,10 +840,12 @@ export default function CoursePerformanceClient({
                               </div>
 
                               {/* Summary */}
-                              <div className="mb-3">
-                                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                                  {lesson.aiFeedbackSummary}
-                                </p>
+                              <div className="mb-3 prose prose-sm dark:prose-invert max-w-none">
+                                <MarkdownView
+                                  content={lesson.aiFeedbackSummary}
+                                  collapsible
+                                  collapsedHeight={300}
+                                />
                               </div>
 
                               {/* Strengths and Improvements */}
