@@ -1106,6 +1106,18 @@ export interface GetMajorsResponse {
   response?: MajorDtoPagedResult;
 }
 
+export interface GetMyCourseRatingDto {
+  isRatedByCurrentUser?: boolean;
+}
+
+export interface GetMyCourseRatingResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: GetMyCourseRatingDto;
+}
+
 export interface GetMyLearningCoursesResponse {
   success?: boolean;
   messageId?: string | null;
@@ -1143,7 +1155,7 @@ export interface GetSubjectDetailResponse {
   messageId?: string | null;
   message?: string | null;
   detailErrors?: DetailError[] | null;
-  response?: SubjectDto;
+  response?: SubjectWithPrereqsDto;
 }
 
 export interface GetSubjectsResponse {
@@ -1151,7 +1163,7 @@ export interface GetSubjectsResponse {
   messageId?: string | null;
   message?: string | null;
   detailErrors?: DetailError[] | null;
-  response?: SubjectDtoPagedResult;
+  response?: SubjectWithPrereqsDtoPagedResult;
 }
 
 export interface GetSuggestedCoursesEventResponse {
@@ -1544,16 +1556,31 @@ export interface SubjectDetailDto {
   prerequisites?: SubjectPrerequisiteDto[] | null;
 }
 
-export interface SubjectDto {
+export interface SubjectPrereqDto {
   /** @format uuid */
   subjectId?: string;
   subjectCode?: string | null;
   subjectName?: string | null;
+}
+
+export interface SubjectPrerequisiteDto {
+  /** @format uuid */
+  subjectId?: string;
+  subjectCode?: string | null;
+  subjectName?: string | null;
+}
+
+export interface SubjectWithPrereqsDto {
+  /** @format uuid */
+  subjectId?: string;
+  subjectCode?: string | null;
+  subjectName?: string | null;
+  prerequisites?: SubjectPrereqDto[] | null;
   subjectDescription?: string | null;
 }
 
-export interface SubjectDtoPagedResult {
-  items?: SubjectDto[] | null;
+export interface SubjectWithPrereqsDtoPagedResult {
+  items?: SubjectWithPrereqsDto[] | null;
   /** @format int32 */
   totalCount?: number;
   /** @format int32 */
@@ -1564,13 +1591,6 @@ export interface SubjectDtoPagedResult {
   totalPages?: number;
   hasPreviousPage?: boolean;
   hasNextPage?: boolean;
-}
-
-export interface SubjectPrerequisiteDto {
-  /** @format uuid */
-  subjectId?: string;
-  subjectCode?: string | null;
-  subjectName?: string | null;
 }
 
 export interface SyllabusFullDto {
@@ -1728,6 +1748,14 @@ export interface UpdateLessonDto {
   isActive?: boolean;
 }
 
+export interface UpdateMajorDescriptionResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
 export interface UpdateModuleCommand {
   /** @format uuid */
   moduleId?: string;
@@ -1821,6 +1849,14 @@ export interface UpdateSyllabusSubjectsCommand {
 }
 
 export interface UpdateSyllabusSubjectsResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: boolean;
+}
+
+export interface UpsertCourseRatingResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
@@ -2527,6 +2563,51 @@ export class Api<
       }),
 
     /**
+     * @description Create or update the rating for a specific course by the authenticated student.
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressRatingCreate
+     * @summary Upsert course rating
+     * @request POST:/api/StudentLessonProgress/{courseId}/rating
+     * @secure
+     */
+    studentLessonProgressRatingCreate: (
+      courseId: string,
+      data: number,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpsertCourseRatingResponse, any>({
+        path: `/api/StudentLessonProgress/${courseId}/rating`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Retrieve the rating given by the authenticated student for a specific course.
+     *
+     * @tags StudentLessonProgress
+     * @name StudentLessonProgressRatingList
+     * @summary Check if the current user has rated a course
+     * @request GET:/api/StudentLessonProgress/{courseId}/rating
+     * @secure
+     */
+    studentLessonProgressRatingList: (
+      courseId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetMyCourseRatingResponse, any>({
+        path: `/api/StudentLessonProgress/${courseId}/rating`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Thêm môn học vào học kỳ của chương trình đào tạo. Cần xác thực Bearer.
      *
      * @tags Syllabus
@@ -2602,7 +2683,7 @@ export class Api<
      *
      * @tags Syllabus
      * @name SyllabusCreateFullSyllabusForMajorCreate
-     * @summary Tạo mới chương trình đào tạo cho chuyên ngành - FE không dùng API này
+     * @summary Tạo mới chương trình đào tạo cho chuyên ngành
      * @request POST:/api/Syllabus/CreateFullSyllabusForMajor
      * @secure
      */
@@ -3433,6 +3514,30 @@ export class Api<
     ) =>
       this.request<UpdateSyllabusSubjectsResponse, any>({
         path: `/api/Syllabus`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cập nhật mô tả chuyên ngành. Cần xác thực Bearer.
+     *
+     * @tags Syllabus
+     * @name SyllabusMajorUpdate
+     * @summary Cập nhật mô tả chuyên ngành
+     * @request PUT:/api/Syllabus/major/{id}
+     * @secure
+     */
+    syllabusMajorUpdate: (
+      id: string,
+      data: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateMajorDescriptionResponse, any>({
+        path: `/api/Syllabus/major/${id}`,
         method: "PUT",
         body: data,
         secure: true,

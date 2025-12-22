@@ -82,6 +82,66 @@
         }
       }
     },
+    "/api/LearningPaths/export-subject-mark-update-pdf": {
+      "post": {
+        "tags": [
+          "LearningPaths"
+        ],
+        "summary": "Export phân tích điểm số môn học ra file PDF",
+        "description": "API này cho phép export danh sách phân tích điểm số môn học ra file PDF với biểu đồ so sánh.",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/ExportSubjectMarkUpdateWordCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/LearningPaths/process-and-export-subject-marks": {
+      "post": {
+        "tags": [
+          "LearningPaths"
+        ],
+        "summary": "Xử lý và export phân tích điểm số môn học ra file PDF",
+        "description": "API này lấy danh sách điểm môn học từ learning path, lọc các môn có đủ oldMark và newMark, publish message qua AiRecommend, sau đó export ra file PDF và upload lên Cloudinary. Trả về URL của file PDF.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/ProcessAndExportSubjectMarksCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ProcessAndExportSubjectMarksResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/LearningPaths/ReGenerateLearningPath": {
       "post": {
         "tags": [
@@ -477,6 +537,37 @@
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/LearningPathSelectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/LearningPaths/{learningPathId}/subject-marks": {
+      "get": {
+        "tags": [
+          "LearningPaths"
+        ],
+        "summary": "Lấy danh sách điểm môn học có internal course trong learning path",
+        "description": "API này lấy danh sách các môn học có internal course từ learning path và điểm AI evaluation tương ứng.",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "learningPathId",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetSubjectMarksByLearningPathResponse"
             }
           }
         }
@@ -1232,6 +1323,42 @@
         }
       }
     },
+    "/api/v1/Student/UpdateStudentSemester": {
+      "patch": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Cập nhật thông tin học kỳ của học sinh",
+        "description": "Cần cấp quyền Student",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/StudentSemesterUpdateCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StudentSemesterUpdateCommandResponse"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Admin/DeleteLearningGoal": {
       "delete": {
         "tags": [
@@ -1826,6 +1953,27 @@
       },
       "additionalProperties": false
     },
+    "ExportSubjectMarkUpdateWordCommand": {
+      "required": [
+        "subjectMarkUpdates"
+      ],
+      "type": "object",
+      "properties": {
+        "subjectMarkUpdates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectMarkUpdateDto"
+          }
+        },
+        "title": {
+          "type": "string"
+        },
+        "studentName": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "ExternalLearningPathDto": {
       "type": "object",
       "properties": {
@@ -2006,6 +2154,33 @@
         },
         "response": {
           "$ref": "#/definitions/OverviewCourseContract"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetSubjectMarksByLearningPathResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectMarkDto"
+          }
         }
       },
       "additionalProperties": false
@@ -3077,6 +3252,43 @@
       },
       "additionalProperties": false
     },
+    "ProcessAndExportSubjectMarksCommand": {
+      "required": [
+        "learningPathId"
+      ],
+      "type": "object",
+      "properties": {
+        "learningPathId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProcessAndExportSubjectMarksResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "ProgressSection": {
       "type": "object",
       "properties": {
@@ -3430,6 +3642,40 @@
       },
       "additionalProperties": false
     },
+    "StudentSemesterUpdateCommand": {
+      "type": "object",
+      "properties": {
+        "semesterId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "StudentSemesterUpdateCommandResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "StudentSurveySubmission": {
       "type": "object",
       "properties": {
@@ -3595,6 +3841,68 @@
         },
         "createdAt": {
           "format": "date-time",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectMarkDto": {
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "oldMark": {
+          "format": "double",
+          "type": "number"
+        },
+        "newMark": {
+          "format": "double",
+          "type": "number"
+        },
+        "newAnalysis": {
+          "type": "string"
+        },
+        "careerGoal": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SubjectMarkUpdateDto": {
+      "required": [
+        "improvementAnalysis",
+        "newMark",
+        "subjectCode",
+        "subjectName"
+      ],
+      "type": "object",
+      "properties": {
+        "subjectCode": {
+          "type": "string"
+        },
+        "subjectName": {
+          "type": "string"
+        },
+        "oldMark": {
+          "format": "double",
+          "type": "number"
+        },
+        "newMark": {
+          "format": "double",
+          "type": "number"
+        },
+        "markImprovement": {
+          "format": "double",
+          "type": "number"
+        },
+        "improvementAnalysis": {
+          "type": "string"
+        },
+        "comparisonAnalysis": {
           "type": "string"
         }
       },
@@ -3996,8 +4304,10 @@
       "type": "object",
       "properties": {
         "subjectCode": {
-          "minLength": 1,
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false

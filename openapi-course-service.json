@@ -742,6 +742,110 @@
         }
       }
     },
+    "/api/StudentLessonProgress/{courseId}/rating": {
+      "post": {
+        "tags": [
+          "StudentLessonProgress"
+        ],
+        "summary": "Upsert course rating",
+        "description": "Create or update the rating for a specific course by the authenticated student.",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpsertCourseRatingResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpsertCourseRatingResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpsertCourseRatingResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "StudentLessonProgress"
+        ],
+        "summary": "Check if the current user has rated a course",
+        "description": "Retrieve the rating given by the authenticated student for a specific course.",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMyCourseRatingResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMyCourseRatingResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMyCourseRatingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Syllabus/{syllabusId}/semesters/{semesterId}/subjects": {
       "post": {
         "tags": [
@@ -917,7 +1021,7 @@
         "tags": [
           "Syllabus"
         ],
-        "summary": "Tạo mới chương trình đào tạo cho chuyên ngành - FE không dùng API này",
+        "summary": "Tạo mới chương trình đào tạo cho chuyên ngành",
         "description": "Tạo mới chương trình đào tạo cho chuyên ngành. Cần xác thực Bearer.",
         "requestBody": {
           "content": {
@@ -2690,6 +2794,67 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UpdateSyllabusSubjectsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Syllabus/major/{id}": {
+      "put": {
+        "tags": [
+          "Syllabus"
+        ],
+        "summary": "Cập nhật mô tả chuyên ngành",
+        "description": "Cập nhật mô tả chuyên ngành. Cần xác thực Bearer.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateMajorDescriptionResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateMajorDescriptionResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateMajorDescriptionResponse"
                 }
               }
             }
@@ -5868,6 +6033,42 @@
         },
         "additionalProperties": false
       },
+      "GetMyCourseRatingDto": {
+        "type": "object",
+        "properties": {
+          "isRatedByCurrentUser": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetMyCourseRatingResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/GetMyCourseRatingDto"
+          }
+        },
+        "additionalProperties": false
+      },
       "GetMyLearningCoursesResponse": {
         "type": "object",
         "properties": {
@@ -5998,7 +6199,7 @@
             "nullable": true
           },
           "response": {
-            "$ref": "#/components/schemas/SubjectDto"
+            "$ref": "#/components/schemas/SubjectWithPrereqsDto"
           }
         },
         "additionalProperties": false
@@ -6025,7 +6226,7 @@
             "nullable": true
           },
           "response": {
-            "$ref": "#/components/schemas/SubjectDtoPagedResult"
+            "$ref": "#/components/schemas/SubjectWithPrereqsDtoPagedResult"
           }
         },
         "additionalProperties": false
@@ -7131,7 +7332,43 @@
         },
         "additionalProperties": false
       },
-      "SubjectDto": {
+      "SubjectPrereqDto": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "subjectName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubjectPrerequisiteDto": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subjectCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "subjectName": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "SubjectWithPrereqsDto": {
         "type": "object",
         "properties": {
           "subjectId": {
@@ -7146,6 +7383,13 @@
             "type": "string",
             "nullable": true
           },
+          "prerequisites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubjectPrereqDto"
+            },
+            "nullable": true
+          },
           "subjectDescription": {
             "type": "string",
             "nullable": true
@@ -7153,13 +7397,13 @@
         },
         "additionalProperties": false
       },
-      "SubjectDtoPagedResult": {
+      "SubjectWithPrereqsDtoPagedResult": {
         "type": "object",
         "properties": {
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SubjectDto"
+              "$ref": "#/components/schemas/SubjectWithPrereqsDto"
             },
             "nullable": true
           },
@@ -7187,24 +7431,6 @@
           "hasNextPage": {
             "type": "boolean",
             "readOnly": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "SubjectPrerequisiteDto": {
-        "type": "object",
-        "properties": {
-          "subjectId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "subjectCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "subjectName": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -7661,6 +7887,33 @@
         },
         "additionalProperties": false
       },
+      "UpdateMajorDescriptionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateModuleCommand": {
         "type": "object",
         "properties": {
@@ -7933,6 +8186,33 @@
         "additionalProperties": false
       },
       "UpdateSyllabusSubjectsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpsertCourseRatingResponse": {
         "type": "object",
         "properties": {
           "success": {

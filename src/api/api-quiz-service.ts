@@ -14,7 +14,7 @@
 export enum QuestionType {
   Value1 = 1,
   Value2 = 2,
-  Value4 = 4,
+  Value3 = 3,
 }
 
 /** @format int32 */

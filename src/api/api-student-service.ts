@@ -318,6 +318,12 @@ export interface DetailError {
   errorMessage?: string;
 }
 
+export interface ExportSubjectMarkUpdateWordCommand {
+  subjectMarkUpdates: SubjectMarkUpdateDto[];
+  title?: string;
+  studentName?: string;
+}
+
 export interface ExternalLearningPathDto {
   majorId?: string;
   majorCode?: string;
@@ -378,6 +384,14 @@ export interface GetOverviewCourseDashboardResponse {
   message?: string;
   detailErrors?: DetailError[];
   response?: OverviewCourseContract;
+}
+
+export interface GetSubjectMarksByLearningPathResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: SubjectMarkDto[];
 }
 
 export interface GetSuggestedCoursesForLearningPathResponse {
@@ -799,6 +813,19 @@ export interface PraticalAbilityFeedback {
   analysisMarkDown?: string;
 }
 
+export interface ProcessAndExportSubjectMarksCommand {
+  /** @format uuid */
+  learningPathId: string;
+}
+
+export interface ProcessAndExportSubjectMarksResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
 export interface ProgressSection {
   /** @format double */
   completedPercent?: number;
@@ -929,6 +956,19 @@ export interface StudentQuizSubmission {
   studentSurveySubmissions?: StudentSurveySubmission[];
 }
 
+export interface StudentSemesterUpdateCommand {
+  /** @format uuid */
+  semesterId?: string;
+}
+
+export interface StudentSemesterUpdateCommandResponse {
+  success?: boolean;
+  messageId?: string;
+  message?: string;
+  detailErrors?: DetailError[];
+  response?: string;
+}
+
 export interface StudentSurveySubmission {
   /** @format uuid */
   studentSurveyId?: string;
@@ -990,6 +1030,30 @@ export interface StudentTranscriptSelectResponseEntity {
   status?: string;
   /** @format date-time */
   createdAt?: string;
+}
+
+export interface SubjectMarkDto {
+  subjectCode?: string;
+  subjectName?: string;
+  /** @format double */
+  oldMark?: number;
+  /** @format double */
+  newMark?: number;
+  newAnalysis?: string;
+  careerGoal?: string;
+}
+
+export interface SubjectMarkUpdateDto {
+  subjectCode: string;
+  subjectName: string;
+  /** @format double */
+  oldMark?: number;
+  /** @format double */
+  newMark: number;
+  /** @format double */
+  markImprovement?: number;
+  improvementAnalysis: string;
+  comparisonAnalysis?: string;
 }
 
 export interface SuggestedCourseDetailsDto {
@@ -1133,8 +1197,7 @@ export interface UpdateStatusLearningPathResponse {
 }
 
 export interface UpdateSubjectToSkippedCommand {
-  /** @minLength 1 */
-  subjectCode: string;
+  subjectCode: string[];
 }
 
 export interface UpdateSubjectToSkippedCommandResponse {
@@ -1490,6 +1553,51 @@ export class Api<
       }),
 
     /**
+     * @description API này cho phép export danh sách phân tích điểm số môn học ra file PDF với biểu đồ so sánh.
+     *
+     * @tags LearningPaths
+     * @name LearningPathsExportSubjectMarkUpdatePdfCreate
+     * @summary Export phân tích điểm số môn học ra file PDF
+     * @request POST:/api/LearningPaths/export-subject-mark-update-pdf
+     * @secure
+     */
+    learningPathsExportSubjectMarkUpdatePdfCreate: (
+      body: ExportSubjectMarkUpdateWordCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, any>({
+        path: `/api/LearningPaths/export-subject-mark-update-pdf`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description API này lấy danh sách điểm môn học từ learning path, lọc các môn có đủ oldMark và newMark, publish message qua AiRecommend, sau đó export ra file PDF và upload lên Cloudinary. Trả về URL của file PDF.
+     *
+     * @tags LearningPaths
+     * @name LearningPathsProcessAndExportSubjectMarksCreate
+     * @summary Xử lý và export phân tích điểm số môn học ra file PDF
+     * @request POST:/api/LearningPaths/process-and-export-subject-marks
+     * @secure
+     */
+    learningPathsProcessAndExportSubjectMarksCreate: (
+      body: ProcessAndExportSubjectMarksCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<ProcessAndExportSubjectMarksResponse, any>({
+        path: `/api/LearningPaths/process-and-export-subject-marks`,
+        method: "POST",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description API này cho phép sinh viên tạo lại lộ trình học tập của mình.
      *
      * @tags LearningPaths
@@ -1764,6 +1872,27 @@ export class Api<
         path: `/api/LearningPaths`,
         method: "GET",
         query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description API này lấy danh sách các môn học có internal course từ learning path và điểm AI evaluation tương ứng.
+     *
+     * @tags LearningPaths
+     * @name LearningPathsSubjectMarksList
+     * @summary Lấy danh sách điểm môn học có internal course trong learning path
+     * @request GET:/api/LearningPaths/{learningPathId}/subject-marks
+     * @secure
+     */
+    learningPathsSubjectMarksList: (
+      learningPathId: string,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSubjectMarksByLearningPathResponse, any>({
+        path: `/api/LearningPaths/${learningPathId}/subject-marks`,
+        method: "GET",
         secure: true,
         format: "json",
         ...params,
@@ -2276,6 +2405,29 @@ export class Api<
         body: data,
         secure: true,
         type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cần cấp quyền Student
+     *
+     * @tags Student
+     * @name V1StudentUpdateStudentSemesterPartialUpdate
+     * @summary Cập nhật thông tin học kỳ của học sinh
+     * @request PATCH:/api/v1/Student/UpdateStudentSemester
+     * @secure
+     */
+    v1StudentUpdateStudentSemesterPartialUpdate: (
+      body: StudentSemesterUpdateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<StudentSemesterUpdateCommandResponse, any>({
+        path: `/api/v1/Student/UpdateStudentSemester`,
+        method: "PATCH",
+        body: body,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
