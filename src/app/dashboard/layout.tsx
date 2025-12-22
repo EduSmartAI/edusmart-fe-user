@@ -50,6 +50,10 @@ export default function DashboardLayout({
       ],
     },
     {
+      path: `/dashboard/wishlist`,
+      breadcrumbTitle: [{ title: "Khóa Học Yêu Thích" }],
+    },
+    {
       path: `/dashboard/my-profile`,
       breadcrumbTitle: [{ title: "Thông Tin Cá Nhân" }],
     },

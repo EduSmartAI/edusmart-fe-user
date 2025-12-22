@@ -25,7 +25,10 @@ import {
   Drawer,
   Layout,
   Splitter,
+  Typography,
 } from "antd";
+
+const { Title, Paragraph } = Typography;
 
 const { Content } = Layout;
 import type { ColumnsType } from "antd/es/table";
@@ -56,6 +59,8 @@ import {
   FiAlertCircle,
   FiTrendingUp,
 } from "react-icons/fi";
+import { FcSurvey } from "react-icons/fc";
+
 import { getStudentTranscriptServer } from "EduSmart/app/(student)/studentAction";
 import type { StudentTranscriptRecord } from "EduSmart/app/(student)/studentAction";
 import {
@@ -70,10 +75,13 @@ import { StudentClient, AIClient } from "EduSmart/hooks/apiClient";
 import {
   v1StudentSurveySelectStudentSurveyDetailList,
   v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList,
+  getStudentTestResultAction,
+  type StudentTestResult,
 } from "EduSmart/app/(quiz)/quizAction";
 import type {
   StudentSurveySelectDetailResponseEntity,
   StudentPracticeTestSubmissionDetailItem,
+  // StudentTestSelectResponseEntity, // Reserved for future use
 } from "EduSmart/api/api-quiz-service";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import Editor from "@monaco-editor/react";
@@ -134,6 +142,31 @@ const LEVEL_CONFIG = {
     iconColor: "text-purple-600 dark:text-purple-400",
   },
 } as const;
+
+// Color scheme for Assessment and Survey drawers
+const ASSESSMENT_COLOR_SCHEME = {
+  // Change this to "orange" or "teal" to switch color scheme
+  theme: "teal" as "orange" | "teal",
+
+  orange: {
+    bgLight: "bg-orange-100 dark:bg-orange-900/30",
+    bgDark: "bg-orange-50 dark:bg-orange-900/20",
+    text: "text-orange-600 dark:text-orange-400",
+    border: "border-orange-200 dark:border-orange-800",
+    icon: "text-orange-600 dark:text-orange-400",
+  },
+
+  teal: {
+    bgLight: "bg-cyan-100 dark:bg-cyan-900/30",
+    bgDark: "bg-cyan-50 dark:bg-cyan-900/20",
+    text: "text-cyan-600 dark:text-cyan-400",
+    border: "border-cyan-200 dark:border-cyan-800",
+    icon: "text-cyan-600 dark:text-cyan-400",
+  },
+} as const;
+
+const getAssessmentColor = () =>
+  ASSESSMENT_COLOR_SCHEME[ASSESSMENT_COLOR_SCHEME.theme];
 
 interface SubjectInsight {
   score?: number;
@@ -225,6 +258,16 @@ const AI_CARD_CONFIG: Array<{
     fallbackBullets: ["Thực hiện các bài kiểm tra nhanh để cập nhật năng lực."],
   },
 ];
+
+// Convert problem difficulty to Vietnamese
+const getProblemDifficultyVN = (difficulty?: string): string => {
+  const difficultyMap: Record<string, string> = {
+    Easy: "Dễ",
+    Medium: "Trung bình",
+    Hard: "Khó",
+  };
+  return difficultyMap[difficulty || ""] || difficulty || "Không xác định";
+};
 
 const parseContentLines = (value?: string | null) =>
   value
@@ -498,6 +541,16 @@ const LearningPathSamplePage = () => {
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<
     string | null
   >(null);
+
+  // Assessment drawer states (Bài Đánh Giá Năng Lực)
+  const [showAssessmentDrawer, setShowAssessmentDrawer] = useState(false);
+  const [activeAssessmentTab, setActiveAssessmentTab] = useState<
+    "theory" | "practice"
+  >("theory");
+  const [theoryTestData, setTheoryTestData] = useState<StudentTestResult | null>(null);
+  const [loadingTheoryTest, setLoadingTheoryTest] = useState(false);
+  const [practiceTestData, setPracticeTestData] = useState<StudentPracticeTestSubmissionDetailItem[] | null>(null);
+  const [loadingPracticeTest, setLoadingPracticeTest] = useState(false);
 
   // Performance evaluation states
   const [loadingPerformance, setLoadingPerformance] = useState(false);
@@ -782,15 +835,17 @@ const LearningPathSamplePage = () => {
 
   // Fetch survey detail
   const handleFetchSurveyDetail = async (studentSurveyId: string) => {
-    if (surveyDetails[studentSurveyId] || loadingSurveyDetails[studentSurveyId]) {
+    if (
+      surveyDetails[studentSurveyId] ||
+      loadingSurveyDetails[studentSurveyId]
+    ) {
       return; // Already loaded or loading
     }
 
     try {
       setLoadingSurveyDetails((prev) => ({ ...prev, [studentSurveyId]: true }));
-      const result = await v1StudentSurveySelectStudentSurveyDetailList(
-        studentSurveyId,
-      );
+      const result =
+        await v1StudentSurveySelectStudentSurveyDetailList(studentSurveyId);
       if (result.data) {
         setSurveyDetails((prev) => ({
           ...prev,
@@ -814,7 +869,8 @@ const LearningPathSamplePage = () => {
     handleFetchSurveyDetail(studentSurveyId);
   };
 
-  // Handle open practice test submissions drawer
+  // Handle open practice test submissions drawer - Reserved for future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleOpenPracticeTestDrawer = async () => {
     const submissions =
       learningPath?.studentQuizSubmission?.studentPracticeTestSubmissions ?? [];
@@ -838,7 +894,9 @@ const LearningPathSamplePage = () => {
       if (result.data?.submissions) {
         setPracticeTestSubmissions(result.data.submissions);
         if (result.data.submissions.length > 0) {
-          setSelectedSubmissionId(result.data.submissions[0].submissionId ?? null);
+          setSelectedSubmissionId(
+            result.data.submissions[0].submissionId ?? null,
+          );
         }
       }
     } catch (error) {
@@ -846,6 +904,66 @@ const LearningPathSamplePage = () => {
       message.error("Không thể tải danh sách bài nộp");
     } finally {
       setLoadingPracticeTestSubmissions(false);
+    }
+  };
+
+  // Handle open assessment drawer (Bài Đánh Giá Năng Lực)
+  const handleOpenAssessmentDrawer = async () => {
+    const placementTestSubmissionId =
+      learningPath?.studentQuizSubmission?.placementTestSubmissionId;
+    const practiceSubmissions =
+      learningPath?.studentQuizSubmission?.studentPracticeTestSubmissions;
+
+    if (!placementTestSubmissionId) {
+      message.warning("Không tìm thấy bài đánh giá năng lực");
+      return;
+    }
+
+    setShowAssessmentDrawer(true);
+    setActiveAssessmentTab("theory");
+    setLoadingTheoryTest(true);
+
+    // Load theory test data
+    try {
+      const result = await getStudentTestResultAction(
+        placementTestSubmissionId,
+      );
+      console.log("result: ", result);
+      if (result.ok) {
+        setTheoryTestData(result.data?.response);
+      } else {
+        message.error(result.error || "Không thể tải kết quả bài đánh giá");
+      }
+    } catch (error) {
+      console.error("Error loading theory test:", error);
+      message.error("Có lỗi xảy ra khi tải kết quả bài đánh giá");
+    } finally {
+      setLoadingTheoryTest(false);
+    }
+
+    // Load practice test data
+    if (practiceSubmissions && practiceSubmissions.length > 0) {
+      setLoadingPracticeTest(true);
+      try {
+        const submissionIds = practiceSubmissions
+          .map((s) => s.practiceTestSubmissionId)
+          .filter((id): id is string => !!id);
+        const result =
+          await v1PracticeTestSelectStudentPracticeTestSubmissionsByIdsList(
+            submissionIds,
+          );
+        console.log("practice result: ", result);
+        if (result.data?.submissions) {
+          setPracticeTestData(result.data.submissions);
+        } else {
+          message.error("Không thể tải kết quả bài thực hành");
+        }
+      } catch (error) {
+        console.error("Error loading practice test:", error);
+        message.error("Có lỗi xảy ra khi tải kết quả bài thực hành");
+      } finally {
+        setLoadingPracticeTest(false);
+      }
     }
   };
 
@@ -1298,13 +1416,8 @@ const LearningPathSamplePage = () => {
                 </span>
 
                 {/* Subject Code */}
-                <span className="font-semibold text-gray-900 dark:text-white flex-shrink-0">
+                <span className="font-semibold text-gray-900 dark:text-white flex-shrink-0 flex-1 min-w-0 truncate">
                   {group.subjectCode ?? "SUB"}
-                </span>
-
-                {/* Subject Name */}
-                <span className="text-sm text-gray-600 dark:text-gray-400 flex-1 min-w-0 truncate">
-                  {group.subjectCode ?? ""}
                 </span>
 
                 {/* Course count + Status */}
@@ -1320,8 +1433,10 @@ const LearningPathSamplePage = () => {
                         color={statusInfo.color as string}
                         className="text-xs flex items-center gap-1"
                       >
-                        <FiPlayCircle className="w-3 h-3" />
-                        {statusInfo.label}
+                        <div className="flex flex-row justify-center items-center gap-1">
+                          <FiPlayCircle className="w-3 h-3" />
+                          {statusInfo.label}
+                        </div>
                       </Tag>
                     </div>
                   </Tooltip>
@@ -1383,9 +1498,7 @@ const LearningPathSamplePage = () => {
                         type="default"
                         icon={<FiGlobe className="w-3.5 h-3.5" />}
                         onClick={() => {
-                          handleOpenExternalCourses(
-                            group.subjectCode ?? "",
-                          );
+                          handleOpenExternalCourses(group.subjectCode ?? "");
                         }}
                         style={{
                           borderColor: "#FF6B6B",
@@ -1712,9 +1825,10 @@ const LearningPathSamplePage = () => {
                                       </div>
                                     </Tooltip>
                                     {(() => {
-                                      const learningStatusInfo = getLearningCurrentStatusInfo(
-                                        cg.learningCurrentStatus,
-                                      );
+                                      const learningStatusInfo =
+                                        getLearningCurrentStatusInfo(
+                                          cg.learningCurrentStatus,
+                                        );
                                       return learningStatusInfo ? (
                                         <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
                                           <div className="inline-flex">
@@ -2095,9 +2209,10 @@ const LearningPathSamplePage = () => {
                                           </div>
                                         </Tooltip>
                                         {(() => {
-                                          const learningStatusInfo = getLearningCurrentStatusInfo(
-                                            cg.learningCurrentStatus,
-                                          );
+                                          const learningStatusInfo =
+                                            getLearningCurrentStatusInfo(
+                                              cg.learningCurrentStatus,
+                                            );
                                           return learningStatusInfo ? (
                                             <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
                                               <div className="inline-flex">
@@ -2488,10 +2603,7 @@ const LearningPathSamplePage = () => {
                   bạn...
                 </p>
               )}
-              <div className="flex items-center justify-end">
-                {/* <h3 className="text-base font-semibold text-slate-900 dark:text-white">
-                Tóm tắt kết quả học tập
-              </h3> */}
+              <div className="flex items-center justify-end gap-2">
                 {hasTranscript && (
                   <button
                     type="button"
@@ -2502,15 +2614,16 @@ const LearningPathSamplePage = () => {
                     Bảng điểm
                   </button>
                 )}
-                {learningPath?.studentQuizSubmission?.studentSurveySubmissions &&
-                  learningPath.studentQuizSubmission.studentSurveySubmissions.length >
-                    0 && (
+                {learningPath?.studentQuizSubmission
+                  ?.studentSurveySubmissions &&
+                  learningPath.studentQuizSubmission.studentSurveySubmissions
+                    .length > 0 && (
                     <button
                       type="button"
                       onClick={handleOpenSurveyModal}
-                      className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 border border-purple-300 dark:border-purple-700 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-[#49BBBD] hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-[#49BBBD]/30 transition-colors"
                     >
-                      <FiFileText className="w-4 h-4" />
+                      <FcSurvey className="w-4 h-4" />
                       Khảo sát (
                       {
                         learningPath.studentQuizSubmission
@@ -2519,23 +2632,17 @@ const LearningPathSamplePage = () => {
                       )
                     </button>
                   )}
-                {learningPath?.studentQuizSubmission?.studentPracticeTestSubmissions &&
-                  learningPath.studentQuizSubmission.studentPracticeTestSubmissions.length >
-                    0 && (
-                    <button
-                      type="button"
-                      onClick={handleOpenPracticeTestDrawer}
-                      className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-300 dark:border-blue-700 transition-colors"
-                    >
-                      <FiPlayCircle className="w-4 h-4" />
-                      Bài nộp code (
-                      {
-                        learningPath.studentQuizSubmission
-                          .studentPracticeTestSubmissions.length
-                      }
-                      )
-                    </button>
-                  )}
+                {learningPath?.studentQuizSubmission
+                  ?.placementTestSubmissionId && (
+                  <button
+                    type="button"
+                    onClick={handleOpenAssessmentDrawer}
+                    className="inline-flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium text-[#49BBBD] hover:bg-teal-50 dark:hover:bg-teal-900/20 border border-[#49BBBD]/30 transition-colors"
+                  >
+                    <FiCheckCircle className="w-4 h-4" />
+                    Bài Đánh Giá Năng Lực
+                  </button>
+                )}
               </div>
             </div>
             {error && (
@@ -2911,11 +3018,17 @@ const LearningPathSamplePage = () => {
               children: (
                 <div className="space-y-5">
                   {/* Chú thích về Status */}
-                  <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 mb-4">
+                  <div
+                    className={`rounded-xl border ${getAssessmentColor().border} ${getAssessmentColor().bgDark} p-4 mb-4`}
+                  >
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 mt-0.5">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
-                          <FiBook className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <div
+                          className={`w-8 h-8 rounded-full ${getAssessmentColor().bgLight} flex items-center justify-center`}
+                        >
+                          <FiBook
+                            className={`w-4 h-4 ${getAssessmentColor().text}`}
+                          />
                         </div>
                       </div>
                       <div className="flex-1">
@@ -2924,21 +3037,27 @@ const LearningPathSamplePage = () => {
                         </h4>
                         <div className="space-y-2 text-xs text-gray-700 dark:text-gray-300">
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 text-xs font-semibold">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${getAssessmentColor().bgLight} ${getAssessmentColor().text} text-xs font-semibold border-cyan-300 border-1`}
+                            >
                               <FiPlayCircle className="w-3 h-3" />
                               Trạng thái khóa học
                             </span>
                             <span className="text-gray-600 dark:text-gray-400">
-                              : Hiển thị tiến độ học tập của các khóa học trong môn (Chưa bắt đầu / Đang học / Hoàn thành / Không có khóa học)
+                              : Hiển thị tiến độ học tập của các khóa học trong
+                              môn (Chưa bắt đầu / Đang học / Hoàn thành / Không
+                              có khóa học)
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs font-semibold border border-gray-300">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-xs font-semibold border border-emerald-300 dark:border-emerald-700">
                               <FiBook className="w-3 h-3" />
                               Trạng thái môn học
                             </span>
                             <span className="text-gray-600 dark:text-gray-400">
-                              : Dựa trên bảng điểm, cho biết bạn đã đậu, không đậu hay đang học môn này (Chưa bắt đầu / Đang học / Đã qua)
+                              : Dựa trên bảng điểm, cho biết bạn đã đậu, không
+                              đậu hay đang học môn này (Chưa bắt đầu / Đang học
+                              / Đã qua)
                             </span>
                           </div>
                         </div>
@@ -3325,89 +3444,88 @@ const LearningPathSamplePage = () => {
               />
             )}
           </div>
-          </Spin>
-        </Modal>
+        </Spin>
+      </Modal>
 
-        {/* Survey Submissions Modal */}
-        <Modal
-          title={
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <FiFileText className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">
-                  Kết quả khảo sát
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {surveySubmissions.length} khảo sát đã hoàn thành
-                </div>
+      {/* Survey Submissions Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-3 mb-5">
+            <div
+              className={`w-10 h-10 rounded-lg ${getAssessmentColor().bgLight} flex items-center justify-center`}
+            >
+              <FcSurvey className={`w-5 h-5 ${getAssessmentColor().icon}`} />
+            </div>
+            <div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                Kết quả khảo sát
               </div>
             </div>
-          }
-          open={showSurveyModal}
-          onCancel={() => setShowSurveyModal(false)}
-          footer={null}
-          width={1100}
-          centered
-          styles={{
-            body: {
-              padding: "24px",
-            },
-          }}
-        >
-          <Tabs
-            activeKey={activeSurveyTab ?? undefined}
-            onChange={(key) => handleSurveyTabChange(key)}
-            type="card"
-            size="large"
-            items={surveySubmissions.map((submission, index) => {
-              const surveyId = submission.studentSurveyId;
-              const surveyDetail = surveyDetails[surveyId];
-              const isLoading = loadingSurveyDetails[surveyId];
+          </div>
+        }
+        open={showSurveyModal}
+        onCancel={() => setShowSurveyModal(false)}
+        footer={null}
+        width={1000}
+        centered
+      >
+        <Tabs
+          activeKey={activeSurveyTab ?? undefined}
+          onChange={(key) => handleSurveyTabChange(key)}
+          type="card"
+          size="large"
+          items={surveySubmissions.map((submission, index) => {
+            const surveyId = submission.studentSurveyId;
+            const surveyDetail = surveyDetails[surveyId];
+            const isLoading = loadingSurveyDetails[surveyId];
 
-              return {
-                key: surveyId,
-                label: (
-                  <span className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs font-bold">
-                      {index + 1}
-                    </span>
-                    Khảo sát {index + 1}
-                  </span>
-                ),
-                children: (
-                  <div className="mt-4">
-                    <Spin spinning={isLoading}>
-                      {surveyDetail ? (
-                        <div className="space-y-6">
-                          {/* Survey Header */}
-                          <div className="relative p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 dark:from-purple-950/30 dark:via-pink-950/30 dark:to-purple-950/30 rounded-2xl border-2 border-purple-200 dark:border-purple-800 shadow-sm overflow-hidden">
-                            {/* Decorative elements */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200/20 dark:bg-purple-800/20 rounded-full -mr-16 -mt-16 blur-2xl" />
-                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-pink-200/20 dark:bg-pink-800/20 rounded-full -ml-12 -mb-12 blur-2xl" />
-                            
-                            <div className="relative">
-                              <div className="flex items-start gap-4 mb-4">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg">
-                                  <FiFileText className="w-6 h-6 text-white" />
-                                </div>
-                                <div className="flex-1">
-                                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                                    {surveyDetail.surveyTitle || "Khảo sát"}
-                                  </h3>
-                                  {surveyDetail.surveyDescription && (
-                                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                                      {surveyDetail.surveyDescription}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
+            return {
+              key: surveyId,
+              label: (
+                <span className="flex items-center gap-2">
+                  {/* <span className="w-6 h-6 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs font-bold">
+                    {index + 1}
+                  </span> */}
+                  Khảo sát {index + 1}
+                </span>
+              ),
+              children: (
+                <div className="mt-4 px-5">
+                  <Spin spinning={isLoading}>
+                    {surveyDetail ? (
+                      <div className="space-y-4">
+                        {/* Survey Header */}
+                        <div
+                          className={`${getAssessmentColor().bgDark} p-4 rounded-lg mb-6 flex items-center justify-center flex-col py-6 border ${getAssessmentColor().border}`}
+                        >
+                          <div
+                            className={`w-10 h-10 ${getAssessmentColor().bgLight} flex items-center justify-center flex-shrink-0 mb-3 rounded-full`}
+                          >
+                            <FcSurvey
+                              className={`w-5 h-5 ${getAssessmentColor().icon}`}
+                            />
+                          </div>
+                          <div className="flex items-start gap-3 text-center">
+                            <div className="flex-1">
+                              <Title
+                                level={3}
+                                className="!mb-2 !text-xl !font-bold text-gray-800 dark:text-gray-100"
+                              >
+                                {surveyDetail.surveyTitle ||
+                                  (surveyDetail.surveyCode === "HABIT"
+                                    ? "Khảo Sát Thói Quen Học Tập"
+                                    : "Khảo Sát Sở Thích Học Tập")}
+                              </Title>
+                              {surveyDetail.surveyDescription && (
+                                <Paragraph className="!text-base !text-gray-600 dark:text-gray-300 !mb-4 max-w-xl mx-auto leading-relaxed">
+                                  {surveyDetail.surveyDescription}
+                                </Paragraph>
+                              )}
+
                               {surveyDetail.createdAt && (
-                                <div className="inline-flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60 px-3 py-2 rounded-lg">
+                                <div className="flex items-center justify-center gap-2 text-xs text-gray-600 dark:text-gray-400 mt-2">
                                   <FiClock className="w-3.5 h-3.5" />
-                                  <span className="font-medium">
-                                    Ngày thực hiện:{" "}
+                                  <span>
                                     {new Date(
                                       surveyDetail.createdAt,
                                     ).toLocaleDateString("vi-VN", {
@@ -3422,127 +3540,131 @@ const LearningPathSamplePage = () => {
                               )}
                             </div>
                           </div>
+                        </div>
 
-                          {/* Questions */}
-                          {surveyDetail.questions && surveyDetail.questions.length > 0 ? (
-                            <div className="space-y-5">
-                              {surveyDetail.questions.map((question, qIndex) => (
-                                <Card
-                                  key={question.questionId ?? qIndex}
-                                  className="border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
-                                  styles={{
-                                    body: {
-                                      padding: "20px",
-                                    },
-                                  }}
-                                >
-                                  <div className="flex items-start gap-4">
-                                    {/* Question Number */}
-                                    <div className="flex-shrink-0">
-                                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center font-bold text-base shadow-md">
-                                        {qIndex + 1}
-                                      </div>
+                        {/* Questions */}
+                        {surveyDetail.questions &&
+                        surveyDetail.questions.length > 0 ? (
+                          <div className="space-y-4 flex flex-col gap-5">
+                            {surveyDetail.questions.map((question, qIndex) => (
+                              <Card
+                                key={question.questionId ?? qIndex}
+                                size="small"
+                                className="shadow-xs"
+                              >
+                                <div className="space-y-3">
+                                  {/* Question */}
+                                  <div className="flex items-start gap-3">
+                                    <div
+                                      className={`flex-shrink-0 w-8 h-8 rounded-full ${getAssessmentColor().bgLight} ${getAssessmentColor().text} flex items-center justify-center font-medium text-sm`}
+                                    >
+                                      {qIndex + 1}
                                     </div>
-                                    
-                                    <div className="flex-1 min-w-0">
-                                      {/* Question Text */}
-                                      <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-4 leading-relaxed">
-                                        {question.questionText}
-                                      </h4>
+                                    <h4 className="text-sm font-normal text-gray-900 dark:text-white pt-1">
+                                      {question.questionText}
+                                    </h4>
+                                  </div>
 
-                                      {/* Answers */}
-                                      {question.answers && question.answers.length > 0 && (
-                                        <div className="space-y-3">
-                                          {question.answers.map((answer, aIndex) => {
-                                            const isSelected = answer.selectedByStudent;
+                                  {/* Answers */}
+                                  {question.answers &&
+                                    question.answers.length > 0 && (
+                                      <div className="space-y-2 pl-11">
+                                        {question.answers.map(
+                                          (answer, aIndex) => {
+                                            const isSelected =
+                                              answer.selectedByStudent;
                                             return (
                                               <div
                                                 key={answer.answerId ?? aIndex}
-                                                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 cursor-default ${
+                                                className={`flex items-center justify-between p-3 rounded-lg border ${
                                                   isSelected
-                                                    ? "bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/20 border-blue-400 dark:border-blue-600 shadow-md scale-[1.02]"
-                                                    : "bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                                                    ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                                                    : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700"
                                                 }`}
                                               >
                                                 <div className="flex items-center gap-3">
                                                   {/* Check Icon */}
                                                   <div
-                                                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                                                    className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
                                                       isSelected
                                                         ? "bg-blue-500 text-white"
-                                                        : "bg-gray-200 dark:bg-gray-700 text-transparent"
+                                                        : "bg-gray-300 dark:bg-gray-600"
                                                     }`}
                                                   >
                                                     {isSelected && (
-                                                      <FiCheck className="w-4 h-4" />
+                                                      <FiCheck className="w-3 h-3" />
                                                     )}
                                                   </div>
-                                                  
+
                                                   {/* Answer Text */}
                                                   <span
-                                                    className={`text-sm flex-1 ${
+                                                    className={`text-sm ${
                                                       isSelected
-                                                        ? "text-blue-900 dark:text-blue-100 font-semibold"
+                                                        ? "text-gray-900 dark:text-white"
                                                         : "text-gray-700 dark:text-gray-300"
                                                     }`}
                                                   >
                                                     {answer.answerText}
                                                   </span>
-
-                                                  {/* Selected Badge */}
-                                                  {isSelected && (
-                                                    <Tag
-                                                      color="blue"
-                                                      className="ml-auto text-xs font-semibold"
-                                                    >
-                                                      Đã chọn
-                                                    </Tag>
-                                                  )}
                                                 </div>
+
+                                                {/* Selected Badge */}
+                                                {isSelected && (
+                                                  <Tag
+                                                    color="blue"
+                                                    className="text-xs"
+                                                  >
+                                                    Đã chọn
+                                                  </Tag>
+                                                )}
                                               </div>
                                             );
-                                          })}
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </Card>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-center py-12">
-                              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                                <FiAlertCircle className="w-8 h-8 text-purple-500 dark:text-purple-400" />
-                              </div>
-                              <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
-                                Không có câu hỏi nào trong khảo sát này
-                              </p>
-                              <p className="text-gray-500 dark:text-gray-500 text-sm">
-                                Khảo sát này chưa có nội dung
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      ) : !isLoading ? (
-                        <div className="text-center py-12">
-                          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                            <FiXCircle className="w-8 h-8 text-red-500 dark:text-red-400" />
+                                          },
+                                        )}
+                                      </div>
+                                    )}
+                                </div>
+                              </Card>
+                            ))}
                           </div>
-                          <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
-                            Không thể tải chi tiết khảo sát
-                          </p>
-                          <p className="text-gray-500 dark:text-gray-500 text-sm">
-                            Vui lòng thử lại sau
-                          </p>
+                        ) : (
+                          <div className="text-center py-12">
+                            <div
+                              className={`w-16 h-16 mx-auto mb-4 rounded-full ${getAssessmentColor().bgLight} flex items-center justify-center`}
+                            >
+                              <FiAlertCircle
+                                className={`w-8 h-8 ${getAssessmentColor().text}`}
+                              />
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
+                              Không có câu hỏi nào trong khảo sát này
+                            </p>
+                            <p className="text-gray-500 dark:text-gray-500 text-sm">
+                              Khảo sát này chưa có nội dung
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : !isLoading ? (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                          <FiXCircle className="w-8 h-8 text-red-500 dark:text-red-400" />
                         </div>
-                      ) : null}
-                    </Spin>
-                  </div>
-                ),
-              };
-            })}
-          />
-        </Modal>
+                        <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
+                          Không thể tải chi tiết khảo sát
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-500 text-sm">
+                          Vui lòng thử lại sau
+                        </p>
+                      </div>
+                    ) : null}
+                  </Spin>
+                </div>
+              ),
+            };
+          })}
+        />
+      </Modal>
 
       {/* Practice Test Submissions Drawer */}
       <Drawer
@@ -3714,7 +3836,9 @@ const LearningPathSamplePage = () => {
                                 {submission.runtimeMs !== undefined && (
                                   <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-1">
                                     <FiClock className="w-3 h-3" />
-                                    <span>Runtime: {submission.runtimeMs} ms</span>
+                                    <span>
+                                      Runtime: {submission.runtimeMs} ms
+                                    </span>
                                   </div>
                                 )}
 
@@ -3761,7 +3885,10 @@ const LearningPathSamplePage = () => {
                         }
 
                         return (
-                          <Splitter layout="vertical" className="bg-transparent h-full">
+                          <Splitter
+                            layout="vertical"
+                            className="bg-transparent h-full"
+                          >
                             {/* Code Panel */}
                             <Splitter.Panel defaultSize="60%" min={200}>
                               <Card
@@ -3791,19 +3918,26 @@ const LearningPathSamplePage = () => {
                                     )}
                                   </div>
                                 </div>
-                                <div style={{ flex: 1, minHeight: 0 }} className="relative">
+                                <div
+                                  style={{ flex: 1, minHeight: 0 }}
+                                  className="relative"
+                                >
                                   <Editor
                                     height="100%"
                                     language={
                                       selectedSubmission.languageId
-                                        ? judgeLanguageToMonaco[
+                                        ? (judgeLanguageToMonaco[
                                             selectedSubmission.languageId
-                                          ] ?? "plaintext"
+                                          ] ?? "plaintext")
                                         : "plaintext"
                                     }
                                     value={selectedSubmission.sourceCode ?? ""}
                                     beforeMount={handleEditorWillMount}
-                                    theme={isDarkMode ? "edusmart-night" : "edusmart-light"}
+                                    theme={
+                                      isDarkMode
+                                        ? "edusmart-night"
+                                        : "edusmart-light"
+                                    }
                                     options={{
                                       readOnly: true,
                                       domReadOnly: true,
@@ -3819,7 +3953,8 @@ const LearningPathSamplePage = () => {
                                       renderLineHighlight: "none",
                                       cursorStyle: "line",
                                       readOnlyMessage: {
-                                        value: "Chế độ chỉ đọc - Không thể chỉnh sửa",
+                                        value:
+                                          "Chế độ chỉ đọc - Không thể chỉnh sửa",
                                       },
                                     }}
                                   />
@@ -3863,7 +3998,7 @@ const LearningPathSamplePage = () => {
                                             "Accepted" ? (
                                               <FiCheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                                             ) : selectedSubmission.status ===
-                                                "Wrong Answer" ? (
+                                              "Wrong Answer" ? (
                                               <FiXCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
                                             ) : (
                                               <FiAlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
@@ -3884,7 +4019,8 @@ const LearningPathSamplePage = () => {
                                             }
                                             className="text-xs font-semibold"
                                           >
-                                            {selectedSubmission.status ?? "Unknown"}
+                                            {selectedSubmission.status ??
+                                              "Unknown"}
                                           </Tag>
                                         </div>
                                       </div>
@@ -3897,11 +4033,15 @@ const LearningPathSamplePage = () => {
                                               Test Cases
                                             </div>
                                             <div className="text-base font-bold text-gray-900 dark:text-white">
-                                              {selectedSubmission.passedTests ?? 0}/
-                                              {selectedSubmission.totalTests ?? 0}
+                                              {selectedSubmission.passedTests ??
+                                                0}
+                                              /
+                                              {selectedSubmission.totalTests ??
+                                                0}
                                             </div>
                                             {selectedSubmission.totalTests &&
-                                              selectedSubmission.totalTests > 0 && (
+                                              selectedSubmission.totalTests >
+                                                0 && (
                                                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                   {Math.round(
                                                     ((selectedSubmission.passedTests ??
@@ -3921,7 +4061,8 @@ const LearningPathSamplePage = () => {
                                                 Runtime
                                               </div>
                                               <div className="text-base font-bold text-gray-900 dark:text-white">
-                                                {selectedSubmission.runtimeMs} ms
+                                                {selectedSubmission.runtimeMs}{" "}
+                                                ms
                                               </div>
                                             </div>
                                           )}
@@ -3931,7 +4072,8 @@ const LearningPathSamplePage = () => {
 
                                     {/* Test Cases */}
                                     {selectedSubmission.testResults &&
-                                    selectedSubmission.testResults.length > 0 ? (
+                                    selectedSubmission.testResults.length >
+                                      0 ? (
                                       <div>
                                         <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">
                                           Chi tiết test cases
@@ -3963,7 +4105,11 @@ const LearningPathSamplePage = () => {
                                                     </span>
                                                   </div>
                                                   <Tag
-                                                    color={test.passed ? "success" : "error"}
+                                                    color={
+                                                      test.passed
+                                                        ? "success"
+                                                        : "error"
+                                                    }
                                                     className="text-xs font-semibold"
                                                   >
                                                     {test.passed ? (
@@ -4002,7 +4148,8 @@ const LearningPathSamplePage = () => {
                                                       </pre>
                                                     </div>
                                                   )}
-                                                  {test.actualOutput !== undefined && (
+                                                  {test.actualOutput !==
+                                                    undefined && (
                                                     <div>
                                                       <div className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
                                                         <FiCode className="w-3 h-3" />
@@ -4015,7 +4162,8 @@ const LearningPathSamplePage = () => {
                                                             : "border-red-200 dark:border-red-800"
                                                         }`}
                                                       >
-                                                        {test.actualOutput ?? "N/A"}
+                                                        {test.actualOutput ??
+                                                          "N/A"}
                                                       </pre>
                                                     </div>
                                                   )}
@@ -4061,6 +4209,574 @@ const LearningPathSamplePage = () => {
             </Layout>
           )}
         </Spin>
+      </Drawer>
+
+      {/* Assessment Drawer (Bài Đánh Giá Năng Lực) */}
+      <Drawer
+        title={
+          <div className="flex items-center gap-3">
+            <div
+              className={`w-10 h-10 rounded-lg ${getAssessmentColor().bgLight} flex items-center justify-center`}
+            >
+              <FiCheckCircle
+                className={`w-5 h-5 ${getAssessmentColor().icon}`}
+              />
+            </div>
+            <div>
+              <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                Bài Đánh Giá Năng Lực
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                Kết quả đánh giá kiến thức nền tảng
+              </div>
+            </div>
+          </div>
+        }
+        open={showAssessmentDrawer}
+        onClose={() => setShowAssessmentDrawer(false)}
+        width={1200}
+      >
+        <Tabs
+          activeKey={activeAssessmentTab}
+          onChange={(key) =>
+            setActiveAssessmentTab(key as "theory" | "practice")
+          }
+          type="card"
+          size="large"
+          items={[
+            {
+              key: "theory",
+              label: (
+                <span className="flex items-center gap-2">
+                  {/* <FiBook className="w-4 h-4" /> */}
+                  Lý thuyết
+                </span>
+              ),
+              children: (
+                <div className="mt-4">
+                  <Spin spinning={loadingTheoryTest}>
+                    {theoryTestData ? (
+                      <div className="space-y-6">
+                        {/* Test Header */}
+                        {/* <Card size="small" className="mb-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                              <FiCheckCircle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+                                {theoryTestData.testName || "Bài kiểm tra"}
+                              </h3>
+                              {theoryTestData.testDescription && (
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {theoryTestData.testDescription}
+                                </p>
+                              )}
+                              <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500 mt-2">
+                                {theoryTestData.startedAt && (
+                                  <div className="flex items-center gap-1">
+                                    <FiClock className="w-3.5 h-3.5" />
+                                    <span>
+                                      {new Date(
+                                        theoryTestData.startedAt,
+                                      ).toLocaleDateString("vi-VN", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </Card> */}
+
+                        {/* <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500 mt-2">
+                          {theoryTestData.startedAt && (
+                            <div className="flex items-center gap-1">
+                              <FiClock className="w-3.5 h-3.5" />
+                              <span>
+                                {new Date(
+                                  theoryTestData.startedAt,
+                                ).toLocaleDateString("vi-VN", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          )}
+                        </div> */}
+
+                        {/* Quiz Results by Subject */}
+                        {theoryTestData.quizzesResults &&
+                        theoryTestData.quizzesResults.length > 0 ? (
+                          <div className="space-y-4">
+                            <Collapse
+                              accordion={false}
+                              ghost
+                              items={theoryTestData.quizzesResults.map(
+                                (quiz, qIdx: number) => ({
+                                  key: quiz.quizId ?? qIdx,
+                                  label: (
+                                    <div className="flex items-center justify-between w-full pr-4">
+                                      <div className="flex-1">
+                                        <h4 className="text-base font-semibold text-gray-900 dark:text-white">
+                                          {quiz.title}
+                                        </h4>
+                                        {quiz.subjectCodeName && (
+                                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                                            {quiz.subjectCodeName}
+                                          </p>
+                                        )}
+                                        {quiz.description && (
+                                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                                            {quiz.description}
+                                          </p>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-4">
+                                        <div className="text-right">
+                                          <div
+                                            className={`text-xl font-bold ${getAssessmentColor().text}`}
+                                          >
+                                            {quiz.totalCorrectAnswers}/
+                                            {quiz.totalQuestions}
+                                          </div>
+                                          <div className="text-xs text-gray-500 dark:text-gray-500">
+                                            Câu đúng
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ),
+                                  children: (
+                                    <div className="px-10">
+                                      {/* Questions */}
+                                      {quiz.questionsResult &&
+                                        quiz.questionsResult.length > 0 && (
+                                        <div className="space-y-4 flex flex-col gap-5">
+                                          {(
+                                            quiz.questionsResult
+                                          ).map(
+                                            (question, qIndex: number) => {
+                                              const correctAnswers =
+                                                question.answers?.filter(
+                                                  (a) => a.isCorrectAnswer,
+                                                ) || [];
+                                              const selectedAnswers =
+                                                question.answers?.filter(
+                                                  (a) =>
+                                                    a.selectedByStudent,
+                                                ) || [];
+                                              const isCorrect =
+                                                correctAnswers.length ===
+                                                  selectedAnswers.length &&
+                                                correctAnswers.every(
+                                                  (ca) =>
+                                                    selectedAnswers.some(
+                                                      (sa) =>
+                                                        sa.answerId ===
+                                                        ca.answerId,
+                                                    ),
+                                                );
+
+                                              return (
+                                                <Card
+                                                  key={
+                                                    question.questionId ??
+                                                    qIndex
+                                                  }
+                                                  size="small"
+                                                  className={
+                                                    isCorrect
+                                                      ? "border-green-200 dark:border-green-800 shadow-xs"
+                                                      : "border-red-200 dark:border-red-800 shadow-xs"
+                                                  }
+                                                >
+                                                  <div className="space-y-3">
+                                                    {/* Question */}
+                                                    <div className="flex items-start gap-3">
+                                                      <div
+                                                        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-medium text-sm ${
+                                                          isCorrect
+                                                            ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                                                            : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                                                        }`}
+                                                      >
+                                                        {qIndex + 1}
+                                                      </div>
+                                                      <div className="flex-1">
+                                                        <h4 className="text-sm font-normal text-gray-900 dark:text-white">
+                                                          {
+                                                            question.questionText
+                                                          }
+                                                        </h4>
+                                                        {isCorrect ? (
+                                                          <Tag
+                                                            color="success"
+                                                            className="mt-2"
+                                                          >
+                                                            Đúng
+                                                          </Tag>
+                                                        ) : (
+                                                          <Tag
+                                                            color="error"
+                                                            className="mt-2"
+                                                          >
+                                                            Sai
+                                                          </Tag>
+                                                        )}
+                                                      </div>
+                                                    </div>
+
+                                                    {/* Answers */}
+                                                    {question.answers &&
+                                                      question.answers.length >
+                                                        0 && (
+                                                        <div className="space-y-2 pl-11">
+                                                          {question.answers.map(
+                                                            (
+                                                              answer,
+                                                              aIndex: number,
+                                                            ) => {
+                                                              const isSelected =
+                                                                answer.selectedByStudent;
+                                                              const isCorrectAnswer =
+                                                                answer.isCorrectAnswer;
+
+                                                              return (
+                                                                <div
+                                                                  key={
+                                                                    answer.answerId ??
+                                                                    aIndex
+                                                                  }
+                                                                  className={`p-3 rounded-lg border ${
+                                                                    isCorrectAnswer
+                                                                      ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700"
+                                                                      : isSelected
+                                                                        ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700"
+                                                                        : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700"
+                                                                  }`}
+                                                                >
+                                                                  <div className="flex items-center gap-2">
+                                                                    {/* Check Icon */}
+                                                                    <div
+                                                                      className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+                                                                        isCorrectAnswer
+                                                                          ? "bg-green-500 text-white"
+                                                                          : isSelected
+                                                                            ? "bg-red-500 text-white"
+                                                                            : "bg-gray-300 dark:bg-gray-600"
+                                                                      }`}
+                                                                    >
+                                                                      {(isCorrectAnswer ||
+                                                                        isSelected) && (
+                                                                        <FiCheck className="w-3 h-3" />
+                                                                      )}
+                                                                    </div>
+
+                                                                    {/* Answer Text */}
+                                                                    <span
+                                                                      className={`text-sm flex-1 ${
+                                                                        isCorrectAnswer ||
+                                                                        isSelected
+                                                                          ? "text-gray-900 dark:text-white font-medium"
+                                                                          : "text-gray-700 dark:text-gray-300"
+                                                                      }`}
+                                                                    >
+                                                                      {
+                                                                        answer.answerText
+                                                                      }
+                                                                    </span>
+
+                                                                    {/* Badges */}
+                                                                    {isCorrectAnswer && (
+                                                                      <Tag
+                                                                        color="success"
+                                                                        className="text-xs"
+                                                                      >
+                                                                        Đáp án
+                                                                        đúng
+                                                                      </Tag>
+                                                                    )}
+                                                                    {isSelected &&
+                                                                      !isCorrectAnswer && (
+                                                                        <Tag
+                                                                          color="error"
+                                                                          className="text-xs"
+                                                                        >
+                                                                          Bạn đã
+                                                                          chọn
+                                                                        </Tag>
+                                                                      )}
+                                                                  </div>
+                                                                </div>
+                                                              );
+                                                            },
+                                                          )}
+                                                        </div>
+                                                      )}
+                                                  </div>
+                                                </Card>
+                                              );
+                                            },
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ),
+                                }),
+                              )}
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-center py-12">
+                            <div
+                              className={`w-16 h-16 mx-auto mb-4 rounded-full ${getAssessmentColor().bgLight} flex items-center justify-center`}
+                            >
+                              <FiAlertCircle
+                                className={`w-8 h-8 ${getAssessmentColor().text}`}
+                              />
+                            </div>
+                            <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
+                              Không có kết quả bài kiểm tra
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : !loadingTheoryTest ? (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                          <FiXCircle className="w-8 h-8 text-red-500 dark:text-red-400" />
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
+                          Không thể tải kết quả
+                        </p>
+                      </div>
+                    ) : null}
+                  </Spin>
+                </div>
+              ),
+            },
+            {
+              key: "practice",
+              label: (
+                <span className="flex items-center gap-2">
+                  {/* <FiCode className="w-4 h-4" /> */}
+                  Thực hành
+                </span>
+              ),
+              children: (
+                <div className="mt-4">
+                  <Spin spinning={loadingPracticeTest}>
+                    {practiceTestData && practiceTestData.length > 0 ? (
+                      <div className="space-y-4">
+                        <Collapse
+                          accordion={false}
+                          ghost
+                          items={practiceTestData.map(
+                            (submission, sIdx: number) => {
+                              const isAccepted =
+                                submission.status === "Accepted";
+                              const statusColor = isAccepted
+                                ? "text-green-600 dark:text-green-400"
+                                : submission.status === "Compilation Error"
+                                  ? "text-orange-600 dark:text-orange-400"
+                                  : "text-red-600 dark:text-red-400";
+                              // Status background color for future styling
+                              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                              const statusBg = isAccepted
+                                ? "bg-green-100 dark:bg-green-900/30"
+                                : submission.status === "Compilation Error"
+                                  ? "bg-orange-100 dark:bg-orange-900/30"
+                                  : "bg-red-100 dark:bg-red-900/30";
+
+                              return {
+                                key: submission.submissionId ?? sIdx,
+                                label: (
+                                  <div className="flex items-center justify-between w-full pr-4">
+                                    <div className="flex-1">
+                                      <h4 className="text-base font-semibold text-gray-900 dark:text-white">
+                                        {submission.problemTitle}
+                                      </h4>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <span
+                                          className={`text-xs px-2 py-1 rounded ${
+                                            submission.problemDifficulty ===
+                                            "Easy"
+                                              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                                              : submission.problemDifficulty ===
+                                                  "Medium"
+                                                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                                                : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                                          }`}
+                                        >
+                                          {getProblemDifficultyVN(
+                                            submission.problemDifficulty,
+                                          )}
+                                        </span>
+                                        <span className="text-xs text-gray-600 dark:text-gray-400">
+                                          {submission.languageName}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <div className="text-right">
+                                        <div
+                                          className={`text-sm font-medium ${statusColor}`}
+                                        >
+                                          {submission.status}
+                                        </div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                          {submission.passedTests}/
+                                          {submission.totalTests} test cases
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ),
+                                children: (
+                                  <div className="px-10 space-y-6">
+                                    {/* Source Code */}
+                                    <div>
+                                      <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                                        Source Code
+                                      </h5>
+                                      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                        <Editor
+                                          height="300px"
+                                          language={
+                                            judgeLanguageToMonaco[
+                                              submission.languageId ?? 0
+                                            ] || "plaintext"
+                                          }
+                                          value={submission.sourceCode ?? ""}
+                                          theme={
+                                            isDarkMode ? "vs-dark" : "light"
+                                          }
+                                          options={{
+                                            readOnly: true,
+                                            minimap: { enabled: false },
+                                            scrollBeyondLastLine: false,
+                                            fontSize: 13,
+                                            lineNumbers: "on",
+                                            renderLineHighlight: "none",
+                                            scrollbar: {
+                                              vertical: "auto",
+                                              horizontal: "auto",
+                                            },
+                                          }}
+                                          beforeMount={handleEditorWillMount}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Test Results */}
+                                    <div>
+                                      <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                                        Test Results
+                                      </h5>
+                                      <div className="space-y-2 flex flex-col gap-1">
+                                        {submission.testResults?.map(
+                                          (test, tIdx: number) => (
+                                            <Card
+                                              key={test.testCaseId ?? tIdx}
+                                              size="small"
+                                              className={
+                                                test.passed
+                                                  ? "border-green-200 dark:border-green-800"
+                                                  : "border-red-200 dark:border-red-800"
+                                              }
+                                            >
+                                              <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                  <div className="flex items-center gap-2 mb-2">
+                                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                      Test Case #{tIdx + 1}
+                                                    </span>
+                                                    {test.passed ? (
+                                                      <span className="text-xs px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                                        Passed
+                                                      </span>
+                                                    ) : (
+                                                      <span className="text-xs px-2 py-0.5 rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+                                                        Failed
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                  {test.actualOutput && (
+                                                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                                                      <span className="font-medium">
+                                                        Output:
+                                                      </span>{" "}
+                                                      {test.actualOutput}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            </Card>
+                                          ),
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Submission Info */}
+                                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 pb-5 border-b border-gray-200 dark:border-gray-700">
+                                      <div className="flex items-center gap-1">
+                                        <FiClock className="w-3.5 h-3.5" />
+                                        <span>
+                                          {new Date(
+                                            submission.submittedAt ?? "",
+                                          ).toLocaleDateString("vi-VN", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })}
+                                        </span>
+                                      </div>
+                                      {submission.runtimeMs !== undefined && (
+                                        <div className="flex items-center gap-1">
+                                          <span>Runtime:</span>
+                                          <span className="font-medium">
+                                            {submission.runtimeMs}ms
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ),
+                              };
+                            },
+                          )}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                          <FiCode className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 font-medium mb-1">
+                          Không có kết quả bài thực hành
+                        </p>
+                        <p className="text-gray-500 dark:text-gray-500 text-sm">
+                          Chưa có bài nộp nào được tìm thấy
+                        </p>
+                      </div>
+                    )}
+                  </Spin>
+                </div>
+              ),
+            },
+          ]}
+        />
       </Drawer>
     </div>
   );

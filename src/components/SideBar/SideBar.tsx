@@ -5,13 +5,12 @@ import Image from "next/image";
 import { Lobster } from "next/font/google";
 import {
   PieChartOutlined,
-  DesktopOutlined,
   LogoutOutlined,
-  SolutionOutlined,
   UserOutlined,
   RobotOutlined,
   ShoppingOutlined,
   BookOutlined,
+  HeartOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Menu, Layout, theme } from "antd";
@@ -65,6 +64,13 @@ const navItems: NavMenuItem[] = [
     "/dashboard/my-courses",
   ),
   getItem(
+    "Khóa học yêu thích",
+    "dashboard-wishlist",
+    <HeartOutlined />,
+    undefined,
+    "/dashboard/wishlist",
+  ),
+  getItem(
     "Hồ sơ của tôi",
     "dashboard-my-profile",
     <UserOutlined />,
@@ -78,20 +84,20 @@ const navItems: NavMenuItem[] = [
     undefined,
     "/dashboard/orders",
   ),
-  getItem(
-    "Dashboard Người dùng",
-    "dashboard-user",
-    <DesktopOutlined />,
-    undefined,
-    "/Admin/profiles",
-  ),
-  getItem(
-    "Subscriptions",
-    "subscriptions",
-    <SolutionOutlined />,
-    undefined,
-    "/Admin/subscriptions",
-  ),
+  // getItem(
+  //   "Dashboard Người dùng",
+  //   "dashboard-user",
+  //   <DesktopOutlined />,
+  //   undefined,
+  //   "/Admin/profiles",
+  // ),
+  // getItem(
+  //   "Subscriptions",
+  //   "subscriptions",
+  //   <SolutionOutlined />,
+  //   undefined,
+  //   "/Admin/subscriptions",
+  // ),
   getItem("Chat AI", "chat-ai", <RobotOutlined />, undefined, "/chat/ai"),
   getItem("Đăng xuất", "logout", <LogoutOutlined />),
   // ❌ BỎ ThemeSwitch khỏi menu để tránh lệch

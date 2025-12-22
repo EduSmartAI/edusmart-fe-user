@@ -269,7 +269,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       },
       {
         key: "notes",
-        label: "Notes",
+        label: "Ghi chú",
         children: currentLessonId ? (
           <LessonNotes
             lessonId={currentLessonId}
@@ -292,7 +292,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
         key: "comments",
         label: (
           <span className="inline-flex items-center gap-2">
-            <MessageOutlined /> Comments
+            <MessageOutlined /> Bình luận
           </span>
         ),
         children: <CourseComments courseId={course.courseId ?? ""} />,

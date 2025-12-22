@@ -285,7 +285,7 @@ export default function LessonNotes({
             renderItem={(note) => (
               <List.Item
                 key={note.noteId}
-                className="!border-b border-neutral-200 dark:border-neutral-800 !px-0"
+                className=" border-neutral-200 dark:border-neutral-800 !px-0"
               >
                 <Card size="small" className="w-full">
                   {/* Note Header */}
