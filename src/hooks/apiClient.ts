@@ -207,9 +207,9 @@ axiosInstance.interceptors.response.use(
           isRefreshing = false;
           onRefreshed(null);
           // Chỉ logout nếu không phải payment page
-          if (!isPaymentPage) {
-            useAuthStore.getState().logout();
-            useValidateStore.getState().setInValid(true);
+      if (!isPaymentPage) {
+        useAuthStore.getState().logout();
+        useValidateStore.getState().setInValid(true);
           }
         }
       } else {
