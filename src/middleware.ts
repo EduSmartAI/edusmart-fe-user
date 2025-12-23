@@ -38,6 +38,16 @@ function getSidFromReq(req: NextRequest): string | null {
 }
 
 export async function middleware(req: NextRequest) {
+  // Redirect www to non-www in production only
+  if (process.env.NODE_ENV === "production") {
+    const host = req.headers.get("host");
+    if (host === "www.edusmart.pro.vn") {
+      const url = req.nextUrl.clone();
+      url.hostname = "edusmart.pro.vn";
+      return NextResponse.redirect(url, 308);
+    }
+  }
+
   const { pathname } = req.nextUrl;
   const userAgent = req.headers.get("user-agent") || "";
 
