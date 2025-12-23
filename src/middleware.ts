@@ -42,24 +42,18 @@ export async function middleware(req: NextRequest) {
   if (process.env.NODE_ENV === "production") {
     const host = req.headers.get("host");
     if (host === "www.edusmart.pro.vn") {
-      const url = req.nextUrl.clone();
-      url.hostname = "edusmart.pro.vn";
+      // Dùng full URL với https:// để đảm bảo redirect chính xác
+      const url = new URL(req.nextUrl.pathname + req.nextUrl.search, "https://edusmart.pro.vn");
       const response = NextResponse.redirect(url, 308);
       
       // Copy cookies từ request sang response để preserve cookies khi redirect
-      // QUAN TRỌNG: __Host-sid cookie chỉ hoạt động trên exact domain
-      // Khi redirect từ www sang non-www, cần set lại cookie cho domain mới
-      const hostSidCookie = req.cookies.get("__Host-sid");
-      const sidCookie = req.cookies.get("sid");
-      
-      if (hostSidCookie || sidCookie) {
-        const cookieValue = hostSidCookie?.value || sidCookie?.value;
-        
-        // Set cookie __Host-sid cho domain non-www (production sẽ tìm cookie này)
-        // Cookie này sẽ hoạt động trên edusmart.pro.vn (không có www)
+      // Đặc biệt quan trọng với __Host-sid cookie
+      const sidCookie = req.cookies.get("__Host-sid") || req.cookies.get("sid");
+      if (sidCookie) {
+        // Copy cookie sang response để preserve khi redirect
         response.cookies.set({
-          name: "__Host-sid",
-          value: cookieValue!,
+          name: "sid", // Dùng "sid" (không có __Host- prefix) để hoạt động trên cả www và non-www
+          value: sidCookie.value,
           path: "/",
           httpOnly: true,
           secure: true,
