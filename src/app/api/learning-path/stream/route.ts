@@ -57,7 +57,8 @@ async function openUpstreamStream(
   }
 
   try {
-    await refreshTokens(sid);
+    // Skip cookie update - Route Handler không phải Server Action, cookie sẽ được set từ Server Actions
+    await refreshTokens(sid, true);
   } catch {
     return response;
   }
