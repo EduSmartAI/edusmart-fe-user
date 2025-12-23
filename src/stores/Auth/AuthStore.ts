@@ -125,15 +125,28 @@ export const useAuthStore = create<AuthState>()(
 
       // 2) Refresh token và revoke khi cần
       refreshToken: async () => {
-        console.log("vao");
+        console.log("[AuthStore] refreshToken called");
         const res = await refreshAction();
         if (!res.ok || !res.accessToken) {
+          console.error("[AuthStore] refreshToken failed:", res.error);
+          // Chỉ clear token nếu thực sự fail, không phải do "No session" với token còn valid
           set({ token: null });
           apiClient.authEduService.setSecurityData({ token: undefined });
           throw new Error(res.error || "Refresh failed");
         }
-        set({ token: res.accessToken });
-        apiClient.authEduService.setSecurityData({ token: res.accessToken });
+        
+        // Đảm bảo token được set đúng cách
+        const newToken = res.accessToken;
+        if (!newToken || typeof newToken !== "string" || newToken.trim() === "") {
+          console.error("[AuthStore] Invalid token received:", newToken);
+          set({ token: null });
+          apiClient.authEduService.setSecurityData({ token: undefined });
+          throw new Error("Invalid token received");
+        }
+        
+        console.log("[AuthStore] refreshToken success, updating token (length:", newToken.length, ")");
+        set({ token: newToken });
+        apiClient.authEduService.setSecurityData({ token: newToken });
       },
 
       logout: async () => {

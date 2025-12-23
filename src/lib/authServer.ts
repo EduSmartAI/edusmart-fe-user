@@ -210,7 +210,7 @@ export async function exchangePassword(email: string, password: string) {
   return { sid };
 }
 
-export async function refreshTokens(sid: string) {
+export async function refreshTokens(sid: string, skipCookieUpdate = false) {
   let bundle = await loadTokens(sid);
   console.log("load sid", sid, "bundle:", bundle);
 
@@ -251,12 +251,38 @@ export async function refreshTokens(sid: string) {
 
   const newExpAt = Date.now() + Math.max(30, expSec) * 1000;
   await updateTokens(sid, { access, refresh, expAt: newExpAt });
-  // Đồng bộ cookie duy nhất
-  const oldPayload = await readSidCookiePayload();
-  const newUser =
-    idToken ? extractUserFromIdToken(idToken) ?? oldPayload?.user : oldPayload?.user;
+  
+  // Chỉ set cookie nếu không skip (ví dụ: khi gọi từ Server Action)
+  // Nếu skip (ví dụ: khi gọi từ customFetch), chỉ update in-memory
+  if (!skipCookieUpdate) {
+    // Đồng bộ cookie duy nhất - ĐẢM BẢO giữ lại sid và user
+    // Lấy user từ payload cũ hoặc từ idToken mới
+    try {
+      const oldPayload = await readSidCookiePayload();
+      const newUser =
+        idToken ? extractUserFromIdToken(idToken) ?? oldPayload?.user : oldPayload?.user;
 
-  await setSidCookie({ sid, access, refresh, expAt: newExpAt, user: newUser });
+      // QUAN TRỌNG: Giữ nguyên sid từ parameter, KHÔNG lấy từ oldPayload
+      // để tránh trường hợp oldPayload null hoặc sid bị mất
+      const cookiePayload: CookiePayload = {
+        sid: sid, // Giữ nguyên sid từ parameter - ĐÂY LÀ ĐIỂM QUAN TRỌNG
+        access,
+        refresh,
+        expAt: newExpAt,
+        ...(newUser && { user: newUser }), // Chỉ thêm user nếu có
+      };
+      
+      console.log("[refreshTokens] Setting cookie with sid:", sid, "expAt:", newExpAt, "hasUser:", !!newUser);
+      await setSidCookie(cookiePayload);
+    } catch (cookieError) {
+      // Nếu không thể set cookie (ví dụ: không phải Server Action context),
+      // chỉ log warning và tiếp tục - in-memory đã được update
+      console.warn("[refreshTokens] Cannot set cookie (not in Server Action context), tokens updated in-memory only:", cookieError);
+    }
+  } else {
+    console.log("[refreshTokens] Skipping cookie update, tokens updated in-memory only");
+  }
+  
   return true;
 }
 
@@ -265,9 +291,10 @@ export async function getBearerForSid(sid: string) {
   if (!b) return null;
 
   // refresh proactive nếu sắp hết hạn
+  // Skip cookie update vì có thể được gọi từ non-Server Action context
   if (Date.now() > b.expAt - 5_000) {
     try {
-      await refreshTokens(sid);
+      await refreshTokens(sid, true); // Skip cookie update
     } catch {
       /* ignore; sẽ để backend trả 401 rồi retry */
     }
@@ -351,15 +378,42 @@ export async function hasRefreshToken(sid?: string): Promise<boolean> {
 
     const bundle = await loadTokens(realSid);
     if (!bundle || !bundle.refresh?.trim()) return false;
-    if (Date.now() < bundle.expAt - 5_000) return true;
+    
+    // QUAN TRỌNG: Check expAt từ in-memory store (đã được update khi refresh),
+    // KHÔNG check từ cookie vì cookie có thể chưa được update khi skip cookie update
+    const now = Date.now();
+    const expAt = bundle.expAt; // Lấy từ in-memory store, không từ cookie
+    
+    // Nếu token vẫn còn valid (còn hơn 5 giây), trả về true ngay
+    if (now < expAt - 5_000) return true;
+    
+    // Token sắp hết hạn hoặc đã hết hạn, thử refresh
+    // Skip cookie update vì có thể được gọi từ non-Server Action context (ví dụ: từ component)
     try {
-      await refreshTokens(realSid);  // sẽ throw nếu RT hết hạn/hỏng
-      return true;
-    } catch {
-      await destroySession(realSid);
-      return false;
+      await refreshTokens(realSid, true);  // Skip cookie update - sẽ throw nếu RT hết hạn/hỏng
+      // Sau khi refresh thành công, lấy bundle mới để check expAt mới
+      const newBundle = await loadTokens(realSid);
+      if (newBundle && now < newBundle.expAt - 5_000) {
+        return true; // Token đã được refresh, còn valid
+      }
+      return true; // Vẫn trả về true vì refresh thành công
+    } catch (err) {
+      // Chỉ destroy session nếu token THỰC SỰ đã hết hạn (check từ in-memory store)
+      // Nếu chỉ là lỗi tạm thời (network, etc), không destroy
+      if (now > expAt) {
+        // Token đã hết hạn (theo in-memory store) và refresh fail, destroy session
+        console.error("[hasRefreshToken] Token expired and refresh failed, destroying session. expAt:", expAt, "now:", now);
+        await destroySession(realSid);
+        return false;
+      } else {
+        // Token chưa hết hạn nhưng refresh fail (có thể do network issue)
+        // KHÔNG destroy session, chỉ log warning
+        console.warn("[hasRefreshToken] Refresh failed but token still valid, keeping session. expAt:", expAt, "now:", now, "error:", err);
+        return true; // Vẫn trả về true vì token còn valid theo in-memory store
+      }
     }
-  } catch {
+  } catch (err) {
+    console.error("[hasRefreshToken] Error:", err);
     return false;
   }
 }
