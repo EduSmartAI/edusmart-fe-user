@@ -28,3 +28,29 @@ export async function learningPathsChooseMajorUpdate(
       };
     }
   }
+
+
+  export async function learningPathsUpdateSubjectToSkippedUpdate(
+    subjectCodes: string[],
+  ): Promise<{
+    data: UpdateStatusLearningPathResponse;
+  }> {
+    try {
+      const res = await apiServer.student.api.learningPathsUpdateSubjectToSkippedUpdate({
+        subjectCode: subjectCodes,
+      });
+      if (res.data) {
+        return {
+          data: res.data,
+        };
+      }
+      return {
+        data: {},
+      };
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      return {
+        data: {},
+      };
+    }
+  }
