@@ -131,9 +131,12 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
 
     if (prevUrlLessonId.current !== q) {
       prevUrlLessonId.current = q;
-      if (q !== currentLessonId) setCurrentLessonId(q);
-      const mod = lessonToModule.get(q);
-      if (mod && mod !== activeModuleId) setActiveModuleId(mod);
+      // Chỉ update nếu khác với currentLessonId để tránh vòng lặp
+      if (q !== currentLessonId) {
+        setCurrentLessonId(q);
+        const mod = lessonToModule.get(q);
+        if (mod && mod !== activeModuleId) setActiveModuleId(mod);
+      }
     }
   }, [
     searchParams,
@@ -159,6 +162,11 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
   const videoUrl = currentLesson?.videoUrl ?? "";
 
   const handleSelectLesson = (lessonId: string) => {
+    // Nếu đang click vào lesson hiện tại, không làm gì cả
+    if (lessonId === currentLessonId) {
+      return;
+    }
+
     useLoadingStore.getState().showLoading();
     setCurrentLessonId(lessonId);
     const modId = lessonToModule.get(lessonId);
@@ -583,6 +591,7 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                   lessonId={currentLessonId}
                   courseId={course.courseId}
                   tickSec={1}
+                  lessonStatus={currentLesson?.isCompleted ? 2 : undefined}
                   poster={
                     course.courseImageUrl ??
                     "https://www.shutterstock.com/image-vector/play-button-icon-vector-illustration-600nw-1697833306.jpg"

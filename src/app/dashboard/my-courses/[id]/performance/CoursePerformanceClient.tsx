@@ -1111,16 +1111,11 @@ export default function CoursePerformanceClient({
               <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                 Bài kiểm tra
               </div>
-              <div className="flex items-baseline gap-1 mb-1">
-                <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
-                  {progress?.lessonsCompleted || 0}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  /{progress?.quizTotal || 0}
-                </div>
+              <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
+                {progress?.quizTotal || 0}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                Số bài đã làm
+                Tổng số bài kiểm tra
               </div>
             </div>
 
@@ -1451,13 +1446,10 @@ export default function CoursePerformanceClient({
 
             <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center">
               <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                {(
-                  (learningBehavior?.totalPauseCount || 0) /
-                  (progress?.lessonsCompleted || 1)
-                ).toFixed(1)}
+                {progress?.lessonsCompleted || 0}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">
-                Tỷ lệ tương tác
+                Bài học đã hoàn thành
               </div>
             </div>
           </div>

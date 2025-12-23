@@ -78,6 +78,8 @@ type Props = {
   lessonId?: string;
   courseId?: string;
   tickSec?: number;
+  /** Lesson status: 0 = NotStarted, 1 = InProgress, 2 = Completed */
+  lessonStatus?: number | string;
 };
 
 type PlyrQualityOption = {
@@ -108,6 +110,7 @@ export default function YouTubeStylePlayer({
   lessonId,
   courseId,
   tickSec = 3,
+  lessonStatus,
 }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const trackRef = useRef<HTMLTrackElement | null>(null);
@@ -141,6 +144,7 @@ export default function YouTubeStylePlayer({
   const retryCountRef = useRef(0);
   const playCountRef = useRef(0);
   const lastPlayEventAtRef = useRef<number | null>(null);
+  const hasTracked80PercentRef = useRef(false); // Track xem đã gửi event 75% chưa
   const insertUserBehaviour = useCourseStore((s) => s.insertUserBehaviour);
   const trackPlayEvent = useCallback(() => {
     if (!insertUserBehaviour || !lessonId || !courseId) return;
@@ -672,48 +676,30 @@ export default function YouTubeStylePlayer({
       seekingRef.current = true;
       lastSeekTsRef.current = Date.now();
       lastSeekFromRef.current = v.currentTime || 0;
-
-      const now = Date.now();
-      const isProgrammatic = now - lastProgrammaticSeekRef.current < 500;
-
-      // ScrollVideo
-      if (!isProgrammatic && insertUserBehaviour && lessonId && courseId) {
-        scrollCountRef.current += 1;
-        insertUserBehaviour(
-          UserBehaviourActionType.ScrollVideo,
-          lessonId,
-          UserBehaviourTargetType.Lesson,
-          courseId,
-          String(scrollCountRef.current),
-        ).catch(() => {});
-      }
     };
 
     const onSeeked = () => {
       lastSeekTsRef.current = Date.now();
 
-      const to = v.currentTime || 0;
-      const from = lastSeekFromRef.current;
       const now = Date.now();
       const isProgrammatic = now - lastProgrammaticSeekRef.current < 500;
 
-      // RetryLesson: đang xem khá xa (>=30s) rồi seek về gần đầu (<=2s)
-      if (
-        !isProgrammatic &&
-        insertUserBehaviour &&
-        lessonId &&
-        courseId &&
-        from > 30 &&
-        to <= 2
-      ) {
-        retryCountRef.current += 1;
-        insertUserBehaviour(
-          UserBehaviourActionType.RetryLesson,
-          lessonId,
-          UserBehaviourTargetType.Lesson,
-          courseId,
-          String(retryCountRef.current),
-        ).catch(() => {});
+      // ScrollVideo: Track khi seek hoàn tất (mỗi lần seek = 1 lần cuộn)
+      // Chỉ track nếu không phải programmatic seek và có sự thay đổi vị trí thực sự
+      if (!isProgrammatic && insertUserBehaviour && lessonId && courseId) {
+        const from = lastSeekFromRef.current;
+        const to = v.currentTime || 0;
+        // Chỉ track nếu seek thực sự thay đổi vị trí (ít nhất 1 giây)
+        if (Math.abs(to - from) >= 1) {
+          scrollCountRef.current += 1;
+          insertUserBehaviour(
+            UserBehaviourActionType.ScrollVideo,
+            lessonId,
+            UserBehaviourTargetType.Lesson,
+            courseId,
+            String(scrollCountRef.current),
+          ).catch(() => {});
+        }
       }
 
       setTimeout(() => {
@@ -810,13 +796,68 @@ export default function YouTubeStylePlayer({
     };
   }, [src, urlVtt]);
 
+  // Reset các count ref khi src hoặc lessonId thay đổi để đảm bảo số đếm chính xác
+  useEffect(() => {
+    hasTracked80PercentRef.current = false;
+    pauseCountRef.current = 0;
+    scrollCountRef.current = 0;
+    retryCountRef.current = 0;
+    playCountRef.current = 0;
+  }, [src, lessonId, lessonStatus]);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const onTimeUpdate = () => setCurrentTime(v.currentTime || 0);
+    
+    const onTimeUpdate = () => {
+      const currentTimeValue = v.currentTime || 0;
+      setCurrentTime(currentTimeValue);
+      
+      // RetryLesson: chỉ track khi lesson status là Completed (2) và đạt từ 75% duration trở lên
+      const duration = v.duration;
+      
+      // Reset flag khi video về đầu (dưới 3 giây) để có thể track lại khi xem lại
+      if (duration && duration > 0 && currentTimeValue < 3 && hasTracked80PercentRef.current) {
+        hasTracked80PercentRef.current = false;
+        console.log("[RetryLesson] Video restarted, reset tracking flag for retry");
+      }
+      
+      if (
+        duration &&
+        duration > 0 &&
+        !hasTracked80PercentRef.current &&
+        insertUserBehaviour &&
+        lessonId &&
+        courseId &&
+        (lessonStatus === 2 || lessonStatus === "Completed" || lessonStatus === "2")
+      ) {
+        const percentWatched = (currentTimeValue / duration) * 100;
+        // Track khi đạt từ 75% duration trở lên (chỉ track một lần mỗi lần xem lại)
+        if (percentWatched >= 75) {
+          console.log("[RetryLesson] Tracking at 75%+:", {
+            percentWatched: percentWatched.toFixed(2),
+            lessonId,
+            courseId,
+            lessonStatus,
+          });
+          hasTracked80PercentRef.current = true;
+          retryCountRef.current += 1;
+          insertUserBehaviour(
+            UserBehaviourActionType.RetryLesson,
+            lessonId,
+            UserBehaviourTargetType.Lesson,
+            courseId,
+            String(retryCountRef.current),
+          ).catch((err) => {
+            console.error("[RetryLesson] Error:", err);
+          });
+        }
+      }
+    };
+    
     v.addEventListener("timeupdate", onTimeUpdate);
     return () => v.removeEventListener("timeupdate", onTimeUpdate);
-  }, []);
+  }, [insertUserBehaviour, lessonId, courseId, lessonStatus]);
 
   const studentLessonProgressUpdate = useCourseStore(
     (s) => s.studentLessonProgressUpdate,
