@@ -258,9 +258,9 @@ export async function refreshTokens(sid: string, skipCookieUpdate = false) {
     // Đồng bộ cookie duy nhất - ĐẢM BẢO giữ lại sid và user
     // Lấy user từ payload cũ hoặc từ idToken mới
     try {
-      const oldPayload = await readSidCookiePayload();
-      const newUser =
-        idToken ? extractUserFromIdToken(idToken) ?? oldPayload?.user : oldPayload?.user;
+  const oldPayload = await readSidCookiePayload();
+  const newUser =
+    idToken ? extractUserFromIdToken(idToken) ?? oldPayload?.user : oldPayload?.user;
 
       // QUAN TRỌNG: Giữ nguyên sid từ parameter, KHÔNG lấy từ oldPayload
       // để tránh trường hợp oldPayload null hoặc sid bị mất
@@ -403,8 +403,8 @@ export async function hasRefreshToken(sid?: string): Promise<boolean> {
       if (now > expAt) {
         // Token đã hết hạn (theo in-memory store) và refresh fail, destroy session
         console.error("[hasRefreshToken] Token expired and refresh failed, destroying session. expAt:", expAt, "now:", now);
-        await destroySession(realSid);
-        return false;
+      await destroySession(realSid);
+      return false;
       } else {
         // Token chưa hết hạn nhưng refresh fail (có thể do network issue)
         // KHÔNG destroy session, chỉ log warning

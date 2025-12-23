@@ -89,13 +89,13 @@ const with401Retry: typeof fetch = async (input, init) => {
             const bundle = await loadTokens(sid);
             if (bundle?.access) {
                 const authHeader = `Bearer ${bundle.access}`;
-                return fetch(input, {
-                    ...init,
+        return fetch(input, {
+            ...init,
                     headers: { ...(init?.headers || {}), Authorization: authHeader },
-                    cache: "no-store",
-                });
+            cache: "no-store",
+        });
             }
-        } catch {
+    } catch {
             // Ignore, sẽ return resp gốc
         }
         return resp;
