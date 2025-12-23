@@ -38,34 +38,6 @@ function getSidFromReq(req: NextRequest): string | null {
 }
 
 export async function middleware(req: NextRequest) {
-  // Redirect www to non-www in production only
-  if (process.env.NODE_ENV === "production") {
-    const host = req.headers.get("host");
-    if (host === "www.edusmart.pro.vn") {
-      // Dùng full URL với https:// để đảm bảo redirect chính xác
-      const url = new URL(req.nextUrl.pathname + req.nextUrl.search, "https://edusmart.pro.vn");
-      const response = NextResponse.redirect(url, 308);
-      
-      // Copy cookies từ request sang response để preserve cookies khi redirect
-      // Đặc biệt quan trọng với __Host-sid cookie
-      const sidCookie = req.cookies.get("__Host-sid") || req.cookies.get("sid");
-      if (sidCookie) {
-        // Copy cookie sang response để preserve khi redirect
-        response.cookies.set({
-          name: "sid", // Dùng "sid" (không có __Host- prefix) để hoạt động trên cả www và non-www
-          value: sidCookie.value,
-          path: "/",
-          httpOnly: true,
-          secure: true,
-          sameSite: "strict",
-          maxAge: 60 * 60 * 24 * 30, // 30 ngày
-        });
-      }
-      
-      return response;
-    }
-  }
-
   const { pathname } = req.nextUrl;
   const userAgent = req.headers.get("user-agent") || "";
 
