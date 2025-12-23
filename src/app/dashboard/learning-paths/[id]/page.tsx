@@ -26,6 +26,7 @@ import {
   Layout,
   Splitter,
   Typography,
+  Checkbox,
 } from "antd";
 
 const { Title, Paragraph } = Typography;
@@ -34,7 +35,7 @@ const { Content } = Layout;
 import type { ColumnsType } from "antd/es/table";
 import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import { MarkdownBlock } from "EduSmart/components/MarkDown/MarkdownBlock";
-import { learningPathsChooseMajorUpdate } from "EduSmart/app/apiServer/learningPathAction";
+import { learningPathsChooseMajorUpdate, learningPathsUpdateSubjectToSkippedUpdate } from "EduSmart/app/apiServer/learningPathAction";
 import { learningPathsProcessAndExportSubjectMarksCreate } from "EduSmart/app/(learning-path)/learningPathAction";
 import {
   FiCheck,
@@ -560,6 +561,12 @@ const LearningPathSamplePage = () => {
   const [performanceCountdown, setPerformanceCountdown] = useState<
     number | null
   >(null);
+
+  // Skip subjects modal states
+  const [showSkipModal, setShowSkipModal] = useState(false);
+  const [skipSubjects, setSkipSubjects] = useState<Array<{ subjectCode: string; subjectName?: string }>>([]);
+  const [selectedSkipSubjects, setSelectedSkipSubjects] = useState<string[]>([]);
+  const [skipLoading, setSkipLoading] = useState(false);
 
   const summaryFeedback = learningPath?.summaryFeedback;
   const personality = learningPath?.personality;
@@ -1342,23 +1349,127 @@ const LearningPathSamplePage = () => {
   // Helper: LearningCurrentStatus theo StudentTranscriptStatus enum
   const getLearningCurrentStatusInfo = (statusValue: number | undefined) => {
     switch (statusValue) {
-      case 0: // NotStarted
+      case 1: // PassedAndImproving
         return {
-          label: "Chưa bắt đầu",
-          className: "bg-gray-100 text-gray-700",
+          label: "Đã đạt và đang cải thiện",
+          className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
         };
-      case 1: // Studying
+      case 2: // NotPassedAndImproving
+        return {
+          label: "Chưa đạt và đang cải thiện",
+          className: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
+        };
+      case 4: // NotStartedAndImproving
+        return {
+          label: "Chưa học trên FAP và đang học khoá học",
+          className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+        };
+      case 5: // PassedAndEvaluation
+        return {
+          label: "Đã đạt và chỉ đánh giá",
+          className: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300",
+        };
+      case 6: // PassedWithGoodGrade
+        return {
+          label: "Đã đạt điểm tốt",
+          className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+        };
+      case 7: // Completed
+        return {
+          label: "Đã hoàn thành",
+          className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+        };
+      case 8: // Skipped
+        return {
+          label: "Bỏ qua",
+          className: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+        };
+      case 9: // Studying
         return {
           label: "Đang học",
-          className: "bg-blue-100 text-blue-700",
-        };
-      case 2: // Passed
-        return {
-          label: "Đã qua",
-          className: "bg-emerald-100 text-emerald-700",
+          className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
         };
       default:
         return null;
+    }
+  };
+
+  // Helper: Get all subjects with skip-able status (1, 2, 4, 9)
+  const getSkipableSubjects = (): Array<{ subjectCode: string; subjectName?: string }> => {
+    const subjects: Array<{ subjectCode: string; subjectName?: string }> = [];
+    
+    // From basic course groups
+    if (basicSemesters) {
+      basicSemesters.forEach((sem) => {
+        sem.groups.forEach((group) => {
+          const status = (group as ExtendedCourseGroupDto).learningCurrentStatus;
+          if (status === 1 || status === 2 || status === 4 || status === 9) {
+            if (group.subjectCode && !subjects.find(s => s.subjectCode === group.subjectCode)) {
+              subjects.push({
+                subjectCode: group.subjectCode,
+              });
+            }
+          }
+        });
+      });
+    }
+
+    // From major course groups
+    if (learningPath?.internalLearningPath) {
+      learningPath.internalLearningPath.forEach((major: InternalMajorDto) => {
+        if (major.majorCourseGroups) {
+          major.majorCourseGroups.forEach((group: ExtendedCourseGroupDto) => {
+            const status = group.learningCurrentStatus;
+            if (status === 1 || status === 2 || status === 4 || status === 9) {
+              if (group.subjectCode && !subjects.find(s => s.subjectCode === group.subjectCode)) {
+                subjects.push({
+                  subjectCode: group.subjectCode,
+                });
+              }
+            }
+          });
+        }
+      });
+    }
+
+    return subjects;
+  };
+
+  // Handle open skip modal (for multiple subjects)
+  const handleOpenSkipModal = () => {
+    const skipable = getSkipableSubjects();
+    setSkipSubjects(skipable);
+    setSelectedSkipSubjects([]);
+    setShowSkipModal(true);
+  };
+
+  // Handle confirm skip (for multiple subjects)
+  const handleConfirmSkip = async () => {
+    if (selectedSkipSubjects.length === 0) {
+      message.warning("Vui lòng chọn ít nhất một môn học");
+      return;
+    }
+
+    try {
+      setSkipLoading(true);
+      const result = await learningPathsUpdateSubjectToSkippedUpdate(selectedSkipSubjects);
+      
+      if (result.data) {
+        message.success(`Đã bỏ qua ${selectedSkipSubjects.length} môn học thành công`);
+        setShowSkipModal(false);
+        setSelectedSkipSubjects([]);
+        // Refresh learning path data
+        if (pathId) {
+          fetchLearningPath(pathId);
+        }
+      } else {
+        message.error("Không thể bỏ qua môn học. Vui lòng thử lại");
+      }
+    } catch (error) {
+      console.error("Error skipping subjects:", error);
+      message.error("Có lỗi xảy ra khi bỏ qua môn học");
+    } finally {
+      setSkipLoading(false);
     }
   };
 
@@ -1446,18 +1557,23 @@ const LearningPathSamplePage = () => {
                     const learningStatusInfo = getLearningCurrentStatusInfo(
                       (group as ExtendedCourseGroupDto).learningCurrentStatus,
                     );
-                    return learningStatusInfo ? (
-                      <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
-                        <div className="inline-flex">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
-                          >
-                            <FiBook className="w-3 h-3" />
-                            {learningStatusInfo.label}
-                          </span>
-                        </div>
-                      </Tooltip>
-                    ) : null;
+                    
+                    return (
+                      <>
+                        {learningStatusInfo ? (
+                          <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
+                            <div className="inline-flex">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
+                              >
+                                <FiBook className="w-3 h-3" />
+                                {learningStatusInfo.label}
+                              </span>
+                            </div>
+                          </Tooltip>
+                        ) : null}
+                      </>
+                    );
                   })()}
                 </div>
 
@@ -1831,18 +1947,23 @@ const LearningPathSamplePage = () => {
                                         getLearningCurrentStatusInfo(
                                           cg.learningCurrentStatus,
                                         );
-                                      return learningStatusInfo ? (
-                                        <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
-                                          <div className="inline-flex">
-                                            <span
-                                              className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
-                                            >
-                                              <FiBook className="w-3 h-3" />
-                                              {learningStatusInfo.label}
-                                            </span>
-                                          </div>
-                                        </Tooltip>
-                                      ) : null;
+                                      
+                                      return (
+                                        <>
+                                          {learningStatusInfo ? (
+                                            <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
+                                              <div className="inline-flex">
+                                                <span
+                                                  className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
+                                                >
+                                                  <FiBook className="w-3 h-3" />
+                                                  {learningStatusInfo.label}
+                                                </span>
+                                              </div>
+                                            </Tooltip>
+                                          ) : null}
+                                        </>
+                                      );
                                     })()}
                                   </div>
                                   {/* <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2215,18 +2336,23 @@ const LearningPathSamplePage = () => {
                                             getLearningCurrentStatusInfo(
                                               cg.learningCurrentStatus,
                                             );
-                                          return learningStatusInfo ? (
-                                            <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
-                                              <div className="inline-flex">
-                                                <span
-                                                  className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
-                                                >
-                                                  <FiBook className="w-3 h-3" />
-                                                  {learningStatusInfo.label}
-                                                </span>
-                                              </div>
-                                            </Tooltip>
-                                          ) : null;
+                                          
+                                          return (
+                                            <>
+                                              {learningStatusInfo ? (
+                                                <Tooltip title="Trạng thái môn học (dựa trên bảng điểm: đậu/không đậu/đang học)">
+                                                  <div className="inline-flex">
+                                                    <span
+                                                      className={`px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 border border-gray-300 ${learningStatusInfo.className}`}
+                                                    >
+                                                      <FiBook className="w-3 h-3" />
+                                                      {learningStatusInfo.label}
+                                                    </span>
+                                                  </div>
+                                                </Tooltip>
+                                              ) : null}
+                                            </>
+                                          );
                                         })()}
                                       </div>
                                       <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -2543,6 +2669,18 @@ const LearningPathSamplePage = () => {
                 >
                   {statusLabel}
                 </Tag>
+                {getSkipableSubjects().length > 0 && (
+                  <Button
+                    size="middle"
+                    type="default"
+                    danger
+                    icon={<FiXCircle className="w-4 h-4" />}
+                    onClick={handleOpenSkipModal}
+                    className="flex items-center gap-2"
+                  >
+                    Bỏ qua nhiều môn
+                  </Button>
+                )}
                 <button
                   type="button"
                   onClick={handleViewPerformance}
@@ -3123,7 +3261,7 @@ const LearningPathSamplePage = () => {
                       onClick={() => setShowInternalSection((prev) => !prev)}
                     >
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1.5">
                             <span className="text-xs font-semibold text-[#49BBBD] dark:text-cyan-400 uppercase tracking-wide">
                               Phần 2
@@ -3411,6 +3549,89 @@ const LearningPathSamplePage = () => {
               )}
             </div>
           </Spin>
+        </div>
+      </Modal>
+
+      {/* Skip Subjects Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <FiXCircle className="w-5 h-5 text-red-500" />
+            <span className="font-bold">Bỏ qua môn học</span>
+          </div>
+        }
+        open={showSkipModal}
+        onCancel={() => {
+          setShowSkipModal(false);
+          setSelectedSkipSubjects([]);
+        }}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => {
+              setShowSkipModal(false);
+              setSelectedSkipSubjects([]);
+            }}
+          >
+            Hủy
+          </Button>,
+          <Button
+            key="confirm"
+            type="primary"
+            danger
+            loading={skipLoading}
+            onClick={handleConfirmSkip}
+            disabled={selectedSkipSubjects.length === 0}
+          >
+            Xác nhận bỏ qua ({selectedSkipSubjects.length})
+          </Button>,
+        ]}
+        width={600}
+        centered
+      >
+        <div className="space-y-4 mt-4">
+          <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              Chọn các môn học bạn muốn bỏ qua. Các môn đã bỏ qua sẽ không được tính vào lộ trình học tập.
+            </p>
+          </div>
+          
+          {skipSubjects.length === 0 ? (
+            <div className="text-center py-8">
+              <FiXCircle className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-500 dark:text-gray-400">
+                Không có môn học nào có thể bỏ qua
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              <Checkbox.Group
+                value={selectedSkipSubjects}
+                onChange={(values) => setSelectedSkipSubjects(values as string[])}
+                className="w-full"
+              >
+                {skipSubjects.map((subject) => (
+                  <div
+                    key={subject.subjectCode}
+                    className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <Checkbox value={subject.subjectCode} className="w-full">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {subject.subjectCode}
+                        </span>
+                        {subject.subjectName && (
+                          <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                            {subject.subjectName}
+                          </span>
+                        )}
+                      </div>
+                    </Checkbox>
+                  </div>
+                ))}
+              </Checkbox.Group>
+            </div>
+          )}
         </div>
       </Modal>
 
