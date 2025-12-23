@@ -44,7 +44,24 @@ export async function middleware(req: NextRequest) {
     if (host === "www.edusmart.pro.vn") {
       const url = req.nextUrl.clone();
       url.hostname = "edusmart.pro.vn";
-      return NextResponse.redirect(url, 308);
+      const response = NextResponse.redirect(url, 308);
+      
+      // Copy cookies từ request sang response để preserve auth state khi redirect
+      const sidCookie = req.cookies.get("__Host-sid") || req.cookies.get("sid");
+      if (sidCookie) {
+        // Copy cookie sang response để preserve khi redirect
+        response.cookies.set({
+          name: "sid", // Dùng "sid" (không có __Host- prefix) để hoạt động trên cả www và non-www
+          value: sidCookie.value,
+          path: "/",
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          maxAge: 60 * 60 * 24 * 30, // 30 ngày
+        });
+      }
+      
+      return response;
     }
   }
 

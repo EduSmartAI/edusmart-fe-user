@@ -2,8 +2,11 @@
 "use client";
 import { useEffect } from "react";
 import { cleanupAction } from "../(auth)/action";
+import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 
 export default function ClientBoot() {
+  const getAuthen = useAuthStore((s) => s.getAuthen);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -17,30 +20,16 @@ export default function ClientBoot() {
         return;
       }
 
-      // Nhận biết nếu đã redirect từ www sang non-www (check referrer hoặc sessionStorage)
-      // Nếu có referrer từ www hoặc flag trong sessionStorage, reload lại để đảm bảo components load đúng
+      // Nếu đã redirect từ www sang non-www (check referrer), refresh auth state
       const referrer = document.referrer;
-      const wasRedirectedFromWww = sessionStorage.getItem("redirected-from-www");
-      
-      if (
-        (referrer.includes("www.edusmart.pro.vn") || wasRedirectedFromWww) &&
-        host === "edusmart.pro.vn"
-      ) {
-        // Xóa flag để tránh reload vô hạn
-        sessionStorage.removeItem("redirected-from-www");
-        // Reload lại để đảm bảo tất cả components được re-render đúng
-        window.location.reload();
-        return;
-      }
-
-      // Nếu đang ở www, set flag để detect khi redirect
-      if (host === "www.edusmart.pro.vn") {
-        sessionStorage.setItem("redirected-from-www", "true");
+      if (referrer.includes("www.edusmart.pro.vn") && host === "edusmart.pro.vn") {
+        // Refresh auth state để navbar hiển thị đúng
+        getAuthen().catch(() => {});
       }
     }
 
     // Cleanup action (existing logic)
     cleanupAction().catch(() => {});
-  }, []);
+  }, [getAuthen]);
   return null;
 }
