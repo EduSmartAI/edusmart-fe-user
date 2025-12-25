@@ -45,7 +45,11 @@ import { useEffect, useMemo, useState } from "react";
 import CourseInstructor from "EduSmart/components/User/Course/CourseInstructor";
 import CourseOverview from "EduSmart/components/User/Course/CourseOverView";
 import BaseScreenWhiteNav from "EduSmart/layout/BaseScreenWhiteNav";
-import { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
+import {
+  CourseCommentDetailsDto,
+  CourseDetailForGuestDto,
+  CourseRatingDto,
+} from "EduSmart/api/api-course-service";
 import { useCourseStore } from "EduSmart/stores/course/courseStore";
 import { useCartStore } from "EduSmart/stores/cart/cartStore";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
@@ -97,57 +101,90 @@ const formatCurrencySmart = (n?: number | null) => {
   return `$${n.toLocaleString("en-US")}`;
 };
 
-/* =======================
-   Dummy reviews giữ nguyên UI
-======================= */
-const defaultReviews: ReviewItem[] = [
-  {
-    id: 1,
-    name: "Lina",
-    time: "3 tháng",
-    avatar:
-      "https://api.dicebear.com/9.x/adventurer/svg?seed=Lina&backgroundColor=b6e3f4",
-    rating: 4,
-    content:
-      "Class, launched less than a year ago by Blackboard co-founder Michael Chasen, integrates exclusively…",
-    images: ["https://picsum.photos/seed/rv1/300/180"],
-    purchased: true,
-    helpful: 12,
-    replies: [
-      {
-        id: "r1",
-        by: "Giảng viên",
-        avatar: "https://api.dicebear.com/9.x/identicon/svg?seed=Teacher",
-        content: "Cảm ơn bạn! Tài liệu bổ sung ở section 3.",
-        time: "2 tháng",
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Alex",
-    time: "1 tháng",
-    avatar:
-      "https://api.dicebear.com/9.x/adventurer/svg?seed=Alex&backgroundColor=c0aede",
-    rating: 5,
-    content: "Nội dung cô đọng, bài tập thực hành ổn. Phần responsive rất hay.",
-    images: [],
-    purchased: true,
-    helpful: 7,
-  },
-  {
-    id: 3,
-    name: "Ngọc",
-    time: "5 ngày",
-    avatar:
-      "https://api.dicebear.com/9.x/adventurer/svg?seed=Ngoc&backgroundColor=ffd5dc",
-    rating: 3,
-    content: "Ổn cho người mới, mong có thêm ví dụ flex/grid nâng cao.",
-    images: ["https://picsum.photos/seed/rv3/300/180"],
-    purchased: false,
-    helpful: 2,
-  },
-];
+const timeAgoVi = (iso?: string | null) => {
+  if (!iso) return "—";
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return "—";
+  const diffMs = Date.now() - t;
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 15) return "vừa xong";
+  const min = Math.floor(diffSec / 60);
+  if (min < 60) return `${min} phút`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} giờ`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d} ngày`;
+  const mo = Math.floor(d / 30);
+  if (mo < 12) return `${mo} tháng`;
+  const y = Math.floor(mo / 12);
+  return `${y} năm`;
+};
+
+const avatarBySeed = (seed: string) =>
+  `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
+
+const buildRatingByUser = (ratings?: CourseRatingDto[] | null) => {
+  const map = new Map<string, number>();
+  (ratings ?? []).forEach((r) => {
+    const uid = r.userId ?? "";
+    const score = r.rating ?? 0;
+    if (!uid) return;
+    // nếu có nhiều bản ghi, lấy cái mới nhất: API không đảm bảo sort nên mình overwrite luôn
+    map.set(uid, score);
+  });
+  return map;
+};
+
+const mapCommentsToReviews = (
+  items: CourseCommentDetailsDto[] | null | undefined,
+  ratings?: CourseRatingDto[] | null,
+  purchased?: boolean,
+): ReviewItem[] => {
+  const all = (items ?? []).filter((c) => c.isActive !== false);
+  const topLevel = all.filter((c) => !c.parentCommentId);
+
+  const repliesMap = new Map<string, CourseCommentDetailsDto[]>();
+  all.forEach((c) => {
+    if (c.parentCommentId) {
+      const key = c.parentCommentId;
+      const arr = repliesMap.get(key) ?? [];
+      repliesMap.set(key, [...arr, c]);
+    }
+  });
+
+  const ratingByUser = buildRatingByUser(ratings);
+
+  return topLevel.map((c, idx) => {
+    const name = c.userDisplayName?.trim() || "Người dùng";
+    const uid = c.userId ?? "";
+    const rating = uid ? ratingByUser.get(uid) ?? 0 : 0;
+
+    const replies = (repliesMap.get(c.commentId ?? "") ?? []).sort(
+      (a, b) =>
+        new Date(a.createdAt ?? 0).getTime() -
+        new Date(b.createdAt ?? 0).getTime(),
+    );
+
+    return {
+      id: idx + 1,
+      name,
+      time: timeAgoVi(c.createdAt),
+      avatar: avatarBySeed(uid || name || String(idx + 1)),
+      rating,
+      content: c.content ?? "",
+      images: [],
+      purchased: !!purchased,
+      helpful: 0,
+      replies: replies.map((r) => ({
+        id: r.commentId ?? `${idx + 1}-reply`,
+        by: r.userDisplayName?.trim() || "Người dùng",
+        avatar: avatarBySeed(r.userId ?? r.userDisplayName ?? "reply"),
+        content: r.content ?? "",
+        time: timeAgoVi(r.createdAt),
+      })),
+    };
+  });
+};
 
 /* =======================
    Component chính
@@ -161,15 +198,22 @@ export default function CourseDetailUI({
   const [activeTab, setActiveTab] = useState<string>("reviews");
   const [inCart, setInCart] = useState(false);
   const [loadingCart, setLoadingCart] = useState(false);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
 
   const courseTitle = data?.title ?? "—";
   const coverUrl = data?.courseImageUrl || IMG_FALLBACK;
   const subjectTag = data?.subjectCode ? [data.subjectCode] : [];
   const levelTag = levelLabel(data?.level ?? 0);
   const enRollingCourseById = useCourseStore((s) => s.enRollingCourseById);
+  const courseCommentsList = useCourseStore((s) => s.courseCommentsList);
+  const courseCommentsCreate = useCourseStore((s) => s.courseCommentsCreate);
+  const studentLessonProgressRatingCreate = useCourseStore(
+    (s) => s.studentLessonProgressRatingCreate,
+  );
   const { addToCart, fetchCart } = useCartStore();
   const isAuthen = useAuthStore((s) => s.isAuthen);
   const router = useRouter();
+  const courseId = data?.courseId ?? "";
   const durationText = useMemo(
     () => formatDuration(data?.durationHours ?? 0, data?.durationMinutes ?? 0),
     [data?.durationHours, data?.durationMinutes],
@@ -210,6 +254,46 @@ export default function CourseDetailUI({
     access: "Trọn đời",
     language: "Tiếng Việt",
   };
+
+  const ratingBreakdown = useMemo<[number, number, number, number, number]>(() => {
+    const list = data?.ratings ?? [];
+    if (!list.length) return [78, 62, 44, 28, 12]; // fallback giữ UX cũ
+
+    const counts = [0, 0, 0, 0, 0]; // 5->1
+    list.forEach((r) => {
+      const s = r.rating ?? 0;
+      if (s >= 1 && s <= 5) counts[5 - s] += 1;
+    });
+    const total = list.length || 1;
+    const perc = counts.map((c) => Math.round((c / total) * 100));
+    return [perc[0], perc[1], perc[2], perc[3], perc[4]];
+  }, [data?.ratings]);
+
+  const ratingAverage = useMemo(() => {
+    const avg = data?.ratingsAverage;
+    if (typeof avg === "number") return avg;
+    const list = data?.ratings ?? [];
+    if (!list.length) return 0;
+    const sum = list.reduce((acc, r) => acc + (r.rating ?? 0), 0);
+    return sum / list.length;
+  }, [data?.ratingsAverage, data?.ratings]);
+
+  const fetchReviews = async () => {
+    if (!courseId) return;
+    try {
+      const res = await courseCommentsList({ courseId, page: 1, size: 100 });
+      const items = res.data?.response?.items ?? [];
+      setReviews(mapCommentsToReviews(items, data?.ratings, data?.isEnrolled));
+    } catch (e) {
+      console.error("Error fetching course reviews:", e);
+      setReviews([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId]);
 
   const handleShare = async () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -773,8 +857,15 @@ export default function CourseDetailUI({
               {/* Stars + Tabs */}
               <div className="rounded-2xl p-3 sm:p-4 bg-white/95 dark:bg-zinc-900/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur ring-1 ring-zinc-200/60 dark:ring-zinc-800/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-2 shrink-0">
-                  <Rate disabled defaultValue={4} style={{ fontSize: 16 }} />
-                  <span className="text-sm text-gray-500">Top đánh giá</span>
+                  <Rate
+                    disabled
+                    value={Math.round(ratingAverage)}
+                    style={{ fontSize: 16 }}
+                  />
+                  <span className="text-sm text-gray-500">
+                    {ratingAverage.toFixed(1)} ⭐ — {data?.ratingsCount ?? 0} đánh
+                    giá
+                  </span>
                 </div>
 
                 <Tabs
@@ -807,9 +898,35 @@ export default function CourseDetailUI({
 
               {activeTab === "reviews" && (
                 <CourseReviews
-                  initialReviews={defaultReviews}
-                  average={4}
-                  breakdownPercentages={[78, 62, 44, 28, 12]}
+                  initialReviews={reviews}
+                  average={ratingAverage}
+                  breakdownPercentages={ratingBreakdown}
+                  onSubmitReview={async (rating, text) => {
+                    if (!courseId) return;
+                    if (!isAuthen) {
+                      message.warning("Vui lòng đăng nhập để đánh giá khóa học");
+                      router.push("/Login");
+                      return;
+                    }
+
+                    try {
+                      await studentLessonProgressRatingCreate(courseId, rating);
+                    } catch (e) {
+                      console.error("Rating submit failed:", e);
+                    }
+
+                    try {
+                      await courseCommentsCreate(
+                        { content: text },
+                        { courseId },
+                      );
+                      message.success("Đã gửi đánh giá!");
+                      await fetchReviews();
+                    } catch (e) {
+                      console.error("Comment submit failed:", e);
+                      message.error("Không thể gửi bình luận. Vui lòng thử lại!");
+                    }
+                  }}
                 />
               )}
 

@@ -3,6 +3,7 @@
 
 import React, { useMemo, useState } from "react";
 import { Card, Tabs, Tag, Collapse, Modal, Spin, Row, Col, Drawer, Button, message } from "antd";
+import { useRouter } from "next/navigation";
 import { MarkdownView } from "EduSmart/components/MarkDown/MarkdownView";
 import type { CourseDetailForGuestDto } from "EduSmart/api/api-course-service";
 import type { OverviewCourseContract } from "EduSmart/api/api-student-service";
@@ -11,6 +12,7 @@ import CourseCard from "EduSmart/components/CourseCard/CourseCard";
 import BaseControlCarousel from "EduSmart/components/Carousel/BaseControlCarousel";
 import StreakChart from "./StreakChart";
 import { v1AiRecommendCourseSubjectAnalysisCreate } from "EduSmart/app/apiServer/Ai/aiAction";
+import { useCourseStore } from "EduSmart/stores/course/courseStore";
 import {
   FiTrendingUp,
   FiActivity,
@@ -174,6 +176,7 @@ export default function CoursePerformanceClient({
   lessonPerformance,
   overallPerformance,
 }: CoursePerformanceClientProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("overall");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [expandedLessonKeys, setExpandedLessonKeys] = useState<string[]>([]);
@@ -188,6 +191,8 @@ export default function CoursePerformanceClient({
   const [isAnalysisSidebarOpen, setIsAnalysisSidebarOpen] = useState(false);
   const [analysisContent, setAnalysisContent] = useState<string>("");
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
+
+  const enRollingCourseById = useCourseStore((s) => s.enRollingCourseById);
 
   // const test =
   //   "## Tổng quan\n- Khóa học đã có 3 bài được chấm với **điểm do AI chấm** trung bình là 33.33. \n- Mức hiệu chỉnh trung bình là 0.\n\n### Bảng tổng quan\n| Chỉ số | Giá trị |\n|---|---|\n| Số đánh giá | 3 |\n| Điểm AI trung bình | 33.33 |\n| Điểm thô trung bình | 33.33 |\n| Mức hiệu chỉnh trung bình | 0 |\n| Số bài theo scope | Lesson: 3 · Module: 0 |\n| Ghi chú | Điểm hiện tại là 'điểm do AI chấm'. Khống hiển thị điểm gốc. |\n\n### Nhận xét tổng quan\n- Kết quả học tập cho thấy điểm số thấp, cho thấy học viên cần cải thiện kỹ năng trong các bài học. Xu hướng điểm hiện tại cho thấy sự cần thiết phải củng cố kiến thức và kỹ năng.\n\n## Điểm mạnh nổi bật\n- Có kiến thức cơ bản về hình ảnh chuyên nghiệp.\n- Giảng viên chia sẻ kiến thức thực tế.\n- Hiểu rõ về khái niệm đánh giá đầu vào và ứng dụng trong thực tế.\n\n## Vấn đề & Khoảng trống kỹ năng\n- Cần cải thiện khả năng phân tích và đánh giá thông tin.\n- Cần tìm hiểu thêm về các phương pháp học nhanh và hiệu quả.\n- Cần củng cố kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n## Phân tầng chất lượng\n- Dựa trên các mẫu gần nhất, tỷ trọng ước lượng cho thấy không có học viên nào đạt mức xuất sắc, một số học viên có thể ở mức cần củng cố, trong khi đa số đang ở mức nguy cơ. Hạn chế dữ liệu từ số mẫu ít (3 mẫu) có thể ảnh hưởng đến độ chính xác của phân tích.\n\n## Ưu tiên hành động (1–2 tuần)\n- Ôn lại kiến thức về phân tích và đánh giá thông tin mỗi ngày 2–3 bài ngắn.\n- Luyện tập kỹ năng giao tiếp thông qua các buổi thảo luận nhóm.\n- Làm bài tập thực hành về tạo niềm tin cho học viên.\n- Viết nhật ký học tập để theo dõi tiến bộ cá nhân.\n\n## Nhóm rủi ro cao\n### 🔹 Lesson có điểm thấp\n| Lesson | Module liên quan | Điểm AI TB | Số bài | Đánh giá ngắn |\n|---|---|---|---|---|\n| Giữ hình ảnh chuyên nghiệp trước học viên | Củng cố hình ảnh chuyên nghiệp | 0 | 1 | Cần cải thiện kỹ năng và kiến thức. |\n| Tạo sự tin tưởng với học viên | Tạo sự tin tưởng ban đầu | 0 | 1 | Cần củng cố kỹ năng giao tiếp. |\n\n**Phân tích nhanh (Lesson)**\n- Có 2 lesson rủi ro với điểm trung bình từ 0 đến 0.\n- Chủ đề lặp lại đáng chú ý: Củng cố hình ảnh chuyên nghiệp: 1 lesson, Tạo sự tin tưởng ban đầu: 1 lesson.\n- Vấn đề phổ biến: Thiếu kỹ năng phân tích và đánh giá thông tin, kỹ năng giao tiếp yếu.\n- Gợi ý trọng tâm: Cần cải thiện kỹ năng giao tiếp và tạo niềm tin cho học viên.\n\n### 🔸 Module có điểm thấp\n- Không có module nào ở mức rủi ro.\n\n**Phân tích nhanh (Module)**\n- —\n\n## Nguyên nhân gốc\n- Thiếu nền tảng khái niệm trong các bài học.\n- Kỹ năng giao tiếp và tạo niềm tin cho học viên chưa được phát triển.\n- Thời gian luyện tập không đều và không đủ.\n\n## Xu hướng theo thời gian\n- — \n\n## Gợi ý học tập nhanh\n- Tìm kiếm tài liệu học tập trực tuyến về phân tích và đánh giá thông tin.\n- Tham gia các khóa học kỹ năng giao tiếp.\n- Luyện tập qua các bài tập thực hành hàng ngày.";
@@ -1111,7 +1116,7 @@ export default function CoursePerformanceClient({
               <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
                 Bài kiểm tra
               </div>
-              <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
+                <div className="text-2xl font-bold text-[#49BBBD] dark:text-cyan-400 mb-1">
                 {progress?.quizTotal || 0}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -1537,6 +1542,26 @@ export default function CoursePerformanceClient({
                           ? `/course/${course.courseId}`
                           : undefined
                       }
+                      isLearningImproved={true}
+                      onPrimaryAction={async () => {
+                        if (!course.courseId) {
+                          message.warning("Không tìm thấy thông tin khóa học");
+                          return;
+                        }
+                        try {
+                          await enRollingCourseById(course.courseId);
+                          message.success("Đăng ký khóa học thành công");
+                          router.push(`/course/${course.courseId}/learn`);
+                        } catch (e: any) {
+                          console.error("Enroll suggested course failed:", e);
+                          const status = e?.response?.status ?? e?.status;
+                          if (status === 401 || status === 403) {
+                            message.error("Vui lòng đăng nhập để đăng ký khóa học");
+                            return;
+                          }
+                          message.error("Không thể đăng ký khóa học. Vui lòng thử lại!");
+                        }
+                      }}
                       tagNames={course.subjectCode ? [course.subjectCode] : []}
                     />
                   );

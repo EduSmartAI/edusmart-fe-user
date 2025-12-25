@@ -20,6 +20,10 @@ import {
   Divider,
   Dropdown,
   Progress,
+  Modal,
+  Spin,
+  message,
+  Avatar,
 } from "antd";
 import {
   PlayCircleOutlined,
@@ -42,13 +46,14 @@ import BaseScreenStudyLayout from "EduSmart/layout/BaseScreenStudyLayout";
 
 import {
   CourseDetailForStudentDto,
+  DiscussionCommentDto,
   ModuleDetailForStudentDto,
+  DiscussionCommentDtoPagedResult,
   StudentLessonDetailDto,
 } from "EduSmart/api/api-course-service";
 import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
 import { useCourseStore } from "EduSmart/stores/course/courseStore";
 import CourseDetailsCardTabs from "EduSmart/components/Course/CourseDetailsCardTabs";
-import BasecontrolModal from "EduSmart/components/BaseControl/BasecontrolModal";
 import ChatAssistantPanel from "EduSmart/components/Course/Learn/ChatAssistantPanel";
 import CourseComments from "EduSmart/components/Course/Learn/CourseComments";
 import LessonNotes from "EduSmart/components/Course/Learn/LessonNotes";
@@ -59,6 +64,10 @@ const { Text } = Typography;
 type Props = {
   course: CourseDetailForStudentDto;
   initialLessonId?: string;
+};
+
+type DiscussionCommentWithReplies = DiscussionCommentDto & {
+  repliesResolved?: DiscussionCommentDto[];
 };
 
 function secToMinutes(sec?: number | null): number {
@@ -202,6 +211,121 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
   );
 
   const [replyOpenId, setReplyOpenId] = useState<string | null>(null);
+  const [topicsOpen, setTopicsOpen] = useState(false);
+
+  // ===== Discussions thread state (comments) =====
+  const modulesDiscussionThreadList = useCourseStore(
+    (s) => s.modulesDiscussionThreadList,
+  );
+  const moduleDiscussionCommentsCreate = useCourseStore(
+    (s) => s.moduleDiscussionCommentsCreate,
+  );
+
+  const [threadOpen, setThreadOpen] = useState(false);
+  const [threadLoading, setThreadLoading] = useState(false);
+  const [threadPage, setThreadPage] = useState(1);
+  const [threadPageSize] = useState(20);
+  const [threadTotal, setThreadTotal] = useState(0);
+  const [threadItems, setThreadItems] = useState<DiscussionCommentDto[]>([]);
+  const [selectedDiscussionId, setSelectedDiscussionId] = useState<string | null>(
+    null,
+  );
+  const [threadNewComment, setThreadNewComment] = useState("");
+
+  const activeModuleIdSafe = activeModule?.moduleId ?? "";
+
+  const buildThreadTree = useCallback((items: DiscussionCommentDto[]) => {
+    // Prefer server nested `replies` if provided, otherwise build from parentCommentId
+    const hasNested = items.some((x) => Array.isArray(x.replies) && x.replies.length);
+    if (hasNested) {
+      const roots: DiscussionCommentWithReplies[] = items
+        .filter((x) => !x.parentCommentId)
+        .map((x) => ({
+          ...x,
+          repliesResolved: (x.replies ?? []) as DiscussionCommentDto[],
+        }));
+      return roots;
+    }
+
+    const repliesMap = new Map<string, DiscussionCommentDto[]>();
+    items.forEach((c) => {
+      if (c.parentCommentId) {
+        const arr = repliesMap.get(c.parentCommentId) ?? [];
+        repliesMap.set(c.parentCommentId, [...arr, c]);
+      }
+    });
+    return items
+      .filter((c) => !c.parentCommentId)
+      .map((c) => ({
+        ...c,
+        repliesResolved: repliesMap.get(c.commentId ?? "") ?? [],
+      }));
+  }, []);
+
+  const threadTree = useMemo(() => {
+    const filtered =
+      selectedDiscussionId
+        ? threadItems.filter((x) => x.discussionId === selectedDiscussionId)
+        : threadItems;
+    return buildThreadTree(filtered);
+  }, [buildThreadTree, selectedDiscussionId, threadItems]);
+
+  const fetchThread = useCallback(
+    async (page: number) => {
+      if (!activeModuleIdSafe) return;
+      setThreadLoading(true);
+      try {
+        const res = await modulesDiscussionThreadList(activeModuleIdSafe, {
+          page,
+          size: threadPageSize,
+        });
+        const data: DiscussionCommentDtoPagedResult | undefined =
+          res.data?.response;
+        setThreadItems(data?.items ?? []);
+        setThreadPage(data?.pageNumber ?? page);
+        setThreadTotal(data?.totalCount ?? 0);
+      } catch (e) {
+        console.error("Error fetching discussion thread:", e);
+        message.error("Không thể tải thảo luận. Vui lòng thử lại!");
+      } finally {
+        setThreadLoading(false);
+      }
+    },
+    [activeModuleIdSafe, modulesDiscussionThreadList, threadPageSize],
+  );
+
+  const openThreadFor = useCallback(
+    async (discussionId: string | null) => {
+      setSelectedDiscussionId(discussionId);
+      setThreadNewComment("");
+      setThreadOpen(true);
+      await fetchThread(1);
+    },
+    [fetchThread],
+  );
+
+  const submitThreadComment = useCallback(async () => {
+    if (!activeModuleIdSafe) return;
+    if (!threadNewComment.trim()) {
+      message.warning("Vui lòng nhập nội dung bình luận!");
+      return;
+    }
+    try {
+      const res = await moduleDiscussionCommentsCreate(activeModuleIdSafe, {
+        content: threadNewComment.trim(),
+      });
+      if (res.data?.success) {
+        message.success("Đã đăng bình luận!");
+        setThreadNewComment("");
+        await fetchThread(1);
+      } else {
+        message.error(res.data?.message ?? "Không thể đăng bình luận.");
+      }
+    } catch (e) {
+      console.error("Error creating discussion comment:", e);
+      message.error("Đã xảy ra lỗi. Vui lòng thử lại!");
+    }
+  }, [activeModuleIdSafe, fetchThread, moduleDiscussionCommentsCreate, threadNewComment]);
 
   const startQuiz = (lessonId: string) => {
     if (!lessonId) return;
@@ -323,9 +447,19 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                   {activeModule?.moduleName ?? "Untitled module"}
                 </span>
               </div>
-              <Tag color="purple" className="m-0">
-                {currentDiscussions.length} topics
-              </Tag>
+              <Space size="small">
+                <Tag color="purple" className="m-0">
+                  {currentDiscussions.length} topics
+                </Tag>
+                <Button
+                  type="primary"
+                  ghost
+                  onClick={() => setTopicsOpen(true)}
+                  disabled={currentDiscussions.length === 0}
+                >
+                  Xem thảo luận
+                </Button>
+              </Space>
             </div>
 
             <Divider className="my-2" />
@@ -359,7 +493,10 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                           <div className="flex-1 min-w-0">
                             {/* Title + meta */}
                             <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="m-0 text-base font-semibold">
+                              <h3
+                                className="m-0 text-base font-semibold cursor-pointer hover:underline"
+                                onClick={() => openThreadFor(d.discussionId ?? null)}
+                              >
                                 {d.title ?? "Untitled"}
                               </h3>
                               {activeModuleName && (
@@ -410,78 +547,18 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                                 >
                                   {isReplyOpen
                                     ? "Đóng ô trả lời"
-                                    : "Viết câu trả lời"}
+                                    : "Viết bình luận"}
                                 </Button>
                               </div>
-
-                              {/* Nút mở modal: xem các thảo luận khác */}
-                              <BasecontrolModal
-                                triggerText="Xem các thảo luận khác"
-                                title={
-                                  <div className="flex items-center gap-2">
-                                    <CommentOutlined />
-                                    <span>Các thảo luận trong module</span>
-                                    {activeModuleName && (
-                                      <Tag color="geekblue" className="m-0">
-                                        {activeModuleName}
-                                      </Tag>
-                                    )}
-                                  </div>
-                                }
-                                cancelText="Đóng"
-                                okText="OK"
-                                isResponsive
-                                triggerButtonProps={{
-                                  type: "primary",
-                                  ghost: true,
-                                }}
-                              >
-                                <List
-                                  itemLayout="vertical"
-                                  dataSource={currentDiscussions}
-                                  renderItem={(it, i2) => {
-                                    const isCurrent =
-                                      (it.discussionId ?? String(i2)) === id;
-                                    return (
-                                      <List.Item className="!px-0">
-                                        <div
-                                          className={`rounded-lg p-3 border ${
-                                            isCurrent
-                                              ? "border-violet-300 bg-violet-50/40 dark:bg-violet-900/20"
-                                              : "border-neutral-200 dark:border-neutral-800"
-                                          }`}
-                                        >
-                                          <div className="flex items-center gap-2">
-                                            <span className="font-medium">
-                                              {it.title ?? "Untitled"}
-                                            </span>
-                                            {isCurrent && (
-                                              <Tag
-                                                color="purple"
-                                                className="m-0"
-                                              >
-                                                Đang xem
-                                              </Tag>
-                                            )}
-                                          </div>
-                                          {it.discussionQuestion && (
-                                            <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">
-                                              {it.discussionQuestion}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </List.Item>
-                                    );
-                                  }}
-                                />
-                              </BasecontrolModal>
                             </div>
 
                             {/* Ô trả lời inline */}
                             {isReplyOpen && (
                               <div className="mt-3">
                                 <Input.TextArea
-                                  placeholder="Nhập câu trả lời của bạn…"
+                                  value={threadNewComment}
+                                  onChange={(e) => setThreadNewComment(e.target.value)}
+                                  placeholder="Nhập bình luận của bạn…"
                                   autoSize={{ minRows: 3, maxRows: 6 }}
                                 />
                                 <div className="mt-2 flex items-center gap-2">
@@ -491,7 +568,8 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                                   <Button
                                     type="primary"
                                     onClick={() => {
-                                      // TODO: gọi API post reply ở đây
+                                      // Post a discussion comment for current module thread
+                                      submitThreadComment();
                                       setReplyOpenId(null);
                                     }}
                                   >
@@ -508,6 +586,209 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
                 }}
               />
             )}
+
+            {/* Modal chọn topic (gộp UI “xem”) */}
+            <Modal
+              title={
+                <div className="flex items-center gap-2">
+                  <CommentOutlined />
+                  <span>Các thảo luận trong module</span>
+                  {activeModuleName && (
+                    <Tag color="geekblue" className="m-0">
+                      {activeModuleName}
+                    </Tag>
+                  )}
+                </div>
+              }
+              open={topicsOpen}
+              onCancel={() => setTopicsOpen(false)}
+              footer={null}
+              width={840}
+              destroyOnClose
+            >
+              {currentDiscussions.length === 0 ? (
+                <Empty description="Module này chưa có thảo luận" />
+              ) : (
+                <List
+                  itemLayout="vertical"
+                  dataSource={currentDiscussions}
+                  renderItem={(it, i2) => {
+                    const isCurrent =
+                      (it.discussionId ?? String(i2)) === selectedDiscussionId;
+                    return (
+                      <List.Item className="!px-0">
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => {
+                            setTopicsOpen(false);
+                            openThreadFor(it.discussionId ?? null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setTopicsOpen(false);
+                              openThreadFor(it.discussionId ?? null);
+                            }
+                          }}
+                          className={`rounded-lg p-3 border cursor-pointer transition ${
+                            isCurrent
+                              ? "border-violet-300 bg-violet-50/40 dark:bg-violet-900/20"
+                              : "border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className="font-medium truncate">
+                                  {it.title ?? "Untitled"}
+                                </span>
+                                {isCurrent && (
+                                  <Tag color="purple" className="m-0">
+                                    Đang xem
+                                  </Tag>
+                                )}
+                              </div>
+                              {it.discussionQuestion && (
+                                <div className="mt-1 text-sm text-neutral-600 dark:text-neutral-300 line-clamp-2">
+                                  {it.discussionQuestion}
+                                </div>
+                              )}
+                            </div>
+                            <Button type="primary">Xem</Button>
+                          </div>
+                        </div>
+                      </List.Item>
+                    );
+                  }}
+                />
+              )}
+            </Modal>
+
+            <Modal
+              title="Thảo luận"
+              open={threadOpen}
+              onCancel={() => setThreadOpen(false)}
+              onOk={() => setThreadOpen(false)}
+              okText="Đóng"
+              cancelButtonProps={{ style: { display: "none" } }}
+              width={900}
+              destroyOnClose
+            >
+              <div className="space-y-4">
+                {/* Context / selected prompt */}
+                {selectedDiscussionId && (
+                  <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 p-3 bg-neutral-50 dark:bg-neutral-900">
+                    <div className="text-xs text-neutral-500">Đang xem topic</div>
+                    <div className="text-sm font-medium">
+                      {currentDiscussions.find((x) => x.discussionId === selectedDiscussionId)
+                        ?.title ?? "Untitled"}
+                    </div>
+                  </div>
+                )}
+
+                {/* New comment */}
+                <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 p-3">
+                  <div className="text-sm font-medium mb-2">Viết bình luận</div>
+                  <Input.TextArea
+                    value={threadNewComment}
+                    onChange={(e) => setThreadNewComment(e.target.value)}
+                    placeholder="Nhập bình luận của bạn…"
+                    autoSize={{ minRows: 3, maxRows: 6 }}
+                  />
+                  <div className="mt-2 flex justify-end">
+                    <Button type="primary" onClick={submitThreadComment}>
+                      Đăng
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Thread list */}
+                <Spin spinning={threadLoading}>
+                  {threadTree.length === 0 ? (
+                    <Empty description="Chưa có bình luận nào" />
+                  ) : (
+                    <List
+                      itemLayout="vertical"
+                      dataSource={threadTree}
+                      renderItem={(c) => (
+                        <List.Item key={c.commentId}>
+                          <div className="flex items-start gap-3">
+                            <Avatar>{(c.userDisplayName ?? "U").slice(0, 1)}</Avatar>
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <div className="text-sm font-medium">
+                                  {c.userDisplayName ?? "Người dùng"}
+                                </div>
+                                {c.createdAt && (
+                                  <div className="text-xs text-neutral-500">
+                                    {new Date(c.createdAt).toLocaleString()}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="text-sm mt-1 whitespace-pre-wrap">
+                                {c.content}
+                              </div>
+
+                              {c.repliesResolved && c.repliesResolved.length > 0 && (
+                                <div className="mt-3 space-y-2">
+                                  {c.repliesResolved.map((r) => (
+                                    <div
+                                      key={r.commentId}
+                                      className="flex items-start gap-2 pl-6"
+                                    >
+                                      <Avatar size={28}>
+                                        {(r.userDisplayName ?? "U").slice(0, 1)}
+                                      </Avatar>
+                                      <div className="flex-1">
+                                        <div className="text-xs font-medium">
+                                          {r.userDisplayName ?? "Người dùng"}
+                                          {r.createdAt && (
+                                            <span className="ml-2 text-neutral-500 font-normal">
+                                              {new Date(r.createdAt).toLocaleString()}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="text-sm whitespace-pre-wrap">
+                                          {r.content}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </List.Item>
+                      )}
+                    />
+                  )}
+                </Spin>
+
+                {/* Pagination */}
+                {threadTotal > threadPageSize && (
+                  <div className="flex justify-center">
+                    <Space>
+                      <Button
+                        disabled={threadPage <= 1}
+                        onClick={() => fetchThread(threadPage - 1)}
+                      >
+                        Trang trước
+                      </Button>
+                      <Text type="secondary">
+                        Trang {threadPage}
+                      </Text>
+                      <Button
+                        disabled={threadItems.length < threadPageSize}
+                        onClick={() => fetchThread(threadPage + 1)}
+                      >
+                        Trang sau
+                      </Button>
+                    </Space>
+                  </div>
+                )}
+              </div>
+            </Modal>
           </div>
         ),
       },
@@ -550,6 +831,20 @@ export default function CourseVideoClient({ course, initialLessonId }: Props) {
       activeModuleName,
       replyOpenId,
       onRightTabChange,
+      // discussion thread
+      fetchThread,
+      openThreadFor,
+      submitThreadComment,
+      selectedDiscussionId,
+      threadItems.length,
+      threadTree,
+      threadOpen,
+      threadLoading,
+      threadNewComment,
+      threadPage,
+      threadPageSize,
+      threadTotal,
+      topicsOpen,
     ],
   );
 

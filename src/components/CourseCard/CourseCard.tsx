@@ -47,6 +47,8 @@ interface CourseCardProps {
   onToggleWishList?: () => void;
   learnerCount?: number | null;
   isHorizontal?: boolean;
+  isLearningImproved?: boolean;
+  onPrimaryAction?: () => void | Promise<void>;
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({
@@ -70,6 +72,8 @@ const CourseCard: React.FC<CourseCardProps> = ({
   onToggleWishList,
   learnerCount = null,
   isHorizontal = false,
+  isLearningImproved = false,
+  onPrimaryAction,
 }) => {
   const router = useRouter();
   const [localWish, setLocalWish] = useState(isWishList);
@@ -141,11 +145,14 @@ const CourseCard: React.FC<CourseCardProps> = ({
     }
   };
 
-  const handleButtonClick = (
+  const handleButtonClick = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
     e.stopPropagation(); // tránh trigger Card onClick
-
+     if (onPrimaryAction) {
+      await onPrimaryAction();
+      return;
+    }
     if (!routerPush) return;
 
     if (isEnrolled) {
@@ -304,7 +311,7 @@ const CourseCard: React.FC<CourseCardProps> = ({
       </div>
     ) : null;
 
-  const actionButtonLabel = isEnrolled ? "Học ngay" : "Xem ngay";
+  const actionButtonLabel = isEnrolled || isLearningImproved ? "Học ngay" : "Xem ngay";
 
   const renderPrimaryButton = (className?: string) => (
     <Button type="primary" onClick={handleButtonClick} className={className}>

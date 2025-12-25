@@ -9,6 +9,9 @@ import {
   CreateCommentResponse,
   GetCourseCommentsResponse,
   ReplyToCommentResponse,
+  GetDiscussionThreadResponse,
+  PostCommentRequest,
+  PostDiscussionCommentResponse,
   CreateNoteDto,
   CreateNoteResponse,
   GetLessonNotesResponse,
@@ -16,6 +19,7 @@ import {
   UpdateNoteResponse,
   DeleteNoteResponse,
   UserLessonProgressEntity,
+  UpsertCourseRatingResponse,
 } from "EduSmart/api/api-course-service";
 import {
   AIChatBotResponse,
@@ -72,6 +76,14 @@ interface CourseState {
     data: CreateCommentBody,
     query?: { courseId?: string },
   ) => Promise<{ data: ReplyToCommentResponse }>;
+  modulesDiscussionThreadList: (
+    moduleId: string,
+    query?: { page?: number; size?: number },
+  ) => Promise<{ data: GetDiscussionThreadResponse }>;
+  moduleDiscussionCommentsCreate: (
+    moduleId: string,
+    data: PostCommentRequest,
+  ) => Promise<{ data: PostDiscussionCommentResponse }>;
   lessonNotesCreate: (
     data: CreateNoteDto,
     query?: { lessonId?: string },
@@ -81,6 +93,7 @@ interface CourseState {
     page?: number;
     size?: number;
   }) => Promise<{ data: GetLessonNotesResponse }>;
+  studentLessonProgressRatingCreate: (courseId: string, rating: number) => Promise<{ data: UpsertCourseRatingResponse }>;
   lessonNotesUpdate: (
     noteId: string,
     data: UpdateNoteDto,
@@ -259,6 +272,15 @@ export const useCourseStore = create<CourseState>((set) => ({
       throw error;
     }
   },
+  studentLessonProgressRatingCreate: async (courseId, rating) => {
+    try {
+      const res = await apiClient.courseService.api.studentLessonProgressRatingCreate(courseId, rating);
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error creating course rating:", error);
+      throw error;
+    }
+  },
   courseCommentsList: async (query) => {
     try {
       const res = await apiClient.courseService.api.courseCommentsList(query);
@@ -278,6 +300,31 @@ export const useCourseStore = create<CourseState>((set) => ({
       return { data: res.data };
     } catch (error) {
       console.error("Error creating comment reply:", error);
+      throw error;
+    }
+  },
+  modulesDiscussionThreadList: async (moduleId, query) => {
+    try {
+      const res = await apiClient.courseService.api.modulesDiscussionThreadList(
+        moduleId,
+        query,
+      );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error fetching module discussion thread:", error);
+      throw error;
+    }
+  },
+  moduleDiscussionCommentsCreate: async (moduleId, data) => {
+    try {
+      const res =
+        await apiClient.courseService.api.moduleDiscussionCommentsCreate(
+          moduleId,
+          data,
+        );
+      return { data: res.data };
+    } catch (error) {
+      console.error("Error creating module discussion comment:", error);
       throw error;
     }
   },
